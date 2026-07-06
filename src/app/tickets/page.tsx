@@ -1,0 +1,33 @@
+import { AppShell } from "@/components/app-shell";
+import { FeedbackPanel, type TicketItem } from "@/features/tickets/feedback-panel";
+import { requireUser } from "@/server/auth";
+import { listFeedbackTicketsForUser } from "@/server/feedback";
+
+export const dynamic = "force-dynamic";
+
+export default async function TicketsPage() {
+  const current = await requireUser();
+  const tickets = await listFeedbackTicketsForUser(current.profile.id);
+  const ticketItems: TicketItem[] = tickets.map((ticket) => ({
+    id: ticket.id,
+    type: ticket.type,
+    status: ticket.status,
+    subject: ticket.subject,
+    content: ticket.content,
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+    messages: ticket.messages.map((message) => ({
+      id: message.id,
+      body: message.body,
+      isAdmin: message.isAdmin,
+      createdAt: message.createdAt.toISOString(),
+      authorName: message.authorProfile.username,
+    })),
+  }));
+
+  return (
+    <AppShell active="tickets">
+      <FeedbackPanel initialTickets={ticketItems} />
+    </AppShell>
+  );
+}

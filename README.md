@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZroCodeImg Frontend
 
-## Getting Started
+这是新的前后端分离前端仓库。当前目标是：
 
-First, run the development server:
+- 保留 `zrocode-image` 里的前端页面、样式和交互风格
+- 把数据库、鉴权、支付、任务、OSS 等后端能力从前端仓库里剥离
+- 在 Java 后端尚未完成前，用 Next.js Route Handlers + 内存 mock 数据支撑前端联调
+
+## 当前状态
+
+- 已迁移页面：首页、登录、注册、定价、文档、概览、开始创作、历史、收藏、订单、积分购买、反馈、设置、后台管理
+- 已迁移样式：`globals.css`、CSS Modules、KoImg 风格导航与工具页布局
+- 已迁移规范：`PROJECT_GUIDELINES.md`、`design.md`
+- 已补 mock API：认证、签到、订单、对话、生成、收藏、反馈、后台设置
+
+## 启动
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 校验
 
-## Learn More
+```bash
+pnpm lint
+pnpm build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Mock 账号
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+开发环境里内置了两个账号：
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 管理员
+  - 邮箱：`admin@zrocodeimg.dev`
+  - 密码：`admin123456`
+- 普通用户
+  - 邮箱：`creator@zrocodeimg.dev`
+  - 密码：`creator123456`
 
-## Deploy on Vercel
+注册发码接口也是 mock：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- 验证码固定为：`123456`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Mock 说明
+
+当前仓库里的这些能力都还是 mock，不是生产实现：
+
+- 登录注册与会话
+- 积分余额与流水
+- 易支付下单
+- 生图任务与对话
+- 反馈与后台设置
+- 文件上传与图片地址
+
+对应 mock 代码主要在：
+
+- `src/server/mock-store.ts`
+- `src/server/*`
+- `src/app/api/*`
+
+这些文件里已经加了 `TODO(java-backend)` 注释，后续由 Java 后端替换。
+
+## 后端接入建议
+
+Java 后端完成后，前端建议按这个顺序切换：
+
+1. 保留页面和组件不动
+2. 先把 `src/app/api/*` mock route 改成转发 Java API 或直接删除
+3. 再把 `src/server/*` 的 mock 查询替换成真实 BFF / SDK 请求
+4. 最后移除 `src/server/mock-store.ts`
+
+## 规范
+
+开发前先读：
+
+- `PROJECT_GUIDELINES.md`
+- `design.md`
+- `AGENTS.md`

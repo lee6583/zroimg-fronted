@@ -1,0 +1,20 @@
+.animatedText__scrollReveal {
+  max-width: 42rem;
+  margin: 2.5rem auto 0;
+  color: #dedbc8;
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .animatedText__scrollReveal {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .animatedText__scrollReveal {
+    font-size: 1rem;
+    line-height: 1.75rem;
+  }
+}

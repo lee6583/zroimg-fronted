@@ -1,0 +1,68 @@
+.adminForms__toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  padding-top: 1.25rem;
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adminForms__toggleLabel {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.adminForms__toggleDescription {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.adminForms__switch {
+  position: relative;
+  width: 3rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.adminForms__switchChecked {
+  background: var(--foreground);
+}
+
+.adminForms__switchThumb {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.adminForms__switchThumbChecked {
+  right: 0.25rem;
+  left: auto;
+  background: var(--background);
+}
+
+.adminForms__enablePill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}

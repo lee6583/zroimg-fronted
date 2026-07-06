@@ -1,0 +1,23 @@
+.adminOverview__emptyFeedback {
+  border: 1px dashed var(--line);
+  border-radius: 0.5rem;
+  background: var(--soft);
+  padding: 1.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.adminOverview__feedbackItem {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.adminOverview__feedbackItem:hover {
+  background: var(--soft);
+}

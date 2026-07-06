@@ -1,0 +1,195 @@
+.checkInCard {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.checkInCard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.checkInCard__eyebrow {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.checkInCard__title {
+  margin-top: 0.25rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.checkInCard__calendarHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.35rem;
+}
+
+.checkInCard__monthTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.checkInCard__calendarWrap {
+  position: relative;
+}
+
+.checkInCard__calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--soft);
+  padding: 0.75rem;
+}
+
+.checkInCard__rewardBurst {
+  position: absolute;
+  right: 1rem;
+  top: 0.25rem;
+  z-index: 2;
+  border-radius: 999px;
+  background: var(--foreground);
+  padding: 0.4rem 0.7rem;
+  color: var(--background);
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+  animation: checkInRewardBurst 1.25s ease-out both;
+}
+
+.checkInCard__weekday {
+  display: grid;
+  place-items: center;
+  height: 1.65rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.checkInCard__dayCell {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  color: var(--foreground);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.checkInCard__dayCellEmpty {
+  opacity: 0;
+}
+
+.checkInCard__dayCellToday {
+  border-color: var(--foreground);
+  background: var(--panel);
+}
+
+.checkInCard__dayCellChecked {
+  grid-template-rows: 1fr auto;
+  border-color: var(--foreground);
+  background: var(--foreground);
+  padding-bottom: 0.22rem;
+  color: var(--background);
+  font-size: 0.875rem;
+}
+
+.checkInCard__dayCellChecked::after {
+  content: "";
+  align-self: end;
+  width: 0.25rem;
+  height: 0.25rem;
+  margin-top: -0.15rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.checkInCard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.checkInCard__meta span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 0.35rem 0.65rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.checkInCard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.checkInCard__button {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.375rem;
+  background: var(--foreground);
+  padding: 0 1rem;
+  color: var(--background);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkInCard__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.checkInCard__message {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+@keyframes checkInRewardBurst {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.92);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translateY(-0.35rem) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-2rem) scale(0.98);
+  }
+}
+
+@media (min-width: 1280px) {
+  .checkInCard {
+    height: 100%;
+  }
+}
