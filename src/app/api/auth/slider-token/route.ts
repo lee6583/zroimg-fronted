@@ -1,10 +1,13 @@
 import { getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
-import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/auth/slider-token");
+    const response = await proxyRequestToJavaApi(request.clone(), "/auth/slider-token");
+    if (!isJavaUnavailableResponse(response)) {
+      return response;
+    }
   }
 
   const { email } = (await request.json()) as { email?: string; scene?: string };

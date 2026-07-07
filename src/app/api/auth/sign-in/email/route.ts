@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { findUserByEmail } from "@/server/bff/mock-store";
 import { jsonError } from "@/server/http";
-import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/auth/sign-in/email");
+    const response = await proxyRequestToJavaApi(request.clone(), "/auth/sign-in/email");
+    if (!isJavaUnavailableResponse(response)) {
+      return response;
+    }
   }
 
   const payload = (await request.json()) as {
