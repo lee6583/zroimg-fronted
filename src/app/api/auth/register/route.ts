@@ -4,7 +4,7 @@ import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/auth/register");
+    return proxyRequestToJavaApi(request, "/auth/register");
   }
 
   const payload = (await request.json()) as {

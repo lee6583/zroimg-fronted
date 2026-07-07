@@ -2,59 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, ShieldCheck } from "lucide-react";
-import { getSliderToken, loginWithEmail } from "@/api/auth";
-import { SliderVerification } from "@/features/auth/slider-verification";
+import { Lock, Mail } from "lucide-react";
+import { loginWithEmail } from "@/api/auth";
 import styles from "./auth-form.module.css";
 
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [verified, setVerified] = useState(false);
-  const [sliderToken, setSliderToken] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function resetSliderVerification() {
-    setVerified(false);
-    setSliderToken("");
-  }
-
-  async function requestSliderToken() {
-    if (!email.trim()) {
-      setMessage("请先输入邮箱，再完成安全验证");
-      return false;
-    }
-
-    try {
-      setMessage("");
-      const data = await getSliderToken({ email });
-      setSliderToken(data.sliderToken || data.token || "");
-      setVerified(true);
-      return true;
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "安全验证失败，请重试");
-      resetSliderVerification();
-      return false;
-    }
-  }
-
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!verified || !sliderToken) {
-      setMessage("请先完成安全验证");
-      return;
-    }
     try {
       setLoading(true);
       setMessage("");
-      await loginWithEmail({ email, password, sliderToken });
+      await loginWithEmail({ email, password });
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      resetSliderVerification();
-      setMessage(error instanceof Error ? error.message : "登录失败，请重新完成安全验证");
+      setMessage(error instanceof Error ? error.message : "登录失败");
       return;
     }
 
@@ -74,10 +42,7 @@ export function LoginForm() {
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                resetSliderVerification();
-              }}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </span>
@@ -97,18 +62,10 @@ export function LoginForm() {
           </span>
         </label>
 
-        <div>
-          <div className={styles.authForm__verificationTitle}>
-            <ShieldCheck className={styles.authForm__verificationIcon} />
-            <span>安全验证</span>
-          </div>
-          <SliderVerification verified={verified} onVerified={requestSliderToken} />
-        </div>
-
         {message ? <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>{message}</p> : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={loading || !verified}>
+      <button className={styles.authForm__submit} disabled={loading}>
         {loading ? "登录中" : "登录"}
       </button>
     </form>
