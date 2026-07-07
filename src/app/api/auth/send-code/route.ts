@@ -1,10 +1,13 @@
 import { getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
-import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/auth/register/send-code");
+    const response = await proxyRequestToJavaApi(request.clone(), "/auth/register/send-code");
+    if (!isJavaUnavailableResponse(response)) {
+      return response;
+    }
   }
 
   const { email, sliderToken } = (await request.json()) as { email?: string; sliderToken?: string };
@@ -26,6 +29,7 @@ export async function POST(request: Request) {
 
   token.used = true;
 
+  // Mock 环境下固定验证码，方便在 Java 后端未接通前继续联调注册流程。
   const code = "123456";
   store.verificationCodes = store.verificationCodes.filter((item) => item.email !== normalizedEmail);
   store.verificationCodes.push({
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
 
   return jsonOk({
     ok: true,
-    message: "开发环境验证码固定为 123456",
+    message: "Mock 验证码固定为 123456",
     code,
     cooldownSeconds: 60,
     expiresInSeconds: 600,

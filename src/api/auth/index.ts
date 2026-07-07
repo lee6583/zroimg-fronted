@@ -85,7 +85,6 @@ export function registerAccount(data: {
   });
 }
 
-
 /**
  * 邮箱密码登录
  *

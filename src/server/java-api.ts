@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { serverEnv } from "@/server/env";
 
+const JAVA_PROXY_ERROR_HEADER = "x-zroimg-proxy-error";
 const FORWARDED_REQUEST_HEADERS = [
   "authorization",
   "content-type",
@@ -109,6 +110,10 @@ export function hasJavaApiBaseUrl() {
   return Boolean(normalizeJavaApiBaseUrl());
 }
 
+export function isJavaUnavailableResponse(response: Response) {
+  return response.headers.get(JAVA_PROXY_ERROR_HEADER) === "java_unavailable";
+}
+
 export async function proxyRequestToJavaApi(request: Request, path: string, method = request.method) {
   try {
     const body =
@@ -130,7 +135,12 @@ export async function proxyRequestToJavaApi(request: Request, path: string, meth
   } catch {
     return NextResponse.json(
       { error: "Java 后端暂时不可用，请稍后重试" },
-      { status: 502 },
+      {
+        status: 502,
+        headers: {
+          [JAVA_PROXY_ERROR_HEADER]: "java_unavailable",
+        },
+      },
     );
   }
 }
