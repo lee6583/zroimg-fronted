@@ -711,6 +711,10 @@
     display: none;
   }
 
+  .generateForm__mobileOverlay {
+    display: none;
+  }
+
   .generateForm__settingsDock {
     display: block;
   }
