@@ -29,7 +29,7 @@ export function registerAccount(data: {
   });
 }
 
-export function loginWithEmail(data: { email: string; password: string; sliderToken: string }) {
+export function loginWithEmail(data: { email: string; password: string }) {
   return request<{ ok?: boolean }>({
     url: "/api/auth/sign-in/email",
     method: "POST",
