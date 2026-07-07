@@ -1,6 +1,6 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
-import { uploadMedia } from "@/server/storage";
+import { uploadMedia } from "@/server/bff/generation";
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();

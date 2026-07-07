@@ -2,7 +2,7 @@ import { getCurrentUserProfile } from "@/server/auth";
 import {
   deleteFavoriteCollection,
   updateFavoriteCollectionName,
-} from "@/server/favorites";
+} from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {

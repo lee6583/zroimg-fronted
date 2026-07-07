@@ -1,7 +1,7 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { adjustProfileCredits, getStore, nextId } from "@/server/mock-store";
+import { adjustProfileCredits, getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
-import { calculateCustomCredits } from "@/shared/credits";
+import { calculateCustomCredits } from "@/utils/credits";
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();

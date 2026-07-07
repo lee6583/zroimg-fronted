@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ShieldCheck } from "lucide-react";
+import { getSliderToken, loginWithEmail } from "@/api/auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
 import styles from "./auth-form.module.css";
 
@@ -26,23 +27,17 @@ export function LoginForm() {
       return false;
     }
 
-    setMessage("");
-    const response = await fetch("/api/auth/slider-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "安全验证失败，请重试");
+    try {
+      setMessage("");
+      const data = await getSliderToken({ email });
+      setSliderToken(data.sliderToken || data.token || "");
+      setVerified(true);
+      return true;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "安全验证失败，请重试");
       resetSliderVerification();
       return false;
     }
-
-    setSliderToken(data.token);
-    setVerified(true);
-    return true;
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -51,22 +46,18 @@ export function LoginForm() {
       setMessage("请先完成安全验证");
       return;
     }
-    setLoading(true);
-    setMessage("");
-    const response = await fetch("/api/auth/sign-in/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ email, password, sliderToken }),
-    });
-    const result = await response.json();
-    setLoading(false);
-
-    if (!response.ok || result?.error) {
+    try {
+      setLoading(true);
+      setMessage("");
+      await loginWithEmail({ email, password, sliderToken });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
       resetSliderVerification();
-      setMessage(result?.error?.message || result?.error || "登录失败，请重新完成安全验证");
+      setMessage(error instanceof Error ? error.message : "登录失败，请重新完成安全验证");
       return;
     }
+
     router.push("/dashboard");
     router.refresh();
   }

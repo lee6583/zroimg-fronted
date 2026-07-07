@@ -1,7 +1,12 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
+import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp/test");
+  }
+
   const current = await getCurrentUserProfile();
   if (!current || current.profile.role !== "admin") {
     return jsonError("无权限", 403);

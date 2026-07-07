@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock3, ImageOff } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
-import { listFavoriteCollections } from "@/server/favorites";
-import { listHistoryGenerationTasks } from "@/server/generation/tasks";
-import { getMediaSignedUrl } from "@/server/storage";
+import { listFavoriteCollections } from "@/server/bff/account";
+import { listHistoryGenerationTasks } from "@/server/bff/generation";
+import { getMediaSignedUrl } from "@/server/bff/generation";
 import { HistorySortSelect } from "./history-sort-select";
 import styles from "./history.module.css";
 

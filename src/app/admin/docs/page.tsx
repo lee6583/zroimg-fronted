@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/components/layout/admin-shell";
 import { DocsSettingsForm } from "@/features/admin/docs-settings-form";
 import { requireAdmin } from "@/server/auth";
-import { defaultDocsConfig, getDocsConfig } from "@/server/docs";
+import { defaultDocsConfig, getDocsConfig } from "@/server/bff/content";
 
 export const dynamic = "force-dynamic";
 

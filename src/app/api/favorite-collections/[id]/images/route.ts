@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { addImageToFavoriteCollection } from "@/server/favorites";
+import { addImageToFavoriteCollection } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {

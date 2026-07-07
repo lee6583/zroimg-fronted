@@ -1,6 +1,6 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { requireOwnedConversation } from "@/server/generation/conversations";
-import { createGenerationTask } from "@/server/generation/tasks";
+import { requireOwnedConversation } from "@/server/bff/generation";
+import { createGenerationTask } from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request) {

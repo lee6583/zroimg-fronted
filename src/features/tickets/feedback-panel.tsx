@@ -2,28 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AppSelect } from "@/components/app-select";
-import { type FeedbackStatus, type FeedbackType, feedbackStatusLabels, feedbackTypeLabels } from "@/shared/feedback";
+import { createTicket, replyTicket } from "@/api/support/tickets";
+import { AppSelect } from "@/components/ui/app-select";
+import type { TicketItem } from "@/types/feedback";
+import { type FeedbackType, feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
 import styles from "./feedback-panel.module.css";
-
-type TicketMessage = {
-  id: string;
-  body: string;
-  isAdmin: boolean;
-  createdAt: string;
-  authorName: string;
-};
-
-export type TicketItem = {
-  id: string;
-  type: FeedbackType;
-  status: FeedbackStatus;
-  subject: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  messages: TicketMessage[];
-};
+export type { TicketItem };
 
 const typeOptions = Object.entries(feedbackTypeLabels).map(([value, label]) => ({
   value: value as FeedbackType,
@@ -52,42 +36,40 @@ export function FeedbackPanel({ initialTickets }: { initialTickets: TicketItem[]
   async function submitTicket() {
     setLoading(true);
     setMessage("");
-    const response = await fetch("/api/tickets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, subject, content }),
-    });
-    const data = (await response.json()) as { ticket?: TicketItem; error?: string };
-    setLoading(false);
-    if (!response.ok || !data.ticket) {
-      setMessage(data.error || "提交反馈失败");
+    try {
+      const data = await createTicket({ type, subject, content }) as { ticket?: TicketItem };
+      setLoading(false);
+      if (!data.ticket) {
+        setMessage("提交反馈失败");
+        return;
+      }
+      setSubject("");
+      setContent("");
+      setActiveTicketId(data.ticket.id);
+      setMessage("反馈已提交，我们会尽快查看。");
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "提交反馈失败");
       return;
     }
-    setSubject("");
-    setContent("");
-    setActiveTicketId(data.ticket.id);
-    setMessage("反馈已提交，我们会尽快查看。");
-    router.refresh();
   }
 
   async function submitReply() {
     if (!activeTicket || !reply.trim()) return;
     setLoading(true);
     setMessage("");
-    const response = await fetch(`/api/tickets/${activeTicket.id}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: reply }),
-    });
-    const data = (await response.json()) as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setMessage(data.error || "发送追问失败");
+    try {
+      await replyTicket(activeTicket.id, { body: reply });
+      setLoading(false);
+      setReply("");
+      setMessage("追问已发送。");
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "发送追问失败");
       return;
     }
-    setReply("");
-    setMessage("追问已发送。");
-    router.refresh();
   }
 
   return (

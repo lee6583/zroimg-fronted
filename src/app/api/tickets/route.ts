@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { createFeedbackTicket, listFeedbackTicketsForUser } from "@/server/feedback";
+import { createFeedbackTicket, listFeedbackTicketsForUser } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function GET() {

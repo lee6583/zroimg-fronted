@@ -2,10 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { getFavoriteCollectionForUser } from "@/server/favorites";
-import { getMediaSignedUrl } from "@/server/storage";
+import { getFavoriteCollectionForUser } from "@/server/bff/account";
+import { getMediaSignedUrl } from "@/server/bff/generation";
 import styles from "../favorites.module.css";
 
 export const dynamic = "force-dynamic";

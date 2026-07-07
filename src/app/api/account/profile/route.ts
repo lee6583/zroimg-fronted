@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { getStore } from "@/server/mock-store";
+import { getStore } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request) {

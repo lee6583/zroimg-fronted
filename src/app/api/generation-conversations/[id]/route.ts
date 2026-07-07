@@ -2,7 +2,7 @@ import { getCurrentUserProfile } from "@/server/auth";
 import {
   deleteGenerationConversation,
   updateGenerationConversationTitle,
-} from "@/server/generation/conversations";
+} from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 type SerializedConversationInput = {

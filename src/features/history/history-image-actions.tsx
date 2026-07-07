@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Download, Heart } from "lucide-react";
-import { AppSelect } from "@/components/app-select";
+import { addImageToFavoriteCollection } from "@/api/generation/favorites";
+import { AppSelect } from "@/components/ui/app-select";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import styles from "./history-image-actions.module.css";
 
@@ -39,15 +40,10 @@ export function HistoryImageActions({
     setLoading(true);
     setMessage("");
 
-    const response = await fetch(`/api/favorite-collections/${collectionId}/images`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ generatedImageId }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "收藏失败");
+    try {
+      await addImageToFavoriteCollection(collectionId, { generatedImageId });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "收藏失败");
       setLoading(false);
       return;
     }

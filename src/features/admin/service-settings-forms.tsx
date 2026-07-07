@@ -1,36 +1,19 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import {
+  saveCheckInSettings,
+  saveEasyPaySettings,
+  saveSmtpSettings,
+  testSmtpSettings,
+} from "@/api/admin/settings";
+import type {
+  CheckInSettingsConfig,
+  EasyPayAdminConfig,
+  SecretSource,
+  SmtpAdminConfig,
+} from "@/types/admin";
 import styles from "./admin-forms.module.css";
-
-type SecretSource = "database" | "env" | "none";
-
-type SmtpSettings = {
-  enabled: boolean;
-  host: string | null;
-  port: number;
-  secure: boolean;
-  user: string | null;
-  passwordSource: SecretSource;
-  hasPassword: boolean;
-  passwordPreview: string | null;
-  from: string;
-};
-
-type EasyPaySettings = {
-  enabled: boolean;
-  apiBase: string | null;
-  pid: string | null;
-  keySource: SecretSource;
-  hasKey: boolean;
-  keyPreview: string | null;
-  notifyUrl: string;
-  returnUrl: string;
-};
-
-type CheckInSettings = {
-  dailyCredits: number;
-};
 
 const sourceLabels: Record<SecretSource, string> = {
   database: "后台数据库",
@@ -66,7 +49,7 @@ function Toggle({
   );
 }
 
-export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpSettings }) {
+export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdminConfig }) {
   const [settings, setSettings] = useState(initialSettings);
   const [enabled, setEnabled] = useState(initialSettings.enabled);
   const [host, setHost] = useState(initialSettings.host ?? "");
@@ -85,10 +68,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpSet
     event.preventDefault();
     setSaving(true);
     setMessage("");
-    const response = await fetch("/api/admin/settings/mail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const data = await saveSmtpSettings({
         enabled,
         host,
         port: Number(port),
@@ -97,35 +78,31 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpSet
         password,
         clearPassword,
         from,
-      }),
-    });
-    const data = await response.json();
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error || "保存失败");
+      }) as { settings: SmtpAdminConfig };
+      setSaving(false);
+      setSettings(data.settings);
+      setPassword("");
+      setClearPassword(false);
+      setMessage("SMTP 配置已保存。");
+    } catch (error) {
+      setSaving(false);
+      setMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-    setSettings(data.settings);
-    setPassword("");
-    setClearPassword(false);
-    setMessage("SMTP 配置已保存。");
   }
 
   async function testSmtp(mode: "connection" | "email") {
     setTesting(true);
     setMessage("");
-    const response = await fetch("/api/admin/settings/mail/test", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(mode === "connection" ? { mode } : { mode, email: testEmail }),
-    });
-    const data = await response.json();
-    setTesting(false);
-    if (!response.ok) {
-      setMessage(data.error || "测试失败");
+    try {
+      await testSmtpSettings(mode === "connection" ? { mode } : { mode, email: testEmail });
+      setTesting(false);
+      setMessage(mode === "connection" ? "SMTP 连接测试通过。" : "测试邮件已发送。");
+    } catch (error) {
+      setTesting(false);
+      setMessage(error instanceof Error ? error.message : "测试失败");
       return;
     }
-    setMessage(mode === "connection" ? "SMTP 连接测试通过。" : "测试邮件已发送。");
   }
 
   return (
@@ -199,7 +176,7 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpSet
   );
 }
 
-export function EasyPaySettingsForm({ initialSettings }: { initialSettings: EasyPaySettings }) {
+export function EasyPaySettingsForm({ initialSettings }: { initialSettings: EasyPayAdminConfig }) {
   const [settings, setSettings] = useState(initialSettings);
   const [enabled, setEnabled] = useState(initialSettings.enabled);
   const [apiBase, setApiBase] = useState(initialSettings.apiBase ?? "");
@@ -215,10 +192,8 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
     event.preventDefault();
     setSaving(true);
     setMessage("");
-    const response = await fetch("/api/admin/settings/payment/easypay", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const data = await saveEasyPaySettings({
         enabled,
         apiBase,
         pid,
@@ -226,18 +201,17 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
         clearKey,
         notifyUrl,
         returnUrl,
-      }),
-    });
-    const data = await response.json();
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error || "保存失败");
+      }) as { settings: EasyPayAdminConfig };
+      setSaving(false);
+      setSettings(data.settings);
+      setKey("");
+      setClearKey(false);
+      setMessage("易支付配置已保存，新订单会使用这套配置。");
+    } catch (error) {
+      setSaving(false);
+      setMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-    setSettings(data.settings);
-    setKey("");
-    setClearKey(false);
-    setMessage("易支付配置已保存，新订单会使用这套配置。");
   }
 
   return (
@@ -304,7 +278,7 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
   );
 }
 
-export function CheckInSettingsForm({ initialSettings }: { initialSettings: CheckInSettings }) {
+export function CheckInSettingsForm({ initialSettings }: { initialSettings: CheckInSettingsConfig }) {
   const [dailyCredits, setDailyCredits] = useState(String(initialSettings.dailyCredits));
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -313,21 +287,16 @@ export function CheckInSettingsForm({ initialSettings }: { initialSettings: Chec
     event.preventDefault();
     setSaving(true);
     setMessage("");
-    const response = await fetch("/api/admin/settings/checkin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dailyCredits: Number(dailyCredits),
-      }),
-    });
-    const data = await response.json();
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error || "保存失败");
+    try {
+      const data = await saveCheckInSettings({ dailyCredits: Number(dailyCredits) });
+      setSaving(false);
+      setDailyCredits(String(data.settings.dailyCredits));
+      setMessage("签到积分已保存。");
+    } catch (error) {
+      setSaving(false);
+      setMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-    setDailyCredits(String(data.settings.dailyCredits));
-    setMessage("签到积分已保存。");
   }
 
   return (

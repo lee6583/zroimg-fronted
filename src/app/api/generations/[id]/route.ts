@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { getGenerationTaskForUser } from "@/server/generation/tasks";
+import { getGenerationTaskForUser } from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {

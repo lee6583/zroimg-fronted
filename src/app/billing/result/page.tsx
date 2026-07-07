@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MainNav } from "@/components/nav";
+import { MainNav } from "@/components/layout/main-nav";
 
 export default function BillingResultPage() {
   return (

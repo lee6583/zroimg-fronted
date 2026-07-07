@@ -1,8 +1,8 @@
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { GenerateForm } from "@/features/generation/generate-form";
 import { requireUser } from "@/server/auth";
-import { getOrCreateDefaultConversation, listGenerationConversations } from "@/server/generation/conversations";
-import { listGenerationTasks } from "@/server/generation/tasks";
+import { getOrCreateDefaultConversation, listGenerationConversations } from "@/server/bff/generation";
+import { listGenerationTasks } from "@/server/bff/generation";
 
 export const dynamic = "force-dynamic";
 

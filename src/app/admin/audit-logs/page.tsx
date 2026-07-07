@@ -1,6 +1,6 @@
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/components/layout/admin-shell";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/db";
+import { prisma } from "@/server/bff/orders";
 
 export const dynamic = "force-dynamic";
 

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AppSelect } from "@/components/app-select";
-import { type FeedbackStatus, feedbackStatusLabels } from "@/shared/feedback";
+import { adminReplyTicket, adminUpdateTicketStatus } from "@/api/support/tickets";
+import { AppSelect } from "@/components/ui/app-select";
+import { type FeedbackStatus, feedbackStatusLabels } from "@/utils/feedback";
 
 const statusOptions = Object.entries(feedbackStatusLabels).map(([value, label]) => ({
   value: value as FeedbackStatus,
@@ -26,38 +27,32 @@ export function FeedbackActions({
   async function updateStatus() {
     setLoading(true);
     setMessage("");
-    const response = await fetch(`/api/admin/tickets/${ticketId}/status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    const data = (await response.json()) as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setMessage(data.error || "更新状态失败");
+    try {
+      await adminUpdateTicketStatus(ticketId, { status });
+      setLoading(false);
+      setMessage("状态已更新");
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "更新状态失败");
       return;
     }
-    setMessage("状态已更新");
-    router.refresh();
   }
 
   async function reply() {
     setLoading(true);
     setMessage("");
-    const response = await fetch(`/api/admin/tickets/${ticketId}/reply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body }),
-    });
-    const data = (await response.json()) as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setMessage(data.error || "回复失败");
+    try {
+      await adminReplyTicket(ticketId, { body });
+      setLoading(false);
+      setBody("");
+      setMessage("回复已发送");
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "回复失败");
       return;
     }
-    setBody("");
-    setMessage("回复已发送");
-    router.refresh();
   }
 
   return (

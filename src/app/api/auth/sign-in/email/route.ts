@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
-import { findUserByEmail, getStore } from "@/server/mock-store";
+import { findUserByEmail, getStore } from "@/server/bff/mock-store";
 import { jsonError } from "@/server/http";
+import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/auth/sign-in/email");
+  }
+
   const payload = (await request.json()) as {
     email?: string;
     password?: string;

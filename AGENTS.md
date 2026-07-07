@@ -7,5 +7,5 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- BEGIN:zroimg-project-rules -->
 # Project rules
 
-Before writing or refactoring code in this repository, read `PROJECT_GUIDELINES.md` and follow it.
+Before writing or refactoring code in this repository, read `README.md` and follow it.
 <!-- END:zroimg-project-rules -->

@@ -1,7 +1,12 @@
-import { createMockUser, findUserByEmail, getStore } from "@/server/mock-store";
+import { createMockUser, findUserByEmail, getStore } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
+import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/auth/register");
+  }
+
   const payload = (await request.json()) as {
     username?: string;
     email?: string;

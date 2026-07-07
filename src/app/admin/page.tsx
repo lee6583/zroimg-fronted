@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { AdminShell } from "@/components/admin-shell";
-import { StatCard } from "@/components/stat-card";
+import { AdminShell } from "@/components/layout/admin-shell";
+import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/db";
-import { feedbackStatusLabels } from "@/shared/feedback";
+import { prisma } from "@/server/bff/orders";
+import { feedbackStatusLabels } from "@/utils/feedback";
 import styles from "./admin.module.css";
 
 export const dynamic = "force-dynamic";

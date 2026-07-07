@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { CheckInStatus } from "@/server/checkins";
+import { claimCheckIn } from "@/api/rewards/checkin";
+import type { CheckInStatus } from "@/types/checkin";
 import styles from "./check-in-card.module.css";
 
 const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
@@ -64,21 +65,21 @@ export function CheckInCard({
   async function claim() {
     setLoading(true);
     setMessage("");
-    const response = await fetch("/api/checkins", { method: "POST" });
-    const data = await response.json();
-    setLoading(false);
-    if (!response.ok) {
-      setMessage(data.error || "签到失败");
+    try {
+      const data = await claimCheckIn();
+      setLoading(false);
+      const nextStatus = data.checkIn as CheckInStatus;
+      setStatus(nextStatus);
+      setMessage("");
+      setClaimedCredits(nextStatus.dailyCredits);
+      setRewardAnimationKey((current) => current + 1);
+      onClaimed?.(nextStatus.dailyCredits);
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "签到失败");
       return;
     }
-
-    const nextStatus = data.checkIn as CheckInStatus;
-    setStatus(nextStatus);
-    setMessage("");
-    setClaimedCredits(nextStatus.dailyCredits);
-    setRewardAnimationKey((current) => current + 1);
-    onClaimed?.(nextStatus.dailyCredits);
-    router.refresh();
   }
 
   return (

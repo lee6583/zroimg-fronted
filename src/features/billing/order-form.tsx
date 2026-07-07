@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AppSelect } from "@/components/app-select";
+import { createOrder as createOrderRequest } from "@/api/orders";
+import { AppSelect } from "@/components/ui/app-select";
 import {
   calculateCustomCredits,
   CUSTOM_CREDITS_PER_CNY,
   CUSTOM_MAX_AMOUNT_CNY,
   CUSTOM_MIN_AMOUNT_CNY,
-} from "@/shared/credits";
+} from "@/utils/credits";
 
 type Package = {
   code: string;
@@ -36,10 +37,8 @@ export function OrderForm({ packages }: { packages: Package[] }) {
       setLoading(false);
       return;
     }
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
+    try {
+      const data = await createOrderRequest(
         mode === "package"
           ? { mode, packageCode, paymentType }
           : {
@@ -47,18 +46,16 @@ export function OrderForm({ packages }: { packages: Package[] }) {
               amountCny: normalizedCustomAmount,
               paymentType,
             },
-      ),
-    });
-    const data = await response.json();
-    setLoading(false);
-    if (!response.ok) {
-      setMessage(data.error || "创建订单失败");
-      return;
-    }
-    if (data.order?.payUrl) {
-      window.location.href = data.order.payUrl;
-    } else {
-      setMessage("订单已创建，但支付地址为空，请检查易支付配置。");
+      );
+      setLoading(false);
+      if (data.order?.payUrl) {
+        window.location.href = data.order.payUrl;
+      } else {
+        setMessage("订单已创建，但支付地址为空，请检查易支付配置。");
+      }
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "创建订单失败");
     }
   }
 

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { getCheckInStatus } from "@/server/checkins";
-import { prisma } from "@/server/db";
+import { getCheckInStatus } from "@/server/bff/account";
+import { prisma } from "@/server/bff/orders";
 import { DashboardOverview } from "./dashboard-overview";
 import styles from "./dashboard.module.css";
 

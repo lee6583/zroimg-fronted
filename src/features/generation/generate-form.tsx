@@ -19,7 +19,20 @@ import {
 } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { AppSelect } from "@/components/app-select";
+import {
+  createGenerationConversation,
+  deleteGenerationConversation,
+  fetchConversationTasks,
+  fetchGenerationConversations,
+  updateGenerationConversation,
+  type GenerationConversationApiItem,
+} from "@/api/generation/conversations";
+import {
+  createGenerationTask,
+  uploadInputMedia,
+  type UploadedMediaApiItem,
+} from "@/api/generation/tasks";
+import { AppSelect } from "@/components/ui/app-select";
 import {
   getLocalGenerationProvider,
   hasUsableLocalGenerationProvider,
@@ -27,7 +40,7 @@ import {
   runLocalImageGeneration,
   saveLocalGenerationTask,
   type LocalGenerationProviderConfig,
-} from "@/shared/local-generation";
+} from "@/utils/local-generation";
 import styles from "./generate-form.module.css";
 
 type UploadedMedia = {
@@ -59,19 +72,6 @@ type TaskItem = {
   createdAt: string;
   source?: "platform" | "local";
   imageUrls?: string[];
-};
-
-type RawConversation = {
-  id: string;
-  title: string;
-  taskCount?: number;
-  latestTaskStatus?: string | null;
-  latestTaskCost?: number | null;
-  lastTaskAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  _count?: { tasks: number };
-  tasks?: Array<{ status: string; costCredits: number }>;
 };
 
 type Mode = "text" | "edit";
@@ -187,7 +187,7 @@ function groupConversationsByDate(conversations: ConversationItem[]) {
   return groups;
 }
 
-function normalizeConversation(raw: RawConversation): ConversationItem {
+function normalizeConversation(raw: GenerationConversationApiItem): ConversationItem {
   const latestTask = raw.tasks?.[0];
   return {
     id: raw.id,
@@ -205,10 +205,12 @@ async function uploadFile(file: File) {
   const form = new FormData();
   form.set("file", file);
   form.set("kind", "input");
-  const response = await fetch("/api/media/upload", { method: "POST", body: form });
-  const data = await response.json();
-  if (!response.ok) return null;
-  return { ...(data.media as UploadedMedia), file };
+  try {
+    const data = await uploadInputMedia(form);
+    return { ...(data.media as UploadedMediaApiItem), file };
+  } catch {
+    return null;
+  }
 }
 
 function createLocalInput(file: File): UploadedMedia {
@@ -339,20 +341,21 @@ export function GenerateForm({
     if (!activeConversationId || !pendingTaskSignature) return;
 
     const timer = window.setInterval(async () => {
-      const response = await fetch(`/api/generation-conversations/${activeConversationId}/tasks`);
-      const data = (await response.json()) as { tasks?: TaskItem[] };
-      if (!response.ok) return;
+      try {
+        const data = await fetchConversationTasks(activeConversationId);
+        const nextTasks = Array.isArray(data) ? data : data.tasks ?? [];
+        setTasks(nextTasks as TaskItem[]);
 
-      const nextTasks = data.tasks ?? [];
-      setTasks(nextTasks);
+        const stillPending = nextTasks.some((task) => task.status === "queued" || task.status === "running");
+        if (stillPending) return;
 
-      const stillPending = nextTasks.some((task) => task.status === "queued" || task.status === "running");
-      if (stillPending) return;
-
-      const conversationsResponse = await fetch("/api/generation-conversations");
-      const conversationsData = (await conversationsResponse.json()) as { conversations?: RawConversation[] };
-      if (conversationsResponse.ok) {
-        setConversations((conversationsData.conversations ?? []).map(normalizeConversation));
+        const conversationsData = await fetchGenerationConversations();
+        const nextConversations = Array.isArray(conversationsData)
+          ? conversationsData
+          : conversationsData.conversations ?? [];
+        setConversations(nextConversations.map(normalizeConversation));
+      } catch {
+        return;
       }
     }, 2500);
 
@@ -364,36 +367,35 @@ export function GenerateForm({
   }
 
   async function refreshConversations() {
-    const response = await fetch("/api/generation-conversations");
-    const data = (await response.json()) as { conversations?: RawConversation[] };
-    if (response.ok) {
-      setConversations((data.conversations ?? []).map(normalizeConversation));
+    try {
+      const data = await fetchGenerationConversations();
+      const nextConversations = Array.isArray(data) ? data : data.conversations ?? [];
+      setConversations(nextConversations.map(normalizeConversation));
+    } catch {
+      return;
     }
   }
 
   async function createConversation() {
     setMessage("");
-    const response = await fetch("/api/generation-conversations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "新对话" }),
-    });
-    const data = (await response.json()) as { conversation?: RawConversation; error?: string };
-    if (!response.ok) {
-      setMessage(data.error || "新建对话失败");
+    try {
+      const data = await createGenerationConversation({ title: "新对话" });
+      if (!data.conversation) {
+        setMessage("新建对话失败");
+        return null;
+      }
+
+      const conversation = normalizeConversation(data.conversation);
+      setConversations((current) => [conversation, ...current.filter((item) => item.id !== conversation.id)]);
+      setActiveConversationId(conversation.id);
+      setTasks([]);
+      setPrompt("");
+      setConversationPanelOpen(false);
+      return conversation;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "新建对话失败");
       return null;
     }
-    if (!data.conversation) {
-      setMessage("新建对话失败");
-      return null;
-    }
-    const conversation = normalizeConversation(data.conversation);
-    setConversations((current) => [conversation, ...current.filter((item) => item.id !== conversation.id)]);
-    setActiveConversationId(conversation.id);
-    setTasks([]);
-    setPrompt("");
-    setConversationPanelOpen(false);
-    return conversation;
   }
 
   async function selectConversation(id: string) {
@@ -401,12 +403,11 @@ export function GenerateForm({
     setConversationPanelOpen(false);
     setMessage("");
     setEditingConversationId("");
-    const response = await fetch(`/api/generation-conversations/${id}/tasks`);
-    const data = (await response.json()) as { tasks?: TaskItem[]; error?: string };
-    if (response.ok) {
-      setTasks(data.tasks ?? []);
-    } else {
-      setMessage(data.error || "加载对话失败");
+    try {
+      const data = await fetchConversationTasks(id);
+      setTasks((Array.isArray(data) ? data : data.tasks ?? []) as TaskItem[]);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载对话失败");
     }
   }
 
@@ -425,34 +426,34 @@ export function GenerateForm({
 
     setPendingConversationId(id);
     setMessage("");
-    const response = await fetch(`/api/generation-conversations/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
-    });
-    const data = (await response.json()) as { conversation?: RawConversation; error?: string };
-    setPendingConversationId("");
+    try {
+      const data = await updateGenerationConversation(id, { title });
+      setPendingConversationId("");
+      if (!data.conversation) {
+        setMessage("修改对话名称失败");
+        return;
+      }
 
-    if (!response.ok || !data.conversation) {
-      setMessage(data.error || "修改对话名称失败");
+      const conversation = normalizeConversation(data.conversation);
+      setConversations((current) => current.map((item) => (item.id === id ? conversation : item)));
+      setEditingConversationId("");
+      setEditingTitle("");
+    } catch (error) {
+      setPendingConversationId("");
+      setMessage(error instanceof Error ? error.message : "修改对话名称失败");
       return;
     }
-
-    const conversation = normalizeConversation(data.conversation);
-    setConversations((current) => current.map((item) => (item.id === id ? conversation : item)));
-    setEditingConversationId("");
-    setEditingTitle("");
   }
 
   async function deleteConversation(id: string) {
     setPendingConversationId(id);
     setMessage("");
-    const response = await fetch(`/api/generation-conversations/${id}`, { method: "DELETE" });
-    const data = (await response.json()) as { error?: string };
-    setPendingConversationId("");
-
-    if (!response.ok) {
-      setMessage(data.error || "删除对话失败");
+    try {
+      await deleteGenerationConversation(id);
+      setPendingConversationId("");
+    } catch (error) {
+      setPendingConversationId("");
+      setMessage(error instanceof Error ? error.message : "删除对话失败");
       return;
     }
 
@@ -615,10 +616,7 @@ export function GenerateForm({
       return;
     }
 
-    const response = await fetch("/api/generations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const data = await createGenerationTask({
         conversationId,
         prompt: prompt.trim(),
         mode,
@@ -627,13 +625,15 @@ export function GenerateForm({
         size,
         imageCount,
         inputMediaIds: mode === "edit" ? inputs.map((item) => item.id) : [],
-      }),
-    });
-    const data = (await response.json()) as { task?: TaskItem; error?: string };
+      }).catch((error) => {
+        setLoading(false);
+        setMessage(error instanceof Error ? error.message : "创建任务失败");
+        return null;
+      });
+
     setLoading(false);
 
-    if (!response.ok || !data.task) {
-      setMessage(data.error || "创建任务失败");
+    if (!data?.task) {
       return;
     }
 

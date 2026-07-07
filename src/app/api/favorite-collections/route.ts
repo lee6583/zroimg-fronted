@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { createFavoriteCollection, listFavoriteCollections } from "@/server/favorites";
+import { createFavoriteCollection, listFavoriteCollections } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function GET() {

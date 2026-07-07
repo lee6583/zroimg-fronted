@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, ImageIcon, WalletCards } from "lucide-react";
 import { useState } from "react";
 import { CheckInCard } from "@/features/dashboard/check-in-card";
-import type { CheckInStatus } from "@/server/checkins";
+import type { CheckInStatus } from "@/types/checkin";
 import styles from "./dashboard.module.css";
 
 function MetricCard({
