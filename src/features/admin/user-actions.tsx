@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { adjustUserCredits, updateUserStatus } from "@/api/admin/users";
 
 export function UserActions({ userId, status }: { userId: string; status: "active" | "banned" }) {
   const [amount, setAmount] = useState(100);
@@ -8,25 +9,23 @@ export function UserActions({ userId, status }: { userId: string; status: "activ
   const [message, setMessage] = useState("");
 
   async function adjustCredits() {
-    const response = await fetch(`/api/admin/users/${userId}/credits`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount, reason }),
-    });
-    const data = await response.json();
-    setMessage(response.ok ? "已调整" : data.error || "调整失败");
-    if (response.ok) window.location.reload();
+    try {
+      await adjustUserCredits(userId, { amount, reason });
+      setMessage("已调整");
+      window.location.reload();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "调整失败");
+    }
   }
 
   async function toggleStatus() {
-    const response = await fetch(`/api/admin/users/${userId}/status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: status === "active" ? "banned" : "active" }),
-    });
-    const data = await response.json();
-    setMessage(response.ok ? "已更新" : data.error || "更新失败");
-    if (response.ok) window.location.reload();
+    try {
+      await updateUserStatus(userId, { status: status === "active" ? "banned" : "active" });
+      setMessage("已更新");
+      window.location.reload();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "更新失败");
+    }
   }
 
   return (

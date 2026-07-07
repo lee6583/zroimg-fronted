@@ -3,12 +3,13 @@
 import { Eye, EyeOff, KeyRound, LockKeyhole, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { updateAccountPassword, updateAccountProfile } from "@/api/account/settings";
 import {
   clearLocalGenerationProvider,
   getLocalGenerationProvider,
   hasUsableLocalGenerationProvider,
   saveLocalGenerationProvider,
-} from "@/shared/local-generation";
+} from "@/utils/local-generation";
 import styles from "./account-settings-form.module.css";
 
 type AccountSettingsFormProps = {
@@ -58,40 +59,35 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
     formData.set("username", profileUsername);
     formData.set("bio", profileBio);
 
-    const response = await fetch("/api/account/profile", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    setProfileLoading(false);
-    if (!response.ok) {
-      setProfileMessage(data.error || "保存失败");
+    try {
+      await updateAccountProfile(formData);
+      setProfileLoading(false);
+      setProfileMessage("资料已保存");
+      router.refresh();
+    } catch (error) {
+      setProfileLoading(false);
+      setProfileMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-    setProfileMessage("资料已保存");
-    router.refresh();
   }
 
   async function updatePassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPasswordLoading(true);
     setPasswordMessage("");
-    const response = await fetch("/api/account/password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
-    });
-    const data = await response.json();
-    setPasswordLoading(false);
-    if (!response.ok) {
-      setPasswordMessage(data.error || "修改密码失败");
+    try {
+      await updateAccountPassword({ currentPassword, newPassword, confirmPassword });
+      setPasswordLoading(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMessage("密码已更新");
+      router.refresh();
+    } catch (error) {
+      setPasswordLoading(false);
+      setPasswordMessage(error instanceof Error ? error.message : "修改密码失败");
       return;
     }
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordMessage("密码已更新");
-    router.refresh();
   }
 
   function saveLocalProvider(event: React.FormEvent<HTMLFormElement>) {

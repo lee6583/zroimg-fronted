@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Gift, Hash, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { getSliderToken, registerAccount, sendRegisterCode } from "@/api/auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
 import styles from "./auth-form.module.css";
 
@@ -13,20 +14,53 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [verified, setVerified] = useState(false);
+  const [sliderToken, setSliderToken] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [loading, setLoading] = useState(false);
 
+  function resetSliderVerification() {
+    setVerified(false);
+    setSliderToken("");
+  }
+
+  async function requestSliderToken() {
+    if (!email.trim()) {
+      setMessageType("error");
+      setMessage("请先输入邮箱，再完成安全验证");
+      return false;
+    }
+
+    try {
+      setMessage("");
+      const data = await getSliderToken({ email, scene: "register" });
+      setSliderToken(data.sliderToken || data.token || "");
+      setVerified(true);
+      return true;
+    } catch (error) {
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "安全验证失败，请重试");
+      resetSliderVerification();
+      return false;
+    }
+  }
+
   async function sendCode() {
-    setMessage("");
-    const response = await fetch("/api/auth/send-code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await response.json();
-    setMessageType(response.ok ? "success" : "error");
-    setMessage(response.ok ? data.message || "验证码已发送" : data.error || "发送失败");
+    if (!verified || !sliderToken) {
+      setMessageType("error");
+      setMessage("请先完成安全验证");
+      return;
+    }
+
+    try {
+      setMessage("");
+      const data = await sendRegisterCode({ email, sliderToken });
+      setMessageType("success");
+      setMessage(data.message || "验证码已发送");
+    } catch (error) {
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "发送失败");
+    }
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -36,20 +70,18 @@ export function RegisterForm() {
       setMessage("请先完成安全验证");
       return;
     }
-    setLoading(true);
-    setMessage("");
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password, code }),
-    });
-    const data = await response.json();
-    setLoading(false);
-    if (!response.ok) {
+    try {
+      setLoading(true);
+      setMessage("");
+      await registerAccount({ username, email, password, code });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
       setMessageType("error");
-      setMessage(data.error || "注册失败");
+      setMessage(error instanceof Error ? error.message : "注册失败");
       return;
     }
+
     router.push("/login");
   }
 
@@ -87,7 +119,10 @@ export function RegisterForm() {
                 type="email"
                 placeholder="name@example.com"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  resetSliderVerification();
+                }}
                 required
               />
             </span>
@@ -131,7 +166,7 @@ export function RegisterForm() {
             <ShieldCheck className={styles.authForm__verificationIcon} />
             <span>安全验证</span>
           </div>
-          <SliderVerification verified={verified} onVerified={() => setVerified(true)} />
+          <SliderVerification verified={verified} onVerified={requestSliderToken} />
         </div>
 
         {message ? (

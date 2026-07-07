@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Coins, Download, Heart, ImagePlus, Layers, MessageSquare, Palette, Sparkles } from "lucide-react";
-import { ProductTopNav } from "@/components/product-top-nav";
+import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./landing-page.module.css";
 
 const stats = [

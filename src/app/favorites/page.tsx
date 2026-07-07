@@ -1,7 +1,7 @@
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { FavoriteCollectionsView } from "@/app/favorites/favorites-view";
 import { requireUser } from "@/server/auth";
-import { listFavoriteCollections } from "@/server/favorites";
+import { listFavoriteCollections } from "@/server/bff/account";
 
 export const dynamic = "force-dynamic";
 

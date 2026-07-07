@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { addAuditLog, adjustProfileCredits } from "@/server/mock-store";
+import { addAuditLog, adjustProfileCredits } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {

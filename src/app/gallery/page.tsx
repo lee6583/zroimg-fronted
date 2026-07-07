@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MainNav } from "@/components/nav";
-import { listPublicGalleryImages, normalizeGalleryCategory } from "@/server/gallery";
-import { getMediaSignedUrl } from "@/server/storage";
+import { MainNav } from "@/components/layout/main-nav";
+import { listPublicGalleryImages, normalizeGalleryCategory } from "@/server/bff/generation";
+import { getMediaSignedUrl } from "@/server/bff/generation";
 import styles from "./gallery.module.css";
 
 export const dynamic = "force-dynamic";

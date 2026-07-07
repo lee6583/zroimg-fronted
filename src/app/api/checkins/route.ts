@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { claimDailyCheckIn } from "@/server/checkins";
+import { claimDailyCheckIn } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST() {

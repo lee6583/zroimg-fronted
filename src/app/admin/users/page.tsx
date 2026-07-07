@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/components/layout/admin-shell";
 import { UserActions } from "@/features/admin/user-actions";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/db";
+import { prisma } from "@/server/bff/orders";
 
 export const dynamic = "force-dynamic";
 

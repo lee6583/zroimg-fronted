@@ -1,24 +1,17 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { saveGenerationSettings } from "@/api/admin/settings";
+import type { GenerationProviderAdminConfig } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
-type GenerationProviderSettings = {
-  enabled: boolean;
-  baseUrl: string | null;
-  model: string;
-  apiKeySource: "database" | "env" | "none";
-  hasApiKey: boolean;
-  apiKeyPreview: string | null;
-};
-
-const sourceLabels: Record<GenerationProviderSettings["apiKeySource"], string> = {
+const sourceLabels: Record<GenerationProviderAdminConfig["apiKeySource"], string> = {
   database: "后台数据库",
   env: ".env 兜底",
   none: "未配置",
 };
 
-export function GenerationSettingsForm({ initialSettings }: { initialSettings: GenerationProviderSettings }) {
+export function GenerationSettingsForm({ initialSettings }: { initialSettings: GenerationProviderAdminConfig }) {
   const [settings, setSettings] = useState(initialSettings);
   const [enabled, setEnabled] = useState(initialSettings.enabled);
   const [baseUrl, setBaseUrl] = useState(initialSettings.baseUrl ?? "");
@@ -33,29 +26,24 @@ export function GenerationSettingsForm({ initialSettings }: { initialSettings: G
     setSaving(true);
     setMessage("");
 
-    const response = await fetch("/api/admin/settings/generation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const data = await saveGenerationSettings({
         enabled,
         baseUrl,
         model,
         apiKey,
         clearApiKey,
-      }),
-    });
-    const data = await response.json();
-
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error || "保存失败");
+      }) as { settings: GenerationProviderAdminConfig };
+      setSaving(false);
+      setSettings(data.settings);
+      setApiKey("");
+      setClearApiKey(false);
+      setMessage("已保存，新的生成任务会使用这套配置。");
+    } catch (error) {
+      setSaving(false);
+      setMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-
-    setSettings(data.settings);
-    setApiKey("");
-    setClearApiKey(false);
-    setMessage("已保存，新的生成任务会使用这套配置。");
   }
 
   return (

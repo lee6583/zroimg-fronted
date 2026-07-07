@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { AppSelect } from "@/components/app-select";
+import { AppSelect } from "@/components/ui/app-select";
 import styles from "./history.module.css";
 
 type SortValue = "newest" | "oldest";

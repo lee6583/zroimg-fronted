@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { FileClock, Plus } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { prisma } from "@/server/db";
+import { prisma } from "@/server/bff/orders";
 import styles from "./billing.module.css";
 
 export const dynamic = "force-dynamic";

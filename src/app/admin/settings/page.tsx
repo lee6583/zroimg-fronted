@@ -1,4 +1,4 @@
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/components/layout/admin-shell";
 import { GenerationSettingsForm } from "@/features/admin/generation-settings-form";
 import { CheckInSettingsForm, EasyPaySettingsForm, SmtpSettingsForm } from "@/features/admin/service-settings-forms";
 import { requireAdmin } from "@/server/auth";
@@ -7,7 +7,7 @@ import {
   getEasyPayAdminConfig,
   getGenerationProviderAdminConfig,
   getSmtpAdminConfig,
-} from "@/server/settings";
+} from "@/server/bff/account";
 
 export const dynamic = "force-dynamic";
 

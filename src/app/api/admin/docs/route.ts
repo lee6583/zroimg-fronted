@@ -1,7 +1,7 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { getDocsConfig, updateDocsConfig } from "@/server/docs";
+import { getDocsConfig, updateDocsConfig } from "@/server/bff/content";
 import { jsonError, jsonOk } from "@/server/http";
-import { addAuditLog } from "@/server/mock-store";
+import { addAuditLog } from "@/server/bff/mock-store";
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();

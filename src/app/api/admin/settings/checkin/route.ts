@@ -1,7 +1,7 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
-import { addAuditLog } from "@/server/mock-store";
-import { updateCheckInSettings } from "@/server/settings";
+import { addAuditLog } from "@/server/bff/mock-store";
+import { updateCheckInSettings } from "@/server/bff/account";
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();

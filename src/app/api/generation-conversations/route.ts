@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { createGenerationConversation, listGenerationConversations } from "@/server/generation/conversations";
+import { createGenerationConversation, listGenerationConversations } from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 type SerializedConversationInput = {

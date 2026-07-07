@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 type SliderVerificationProps = {
   verified: boolean;
@@ -68,6 +68,36 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
     setOffset(0);
   }
 
+  const handleWindowPointerMove = useEffectEvent((clientX: number) => {
+    move(clientX);
+  });
+
+  const handleWindowPointerUp = useEffectEvent(() => {
+    stop();
+  });
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    function handlePointerMove(event: PointerEvent) {
+      handleWindowPointerMove(event.clientX);
+    }
+
+    function handlePointerUp() {
+      handleWindowPointerUp();
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [dragging]);
+
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (verified || verifying) return;
     const nextMaxOffset = getMaxOffset();
@@ -93,7 +123,7 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
   return (
     <div
       ref={trackRef}
-      className={`relative h-11 w-full select-none overflow-hidden rounded-lg border transition-colors ${
+      className={`relative h-11 w-full select-none overflow-hidden rounded-lg border transition-colors touch-none ${
         verified ? "border-emerald-500 bg-emerald-50" : "border-line bg-soft"
       }`}
       role="slider"
@@ -103,11 +133,6 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
       aria-valuemax={100}
       aria-valuenow={Math.round(progress)}
       onKeyDown={handleKeyDown}
-      onMouseMove={(event) => move(event.clientX)}
-      onMouseUp={stop}
-      onMouseLeave={stop}
-      onTouchMove={(event) => move(event.touches[0]?.clientX ?? 0)}
-      onTouchEnd={stop}
     >
       <div
         className={`absolute inset-y-0 left-0 ${dragging ? "" : "transition-all duration-300"} ${
@@ -125,8 +150,11 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
           dragging ? "" : "transition-all duration-300"
         } ${verified ? "border-emerald-500 bg-emerald-500 text-white" : "border-line bg-background text-muted"}`}
         style={{ left: verified || verifying ? `calc(100% - ${KNOB_SIZE + 2}px)` : offset + 2 }}
-        onMouseDown={(event) => start(event.clientX)}
-        onTouchStart={(event) => start(event.touches[0]?.clientX ?? 0)}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          start(event.clientX);
+        }}
       >
         {verified ? (
           <Check size={16} />

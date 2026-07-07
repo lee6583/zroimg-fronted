@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { publishGeneratedImage } from "@/server/gallery";
+import { publishGeneratedImage } from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request) {

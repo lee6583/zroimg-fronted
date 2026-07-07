@@ -1,9 +1,28 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
-import { addAuditLog } from "@/server/mock-store";
-import { updateSmtpSettings } from "@/server/settings";
+import { addAuditLog } from "@/server/bff/mock-store";
+import { getSmtpAdminConfig, updateSmtpSettings } from "@/server/bff/account";
+import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+
+export async function GET(request: Request) {
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "GET");
+  }
+
+  const current = await getCurrentUserProfile();
+  if (!current || current.profile.role !== "admin") {
+    return jsonError("无权限", 403);
+  }
+
+  const settings = await getSmtpAdminConfig();
+  return jsonOk({ settings });
+}
 
 export async function POST(request: Request) {
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "PUT");
+  }
+
   const current = await getCurrentUserProfile();
   if (!current || current.profile.role !== "admin") {
     return jsonError("无权限", 403);

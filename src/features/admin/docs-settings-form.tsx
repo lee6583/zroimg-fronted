@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { DocsConfig } from "@/server/docs";
+import { saveDocsConfig } from "@/api/admin/docs";
+import type { DocsConfig } from "@/types/content";
 
 export function DocsSettingsForm({
   initialDocs,
@@ -37,22 +38,20 @@ export function DocsSettingsForm({
       return;
     }
 
-    const response = await fetch("/api/admin/docs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, groups }),
-    });
-    const data = await response.json();
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error || "保存失败");
+    try {
+      const data = await saveDocsConfig({ title, description, groups }) as {
+        docs: { title: string; description: string; groups: DocsConfig["groups"] };
+      };
+      setSaving(false);
+      setTitle(data.docs.title);
+      setDescription(data.docs.description);
+      setGroupsJson(JSON.stringify(data.docs.groups, null, 2));
+      setMessage("文档已保存，前台 /docs 会立即读取最新内容。");
+    } catch (error) {
+      setSaving(false);
+      setMessage(error instanceof Error ? error.message : "保存失败");
       return;
     }
-
-    setTitle(data.docs.title);
-    setDescription(data.docs.description);
-    setGroupsJson(JSON.stringify(data.docs.groups, null, 2));
-    setMessage("文档已保存，前台 /docs 会立即读取最新内容。");
   }
 
   return (

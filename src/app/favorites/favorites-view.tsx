@@ -3,6 +3,11 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderHeart, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  createFavoriteCollection,
+  deleteFavoriteCollection,
+  updateFavoriteCollection,
+} from "@/api/generation/favorites";
 import styles from "./favorites.module.css";
 
 type FavoriteCollectionItem = {
@@ -31,15 +36,10 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/favorite-collections", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.error || "创建合集失败");
+    try {
+      await createFavoriteCollection({ name });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "创建合集失败");
       setLoading(false);
       return;
     }
@@ -79,15 +79,10 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
     setActionId(collectionId);
     setError("");
 
-    const response = await fetch(`/api/favorite-collections/${collectionId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editingName }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.error || "更新合集失败");
+    try {
+      await updateFavoriteCollection(collectionId, { name: editingName });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "更新合集失败");
       setActionId("");
       return;
     }
@@ -105,13 +100,10 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
     setActionId(collectionId);
     setError("");
 
-    const response = await fetch(`/api/favorite-collections/${collectionId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.error || "删除合集失败");
+    try {
+      await deleteFavoriteCollection(collectionId);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "删除合集失败");
       setActionId("");
       return;
     }

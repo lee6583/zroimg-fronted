@@ -1,8 +1,13 @@
-import { getStore, nextId } from "@/server/mock-store";
+import { getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
+import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function POST(request: Request) {
-  const { email } = (await request.json()) as { email?: string };
+  if (hasJavaApiBaseUrl()) {
+    return proxyRequestToJavaApi(request, "/v1/auth/slider-token");
+  }
+
+  const { email } = (await request.json()) as { email?: string; scene?: string };
   const normalizedEmail = email?.trim().toLowerCase();
 
   if (!normalizedEmail) {

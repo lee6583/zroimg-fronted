@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { MainNav } from "@/components/nav";
-import { prisma } from "@/server/db";
+import { MainNav } from "@/components/layout/main-nav";
+import { prisma } from "@/server/bff/orders";
 import styles from "./pricing.module.css";
 
 export const dynamic = "force-dynamic";

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/components/layout/admin-shell";
 import { FeedbackActions } from "@/features/admin/feedback-actions";
 import { requireAdmin } from "@/server/auth";
-import { listAdminFeedbackTickets } from "@/server/feedback";
-import { feedbackStatusLabels, feedbackTypeLabels } from "@/shared/feedback";
+import { listAdminFeedbackTickets } from "@/server/bff/account";
+import { feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
 
 export const dynamic = "force-dynamic";
 

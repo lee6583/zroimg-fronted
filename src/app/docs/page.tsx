@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
-import { MainNav } from "@/components/nav";
-import { getDocsConfig } from "@/server/docs";
+import { MainNav } from "@/components/layout/main-nav";
+import { getDocsConfig } from "@/server/bff/content";
 import styles from "./docs.module.css";
 
 export const dynamic = "force-dynamic";

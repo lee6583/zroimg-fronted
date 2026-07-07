@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { AccountSettingsForm } from "@/features/settings/account-settings-form";
 import { requireUser } from "@/server/auth";
 import styles from "./settings.module.css";

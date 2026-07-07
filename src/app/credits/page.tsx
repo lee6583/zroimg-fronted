@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Coins, ReceiptText, WalletCards } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { OrderForm } from "@/features/billing/order-form";
 import { requireUser } from "@/server/auth";
-import { prisma } from "@/server/db";
+import { prisma } from "@/server/bff/orders";
 
 export const dynamic = "force-dynamic";
 

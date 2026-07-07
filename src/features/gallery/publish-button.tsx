@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { publishGalleryImage } from "@/api/generation/gallery";
 import styles from "./publish-button.module.css";
 
 export function PublishGalleryButton({
@@ -19,15 +20,10 @@ export function PublishGalleryButton({
     setLoading(true);
     setLabel("发布中");
 
-    const response = await fetch("/api/gallery/publish", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ generatedImageId }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setLabel(data.error || "发布失败");
+    try {
+      await publishGalleryImage({ generatedImageId });
+    } catch (error) {
+      setLabel(error instanceof Error ? error.message : "发布失败");
       setLoading(false);
       return;
     }

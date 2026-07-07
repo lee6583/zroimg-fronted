@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchGenerationTask } from "@/api/generation/tasks";
 import styles from "./task-poller.module.css";
 
 const statusLabels: Record<string, string> = {
@@ -16,12 +17,14 @@ export function TaskPoller({ taskId, initialStatus }: { taskId: string; initialS
   useEffect(() => {
     if (status === "succeeded" || status === "failed") return;
     const timer = window.setInterval(async () => {
-      const response = await fetch(`/api/generations/${taskId}`);
-      if (!response.ok) return;
-      const data = await response.json();
-      setStatus(data.task.status);
-      if (data.task.status === "succeeded" || data.task.status === "failed") {
-        window.location.reload();
+      try {
+        const data = await fetchGenerationTask(taskId);
+        setStatus(data.task.status);
+        if (data.task.status === "succeeded" || data.task.status === "failed") {
+          window.location.reload();
+        }
+      } catch {
+        return;
       }
     }, 2500);
     return () => window.clearInterval(timer);

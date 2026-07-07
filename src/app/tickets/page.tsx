@@ -1,7 +1,8 @@
-import { AppShell } from "@/components/app-shell";
-import { FeedbackPanel, type TicketItem } from "@/features/tickets/feedback-panel";
+import { AppShell } from "@/components/layout/app-shell";
+import { FeedbackPanel } from "@/features/tickets/feedback-panel";
 import { requireUser } from "@/server/auth";
-import { listFeedbackTicketsForUser } from "@/server/feedback";
+import { listFeedbackTicketsForUser } from "@/server/bff/account";
+import type { TicketItem } from "@/types/feedback";
 
 export const dynamic = "force-dynamic";
 

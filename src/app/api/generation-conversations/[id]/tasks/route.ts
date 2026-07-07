@@ -1,7 +1,7 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { requireOwnedConversation } from "@/server/generation/conversations";
-import { listGenerationTasks } from "@/server/generation/tasks";
-import { getMediaSignedUrl } from "@/server/storage";
+import { requireOwnedConversation } from "@/server/bff/generation";
+import { listGenerationTasks } from "@/server/bff/generation";
+import { getMediaSignedUrl } from "@/server/bff/generation";
 import { jsonError, jsonOk } from "@/server/http";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
