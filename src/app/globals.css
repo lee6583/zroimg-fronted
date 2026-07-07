@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+.bg-grid-subtle {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--line) 50%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--line) 50%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 95%);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="dark"] .glass-panel {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.shadow-premium {
+  box-shadow: 0 24px 80px -10px rgba(0, 0, 0, 0.06), 0 8px 24px -6px rgba(0, 0, 0, 0.03);
+}

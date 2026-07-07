@@ -1,0 +1,72 @@
+.historyImageActions {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.historyImageActions__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.historyImageActions__iconButton {
+  display: inline-grid;
+  width: 2.125rem;
+  height: 2.125rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--foreground);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.historyImageActions__iconButton:hover {
+  background: var(--soft);
+}
+
+.historyImageActions__panel {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0.5rem;
+}
+
+.historyImageActions__selectTrigger {
+  min-height: 2.125rem;
+  border-width: 1px;
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.historyImageActions__saveButton {
+  min-height: 2.125rem;
+  border: 1px solid var(--foreground);
+  border-radius: 0.375rem;
+  background: var(--foreground);
+  padding: 0 0.75rem;
+  color: var(--background);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.historyImageActions__saveButton:hover {
+  background: color-mix(in oklab, var(--foreground) 86%, var(--background));
+}
+
+.historyImageActions__saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.historyImageActions__message {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}

@@ -1,0 +1,73 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Lock, Mail } from "lucide-react";
+import { loginWithEmail } from "@/api/auth";
+import styles from "./auth-form.module.css";
+
+export function LoginForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      setLoading(true);
+      setMessage("");
+      await loginWithEmail({ email, password });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setMessage(error instanceof Error ? error.message : "登录失败");
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  }
+
+  return (
+    <form onSubmit={onSubmit} className={styles.authForm}>
+      <div className={styles.authForm__fields}>
+        <label className={styles.authForm__field}>
+          <span className={styles.authForm__fieldLabel}>邮箱</span>
+          <span className={styles.authForm__control}>
+            <Mail className={styles.authForm__icon} />
+            <input
+              className={styles.authForm__input}
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </span>
+        </label>
+
+        <label className={styles.authForm__field}>
+          <span className={styles.authForm__fieldLabel}>密码</span>
+          <span className={styles.authForm__control}>
+            <Lock className={styles.authForm__icon} />
+            <input
+              className={styles.authForm__input}
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+          </span>
+        </label>
+
+        {message ? <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>{message}</p> : null}
+      </div>
+
+      <button className={styles.authForm__submit} disabled={loading}>
+        {loading ? "登录中" : "登录"}
+      </button>
+    </form>
+  );
+}

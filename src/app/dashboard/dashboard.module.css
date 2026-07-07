@@ -1,0 +1,145 @@
+.dashboard {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.dashboard__hero {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.dashboard__heroGrid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.dashboard__eyebrow {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dashboard__title {
+  max-width: 48rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.85rem, 5vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.dashboard__heroActions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-start;
+}
+
+.dashboard__summary {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.dashboard__summaryMain {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard__metrics {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard__metric {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.dashboard__metricHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard__metricValue {
+  margin-top: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 6vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.dashboard__metricIcon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--soft);
+}
+
+.dashboard__creationCard {
+  display: grid;
+  gap: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.dashboard__creationTitle {
+  margin-top: 0.25rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.dashboard__creationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard__hero {
+    padding: 2rem;
+  }
+
+  .dashboard__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard__heroGrid {
+    grid-template-columns: 1fr 300px;
+    align-items: end;
+  }
+
+  .dashboard__heroActions {
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard__summary {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    align-items: stretch;
+  }
+
+  .dashboard__creationCard {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
