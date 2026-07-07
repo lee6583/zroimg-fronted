@@ -225,9 +225,9 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
             <span className={styles.favorites__cardIcon}>
               <FolderHeart size={23} />
             </span>
-            <div className={styles.favorites__cardText}>
-              <h2 className={styles.favorites__cardTitle}>还没有合集</h2>
-              <p className={styles.favorites__cardMeta}>点击右上角新建一个合集</p>
+            <div className={styles.favorites__emptyText}>
+              <h2 className={styles.favorites__emptyTitle}>还没有合集</h2>
+              <p className={styles.favorites__emptyMeta}>点击右上角新建一个合集</p>
             </div>
           </div>
         ) : null}
