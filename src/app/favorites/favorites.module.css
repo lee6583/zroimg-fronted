@@ -106,17 +106,24 @@
 
 .favorites__grid {
   display: grid;
+  width: 100%;
   gap: 1rem;
 }
 
 .favorites__gridEmpty {
-  max-width: 25rem;
+  width: min(calc(100vw - 2rem), 28rem);
+  max-width: 100%;
+}
+
+.favorites__grid.favorites__gridEmpty {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .favorites__card,
 .favorites__empty {
   position: relative;
   display: flex;
+  width: 100%;
   min-height: 8.6rem;
   align-items: flex-start;
   gap: 1rem;
@@ -125,6 +132,15 @@
   background: var(--panel);
   padding: 1.45rem;
   box-shadow: 0 2px 9px rgba(0, 0, 0, 0.04);
+}
+
+.favorites__empty {
+  display: grid;
+  min-height: 13rem;
+  align-content: center;
+  justify-items: center;
+  gap: 0.9rem;
+  text-align: center;
 }
 
 .favorites__card {
@@ -147,6 +163,7 @@
 }
 
 .favorites__cardText {
+  flex: 1;
   min-width: 0;
   padding-top: 0.25rem;
 }
@@ -166,6 +183,29 @@
   margin-top: 0.35rem;
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.favorites__emptyText {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.favorites__emptyTitle {
+  color: var(--foreground);
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.favorites__emptyMeta {
+  max-width: 16rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: normal;
 }
 
 .favorites__cardActions {

@@ -41,7 +41,7 @@ export async function updateGenerationProviderConfig(input: {
 export async function getSmtpAdminConfig(): Promise<SmtpAdminConfig> {
   if (hasJavaApiBaseUrl()) {
     try {
-      return await getJavaApiData<SmtpAdminConfig>("/v1/admin/settings/smtp");
+      return await getJavaApiData<SmtpAdminConfig>("/admin/settings/smtp");
     } catch {
       // Java 后端尚未完全接通时，保留 mock 数据兜底，避免后台页直接报错。
     }

@@ -6,7 +6,7 @@ import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
 
 export async function GET(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "GET");
+    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "GET");
   }
 
   const current = await getCurrentUserProfile();
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "PUT");
+    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "PUT");
   }
 
   const current = await getCurrentUserProfile();
