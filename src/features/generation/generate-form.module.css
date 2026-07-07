@@ -247,6 +247,12 @@
   overflow-y: auto;
   border-right: 1px solid var(--line);
   background: var(--background);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.generateForm__settingsPanel::-webkit-scrollbar {
+  display: none;
 }
 
 .generateForm__settingGroup {
