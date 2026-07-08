@@ -2,6 +2,7 @@ import { request } from "@/utils/request";
 import type {
   LoginWithEmailRequest,
   LoginWithEmailResponse,
+  LogoutAccountResponse,
   RegisterAccountRequest,
   RegisterAccountResponse,
   SendRegisterCodeRequest,
@@ -42,9 +43,17 @@ function loginWithEmail(data: LoginWithEmailRequest) {
   });
 }
 
+function logoutAccount() {
+  return request<LogoutAccountResponse>({
+    url: "/api/auth/logout",
+    method: "POST",
+  });
+}
+
 export const authApi = {
   getSliderToken,
   sendRegisterCode,
   registerAccount,
   loginWithEmail,
+  logoutAccount,
 };

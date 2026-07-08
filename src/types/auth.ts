@@ -37,3 +37,5 @@ export type LoginWithEmailRequest = {
 };
 
 export type LoginWithEmailResponse = OkResponse;
+
+export type LogoutAccountResponse = OkResponse;
