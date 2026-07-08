@@ -108,3 +108,10 @@ export function loginWithEmail(data: {
     data,
   });
 }
+
+export function logoutAccount() {
+  return request<{ ok?: boolean }>({
+    url: "/api/auth/logout",
+    method: "POST",
+  });
+}
