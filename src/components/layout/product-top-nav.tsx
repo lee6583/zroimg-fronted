@@ -9,10 +9,9 @@ const publicCenterLinks = [
   { label: "作品画廊", href: "/gallery" },
   { label: "定价", href: "/pricing" },
   { label: "文档", href: "/docs" },
-  { label: "创作优势", href: "/#advantages" },
 ];
 
-const appCenterLinks = publicCenterLinks.filter((item) => item.label !== "创作优势");
+const appCenterLinks = publicCenterLinks;
 const adminCenterLink = { label: "管理", href: "/admin" };
 
 function avatarLabel(name?: string | null) {
@@ -27,7 +26,7 @@ export async function ProductTopNav() {
     <header className={styles.productTopNav}>
       <div className={styles.productTopNav__inner}>
         <Link href="/" className={styles.productTopNav__brand}>
-          <span className={styles.productTopNav__brandText}>ZroCodeImg</span>
+          <span className={styles.productTopNav__brandText}>ZroImg</span>
         </Link>
 
         <nav className={styles.productTopNav__center}>

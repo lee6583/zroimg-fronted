@@ -7,7 +7,7 @@ export default function RegisterPage() {
       <header className="fixed inset-x-0 top-0 z-20 border-b border-line bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="font-serif text-xl font-medium tracking-tight">
-            ZroCodeImg
+            ZroImg
           </Link>
           <Link href="/login" className="text-sm font-medium text-muted transition hover:text-foreground">
             登录

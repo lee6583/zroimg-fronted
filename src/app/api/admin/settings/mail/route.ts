@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     user: payload.user,
     password: payload.password,
     clearPassword: payload.clearPassword,
-    from: payload.from?.trim() || "ZroCodeImg <noreply@zrocodeimg.dev>",
+    from: payload.from?.trim() || "ZroImg <noreply@zrocodeimg.dev>",
   });
 
   addAuditLog({

@@ -1,0 +1,30 @@
+{
+  "tickets": [
+    {
+      "id": "ticket_mock_001",
+      "type": "generation",
+      "status": "open",
+      "title": "生成任务一直排队",
+      "lastMessageAt": "2026-07-04T09:00:00.000Z"
+    },
+    {
+      "id": "ticket_mock_002",
+      "type": "billing",
+      "status": "resolved",
+      "title": "积分到账延迟",
+      "lastMessageAt": "2026-07-02T15:20:00.000Z"
+    }
+  ],
+  "messages": [
+    {
+      "ticketId": "ticket_mock_001",
+      "sender": "user",
+      "content": "我创建的任务一直显示排队中，可以帮我看一下吗？"
+    },
+    {
+      "ticketId": "ticket_mock_001",
+      "sender": "admin",
+      "content": "我们已经收到反馈，会优先检查任务队列状态。"
+    }
+  ]
+}

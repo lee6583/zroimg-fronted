@@ -1,12 +1,22 @@
 import Link from "next/link";
-import { ArrowRight, Coins, Download, Heart, ImagePlus, Layers, MessageSquare, Palette, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Coins,
+  Download,
+  ImagePlus,
+  Layers,
+  MessageSquare,
+  Palette,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./landing-page.module.css";
 
 const stats = [
-  { value: "灵感落笔", label: "皆可成像" },
-  { value: "一念之间", label: "万象生成" },
-  { value: "旧图新绘", label: "再起风格" },
+  { value: "10K+", label: "已生成图片" },
+  { value: "500+", label: "活跃用户" },
+  { value: "95%", label: "满意度" },
 ];
 
 const features = [
@@ -43,17 +53,26 @@ const features = [
 ];
 
 const steps = [
-  { title: "写下灵感", text: "一句话描述你想看见的画面，也可以从参考图开始。" },
-  { title: "选择方向", text: "选择尺寸、质量和张数，让画面贴近你的使用场景。" },
-  { title: "生成变体", text: "一次获得多种可能，从里面挑出最接近想象的那一张。" },
-  { title: "保存再创作", text: "生成结果会保留在历史中，方便下载、复用和继续编辑。" },
-];
-
-const inspirations = [
-  "灵感落笔之处，皆可成像。",
-  "一念之间，万象生成。",
-  "让想象不止停在脑海里。",
-  "把一句描述，变成一张可以使用的作品。",
+  {
+    icon: Settings,
+    title: "注册账号",
+    text: "几秒钟即可免费注册，无需信用卡。注册后立即获得积分。",
+  },
+  {
+    icon: MessageSquare,
+    title: "描述你的构想",
+    text: "开启对话，描述你想要的画面。持续迭代，直到触动你的灵感。",
+  },
+  {
+    icon: Sparkles,
+    title: "AI 生成作品",
+    text: "AI 解读你的提示词，数秒内产出高质量图像。生成多个变体探索方向。",
+  },
+  {
+    icon: Download,
+    title: "下载分享",
+    text: "将作品高清下载或直接分享。所有图片都保留在画廊中，随时回看。",
+  },
 ];
 
 const advantages = [
@@ -61,14 +80,6 @@ const advantages = [
   "从头像、商品图到海报封面，都能快速探索方向。",
   "每一次生成都会留下记录，满意的图可以继续编辑。",
   "积分按需购买，适合偶尔创作，也适合长期产出。",
-];
-
-const scenes = [
-  "商品主图",
-  "社媒封面",
-  "头像与角色",
-  "海报视觉",
-  "插画草图",
 ];
 
 export function LandingPage() {
@@ -79,16 +90,11 @@ export function LandingPage() {
       <main>
         <section className={styles.landing__hero}>
           <div className={styles.landing__heroInner}>
-            <span className={styles.landing__pill}>
-              灵感落笔之处，皆可成像
-              <ArrowRight size={14} />
-            </span>
-
             <h1 className={styles.landing__heroTitle}>
               一念之间，万象生成
             </h1>
             <p className={styles.landing__heroText}>
-              说出你的画面，上传你的参考，让脑海里的光影、人物、商品和故事，变成真正可见、可下载、可继续创作的图片。
+              输入一句描述，让 AI 创造独一无二的视觉作品。
             </p>
 
             <div className={styles.landing__heroActions}>
@@ -101,13 +107,16 @@ export function LandingPage() {
               </Link>
             </div>
 
-            <div className={styles.landing__stats}>
-              {stats.map((item) => (
-                <div key={item.label}>
-                  <p className={styles.landing__statValue}>{item.value}</p>
-                  <p className={styles.landing__statLabel}>{item.label}</p>
-                </div>
-              ))}
+            <div className={styles.landing__statsWrap}>
+              <p className={styles.landing__statsTitle}>深受全球创作者喜爱</p>
+              <div className={styles.landing__stats}>
+                {stats.map((item) => (
+                  <div key={item.label}>
+                    <p className={styles.landing__statValue}>{item.value}</p>
+                    <p className={styles.landing__statLabel}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -141,36 +150,47 @@ export function LandingPage() {
           <div className={styles.landing__sectionInner}>
             <div className={styles.landing__sectionHeader}>
               <p className={styles.landing__eyebrow}>使用流程</p>
-              <h2 className={styles.landing__sectionTitle}>从一句话到一张图</h2>
+              <h2 className={styles.landing__sectionTitle}>
+                从想法到图片，四步搞定
+              </h2>
+              <p className={styles.landing__sectionText}>
+                无需设计经验，也无需提示词技巧，几分钟即可开始创作。
+              </p>
             </div>
 
-            <div className={styles.landing__stepsGrid}>
-              {steps.map((step, index) => (
-                <div key={step.title} className={styles.landing__stepCard}>
-                  <p className={styles.landing__stepNumber}>Step {String(index + 1).padStart(2, "0")}</p>
-                  <h3 className={styles.landing__stepTitle}>{step.title}</h3>
-                  <p className={styles.landing__cardText}>{step.text}</p>
-                </div>
-              ))}
+            <div className={styles.landing__flow}>
+              <span className={styles.landing__flowLine} aria-hidden="true" />
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div key={step.title} className={styles.landing__flowItem}>
+                    <div className={styles.landing__flowIcon}>
+                      <Icon size={30} strokeWidth={2.2} />
+                    </div>
+                    <div className={styles.landing__flowContent}>
+                      <p className={styles.landing__flowNumber}>
+                        Step {String(index + 1).padStart(2, "0")}
+                      </p>
+                      <h3 className={styles.landing__flowTitle}>
+                        {step.title}
+                      </h3>
+                      <p className={styles.landing__flowText}>{step.text}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
         <section id="advantages" className={styles.landing__section}>
           <div className={styles.landing__advantages}>
-            <div>
+            <div className={styles.landing__advantagesContent}>
               <p className={styles.landing__eyebrow}>创作优势</p>
               <h2 className={styles.landing__sectionTitle}>让灵感更快抵达画面</h2>
-              <p className={styles.landing__advantageText}>
-                不必从空白画布开始，也不必反复寻找素材。输入一句话，选择几张参考图，就能快速获得多个方向，再把满意的结果收藏、下载或继续编辑。
+              <p className={styles.landing__sectionText}>
+                适用广，应用于商品展示、社媒配图、头像角色、海报封面和插画草图等场景。
               </p>
-              <div className={styles.landing__sceneTags}>
-                {scenes.map((item) => (
-                  <span key={item} className={styles.landing__sceneTag}>
-                    {item}
-                  </span>
-                ))}
-              </div>
               <div className={styles.landing__advantageList}>
                 {advantages.map((item) => (
                   <div key={item} className={styles.landing__advantageItem}>
@@ -179,16 +199,14 @@ export function LandingPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className={styles.landing__inspirationCard}>
-              <div className={styles.landing__inspirationList}>
-                {inspirations.map((item) => (
-                  <div key={item} className={styles.landing__inspirationItem}>
-                    <Heart size={16} />
-                    <span>{item}</span>
-                  </div>
-                ))}
+              <div className={styles.landing__vision}>
+                <p className={styles.landing__eyebrow}>推广目标</p>
+                <h3 className={styles.landing__visionTitle}>
+                  创作不再受限于工具
+                </h3>
+                <p className={styles.landing__visionText}>
+                  我们致力于把 AI 图像、视频创作推广到全球，让更多人把灵感带到真实生活与工作场景中。
+                </p>
               </div>
             </div>
           </div>
@@ -199,7 +217,7 @@ export function LandingPage() {
             <div className={styles.landing__footerGrid}>
               <div>
                 <Link href="/" className={styles.landing__brand}>
-                  ZroCodeImg
+                  ZroImg
                 </Link>
               </div>
 
@@ -211,9 +229,6 @@ export function LandingPage() {
                   </Link>
                   <Link href="/credits" className={styles.landing__footerLink}>
                     积分购买
-                  </Link>
-                  <Link href="/#advantages" className={styles.landing__footerLink}>
-                    创作优势
                   </Link>
                   <Link href="mailto:support@zrocodeimg.com" className={styles.landing__footerLink}>
                     联系我们
@@ -238,7 +253,7 @@ export function LandingPage() {
             </div>
 
             <div className={styles.landing__copyright}>
-              © 2026 ZroCodeImg
+              © 2026 ZroImg
             </div>
           </div>
         </footer>
