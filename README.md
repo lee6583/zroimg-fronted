@@ -249,15 +249,24 @@ public/
 
 ### `src/style`
 
-放全局样式资源。
+放全局样式资源，只保留真正跨页面复用的全局样式。
 
-当前包括：
+当前结构建议固定为：
 
-- `tokens.css`：设计令牌。
-- `base.css`：基础样式。
-- `common.css`：公共类。
-- `media.css`：响应式补充。
-- `mixins.css`：通用样式片段。
+- `index.css`：唯一全局入口，负责引入 Tailwind 和其余样式文件。
+- `tokens.css`：设计令牌、颜色、字体、阴影变量。
+- `base.css`：浏览器基础样式、`html/body`、全局过渡。
+- `utilities.css`：工具类，例如滚动条隐藏、背景纹理、阴影、字体工具类。
+- `components/`：可复用视觉组件样式，例如按钮、表单、surface、导航、标题。
+
+规则：
+
+- 不再继续往 `common.css`、`media.css`、`mixins.css` 这类大杂烩文件里堆内容。
+- 变量只放 `tokens.css`。
+- 浏览器和页面基础只放 `base.css`。
+- 工具类只放 `utilities.css`。
+- 可复用视觉组件类统一放 `src/style/components/*`。
+- 页面或业务专属样式继续放各自目录下的 `*.module.css`，不要写回全局样式目录。
 
 规则：
 

@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import "@/style/tokens.css";
-import "@/style/base.css";
-import "@/style/common.css";
-import "@/style/media.css";
-import "@/style/mixins.css";
-import "./globals.css";
+import "@/style/index.css";
 
 export const metadata: Metadata = {
   title: "ZroCode SaaS",
