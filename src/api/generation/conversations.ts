@@ -1,44 +1,58 @@
 import { request } from "@/utils/request";
 import type {
-  GenerationConversationApiItem,
-  GenerationTaskApiItem,
+  CreateGenerationConversationRequest,
+  CreateGenerationConversationResponse,
+  DeleteGenerationConversationResponse,
+  FetchConversationTasksResponse,
+  FetchGenerationConversationsResponse,
+  UpdateGenerationConversationRequest,
+  UpdateGenerationConversationResponse,
 } from "@/types/generation";
 
-export type { GenerationConversationApiItem, GenerationTaskApiItem };
-
-export function fetchGenerationConversations() {
-  return request<{ conversations?: GenerationConversationApiItem[] } | GenerationConversationApiItem[]>({
+function fetchConversations() {
+  return request<FetchGenerationConversationsResponse>({
     url: "/api/generation-conversations",
     method: "GET",
   });
 }
 
-export function createGenerationConversation(data?: { title?: string }) {
-  return request<{ conversation?: GenerationConversationApiItem }>({
+function createConversation(data?: CreateGenerationConversationRequest) {
+  return request<CreateGenerationConversationResponse>({
     url: "/api/generation-conversations",
     method: "POST",
     data,
   });
 }
 
-export function fetchConversationTasks(conversationId: string) {
-  return request<{ tasks?: GenerationTaskApiItem[] } | GenerationTaskApiItem[]>({
+function fetchConversationTasks(conversationId: string) {
+  return request<FetchConversationTasksResponse>({
     url: `/api/generation-conversations/${conversationId}/tasks`,
     method: "GET",
   });
 }
 
-export function updateGenerationConversation(conversationId: string, data: { title: string }) {
-  return request<{ conversation?: GenerationConversationApiItem }>({
+function updateConversation(
+  conversationId: string,
+  data: UpdateGenerationConversationRequest,
+) {
+  return request<UpdateGenerationConversationResponse>({
     url: `/api/generation-conversations/${conversationId}`,
     method: "PATCH",
     data,
   });
 }
 
-export function deleteGenerationConversation(conversationId: string) {
-  return request<{ ok?: boolean }>({
+function deleteConversation(conversationId: string) {
+  return request<DeleteGenerationConversationResponse>({
     url: `/api/generation-conversations/${conversationId}`,
     method: "DELETE",
   });
 }
+
+export const generationConversationsApi = {
+  fetchConversations,
+  createConversation,
+  fetchConversationTasks,
+  updateConversation,
+  deleteConversation,
+};

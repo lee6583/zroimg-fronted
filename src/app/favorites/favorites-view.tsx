@@ -3,11 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderHeart, Pencil, Plus, Trash2 } from "lucide-react";
-import {
-  createFavoriteCollection,
-  deleteFavoriteCollection,
-  updateFavoriteCollection,
-} from "@/api/generation/favorites";
+import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import styles from "./favorites.module.css";
 
 type FavoriteCollectionItem = {
@@ -20,7 +16,11 @@ function joinClassNames(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export function FavoriteCollectionsView({ collections }: { collections: FavoriteCollectionItem[] }) {
+export function FavoriteCollectionsView({
+  collections,
+}: {
+  collections: FavoriteCollectionItem[];
+}) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -37,7 +37,7 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
     setError("");
 
     try {
-      await createFavoriteCollection({ name });
+      await favoriteCollectionsApi.createCollection({ name });
     } catch (error) {
       setError(error instanceof Error ? error.message : "创建合集失败");
       setLoading(false);
@@ -73,14 +73,19 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
     setError("");
   }
 
-  async function saveCollectionName(event: FormEvent<HTMLFormElement>, collectionId: string) {
+  async function saveCollectionName(
+    event: FormEvent<HTMLFormElement>,
+    collectionId: string,
+  ) {
     event.preventDefault();
 
     setActionId(collectionId);
     setError("");
 
     try {
-      await updateFavoriteCollection(collectionId, { name: editingName });
+      await favoriteCollectionsApi.updateCollection(collectionId, {
+        name: editingName,
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : "更新合集失败");
       setActionId("");
@@ -94,14 +99,16 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
   }
 
   async function deleteCollection(collectionId: string) {
-    const confirmed = window.confirm("确定删除这个合集吗？合集里的图片不会被删除。");
+    const confirmed = window.confirm(
+      "确定删除这个合集吗？合集里的图片不会被删除。",
+    );
     if (!confirmed) return;
 
     setActionId(collectionId);
     setError("");
 
     try {
-      await deleteFavoriteCollection(collectionId);
+      await favoriteCollectionsApi.deleteCollection(collectionId);
     } catch (error) {
       setError(error instanceof Error ? error.message : "删除合集失败");
       setActionId("");
@@ -130,7 +137,10 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
       </section>
 
       {creating ? (
-        <form className={styles.favorites__createPanel} onSubmit={createCollection}>
+        <form
+          className={styles.favorites__createPanel}
+          onSubmit={createCollection}
+        >
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -138,17 +148,30 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
             placeholder="输入合集名称"
             autoFocus
           />
-          <button type="submit" disabled={loading} className={styles.favorites__submitButton}>
+          <button
+            type="submit"
+            disabled={loading}
+            className={styles.favorites__submitButton}
+          >
             {loading ? "创建中" : "创建"}
           </button>
-          <button type="button" onClick={cancelCreate} className={styles.favorites__cancelButton}>
+          <button
+            type="button"
+            onClick={cancelCreate}
+            className={styles.favorites__cancelButton}
+          >
             取消
           </button>
           {error ? <p className={styles.favorites__error}>{error}</p> : null}
         </form>
       ) : null}
 
-      <section className={joinClassNames(styles.favorites__grid, collections.length === 0 && styles.favorites__gridEmpty)}>
+      <section
+        className={joinClassNames(
+          styles.favorites__grid,
+          collections.length === 0 && styles.favorites__gridEmpty,
+        )}
+      >
         {collections.map((collection) => (
           <article
             key={collection.id}
@@ -176,17 +199,29 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
                     className={styles.favorites__renameInput}
                     autoFocus
                   />
-                  <button type="submit" disabled={actionId === collection.id} className={styles.favorites__smallButton}>
+                  <button
+                    type="submit"
+                    disabled={actionId === collection.id}
+                    className={styles.favorites__smallButton}
+                  >
                     保存
                   </button>
-                  <button type="button" onClick={cancelEdit} className={styles.favorites__smallButton}>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className={styles.favorites__smallButton}
+                  >
                     取消
                   </button>
                 </form>
               ) : (
-                <h2 className={styles.favorites__cardTitle}>{collection.name}</h2>
+                <h2 className={styles.favorites__cardTitle}>
+                  {collection.name}
+                </h2>
               )}
-              <p className={styles.favorites__cardMeta}>{collection.imageCount} 张图片</p>
+              <p className={styles.favorites__cardMeta}>
+                {collection.imageCount} 张图片
+              </p>
             </div>
             {editingId !== collection.id ? (
               <div className={styles.favorites__cardActions}>
@@ -218,7 +253,9 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
           </article>
         ))}
 
-        {error && collections.length > 0 ? <p className={styles.favorites__listError}>{error}</p> : null}
+        {error && collections.length > 0 ? (
+          <p className={styles.favorites__listError}>{error}</p>
+        ) : null}
 
         {collections.length === 0 ? (
           <div className={styles.favorites__empty}>
@@ -227,7 +264,9 @@ export function FavoriteCollectionsView({ collections }: { collections: Favorite
             </span>
             <div className={styles.favorites__emptyText}>
               <h2 className={styles.favorites__emptyTitle}>还没有合集</h2>
-              <p className={styles.favorites__emptyMeta}>点击右上角新建一个合集</p>
+              <p className={styles.favorites__emptyMeta}>
+                点击右上角新建一个合集
+              </p>
             </div>
           </div>
         ) : null}

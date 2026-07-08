@@ -3,7 +3,7 @@
 import { Eye, EyeOff, KeyRound, LockKeyhole, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { updateAccountPassword, updateAccountProfile } from "@/api/account/settings";
+import { accountApi } from "@/api/account/settings";
 import {
   clearLocalGenerationProvider,
   getLocalGenerationProvider,
@@ -22,7 +22,11 @@ function joinClassNames(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export function AccountSettingsForm({ username, email, bio }: AccountSettingsFormProps) {
+export function AccountSettingsForm({
+  username,
+  email,
+  bio,
+}: AccountSettingsFormProps) {
   const router = useRouter();
   const [profileUsername, setProfileUsername] = useState(username);
   const [profileBio, setProfileBio] = useState(bio);
@@ -60,7 +64,7 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
     formData.set("bio", profileBio);
 
     try {
-      await updateAccountProfile(formData);
+      await accountApi.updateProfile(formData);
       setProfileLoading(false);
       setProfileMessage("资料已保存");
       router.refresh();
@@ -76,7 +80,11 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
     setPasswordLoading(true);
     setPasswordMessage("");
     try {
-      await updateAccountPassword({ currentPassword, newPassword, confirmPassword });
+      await accountApi.updatePassword({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
       setPasswordLoading(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -85,7 +93,9 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
       router.refresh();
     } catch (error) {
       setPasswordLoading(false);
-      setPasswordMessage(error instanceof Error ? error.message : "修改密码失败");
+      setPasswordMessage(
+        error instanceof Error ? error.message : "修改密码失败",
+      );
       return;
     }
   }
@@ -107,7 +117,11 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
     }
 
     saveLocalGenerationProvider(nextConfig);
-    setLocalMessage(nextConfig.enabled ? "本地自定义接口已保存" : "已保存，当前仍使用平台模型");
+    setLocalMessage(
+      nextConfig.enabled
+        ? "本地自定义接口已保存"
+        : "已保存，当前仍使用平台模型",
+    );
   }
 
   function clearLocalProvider() {
@@ -148,8 +162,14 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
 
           <label className={styles.accountSettings__field}>
             <span className={styles.accountSettings__fieldLabel}>邮箱</span>
-            <input className={styles.accountSettings__emailInput} value={email} disabled />
-            <span className={styles.accountSettings__fieldHint}>邮箱注册后暂不支持自行修改。</span>
+            <input
+              className={styles.accountSettings__emailInput}
+              value={email}
+              disabled
+            />
+            <span className={styles.accountSettings__fieldHint}>
+              邮箱注册后暂不支持自行修改。
+            </span>
           </label>
 
           <label className={styles.accountSettings__field}>
@@ -163,7 +183,9 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
             />
           </label>
 
-          {profileMessage ? <p className={styles.accountSettings__message}>{profileMessage}</p> : null}
+          {profileMessage ? (
+            <p className={styles.accountSettings__message}>{profileMessage}</p>
+          ) : null}
 
           <button className="btn-primary w-fit" disabled={profileLoading}>
             {profileLoading ? "保存中" : "保存修改"}
@@ -173,18 +195,38 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
 
       <form onSubmit={updatePassword} className={styles.accountSettings__card}>
         <div className={styles.accountSettings__cardHeader}>
-          <LockKeyhole size={20} className={styles.accountSettings__headerIcon} />
+          <LockKeyhole
+            size={20}
+            className={styles.accountSettings__headerIcon}
+          />
           <h2 className={styles.accountSettings__cardTitle}>修改密码</h2>
         </div>
 
         <div className={styles.accountSettings__cardBody}>
           {[
-            { label: "当前密码", value: currentPassword, onChange: setCurrentPassword, placeholder: "" },
-            { label: "新密码", value: newPassword, onChange: setNewPassword, placeholder: "至少 8 位字符" },
-            { label: "确认新密码", value: confirmPassword, onChange: setConfirmPassword, placeholder: "" },
+            {
+              label: "当前密码",
+              value: currentPassword,
+              onChange: setCurrentPassword,
+              placeholder: "",
+            },
+            {
+              label: "新密码",
+              value: newPassword,
+              onChange: setNewPassword,
+              placeholder: "至少 8 位字符",
+            },
+            {
+              label: "确认新密码",
+              value: confirmPassword,
+              onChange: setConfirmPassword,
+              placeholder: "",
+            },
           ].map((item) => (
             <label key={item.label} className={styles.accountSettings__field}>
-              <span className={styles.accountSettings__fieldLabel}>{item.label}</span>
+              <span className={styles.accountSettings__fieldLabel}>
+                {item.label}
+              </span>
               <span className={styles.accountSettings__passwordControl}>
                 <input
                   className={styles.accountSettings__passwordInput}
@@ -200,7 +242,8 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
                   onClick={() => setShowPasswords((current) => !current)}
                   className={joinClassNames(
                     styles.accountSettings__visibilityButton,
-                    showPasswords && styles.accountSettings__visibilityButtonActive,
+                    showPasswords &&
+                      styles.accountSettings__visibilityButtonActive,
                   )}
                   aria-label={showPasswords ? "隐藏密码" : "显示密码"}
                 >
@@ -214,7 +257,9 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
             修改密码后会保留当前登录状态，并撤销其它设备上的旧会话。
           </div>
 
-          {passwordMessage ? <p className={styles.accountSettings__message}>{passwordMessage}</p> : null}
+          {passwordMessage ? (
+            <p className={styles.accountSettings__message}>{passwordMessage}</p>
+          ) : null}
 
           <button className="btn-primary w-fit" disabled={passwordLoading}>
             {passwordLoading ? "更新中" : "更新密码"}
@@ -222,15 +267,26 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
         </div>
       </form>
 
-      <form onSubmit={saveLocalProvider} className={joinClassNames(styles.accountSettings__card, styles.accountSettings__wideCard)}>
+      <form
+        onSubmit={saveLocalProvider}
+        className={joinClassNames(
+          styles.accountSettings__card,
+          styles.accountSettings__wideCard,
+        )}
+      >
         <div className={styles.accountSettings__cardHeader}>
           <KeyRound size={18} className={styles.accountSettings__headerIcon} />
-          <h2 className={styles.accountSettings__cardTitle}>自定义 URL 和 API Key</h2>
+          <h2 className={styles.accountSettings__cardTitle}>
+            自定义 URL 和 API Key
+          </h2>
         </div>
 
         <div className={styles.accountSettings__cardBody}>
           <p className={styles.accountSettings__statusLine}>
-            当前状态：{localProviderReady ? "已配置（使用本地自定义接口）" : "未配置（使用平台模型）"}
+            当前状态：
+            {localProviderReady
+              ? "已配置（使用本地自定义接口）"
+              : "未配置（使用平台模型）"}
           </p>
 
           <label className={styles.accountSettings__field}>
@@ -248,7 +304,8 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
                 onClick={() => setShowLocalApiKey((current) => !current)}
                 className={joinClassNames(
                   styles.accountSettings__visibilityButton,
-                  showLocalApiKey && styles.accountSettings__visibilityButtonActive,
+                  showLocalApiKey &&
+                    styles.accountSettings__visibilityButtonActive,
                 )}
               >
                 {showLocalApiKey ? "隐藏" : "显示"}
@@ -257,7 +314,9 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
           </label>
 
           <label className={styles.accountSettings__field}>
-            <span className={styles.accountSettings__fieldLabel}>Base URL（可选，默认 OpenAI 官方）</span>
+            <span className={styles.accountSettings__fieldLabel}>
+              Base URL（可选，默认 OpenAI 官方）
+            </span>
             <input
               className={styles.accountSettings__textInput}
               value={localBaseUrl}
@@ -272,14 +331,23 @@ export function AccountSettingsForm({ username, email, bio }: AccountSettingsFor
               checked={localEnabled}
               onChange={(event) => setLocalEnabled(event.target.checked)}
             />
-            <span>启用后，生成页将使用本地自定义接口，不扣平台积分，图片保存到当前浏览器 IndexedDB。</span>
+            <span>
+              启用后，生成页将使用本地自定义接口，不扣平台积分，图片保存到当前浏览器
+              IndexedDB。
+            </span>
           </label>
 
-          {localMessage ? <p className={styles.accountSettings__message}>{localMessage}</p> : null}
+          {localMessage ? (
+            <p className={styles.accountSettings__message}>{localMessage}</p>
+          ) : null}
 
           <div className={styles.accountSettings__actions}>
             <button className="btn-primary w-fit">保存</button>
-            <button type="button" className="btn-secondary w-fit" onClick={clearLocalProvider}>
+            <button
+              type="button"
+              className="btn-secondary w-fit"
+              onClick={clearLocalProvider}
+            >
               清除配置
             </button>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { publishGalleryImage } from "@/api/generation/gallery";
+import { galleryApi } from "@/api/generation/gallery";
 import styles from "./publish-button.module.css";
 
 export function PublishGalleryButton({
@@ -21,7 +21,7 @@ export function PublishGalleryButton({
     setLabel("发布中");
 
     try {
-      await publishGalleryImage({ generatedImageId });
+      await galleryApi.publishImage({ generatedImageId });
     } catch (error) {
       setLabel(error instanceof Error ? error.message : "发布失败");
       setLoading(false);

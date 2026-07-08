@@ -16,3 +16,6 @@ export type CheckInStatus = {
   checkedDayKeys: string[];
 };
 
+export type ClaimCheckInResponse = {
+  checkIn: CheckInStatus;
+};

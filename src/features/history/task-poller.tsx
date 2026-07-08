@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchGenerationTask } from "@/api/generation/tasks";
+import { generationTasksApi } from "@/api/generation/tasks";
 import styles from "./task-poller.module.css";
 
 const statusLabels: Record<string, string> = {
@@ -11,14 +11,20 @@ const statusLabels: Record<string, string> = {
   failed: "失败",
 };
 
-export function TaskPoller({ taskId, initialStatus }: { taskId: string; initialStatus: string }) {
+export function TaskPoller({
+  taskId,
+  initialStatus,
+}: {
+  taskId: string;
+  initialStatus: string;
+}) {
   const [status, setStatus] = useState(initialStatus);
 
   useEffect(() => {
     if (status === "succeeded" || status === "failed") return;
     const timer = window.setInterval(async () => {
       try {
-        const data = await fetchGenerationTask(taskId);
+        const data = await generationTasksApi.fetchTask(taskId);
         setStatus(data.task.status);
         if (data.task.status === "succeeded" || data.task.status === "failed") {
           window.location.reload();
@@ -30,5 +36,9 @@ export function TaskPoller({ taskId, initialStatus }: { taskId: string; initialS
     return () => window.clearInterval(timer);
   }, [status, taskId]);
 
-  return <span className={styles.taskPoller__badge}>{statusLabels[status] ?? status}</span>;
+  return (
+    <span className={styles.taskPoller__badge}>
+      {statusLabels[status] ?? status}
+    </span>
+  );
 }

@@ -2,14 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { adminReplyTicket, adminUpdateTicketStatus } from "@/api/support/tickets";
+import { ticketsApi } from "@/api/support/tickets";
 import { AppSelect } from "@/components/ui/app-select";
 import { type FeedbackStatus, feedbackStatusLabels } from "@/utils/feedback";
 
-const statusOptions = Object.entries(feedbackStatusLabels).map(([value, label]) => ({
-  value: value as FeedbackStatus,
-  label,
-}));
+const statusOptions = Object.entries(feedbackStatusLabels).map(
+  ([value, label]) => ({
+    value: value as FeedbackStatus,
+    label,
+  }),
+);
 
 export function FeedbackActions({
   ticketId,
@@ -28,7 +30,7 @@ export function FeedbackActions({
     setLoading(true);
     setMessage("");
     try {
-      await adminUpdateTicketStatus(ticketId, { status });
+      await ticketsApi.updateStatus(ticketId, { status });
       setLoading(false);
       setMessage("状态已更新");
       router.refresh();
@@ -43,7 +45,7 @@ export function FeedbackActions({
     setLoading(true);
     setMessage("");
     try {
-      await adminReplyTicket(ticketId, { body });
+      await ticketsApi.adminReply(ticketId, { body });
       setLoading(false);
       setBody("");
       setMessage("回复已发送");
@@ -58,8 +60,18 @@ export function FeedbackActions({
   return (
     <div className="grid gap-3">
       <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-        <AppSelect value={status} onChange={setStatus} options={statusOptions} triggerClassName="min-h-10 text-sm" />
-        <button type="button" className="btn-secondary" disabled={loading} onClick={updateStatus}>
+        <AppSelect
+          value={status}
+          onChange={setStatus}
+          options={statusOptions}
+          triggerClassName="min-h-10 text-sm"
+        />
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={loading}
+          onClick={updateStatus}
+        >
           更新状态
         </button>
       </div>
@@ -69,7 +81,12 @@ export function FeedbackActions({
         onChange={(event) => setBody(event.target.value)}
         placeholder="回复用户..."
       />
-      <button type="button" className="btn-primary w-fit" disabled={loading || !body.trim()} onClick={reply}>
+      <button
+        type="button"
+        className="btn-primary w-fit"
+        disabled={loading || !body.trim()}
+        onClick={reply}
+      >
         发送回复
       </button>
       {message ? <p className="text-sm text-muted">{message}</p> : null}

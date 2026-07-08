@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
-import { loginWithEmail } from "@/api/auth";
+import { authApi } from "@/api/auth/email-auth";
 import styles from "./auth-form.module.css";
 
 export function LoginForm() {
@@ -18,7 +18,7 @@ export function LoginForm() {
     try {
       setLoading(true);
       setMessage("");
-      await loginWithEmail({ email, password });
+      await authApi.loginWithEmail({ email, password });
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -62,7 +62,13 @@ export function LoginForm() {
           </span>
         </label>
 
-        {message ? <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>{message}</p> : null}
+        {message ? (
+          <p
+            className={`${styles.authForm__message} ${styles.authForm__messageError}`}
+          >
+            {message}
+          </p>
+        ) : null}
       </div>
 
       <button className={styles.authForm__submit} disabled={loading}>

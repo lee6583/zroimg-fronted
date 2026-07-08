@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { claimCheckIn } from "@/api/rewards/checkin";
+import { checkInApi } from "@/api/rewards/checkin";
 import type { CheckInStatus } from "@/types/checkin";
 import styles from "./check-in-card.module.css";
 
@@ -23,7 +23,13 @@ function buildCalendar(status: CheckInStatus) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const offset = firstWeekdayOffset(year, month);
   const checkedDays = new Set(status.checkedDayKeys);
-  const cells: Array<{ key: string; day: number | null; dayKey?: string; checked?: boolean; today?: boolean }> = [];
+  const cells: Array<{
+    key: string;
+    day: number | null;
+    dayKey?: string;
+    checked?: boolean;
+    today?: boolean;
+  }> = [];
 
   for (let index = 0; index < offset; index += 1) {
     cells.push({ key: `empty-${index}`, day: null });
@@ -66,7 +72,7 @@ export function CheckInCard({
     setLoading(true);
     setMessage("");
     try {
-      const data = await claimCheckIn();
+      const data = await checkInApi.claim();
       setLoading(false);
       const nextStatus = data.checkIn as CheckInStatus;
       setStatus(nextStatus);
@@ -92,18 +98,28 @@ export function CheckInCard({
       </div>
 
       <div className={styles.checkInCard__calendarHeader}>
-        <p className={styles.checkInCard__monthTitle}>{status.date.year} 年 {status.date.month} 月</p>
+        <p className={styles.checkInCard__monthTitle}>
+          {status.date.year} 年 {status.date.month} 月
+        </p>
       </div>
 
       <div className={styles.checkInCard__calendarWrap}>
         {claimedCredits > 0 ? (
-          <span key={rewardAnimationKey} className={styles.checkInCard__rewardBurst}>
+          <span
+            key={rewardAnimationKey}
+            className={styles.checkInCard__rewardBurst}
+          >
             +{claimedCredits} 积分
           </span>
         ) : null}
-        <div className={styles.checkInCard__calendar} aria-label={`${status.date.year} 年 ${status.date.month} 月签到日历`}>
+        <div
+          className={styles.checkInCard__calendar}
+          aria-label={`${status.date.year} 年 ${status.date.month} 月签到日历`}
+        >
           {weekDays.map((day) => (
-            <span key={day} className={styles.checkInCard__weekday}>{day}</span>
+            <span key={day} className={styles.checkInCard__weekday}>
+              {day}
+            </span>
           ))}
           {calendarCells.map((cell) => (
             <span
@@ -129,10 +145,17 @@ export function CheckInCard({
       </div>
 
       <div className={styles.checkInCard__actions}>
-        <button className={styles.checkInCard__button} type="button" disabled={loading || status.checkedIn} onClick={claim}>
+        <button
+          className={styles.checkInCard__button}
+          type="button"
+          disabled={loading || status.checkedIn}
+          onClick={claim}
+        >
           {status.checkedIn ? "今日已签到" : loading ? "签到中" : "立即签到"}
         </button>
-        {message ? <p className={styles.checkInCard__message}>{message}</p> : null}
+        {message ? (
+          <p className={styles.checkInCard__message}>{message}</p>
+        ) : null}
       </div>
     </section>
   );

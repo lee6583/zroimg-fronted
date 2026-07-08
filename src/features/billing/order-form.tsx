@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createOrder as createOrderRequest } from "@/api/orders";
+import { ordersApi } from "@/api/orders/purchase";
 import { AppSelect } from "@/components/ui/app-select";
 import {
   calculateCustomCredits,
@@ -26,19 +26,28 @@ export function OrderForm({ packages }: { packages: Package[] }) {
   const [loading, setLoading] = useState(false);
 
   const customAmountNumber = Number(customAmount);
-  const normalizedCustomAmount = Number.isFinite(customAmountNumber) ? Math.round(customAmountNumber * 100) / 100 : 0;
+  const normalizedCustomAmount = Number.isFinite(customAmountNumber)
+    ? Math.round(customAmountNumber * 100) / 100
+    : 0;
   const customCredits = calculateCustomCredits(normalizedCustomAmount);
 
   async function createOrder() {
     setLoading(true);
     setMessage("");
-    if (mode === "custom" && (!Number.isFinite(customAmountNumber) || customAmountNumber < CUSTOM_MIN_AMOUNT_CNY || customAmountNumber > CUSTOM_MAX_AMOUNT_CNY)) {
-      setMessage(`请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`);
+    if (
+      mode === "custom" &&
+      (!Number.isFinite(customAmountNumber) ||
+        customAmountNumber < CUSTOM_MIN_AMOUNT_CNY ||
+        customAmountNumber > CUSTOM_MAX_AMOUNT_CNY)
+    ) {
+      setMessage(
+        `请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`,
+      );
       setLoading(false);
       return;
     }
     try {
-      const data = await createOrderRequest(
+      const data = await ordersApi.createOrder(
         mode === "package"
           ? { mode, packageCode, paymentType }
           : {
@@ -62,21 +71,33 @@ export function OrderForm({ packages }: { packages: Package[] }) {
   return (
     <div className="surface rounded-xl p-5">
       <p className="label">Recharge</p>
-      <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">选择你的灵感额度</h2>
-      <p className="mt-2 text-sm leading-6 text-muted">选好积分包后即可前往支付，让下一张图从这里开始。</p>
+      <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">
+        选择你的灵感额度
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        选好积分包后即可前往支付，让下一张图从这里开始。
+      </p>
       <div className="mt-4 grid gap-4">
         <div className="grid grid-cols-2 gap-2 rounded-lg border border-line bg-soft p-1">
           <button
             type="button"
             onClick={() => setMode("package")}
-            className={mode === "package" ? "min-h-9 rounded-md bg-panel text-sm font-medium text-foreground" : "min-h-9 rounded-md text-sm font-medium text-muted hover:text-foreground"}
+            className={
+              mode === "package"
+                ? "min-h-9 rounded-md bg-panel text-sm font-medium text-foreground"
+                : "min-h-9 rounded-md text-sm font-medium text-muted hover:text-foreground"
+            }
           >
             套餐购买
           </button>
           <button
             type="button"
             onClick={() => setMode("custom")}
-            className={mode === "custom" ? "min-h-9 rounded-md bg-panel text-sm font-medium text-foreground" : "min-h-9 rounded-md text-sm font-medium text-muted hover:text-foreground"}
+            className={
+              mode === "custom"
+                ? "min-h-9 rounded-md bg-panel text-sm font-medium text-foreground"
+                : "min-h-9 rounded-md text-sm font-medium text-muted hover:text-foreground"
+            }
           >
             自定义购买
           </button>
@@ -101,7 +122,9 @@ export function OrderForm({ packages }: { packages: Package[] }) {
             <label className="grid gap-2">
               <span className="label">自定义金额</span>
               <span className="relative block">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">¥</span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">
+                  ¥
+                </span>
                 <input
                   className="field pl-8 text-sm"
                   inputMode="decimal"
@@ -113,10 +136,15 @@ export function OrderForm({ packages }: { packages: Package[] }) {
             </label>
             <div className="rounded-lg bg-soft p-3 text-sm leading-6 text-muted">
               <p>
-                预计到账 <span className="font-medium text-foreground">{customCredits}</span> 积分
+                预计到账{" "}
+                <span className="font-medium text-foreground">
+                  {customCredits}
+                </span>{" "}
+                积分
               </p>
               <p>
-                自定义购买按 ¥1 = {CUSTOM_CREDITS_PER_CNY} 积分折算，套餐通常会更划算。
+                自定义购买按 ¥1 = {CUSTOM_CREDITS_PER_CNY}{" "}
+                积分折算，套餐通常会更划算。
               </p>
             </div>
           </div>
@@ -134,7 +162,11 @@ export function OrderForm({ packages }: { packages: Package[] }) {
           />
         </label>
         {message ? <p className="text-sm text-muted">{message}</p> : null}
-        <button className="btn-primary" onClick={createOrder} disabled={loading || (mode === "package" && packages.length === 0)}>
+        <button
+          className="btn-primary"
+          onClick={createOrder}
+          disabled={loading || (mode === "package" && packages.length === 0)}
+        >
           {loading ? "创建中" : "去支付"}
         </button>
       </div>

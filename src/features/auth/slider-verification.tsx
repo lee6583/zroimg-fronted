@@ -14,7 +14,10 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function SliderVerification({ verified, onVerified }: SliderVerificationProps) {
+export function SliderVerification({
+  verified,
+  onVerified,
+}: SliderVerificationProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef(0);
   const dragStartOffset = useRef(0);
@@ -23,7 +26,12 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
   const [offset, setOffset] = useState(0);
   const [maxOffset, setMaxOffset] = useState(0);
 
-  const progress = verified || verifying ? 100 : maxOffset > 0 ? (offset / maxOffset) * 100 : 0;
+  const progress =
+    verified || verifying
+      ? 100
+      : maxOffset > 0
+        ? (offset / maxOffset) * 100
+        : 0;
 
   function getMaxOffset() {
     const width = trackRef.current?.clientWidth ?? 0;
@@ -54,7 +62,11 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
   function move(clientX: number) {
     if (!dragging || verified || verifying) return;
     const nextMaxOffset = maxOffset || getMaxOffset();
-    const nextOffset = clamp(dragStartOffset.current + clientX - dragStartX.current, 0, nextMaxOffset);
+    const nextOffset = clamp(
+      dragStartOffset.current + clientX - dragStartX.current,
+      0,
+      nextMaxOffset,
+    );
     if (nextMaxOffset > 0 && nextOffset >= nextMaxOffset * 0.94) {
       complete(nextMaxOffset);
       return;
@@ -141,7 +153,9 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
         style={{ width: `${progress}%` }}
       />
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className={`text-xs font-medium ${verified ? "text-emerald-600" : "text-muted"}`}>
+        <span
+          className={`text-xs font-medium ${verified ? "text-emerald-600" : "text-muted"}`}
+        >
           {verified ? "验证通过" : verifying ? "验证中..." : "向右滑动完成验证"}
         </span>
       </div>
@@ -149,7 +163,12 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
         className={`absolute top-0.5 flex aspect-square h-[calc(100%-4px)] cursor-grab items-center justify-center rounded-md border shadow-sm active:cursor-grabbing ${
           dragging ? "" : "transition-all duration-300"
         } ${verified ? "border-emerald-500 bg-emerald-500 text-white" : "border-line bg-background text-muted"}`}
-        style={{ left: verified || verifying ? `calc(100% - ${KNOB_SIZE + 2}px)` : offset + 2 }}
+        style={{
+          left:
+            verified || verifying
+              ? `calc(100% - ${KNOB_SIZE + 2}px)`
+              : offset + 2,
+        }}
         onPointerDown={(event) => {
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
@@ -159,7 +178,14 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
         {verified ? (
           <Check size={16} />
         ) : (
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <svg
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
             <path d="M9 18l6-6-6-6" />
             <path d="M15 18l6-6-6-6" opacity="0.5" />
           </svg>

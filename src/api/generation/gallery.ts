@@ -1,9 +1,17 @@
 import { request } from "@/utils/request";
+import type {
+  PublishGalleryImageRequest,
+  PublishGalleryImageResponse,
+} from "@/types/generation";
 
-export function publishGalleryImage(data: { generatedImageId: string }) {
-  return request<{ ok?: boolean }>({
+function publishImage(data: PublishGalleryImageRequest) {
+  return request<PublishGalleryImageResponse>({
     url: "/api/gallery/publish",
     method: "POST",
     data,
   });
 }
+
+export const galleryApi = {
+  publishImage,
+};

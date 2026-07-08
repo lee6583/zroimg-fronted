@@ -1,9 +1,17 @@
 import { request } from "@/utils/request";
+import type {
+  SaveDocsConfigRequest,
+  SaveDocsConfigResponse,
+} from "@/types/content";
 
-export function saveDocsConfig(data: { title: string; description: string; groups: unknown }) {
-  return request<{ docs: { title: string; description: string; groups: unknown } }>({
+function saveDocsConfig(data: SaveDocsConfigRequest) {
+  return request<SaveDocsConfigResponse>({
     url: "/api/admin/docs",
     method: "POST",
     data,
   });
 }
+
+export const adminDocsApi = {
+  saveDocsConfig,
+};

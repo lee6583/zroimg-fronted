@@ -107,6 +107,7 @@ src/
     layout/            导航、外壳、站点级布局组件
     ui/                通用 UI 组件
   features/            按业务域拆分的页面组件和交互
+  hooks/               全局复用 hooks
   server/              前端服务端逻辑与 BFF
     bff/               面向页面的服务层
   style/               全局样式、设计令牌、公共样式
@@ -152,9 +153,69 @@ public/
 规则：
 
 - 这里只写请求函数，例如 `fetchProfile()`、`createOrder()`。
+- 每个文件统一写法：先定义 `function`，文件末尾再导出一个 `xxxApi` 对象。
 - 不写 `toast`、弹窗、跳转、组件状态。
 - 不写完整后端域名，只写同源路径，例如 `/api/orders`。
 - 统一通过 `src/utils/request.ts` 发请求。
+- 请求入参和返回值类型统一从 `src/types` 引入。
+- 统一从具体业务文件导入，例如 `@/api/admin/settings`、`@/api/generation/tasks`。
+- 不额外建立 `index.ts` barrel，避免隐藏接口来源和重复维护导出。
+- `src/api` 不做类型转导；组件需要类型时，直接从 `src/types` 引入。
+
+推荐示例：
+
+```ts
+import { request } from "@/utils/request";
+import type {
+  UpdateAccountPasswordRequest,
+  UpdateAccountPasswordResponse,
+  UpdateAccountProfileRequest,
+  UpdateAccountProfileResponse,
+} from "@/types/account";
+
+function updateProfile(data: UpdateAccountProfileRequest) {
+  return request<UpdateAccountProfileResponse>({
+    url: "/api/account/profile",
+    method: "POST",
+    body: data,
+  });
+}
+
+function updatePassword(data: UpdateAccountPasswordRequest) {
+  return request<UpdateAccountPasswordResponse>({
+    url: "/api/account/password",
+    method: "POST",
+    data,
+  });
+}
+
+export const accountApi = {
+  updateProfile,
+  updatePassword,
+};
+```
+
+注意：
+
+- `src/api/**` 是浏览器侧的请求封装层，适合按上面的写法统一。
+- `src/app/api/**` 是 Next.js Route Handlers，必须继续导出 `GET`、`POST`、`PATCH` 这类服务端路由函数，不能改成 `request(...)` 包装形式。
+
+### `src/hooks`
+
+放全局复用 hooks。页面私有 hook 留在页面或业务目录内，不要为了“看起来统一”提前搬到全局。
+
+规则：
+
+- 超过 2 个页面复用，再进入 `src/hooks`。
+- 含接口请求的 hook，统一后缀 `Service`，返回值优先对象。
+- 通用 service hook 统一返回 `{ run, loading, status, data, error, reset }`。
+- hook 不直接弹全局消息、不直接跳转，除非名字明确体现这个副作用。
+- 轮询、监听、定时器、浏览器事件必须在 hook 内清理。
+- 同类 hook 使用统一字段名，例如 `loading`、`error`、`run`。
+
+当前公共 hook：
+
+- `useService`：封装异步服务调用状态，适合后续给业务 service hook 复用。
 
 ### `src/components`
 
@@ -218,12 +279,16 @@ public/
 
 当前已经拆出的类型包括：
 
+- `account.ts`
 - `admin.ts`
+- `api.ts`
+- `auth.ts`
 - `checkin.ts`
 - `content.ts`
 - `feedback.ts`
 - `generation.ts`
 - `index.ts`
+- `orders.ts`
 
 规则：
 
@@ -246,6 +311,7 @@ public/
 
 - 保持无 UI 副作用。
 - 适合复用的纯函数和工具放这里。
+- `request.ts` 支持请求拦截器、错误拦截器和 `ApiRequestError`，页面可以继续用普通 `try/catch`，需要精细判断时再读 `status`、`code`、`payload`。
 
 ### `src/style`
 
@@ -267,12 +333,6 @@ public/
 - 工具类只放 `utilities.css`。
 - 可复用视觉组件类统一放 `src/style/components/*`。
 - 页面或业务专属样式继续放各自目录下的 `*.module.css`，不要写回全局样式目录。
-
-规则：
-
-- 这里只放全局层样式。
-- 不放单个页面的私有样式。
-- 页面和组件私有样式用同目录 `*.module.css`。
 
 ## 7. 页面与组件分层规范
 
@@ -332,13 +392,19 @@ public/
 
 ```ts
 import { request } from "@/utils/request";
+import type { CreateOrderRequest, CreateOrderResponse } from "@/types/orders";
 
-export function fetchOrders() {
-  return request<OrderItem[]>({
+function createOrder(data: CreateOrderRequest) {
+  return request<CreateOrderResponse>({
     url: "/api/orders",
-    method: "GET",
+    method: "POST",
+    data,
   });
 }
+
+export const ordersApi = {
+  createOrder,
+};
 ```
 
 ### BFF 规范
@@ -458,9 +524,10 @@ mock 代码主要在：
 ### 新增接口联调
 
 1. 先确定前端调用路径是否统一走 `/api/**`。
-2. 在 `src/api` 新增请求函数。
-3. 在 `src/app/api` 新增或调整 Route Handler。
-4. Java 后端联通后，替换 `src/server/bff/internal/*` 的 mock 实现。
+2. 在 `src/types` 新增请求入参和响应类型。
+3. 在 `src/api/<domain>` 新增请求函数；如果该业务域有多个接口文件，再从该业务域 `index.ts` 导出。
+4. 在 `src/app/api` 新增或调整 Route Handler。
+5. Java 后端联通后，替换 `src/server/bff/internal/*` 的 mock 实现。
 
 ### 新增共享类型
 

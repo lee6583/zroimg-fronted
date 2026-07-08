@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download, Heart } from "lucide-react";
-import { addImageToFavoriteCollection } from "@/api/generation/favorites";
+import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import { AppSelect } from "@/components/ui/app-select";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import styles from "./history-image-actions.module.css";
@@ -41,7 +41,7 @@ export function HistoryImageActions({
     setMessage("");
 
     try {
-      await addImageToFavoriteCollection(collectionId, { generatedImageId });
+      await favoriteCollectionsApi.addImage(collectionId, { generatedImageId });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "收藏失败");
       setLoading(false);
@@ -56,7 +56,10 @@ export function HistoryImageActions({
   return (
     <div className={styles.historyImageActions}>
       <div className={styles.historyImageActions__row}>
-        <PublishGalleryButton generatedImageId={generatedImageId} initialPublished={initialPublished} />
+        <PublishGalleryButton
+          generatedImageId={generatedImageId}
+          initialPublished={initialPublished}
+        />
 
         <button
           type="button"
@@ -104,12 +107,16 @@ export function HistoryImageActions({
               </button>
             </>
           ) : (
-            <p className={styles.historyImageActions__message}>请先到收藏合集里新建合集</p>
+            <p className={styles.historyImageActions__message}>
+              请先到收藏合集里新建合集
+            </p>
           )}
         </div>
       ) : null}
 
-      {message ? <p className={styles.historyImageActions__message}>{message}</p> : null}
+      {message ? (
+        <p className={styles.historyImageActions__message}>{message}</p>
+      ) : null}
     </div>
   );
 }
