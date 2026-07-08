@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getCurrentUserProfile } from "@/server/auth";
+import { AccountMenu } from "@/components/layout/account-menu";
 import { ThemeControls } from "@/components/layout/theme-controls";
+import { getCurrentUserProfile } from "@/server/auth";
 import styles from "./product-top-nav.module.css";
 
 const publicCenterLinks = [
@@ -20,7 +21,6 @@ function avatarLabel(name?: string | null) {
 
 export async function ProductTopNav() {
   const current = await getCurrentUserProfile();
-  const avatarHref = current ? "/dashboard" : "/login";
   const centerLinks = current ? (current.profile.role === "admin" ? [...appCenterLinks, adminCenterLink] : appCenterLinks) : publicCenterLinks;
 
   return (
@@ -40,13 +40,13 @@ export async function ProductTopNav() {
 
         <div className={styles.productTopNav__actions}>
           <ThemeControls />
-          <Link
-            href={avatarHref}
-            className={styles.productTopNav__avatar}
-            aria-label={current ? "进入工作台" : "登录"}
-          >
-            {current ? avatarLabel(current.profile.username) : "登"}
-          </Link>
+          {current ? (
+            <AccountMenu label={avatarLabel(current.profile.username)} />
+          ) : (
+            <Link href="/login" className={styles.productTopNav__avatar} aria-label="登录">
+              登录
+            </Link>
+          )}
         </div>
       </div>
 
