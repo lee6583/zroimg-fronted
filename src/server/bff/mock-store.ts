@@ -257,7 +257,7 @@ function svgDataUrl(title: string, accent = "#111111", soft = "#f5f5f5") {
       <rect width="768" height="768" fill="${soft}" />
       <rect x="32" y="32" width="704" height="704" rx="28" fill="white" stroke="#e5e5e5" />
       <rect x="96" y="112" width="576" height="320" rx="28" fill="${accent}" opacity="0.14" />
-      <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroCodeImg Mock Output</text>
+      <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroImg Mock Output</text>
       <text x="96" y="566" font-size="54" fill="#111111" font-family="Georgia, serif">${safeTitle.slice(0, 26)}</text>
       <text x="96" y="622" font-size="24" fill="#525252" font-family="Inter, sans-serif">Frontend preview</text>
       <text x="96" y="658" font-size="24" fill="#525252" font-family="Inter, sans-serif">Before Java backend integration</text>
@@ -719,7 +719,7 @@ function createStore(): MockStore {
         secure: true,
         user: "admin@zrocodeimg.dev",
         password: null,
-        from: "ZroCodeImg <noreply@zrocodeimg.dev>",
+        from: "ZroImg <noreply@zrocodeimg.dev>",
       },
       easypay: {
         enabled: true,

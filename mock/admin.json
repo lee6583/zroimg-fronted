@@ -1,0 +1,53 @@
+{
+  "users": [
+    {
+      "id": "user-admin",
+      "email": "admin@zrocodeimg.dev",
+      "username": "lee6583",
+      "role": "admin",
+      "status": "active",
+      "creditBalance": 9999
+    },
+    {
+      "id": "user-creator",
+      "email": "creator@zrocodeimg.dev",
+      "username": "Mina",
+      "role": "user",
+      "status": "active",
+      "creditBalance": 430
+    }
+  ],
+  "settings": {
+    "generation": {
+      "enabled": true,
+      "baseUrl": "https://api.openai.com/v1",
+      "model": "gpt-image-2",
+      "hasApiKey": false
+    },
+    "smtp": {
+      "enabled": false,
+      "host": "smtp.example.com",
+      "port": 465,
+      "secure": true,
+      "from": "ZroImg <noreply@zrocodeimg.dev>"
+    },
+    "easypay": {
+      "enabled": false,
+      "apiBase": "https://pay.example.com",
+      "pid": "1000"
+    },
+    "checkIn": {
+      "enabled": true,
+      "rewardCredits": 5
+    }
+  },
+  "auditLogs": [
+    {
+      "id": "audit_mock_001",
+      "action": "adjust_credits",
+      "operator": "lee6583",
+      "target": "Mina",
+      "detail": "手动增加 100 积分"
+    }
+  ]
+}

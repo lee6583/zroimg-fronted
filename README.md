@@ -115,6 +115,7 @@ src/
   utils/               request.ts 和纯工具函数
 public/
   assets/              静态资源
+mock/                  前端页面和 UI 联调用 mock 数据
 ```
 
 ## 6. 各目录职责
@@ -333,6 +334,16 @@ export const accountApi = {
 - 工具类只放 `utilities.css`。
 - 可复用视觉组件类统一放 `src/style/components/*`。
 - 页面或业务专属样式继续放各自目录下的 `*.module.css`，不要写回全局样式目录。
+
+### `mock`
+
+放前端页面、UI 走查和联调用 mock 数据，按业务域拆分。
+
+规则：
+
+- 这里只放模拟数据和说明文档，不放真实用户、真实订单、真实密钥。
+- 当前运行态 mock 仍由 `src/server/bff/**` 承接，后续可以逐步统一读取这里的数据。
+- 新增页面级 mock 时优先按业务域追加到现有文件，避免一个页面一个零散文件。
 
 ## 7. 页面与组件分层规范
 

@@ -1,18 +1,16 @@
 import Link from "next/link";
+import { ThemeControls } from "@/components/layout/theme-controls";
 import { LoginForm } from "@/features/auth/login-form";
+import styles from "./login.module.css";
 
 export default function LoginPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-20 border-b border-line bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="font-serif text-xl font-medium tracking-tight">
-            ZroCodeImg
-          </Link>
-          <Link href="/register" className="text-sm font-medium text-muted transition hover:text-foreground">
-            注册
-          </Link>
-        </div>
+      <header className={styles.loginPage__topbar}>
+        <Link href="/" className={styles.loginPage__brand}>
+          ZroImg
+        </Link>
+        <ThemeControls />
       </header>
 
       <section className="flex min-h-screen items-center justify-center px-4 py-24">
