@@ -32,7 +32,11 @@ export async function POST(request: Request) {
     return jsonError("账号已被禁用", 403);
   }
 
-  const response = NextResponse.json({ ok: true });
+  const response = NextResponse.json({
+    ok: true,
+    role: bundle.profile.role,
+    redirectTo: bundle.profile.role === "admin" ? "/admin" : "/dashboard",
+  });
   response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
     httpOnly: true,
     sameSite: "lax",

@@ -18,16 +18,15 @@ export function LoginForm() {
     try {
       setLoading(true);
       setMessage("");
-      await authApi.loginWithEmail({ email, password });
+      const data = await authApi.loginWithEmail({ email, password });
       setLoading(false);
+      router.push(data.redirectTo || (data.role === "admin" ? "/admin" : "/dashboard"));
+      router.refresh();
     } catch (error) {
       setLoading(false);
       setMessage(error instanceof Error ? error.message : "登录失败");
       return;
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (

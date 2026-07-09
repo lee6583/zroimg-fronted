@@ -36,6 +36,9 @@ export type LoginWithEmailRequest = {
   password: string;
 };
 
-export type LoginWithEmailResponse = OkResponse;
+export type LoginWithEmailResponse = OkResponse & {
+  role?: "user" | "admin";
+  redirectTo?: string;
+};
 
 export type LogoutAccountResponse = OkResponse;

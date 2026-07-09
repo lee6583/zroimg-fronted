@@ -586,6 +586,76 @@ function createStore(): MockStore {
       createdAt: nowMinus(20),
       paidAt: nowMinus(19.9),
     },
+    {
+      id: "order-3",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070003",
+      paymentType: "alipay",
+      status: "pending",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070003",
+      createdAt: nowMinus(10),
+      paidAt: null,
+    },
+    {
+      id: "order-4",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070004",
+      paymentType: "wxpay",
+      status: "paid",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: "TRADE-10004",
+      payUrl: "/billing/result?order=MOCK202607070004",
+      createdAt: nowMinus(9),
+      paidAt: nowMinus(8.95),
+    },
+    {
+      id: "order-5",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070005",
+      paymentType: "alipay",
+      status: "expired",
+      credits: 100,
+      amountCny: 19.9,
+      creditPackageId: "package-1",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070005",
+      createdAt: nowMinus(7),
+      paidAt: null,
+    },
+    {
+      id: "order-6",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070006",
+      paymentType: "wxpay",
+      status: "cancelled",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070006",
+      createdAt: nowMinus(6),
+      paidAt: null,
+    },
+    {
+      id: "order-7",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070007",
+      paymentType: "alipay",
+      status: "failed",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: "TRADE-FAILED-10007",
+      payUrl: "/billing/result?order=MOCK202607070007",
+      createdAt: nowMinus(5),
+      paidAt: null,
+    },
   ];
 
   const creditLedger: MockCreditLedger[] = [
@@ -651,6 +721,24 @@ function createStore(): MockStore {
       reason: "历史 mock 扣费修正",
       type: "adjustment",
       createdAt: nowMinus(0.01),
+    },
+    {
+      id: "ledger-8",
+      userProfileId: "profile-creator",
+      amount: 500,
+      balanceAfter: 930,
+      reason: "MOCK202607070004 已支付，等待到账确认",
+      type: "purchase",
+      createdAt: nowMinus(8.95),
+    },
+    {
+      id: "ledger-9",
+      userProfileId: "profile-creator",
+      amount: 100,
+      balanceAfter: 530,
+      reason: "支付异常退款返还",
+      type: "refund",
+      createdAt: nowMinus(4.8),
     },
   ];
 
@@ -742,8 +830,8 @@ function createStore(): MockStore {
       gallery: 3,
       favoriteCollection: 2,
       favoriteCollectionItem: 2,
-      order: 3,
-      ledger: 8,
+      order: 8,
+      ledger: 10,
       ticket: 3,
       message: 4,
       slider: 1,
@@ -756,6 +844,117 @@ function createStore(): MockStore {
   };
 }
 
+function ensureBillingScenarioData(store: MockStore) {
+  const billingScenarios: MockPaymentOrder[] = [
+    {
+      id: "order-3",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070003",
+      paymentType: "alipay",
+      status: "pending",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070003",
+      createdAt: nowMinus(10),
+      paidAt: null,
+    },
+    {
+      id: "order-4",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070004",
+      paymentType: "wxpay",
+      status: "paid",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: "TRADE-10004",
+      payUrl: "/billing/result?order=MOCK202607070004",
+      createdAt: nowMinus(9),
+      paidAt: nowMinus(8.95),
+    },
+    {
+      id: "order-5",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070005",
+      paymentType: "alipay",
+      status: "expired",
+      credits: 100,
+      amountCny: 19.9,
+      creditPackageId: "package-1",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070005",
+      createdAt: nowMinus(7),
+      paidAt: null,
+    },
+    {
+      id: "order-6",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070006",
+      paymentType: "wxpay",
+      status: "cancelled",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070006",
+      createdAt: nowMinus(6),
+      paidAt: null,
+    },
+    {
+      id: "order-7",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070007",
+      paymentType: "alipay",
+      status: "failed",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: "TRADE-FAILED-10007",
+      payUrl: "/billing/result?order=MOCK202607070007",
+      createdAt: nowMinus(5),
+      paidAt: null,
+    },
+  ];
+
+  for (const order of billingScenarios) {
+    if (!store.paymentOrders.some((item) => item.id === order.id || item.orderNo === order.orderNo)) {
+      store.paymentOrders.push(order);
+    }
+  }
+
+  const ledgerScenarios: MockCreditLedger[] = [
+    {
+      id: "ledger-8",
+      userProfileId: "profile-creator",
+      amount: 500,
+      balanceAfter: 930,
+      reason: "MOCK202607070004 已支付，等待到账确认",
+      type: "purchase",
+      createdAt: nowMinus(8.95),
+    },
+    {
+      id: "ledger-9",
+      userProfileId: "profile-creator",
+      amount: 100,
+      balanceAfter: 530,
+      reason: "支付异常退款返还",
+      type: "refund",
+      createdAt: nowMinus(4.8),
+    },
+  ];
+
+  for (const ledger of ledgerScenarios) {
+    if (!store.creditLedger.some((item) => item.id === ledger.id)) {
+      store.creditLedger.push(ledger);
+    }
+  }
+
+  store.counters.order = Math.max(store.counters.order || 0, 8);
+  store.counters.ledger = Math.max(store.counters.ledger || 0, 10);
+}
+
 declare global {
   var __zroimgMockStore: MockStore | undefined;
 }
@@ -764,6 +963,7 @@ export function getStore() {
   if (!globalThis.__zroimgMockStore) {
     globalThis.__zroimgMockStore = createStore();
   }
+  ensureBillingScenarioData(globalThis.__zroimgMockStore);
   return globalThis.__zroimgMockStore;
 }
 

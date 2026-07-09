@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZroImg 意见反馈系统模板</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="ZroImg">
+        <span class="brandMark">Z</span>
+        <span>ZroImg</span>
+      </a>
+      <nav class="topnav" aria-label="模板视图">
+        <button class="topnavButton isActive" type="button" data-view-button="user">用户反馈</button>
+        <button class="topnavButton" type="button" data-view-button="admin">后台处理</button>
+      </nav>
+      <div class="accountChip">Mina</div>
+    </header>
+
+    <main class="pageShell">
+      <section class="heroBand">
+        <div>
+          <p class="eyebrow">Feedback workflow</p>
+          <h1>意见反馈系统</h1>
+          <p class="heroCopy">覆盖用户提交、补充信息、管理员回复、状态流转和回显通知的一套完整反馈闭环。</p>
+        </div>
+        <div class="heroMetrics" aria-label="反馈概览">
+          <div>
+            <span>待处理</span>
+            <strong>8</strong>
+          </div>
+          <div>
+            <span>处理中</span>
+            <strong>4</strong>
+          </div>
+          <div>
+            <span>平均响应</span>
+            <strong>2h</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="view isVisible" data-view="user" aria-label="用户反馈界面">
+        <div class="layoutTwo">
+          <aside class="panel submitPanel">
+            <div class="panelHeader">
+              <p class="eyebrow">New ticket</p>
+              <h2>提交反馈</h2>
+            </div>
+            <form class="formStack">
+              <label>
+                <span>反馈类型</span>
+                <select>
+                  <option>图片生成</option>
+                  <option>订单与积分</option>
+                  <option>账户问题</option>
+                  <option>功能建议</option>
+                  <option>其他</option>
+                </select>
+              </label>
+              <label>
+                <span>标题</span>
+                <input value="生成结果亮度不稳定" />
+              </label>
+              <label>
+                <span>关联信息</span>
+                <input value="任务 ID: task-20260709-031" />
+              </label>
+              <label>
+                <span>详细描述</span>
+                <textarea>同一组提示词重复生成时，第二次画面明显偏暗，希望可以确认是否是默认曝光策略导致。</textarea>
+              </label>
+              <div class="uploadBox">
+                <span class="iconBox">+</span>
+                <div>
+                  <strong>添加截图或附件</strong>
+                  <p>支持 PNG、JPG、WebP，单个文件不超过 10MB。</p>
+                </div>
+              </div>
+              <button class="primaryButton" type="button">提交反馈</button>
+            </form>
+          </aside>
+
+          <section class="panel ticketWorkspace">
+            <div class="panelHeader splitHeader">
+              <div>
+                <p class="eyebrow">My feedback</p>
+                <h2>反馈记录</h2>
+              </div>
+              <div class="segmented" aria-label="反馈筛选">
+                <button class="isActive" type="button">全部</button>
+                <button type="button">待处理</button>
+                <button type="button">已回复</button>
+              </div>
+            </div>
+
+            <div class="ticketGrid">
+              <div class="ticketList" aria-label="反馈列表">
+                <button class="ticketItem isActive" type="button">
+                  <span class="statusDot statusOpen"></span>
+                  <span>
+                    <strong>生成结果亮度不稳定</strong>
+                    <small>图片生成 / 待处理 / 10分钟前</small>
+                  </span>
+                </button>
+                <button class="ticketItem" type="button">
+                  <span class="statusDot statusProgress"></span>
+                  <span>
+                    <strong>订单支付后未立即到账</strong>
+                    <small>订单与积分 / 处理中 / 1小时前</small>
+                  </span>
+                </button>
+                <button class="ticketItem" type="button">
+                  <span class="statusDot statusResolved"></span>
+                  <span>
+                    <strong>希望收藏合集支持排序</strong>
+                    <small>功能建议 / 已解决 / 昨天</small>
+                  </span>
+                </button>
+              </div>
+
+              <article class="conversation" aria-label="反馈详情">
+                <div class="conversationHeader">
+                  <div>
+                    <span class="badge badgeWarning">待处理</span>
+                    <h3>生成结果亮度不稳定</h3>
+                    <p>图片生成 / task-20260709-031</p>
+                  </div>
+                  <button class="secondaryButton" type="button">关闭反馈</button>
+                </div>
+
+                <div class="messageStack">
+                  <div class="messageBubble userBubble">
+                    <div class="messageMeta">Mina / 2026-07-09 10:24</div>
+                    <p>同一组提示词重复生成时，第二次画面明显偏暗，希望可以确认是否是默认曝光策略导致。</p>
+                  </div>
+                  <div class="messageBubble adminBubble">
+                    <div class="messageMeta">管理员 Lee / 2026-07-09 10:46</div>
+                    <p>已收到，我们会先查看任务日志和模型参数。如果可以，请补充第一张和第二张图片的截图。</p>
+                  </div>
+                </div>
+
+                <div class="replyBox">
+                  <textarea placeholder="继续补充信息..."></textarea>
+                  <div class="replyActions">
+                    <button class="iconButton" type="button" aria-label="添加附件">+</button>
+                    <button class="primaryButton small" type="button">发送补充</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" data-view="admin" aria-label="管理员处理界面">
+        <div class="adminLayout">
+          <aside class="panel queuePanel">
+            <div class="panelHeader">
+              <p class="eyebrow">Ticket queue</p>
+              <h2>反馈队列</h2>
+            </div>
+            <div class="filterBar">
+              <input placeholder="搜索标题、邮箱、任务 ID" value="生成" />
+              <select>
+                <option>全部状态</option>
+                <option>待处理</option>
+                <option>处理中</option>
+                <option>已解决</option>
+              </select>
+            </div>
+            <div class="adminTicketList">
+              <button class="adminTicket isActive" type="button">
+                <span class="priority high">高</span>
+                <span>
+                  <strong>生成结果亮度不稳定</strong>
+                  <small>creator@zrocodeimg.dev / 10分钟前</small>
+                </span>
+              </button>
+              <button class="adminTicket" type="button">
+                <span class="priority mid">中</span>
+                <span>
+                  <strong>订单支付后未立即到账</strong>
+                  <small>mina@example.com / 1小时前</small>
+                </span>
+              </button>
+              <button class="adminTicket" type="button">
+                <span class="priority low">低</span>
+                <span>
+                  <strong>收藏合集无法重命名</strong>
+                  <small>user7@example.com / 3小时前</small>
+                </span>
+              </button>
+            </div>
+          </aside>
+
+          <section class="panel adminDetail">
+            <div class="adminDetailTop">
+              <div>
+                <p class="eyebrow">#FB-20260709-031</p>
+                <h2>生成结果亮度不稳定</h2>
+                <p class="mutedLine">creator@zrocodeimg.dev / 图片生成 / task-20260709-031</p>
+              </div>
+              <div class="adminControls">
+                <select>
+                  <option>待处理</option>
+                  <option>处理中</option>
+                  <option>已解决</option>
+                  <option>已关闭</option>
+                </select>
+                <button class="secondaryButton" type="button">更新状态</button>
+              </div>
+            </div>
+
+            <div class="adminContentGrid">
+              <div class="conversation adminConversation">
+                <div class="messageStack">
+                  <div class="messageBubble userBubble">
+                    <div class="messageMeta">用户 Mina / 2026-07-09 10:24</div>
+                    <p>同一组提示词重复生成时，第二次画面明显偏暗，希望可以确认是否是默认曝光策略导致。</p>
+                  </div>
+                  <div class="messageBubble adminBubble">
+                    <div class="messageMeta">管理员 Lee / 2026-07-09 10:46</div>
+                    <p>已收到，我们会先查看任务日志和模型参数。如果可以，请补充第一张和第二张图片的截图。</p>
+                  </div>
+                </div>
+                <div class="replyBox adminReplyBox">
+                  <textarea>您好，我们已经复现该问题。临时建议在提示词中加入“明亮、均匀曝光”，后续会优化默认曝光策略。</textarea>
+                  <div class="replyActions">
+                    <button class="secondaryButton" type="button">保存草稿</button>
+                    <button class="primaryButton small" type="button">回复用户</button>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="sideInfo">
+                <section>
+                  <h3>处理信息</h3>
+                  <dl>
+                    <div><dt>状态</dt><dd>待处理</dd></div>
+                    <div><dt>优先级</dt><dd>高</dd></div>
+                    <div><dt>首次响应</dt><dd>22 分钟</dd></div>
+                    <div><dt>负责人</dt><dd>Lee</dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>关联数据</h3>
+                  <a href="#">查看生成任务</a>
+                  <a href="#">查看用户详情</a>
+                  <a href="#">查看最近订单</a>
+                </section>
+                <section>
+                  <h3>内部备注</h3>
+                  <textarea>怀疑与低亮度风格预设叠加有关，待生成服务侧确认。</textarea>
+                </section>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
