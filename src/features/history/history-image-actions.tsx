@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { Download, Heart } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
@@ -43,7 +44,7 @@ export function HistoryImageActions({
     try {
       await favoriteCollectionsApi.addImage(collectionId, { generatedImageId });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "收藏失败");
+      setMessage(getErrorMessage(error));
       setLoading(false);
       return;
     }

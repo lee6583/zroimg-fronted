@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Gift, Hash, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
+import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
 
 export function RegisterForm() {
@@ -36,14 +37,12 @@ export function RegisterForm() {
     try {
       setMessage("");
       const data = await authApi.getSliderToken({ email, scene: "register" });
-      setSliderToken(data.sliderToken || data.token || "");
+      setSliderToken(data.sliderToken);
       setVerified(true);
       return true;
     } catch (error) {
       setMessageType("error");
-      setMessage(
-        error instanceof Error ? error.message : "安全验证失败，请重试",
-      );
+      setMessage(getErrorMessage(error));
       resetSliderVerification();
       return false;
     }
@@ -60,10 +59,10 @@ export function RegisterForm() {
       setMessage("");
       const data = await authApi.sendRegisterCode({ email, sliderToken });
       setMessageType("success");
-      setMessage(data.message || "验证码已发送");
+      setMessage(data.message);
     } catch (error) {
       setMessageType("error");
-      setMessage(error instanceof Error ? error.message : "发送失败");
+      setMessage(getErrorMessage(error));
     }
   }
 
@@ -82,7 +81,7 @@ export function RegisterForm() {
     } catch (error) {
       setLoading(false);
       setMessageType("error");
-      setMessage(error instanceof Error ? error.message : "注册失败");
+      setMessage(getErrorMessage(error));
       return;
     }
 
@@ -91,16 +90,6 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className={styles.authForm}>
-      <div className={styles.authForm__reward}>
-        <Gift className={styles.authForm__rewardIcon} />
-        <div>
-          <p className={styles.authForm__rewardTitle}>注册即送 10 积分</p>
-          <p className={styles.authForm__rewardText}>
-            首次注册自动到账，立即开始创作。
-          </p>
-        </div>
-      </div>
-
       <div className={styles.authForm__fields}>
         <label className={styles.authForm__field}>
           <span className={styles.authForm__fieldLabel}>用户名</span>
@@ -199,6 +188,16 @@ export function RegisterForm() {
       >
         {loading ? "注册中" : "注册"}
       </button>
+
+      <div className={styles.authForm__reward}>
+        <Gift className={styles.authForm__rewardIcon} />
+        <div>
+          <p className={styles.authForm__rewardTitle}>注册即送 10 积分</p>
+          <p className={styles.authForm__rewardText}>
+            首次注册自动到账，立即开始创作。
+          </p>
+        </div>
+      </div>
     </form>
   );
 }

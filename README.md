@@ -162,6 +162,8 @@ mock/                  前端页面和 UI 联调用 mock 数据
 - 统一从具体业务文件导入，例如 `@/api/admin/settings`、`@/api/generation/tasks`。
 - 不额外建立 `index.ts` barrel，避免隐藏接口来源和重复维护导出。
 - `src/api` 不做类型转导；组件需要类型时，直接从 `src/types` 引入。
+- 前后端确认字段名后，前端类型和取值必须严格按接口契约写，不写多字段兜底，例如不要写 `data.sliderToken || data.token`。
+- 接口错误消息由后端返回，页面 `catch` 里统一使用 `getErrorMessage(error)` 展示，不写 `error.message || "操作失败"` 这类兜底文案。
 
 推荐示例：
 

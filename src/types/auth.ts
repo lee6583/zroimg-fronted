@@ -6,8 +6,7 @@ export type SliderTokenRequest = {
 };
 
 export type SliderTokenResponse = {
-  token?: string;
-  sliderToken?: string;
+  sliderToken: string;
 };
 
 export type SendRegisterCodeRequest = {
@@ -16,7 +15,7 @@ export type SendRegisterCodeRequest = {
 };
 
 export type SendRegisterCodeResponse = {
-  message?: string;
+  message: string;
   code?: string;
   cooldownSeconds?: number;
   expiresInSeconds?: number;

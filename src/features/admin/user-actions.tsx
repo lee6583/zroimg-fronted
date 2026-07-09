@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
 
@@ -20,7 +21,7 @@ export function UserActions({
       setMessage("已调整");
       window.location.reload();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "调整失败");
+      setMessage(getErrorMessage(error));
     }
   }
 
@@ -32,7 +33,7 @@ export function UserActions({
       setMessage("已更新");
       window.location.reload();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "更新失败");
+      setMessage(getErrorMessage(error));
     }
   }
 

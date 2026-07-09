@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addImageToFavoriteCollection } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
@@ -18,6 +19,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const item = await addImageToFavoriteCollection(current.profile.id, id, generatedImageId);
     return jsonOk({ item });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "收藏失败");
+    return jsonError(getErrorMessage(error));
   }
 }

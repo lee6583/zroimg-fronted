@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
@@ -22,7 +23,7 @@ export function LoginForm() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "登录失败");
+      setMessage(getErrorMessage(error));
       return;
     }
 

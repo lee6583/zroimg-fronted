@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { findUserByEmail } from "@/server/bff/mock-store";
 import { jsonError } from "@/server/http";
-import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
+import {
+  hasJavaApiBaseUrl,
+  isJavaUnavailableResponse,
+  proxyRequestToJavaApi,
+} from "@/server/java-api";
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/user/sign-in");
+    const response = await proxyRequestToJavaApi(
+      request.clone(),
+      "/auth/admin/sign-in",
+    );
     if (!isJavaUnavailableResponse(response)) {
       return response;
     }
@@ -27,6 +34,9 @@ export async function POST(request: Request) {
   const bundle = findUserByEmail(email);
   if (!bundle || bundle.user.password !== password) {
     return jsonError("邮箱或密码错误", 401);
+  }
+  if (bundle.profile.role !== "admin") {
+    return jsonError("无管理员权限", 403);
   }
   if (bundle.profile.status !== "active") {
     return jsonError("账号已被禁用", 403);

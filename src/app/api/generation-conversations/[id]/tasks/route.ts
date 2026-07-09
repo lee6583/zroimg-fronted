@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { requireOwnedConversation } from "@/server/bff/generation";
 import { listGenerationTasks } from "@/server/bff/generation";
@@ -32,6 +33,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     );
     return jsonOk({ tasks: serializedTasks });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "加载失败");
+    return jsonError(getErrorMessage(error));
   }
 }

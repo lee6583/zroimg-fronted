@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderHeart, Pencil, Plus, Trash2 } from "lucide-react";
@@ -39,7 +40,7 @@ export function FavoriteCollectionsView({
     try {
       await favoriteCollectionsApi.createCollection({ name });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "创建合集失败");
+      setError(getErrorMessage(error));
       setLoading(false);
       return;
     }
@@ -87,7 +88,7 @@ export function FavoriteCollectionsView({
         name: editingName,
       });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "更新合集失败");
+      setError(getErrorMessage(error));
       setActionId("");
       return;
     }
@@ -110,7 +111,7 @@ export function FavoriteCollectionsView({
     try {
       await favoriteCollectionsApi.deleteCollection(collectionId);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "删除合集失败");
+      setError(getErrorMessage(error));
       setActionId("");
       return;
     }

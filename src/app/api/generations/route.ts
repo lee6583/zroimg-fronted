@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { requireOwnedConversation } from "@/server/bff/generation";
 import { createGenerationTask } from "@/server/bff/generation";
@@ -49,6 +50,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "创建任务失败");
+    return jsonError(getErrorMessage(error));
   }
 }

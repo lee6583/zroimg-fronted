@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addFeedbackMessage } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
@@ -31,6 +32,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     });
     return jsonOk({ ok: true });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "回复失败");
+    return jsonError(getErrorMessage(error));
   }
 }

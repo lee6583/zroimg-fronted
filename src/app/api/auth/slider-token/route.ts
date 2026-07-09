@@ -4,7 +4,7 @@ import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } f
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/slider-token");
+    const response = await proxyRequestToJavaApi(request.clone(), "/auth/user/slider-token");
     if (!isJavaUnavailableResponse(response)) {
       return response;
     }
@@ -17,13 +17,13 @@ export async function POST(request: Request) {
     return jsonError("请先输入邮箱");
   }
 
-  const token = `mock-slider-${nextId("slider")}`;
+  const sliderToken = `mock-slider-${nextId("slider")}`;
   getStore().sliderTokens.push({
-    token,
+    token: sliderToken,
     email: normalizedEmail,
     expiresAt: Date.now() + 5 * 60 * 1000,
     used: false,
   });
 
-  return jsonOk({ token });
+  return jsonOk({ sliderToken });
 }

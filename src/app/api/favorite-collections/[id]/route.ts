@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import {
   deleteFavoriteCollection,
@@ -21,7 +22,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const collection = await updateFavoriteCollectionName(current.profile.id, id, name);
     return jsonOk({ collection });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "更新失败");
+    return jsonError(getErrorMessage(error));
   }
 }
 
@@ -37,6 +38,6 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
     await deleteFavoriteCollection(current.profile.id, id);
     return jsonOk({ ok: true });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "删除失败");
+    return jsonError(getErrorMessage(error));
   }
 }

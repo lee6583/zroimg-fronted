@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { claimDailyCheckIn } from "@/server/bff/account";
 import { jsonError, jsonOk } from "@/server/http";
@@ -12,6 +13,6 @@ export async function POST() {
     const checkIn = await claimDailyCheckIn(current.profile.id);
     return jsonOk({ checkIn });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "签到失败");
+    return jsonError(getErrorMessage(error));
   }
 }

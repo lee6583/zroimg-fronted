@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import type {
   ApiEnvelope,
   ApiErrorCode,
@@ -182,7 +183,7 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     });
   } catch (error) {
     return throwApiError({
-      message: error instanceof Error ? error.message : "网络连接失败",
+      message: getErrorMessage(error),
       code: "NETWORK_ERROR",
       status: 0,
       url,

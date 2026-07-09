@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { checkInApi } from "@/api/rewards/checkin";
@@ -83,7 +84,7 @@ export function CheckInCard({
       router.refresh();
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "签到失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }

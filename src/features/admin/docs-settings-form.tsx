@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminDocsApi } from "@/api/admin/docs";
 import type { DocsConfig } from "@/types/content";
@@ -59,7 +60,7 @@ export function DocsSettingsForm({
       setMessage("文档已保存，前台 /docs 会立即读取最新内容。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }

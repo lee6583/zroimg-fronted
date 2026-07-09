@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { galleryApi } from "@/api/generation/gallery";
@@ -23,7 +24,7 @@ export function PublishGalleryButton({
     try {
       await galleryApi.publishImage({ generatedImageId });
     } catch (error) {
-      setLabel(error instanceof Error ? error.message : "发布失败");
+      setLabel(getErrorMessage(error));
       setLoading(false);
       return;
     }

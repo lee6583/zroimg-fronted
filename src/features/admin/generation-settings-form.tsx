@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
 import type { GenerationProviderAdminConfig } from "@/types/admin";
@@ -48,7 +49,7 @@ export function GenerationSettingsForm({
       setMessage("已保存，新的生成任务会使用这套配置。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }

@@ -82,6 +82,26 @@ function parseImageUrls(data: unknown, format: string) {
   }).filter(Boolean);
 }
 
+function readLocalProviderErrorMessage(data: unknown) {
+  if (!data || typeof data !== "object") {
+    throw data;
+  }
+
+  const error = (data as { error?: unknown }).error;
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error && typeof error === "object") {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  throw data;
+}
+
 function openLocalGenerationDb() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(dbName, dbVersion);
@@ -167,8 +187,7 @@ export async function runLocalImageGeneration(input: LocalGenerationInput) {
   const data = await response.json();
 
   if (!response.ok) {
-    const message = data?.error?.message || data?.error || "本地自定义接口生成失败";
-    throw new Error(message);
+    throw new Error(readLocalProviderErrorMessage(data));
   }
 
   const rawImageUrls = parseImageUrls(data, input.outputFormat);
