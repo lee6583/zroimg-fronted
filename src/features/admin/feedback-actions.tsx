@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ticketsApi } from "@/api/support/tickets";
@@ -36,7 +37,7 @@ export function FeedbackActions({
       router.refresh();
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "更新状态失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -52,7 +53,7 @@ export function FeedbackActions({
       router.refresh();
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "回复失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }

@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { serverEnv } from "@/server/env";
@@ -169,6 +170,6 @@ export async function getJavaApiData<T>(path: string) {
 
     return payload as T;
   } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Java 后端暂时不可用");
+    throw new Error(getErrorMessage(error));
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
 import type {
@@ -99,7 +100,7 @@ export function SmtpSettingsForm({
       setMessage("SMTP 配置已保存。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -117,7 +118,7 @@ export function SmtpSettingsForm({
       );
     } catch (error) {
       setTesting(false);
-      setMessage(error instanceof Error ? error.message : "测试失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -292,7 +293,7 @@ export function EasyPaySettingsForm({
       setMessage("易支付配置已保存，新订单会使用这套配置。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -423,7 +424,7 @@ export function CheckInSettingsForm({
       setMessage("签到积分已保存。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }

@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addAuditLog, adjustProfileCredits } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
@@ -27,6 +28,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     });
     return jsonOk({ balance: profile.creditBalance });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "调整失败");
+    return jsonError(getErrorMessage(error));
   }
 }

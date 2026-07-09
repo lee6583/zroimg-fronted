@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import Image from "next/image";
 import {
   Archive,
@@ -455,7 +456,7 @@ export function GenerateForm({
       setConversationPanelOpen(false);
       return conversation;
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "新建对话失败");
+      setMessage(getErrorMessage(error));
       return null;
     }
   }
@@ -469,7 +470,7 @@ export function GenerateForm({
       const data = await generationConversationsApi.fetchConversationTasks(id);
       setTasks((Array.isArray(data) ? data : (data.tasks ?? [])) as TaskItem[]);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "加载对话失败");
+      setMessage(getErrorMessage(error));
     }
   }
 
@@ -506,7 +507,7 @@ export function GenerateForm({
       setEditingTitle("");
     } catch (error) {
       setPendingConversationId("");
-      setMessage(error instanceof Error ? error.message : "修改对话名称失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -519,7 +520,7 @@ export function GenerateForm({
       setPendingConversationId("");
     } catch (error) {
       setPendingConversationId("");
-      setMessage(error instanceof Error ? error.message : "删除对话失败");
+      setMessage(getErrorMessage(error));
       return;
     }
 
@@ -661,7 +662,7 @@ export function GenerateForm({
         ),
       );
       setMessage(
-        error instanceof Error ? error.message : "本地自定义接口生成失败",
+        getErrorMessage(error),
       );
     }
 
@@ -710,7 +711,7 @@ export function GenerateForm({
       })
       .catch((error) => {
         setLoading(false);
-        setMessage(error instanceof Error ? error.message : "创建任务失败");
+        setMessage(getErrorMessage(error));
         return null;
       });
 

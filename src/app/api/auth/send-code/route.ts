@@ -4,7 +4,7 @@ import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } f
 
 export async function POST(request: Request) {
   if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/register/send-code");
+    const response = await proxyRequestToJavaApi(request.clone(), "/auth/user/send-code");
     if (!isJavaUnavailableResponse(response)) {
       return response;
     }

@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import {
   deleteGenerationConversation,
@@ -43,7 +44,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const conversation = await updateGenerationConversationTitle(current.profile.id, id, title || "");
     return jsonOk({ conversation: serializeConversation(conversation) });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "更新失败");
+    return jsonError(getErrorMessage(error));
   }
 }
 
@@ -59,6 +60,6 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
     await deleteGenerationConversation(current.profile.id, id);
     return jsonOk({ ok: true });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "删除失败");
+    return jsonError(getErrorMessage(error));
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
 import { AppSelect } from "@/components/ui/app-select";
@@ -64,7 +65,7 @@ export function OrderForm({ packages }: { packages: Package[] }) {
       }
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "创建订单失败");
+      setMessage(getErrorMessage(error));
     }
   }
 

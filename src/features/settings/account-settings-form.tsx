@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { Eye, EyeOff, KeyRound, LockKeyhole, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -70,7 +71,7 @@ export function AccountSettingsForm({
       router.refresh();
     } catch (error) {
       setProfileLoading(false);
-      setProfileMessage(error instanceof Error ? error.message : "保存失败");
+      setProfileMessage(getErrorMessage(error));
       return;
     }
   }
@@ -94,7 +95,7 @@ export function AccountSettingsForm({
     } catch (error) {
       setPasswordLoading(false);
       setPasswordMessage(
-        error instanceof Error ? error.message : "修改密码失败",
+        getErrorMessage(error),
       );
       return;
     }
