@@ -1,8 +1,9 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { publishGalleryImage } from "@/api/generation/gallery";
+import { galleryApi } from "@/api/generation/gallery";
 import styles from "./publish-button.module.css";
 
 export function PublishGalleryButton({
@@ -12,8 +13,8 @@ export function PublishGalleryButton({
   generatedImageId: string;
   initialPublished: boolean;
 }) {
-  const [published, setPublished] = useState(initialPublished);
-  const [loading, setLoading] = useState(false);
+  const [isPublished, setPublished] = useState(initialPublished);
+  const [isLoading, setLoading] = useState(false);
   const [label, setLabel] = useState(initialPublished ? "已发布" : "发布");
 
   async function publishImage() {
@@ -21,9 +22,9 @@ export function PublishGalleryButton({
     setLabel("发布中");
 
     try {
-      await publishGalleryImage({ generatedImageId });
+      await galleryApi.publishImage({ generatedImageId });
     } catch (error) {
-      setLabel(error instanceof Error ? error.message : "发布失败");
+      setLabel(getErrorMessage(error));
       setLoading(false);
       return;
     }
@@ -38,7 +39,7 @@ export function PublishGalleryButton({
       <button
         type="button"
         onClick={publishImage}
-        disabled={loading || published}
+        disabled={isLoading || isPublished}
         className={styles.publishButton__action}
       >
         <Send size={14} />

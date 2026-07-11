@@ -1,6 +1,12 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addAuditLog, getStore } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const statusSchema = z.object({
+  status: z.enum(["active", "banned"]),
+});
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const current = await getCurrentUserProfile();
@@ -9,10 +15,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const { id } = await context.params;
-  const { status } = (await request.json()) as { status?: "active" | "banned" };
-  if (status !== "active" && status !== "banned") {
-    return jsonError("状态不合法");
-  }
+  const parsed = await parseJson(request, statusSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
+
+  const { status } = parsed.data;
 
   const profile = getStore().profiles.find((item) => item.id === id);
   if (!profile) {

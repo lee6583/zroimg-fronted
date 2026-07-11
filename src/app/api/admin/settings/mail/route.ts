@@ -1,12 +1,26 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
 import { addAuditLog } from "@/server/bff/mock-store";
 import { getSmtpAdminConfig, updateSmtpSettings } from "@/server/bff/account";
-import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+import { isMockBffEnabled } from "@/server/env";
+import { proxyRequestToJavaApi } from "@/server/java-api";
+import { parseJson } from "@/server/validation";
+
+const smtpSchema = z.object({
+  enabled: z.boolean(),
+  host: z.string().trim().max(255),
+  port: z.number().int().min(1).max(65_535),
+  secure: z.boolean(),
+  user: z.string().trim().max(320),
+  password: z.string().max(4096),
+  clearPassword: z.boolean(),
+  from: z.string().trim().min(1, "请输入发件人").max(320),
+});
 
 export async function GET(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "GET");
+  if (!isMockBffEnabled()) {
+    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "GET");
   }
 
   const current = await getCurrentUserProfile();
@@ -19,8 +33,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/admin/settings/smtp", "PUT");
+  if (!isMockBffEnabled()) {
+    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "PUT");
   }
 
   const current = await getCurrentUserProfile();
@@ -28,26 +42,20 @@ export async function POST(request: Request) {
     return jsonError("无权限", 403);
   }
 
-  const payload = (await request.json()) as {
-    enabled?: boolean;
-    host?: string;
-    port?: number;
-    secure?: boolean;
-    user?: string;
-    password?: string;
-    clearPassword?: boolean;
-    from?: string;
-  };
+  const parsed = await parseJson(request, smtpSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
+
+  const payload = parsed.data;
 
   const settings = await updateSmtpSettings({
-    enabled: Boolean(payload.enabled),
+    enabled: payload.enabled,
     host: payload.host,
-    port: Number(payload.port || 587),
-    secure: Boolean(payload.secure),
+    port: payload.port,
+    secure: payload.secure,
     user: payload.user,
     password: payload.password,
     clearPassword: payload.clearPassword,
-    from: payload.from?.trim() || "ZroCodeImg <noreply@zrocodeimg.dev>",
+    from: payload.from,
   });
 
   addAuditLog({

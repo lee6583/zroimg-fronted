@@ -33,17 +33,17 @@ function MetricCard({
 
 export function DashboardOverview({
   generatedCount,
-  initialCreditBalance,
+  initialBalance,
   checkInStatus,
 }: {
   generatedCount: number;
-  initialCreditBalance: number;
+  initialBalance: number;
   checkInStatus: CheckInStatus;
 }) {
-  const [creditBalance, setCreditBalance] = useState(initialCreditBalance);
+  const [balance, setBalance] = useState(initialBalance);
 
   function onCheckInClaimed(credits: number) {
-    setCreditBalance((current) => current + credits);
+    setBalance((current) => current + credits);
   }
 
   return (
@@ -51,7 +51,7 @@ export function DashboardOverview({
       <div className={styles.dashboard__summaryMain}>
         <div className={styles.dashboard__metrics}>
           <MetricCard label="生成总数" value={generatedCount} icon={ImageIcon} />
-          <MetricCard label="剩余积分" value={creditBalance} icon={WalletCards} />
+          <MetricCard label="剩余积分" value={balance} icon={WalletCards} />
         </div>
 
         <section className={styles.dashboard__creationCard}>

@@ -1,21 +1,28 @@
 import { request } from "@/utils/request";
+import type {
+  UpdateAccountPasswordRequest,
+  UpdateAccountPasswordResponse,
+  UpdateAccountProfileRequest,
+  UpdateAccountProfileResponse,
+} from "@/types/account";
 
-export function updateAccountProfile(data: FormData) {
-  return request<{ ok?: boolean }>({
+function updateProfile(data: UpdateAccountProfileRequest) {
+  return request<UpdateAccountProfileResponse>({
     url: "/api/account/profile",
     method: "POST",
     body: data,
   });
 }
 
-export function updateAccountPassword(data: {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}) {
-  return request<{ ok?: boolean }>({
+function updatePassword(data: UpdateAccountPasswordRequest) {
+  return request<UpdateAccountPasswordResponse>({
     url: "/api/account/password",
     method: "POST",
     data,
   });
 }
+
+export const accountApi = {
+  updateProfile,
+  updatePassword,
+};

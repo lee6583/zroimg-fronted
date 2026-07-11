@@ -1,24 +1,49 @@
 import { getStore, nextId } from "@/server/bff/mock-store";
 
-export async function listFavoriteCollections(userProfileId: string) {
+function findThumbnail(thumbnailId: string | null) {
+  if (!thumbnailId) {
+    return null;
+  }
+
+  const store = getStore();
+  const asset = store.mediaAssets.find((item) => item.id === thumbnailId);
+  if (!asset) {
+    return null;
+  }
+
+  return asset;
+}
+
+export async function listCollections(profileId: string) {
   const store = getStore();
 
   return store.favoriteCollections
-    .filter((item) => item.userProfileId === userProfileId)
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-    .map((collection) => ({
-      ...collection,
-      _count: {
-        items: store.favoriteCollectionItems.filter((item) => item.collectionId === collection.id).length,
-      },
-    }));
+    .filter((item) => item.userProfileId === profileId)
+    .sort((a, b) => {
+      const timeA = a.updatedAt.getTime();
+      const timeB = b.updatedAt.getTime();
+      return timeB - timeA;
+    })
+    .map((collection) => {
+      const items = store.favoriteCollectionItems.filter(
+        (item) => item.collectionId === collection.id,
+      );
+      const count = items.length;
+
+      return {
+        ...collection,
+        _count: {
+          items: count,
+        },
+      };
+    });
 }
 
-export async function createFavoriteCollection(userProfileId: string, name: string) {
+export async function createCollection(profileId: string, name: string) {
   const store = getStore();
   const collection = {
     id: nextId("favoriteCollection"),
-    userProfileId,
+    userProfileId: profileId,
     name: name.trim(),
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -27,9 +52,11 @@ export async function createFavoriteCollection(userProfileId: string, name: stri
   return collection;
 }
 
-export async function updateFavoriteCollectionName(userProfileId: string, collectionId: string, name: string) {
+export async function updateName(profileId: string, collectionId: string, name: string) {
   const store = getStore();
-  const collection = store.favoriteCollections.find((item) => item.id === collectionId && item.userProfileId === userProfileId);
+  const collection = store.favoriteCollections.find(
+    (item) => item.id === collectionId && item.userProfileId === profileId,
+  );
   if (!collection) {
     throw new Error("合集不存在");
   }
@@ -38,29 +65,43 @@ export async function updateFavoriteCollectionName(userProfileId: string, collec
   return collection;
 }
 
-export async function deleteFavoriteCollection(userProfileId: string, collectionId: string) {
+export async function deleteCollection(profileId: string, collectionId: string) {
   const store = getStore();
-  const index = store.favoriteCollections.findIndex((item) => item.id === collectionId && item.userProfileId === userProfileId);
+  const index = store.favoriteCollections.findIndex(
+    (item) => item.id === collectionId && item.userProfileId === profileId,
+  );
   if (index < 0) {
     throw new Error("合集不存在");
   }
   store.favoriteCollections.splice(index, 1);
-  store.favoriteCollectionItems = store.favoriteCollectionItems.filter((item) => item.collectionId !== collectionId);
+  store.favoriteCollectionItems = store.favoriteCollectionItems.filter(
+    (item) => item.collectionId !== collectionId,
+  );
 }
 
-export async function addImageToFavoriteCollection(userProfileId: string, collectionId: string, generatedImageId: string) {
+export async function addImage(profileId: string, collectionId: string, imageId: string) {
   const store = getStore();
-  const collection = store.favoriteCollections.find((item) => item.id === collectionId && item.userProfileId === userProfileId);
+  const collection = store.favoriteCollections.find(
+    (item) => item.id === collectionId && item.userProfileId === profileId,
+  );
   if (!collection) {
     throw new Error("合集不存在");
   }
-  const exists = store.favoriteCollectionItems.find((item) => item.collectionId === collectionId && item.generatedImageId === generatedImageId);
+  const image = store.generatedImages.find(
+    (item) => item.id === imageId && item.userProfileId === profileId,
+  );
+  if (!image) {
+    throw new Error("作品不存在");
+  }
+  const exists = store.favoriteCollectionItems.find(
+    (item) => item.collectionId === collectionId && item.generatedImageId === imageId,
+  );
   if (exists) return exists;
 
   const item = {
     id: nextId("favoriteCollectionItem"),
     collectionId,
-    generatedImageId,
+    generatedImageId: imageId,
     createdAt: new Date(),
   };
   store.favoriteCollectionItems.unshift(item);
@@ -68,20 +109,28 @@ export async function addImageToFavoriteCollection(userProfileId: string, collec
   return item;
 }
 
-export async function getFavoriteCollectionForUser(userProfileId: string, collectionId: string) {
+export async function getCollection(profileId: string, collectionId: string) {
   const store = getStore();
-  const collection = store.favoriteCollections.find((item) => item.id === collectionId && item.userProfileId === userProfileId);
+  const collection = store.favoriteCollections.find(
+    (item) => item.id === collectionId && item.userProfileId === profileId,
+  );
   if (!collection) return null;
 
   const items = store.favoriteCollectionItems
     .filter((item) => item.collectionId === collectionId)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .sort((a, b) => {
+      const timeA = a.createdAt.getTime();
+      const timeB = b.createdAt.getTime();
+      return timeB - timeA;
+    })
     .map((item) => {
-      const generatedImage = store.generatedImages.find((image) => image.id === item.generatedImageId)!;
-      const outputAsset = store.mediaAssets.find((asset) => asset.id === generatedImage.outputAssetId)!;
-      const thumbnailAsset = generatedImage.thumbnailAssetId
-        ? store.mediaAssets.find((asset) => asset.id === generatedImage.thumbnailAssetId) || null
-        : null;
+      const generatedImage = store.generatedImages.find(
+        (image) => image.id === item.generatedImageId,
+      )!;
+      const outputAsset = store.mediaAssets.find(
+        (asset) => asset.id === generatedImage.outputAssetId,
+      )!;
+      const thumbnailAsset = findThumbnail(generatedImage.thumbnailAssetId);
       const task = store.generationTasks.find((entry) => entry.id === generatedImage.taskId)!;
 
       return {

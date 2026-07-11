@@ -28,8 +28,12 @@ export default async function AdminPage() {
       <div className="grid gap-6">
         <section>
           <p className="label">Admin overview</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">管理概览</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">查看站点运营状态、待处理反馈和关键业务指标。</p>
+          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
+            管理概览
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+            查看站点运营状态、待处理反馈和关键业务指标。
+          </p>
         </section>
 
         <section className="grid gap-4 md:grid-cols-5">
@@ -55,12 +59,18 @@ export default async function AdminPage() {
               <p className={styles.adminOverview__emptyFeedback}>暂无反馈</p>
             ) : (
               latestTickets.map((ticket) => (
-                <Link key={ticket.id} href="/admin/tickets" className={styles.adminOverview__feedbackItem}>
+                <Link
+                  key={ticket.id}
+                  href="/admin/tickets"
+                  className={styles.adminOverview__feedbackItem}
+                >
                   <div className="flex flex-wrap justify-between gap-3">
                     <p className="font-medium">{ticket.subject}</p>
                     <p className="text-sm text-muted">{feedbackStatusLabels[ticket.status]}</p>
                   </div>
-                  <p className="mt-1 text-sm text-muted">{ticket.userProfile?.user?.email || "-"}</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {ticket.userProfile?.user?.email || "-"}
+                  </p>
                 </Link>
               ))
             )}

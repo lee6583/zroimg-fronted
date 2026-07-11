@@ -1,32 +1,47 @@
 import { request } from "@/utils/request";
+import type {
+  AddImageToFavoriteCollectionRequest,
+  AddImageToFavoriteCollectionResponse,
+  CreateFavoriteCollectionRequest,
+  DeleteFavoriteCollectionResponse,
+  FavoriteCollectionMutationResponse,
+  UpdateFavoriteCollectionRequest,
+} from "@/types/generation";
 
-export function createFavoriteCollection(data: { name: string }) {
-  return request<{ collection: unknown }>({
+function createCollection(data: CreateFavoriteCollectionRequest) {
+  return request<FavoriteCollectionMutationResponse>({
     url: "/api/favorite-collections",
     method: "POST",
     data,
   });
 }
 
-export function updateFavoriteCollection(collectionId: string, data: { name: string }) {
-  return request<{ collection: unknown }>({
+function updateCollection(collectionId: string, data: UpdateFavoriteCollectionRequest) {
+  return request<FavoriteCollectionMutationResponse>({
     url: `/api/favorite-collections/${collectionId}`,
     method: "PATCH",
     data,
   });
 }
 
-export function deleteFavoriteCollection(collectionId: string) {
-  return request<{ ok?: boolean }>({
+function deleteCollection(collectionId: string) {
+  return request<DeleteFavoriteCollectionResponse>({
     url: `/api/favorite-collections/${collectionId}`,
     method: "DELETE",
   });
 }
 
-export function addImageToFavoriteCollection(collectionId: string, data: { generatedImageId: string }) {
-  return request<{ ok?: boolean }>({
+function addImage(collectionId: string, data: AddImageToFavoriteCollectionRequest) {
+  return request<AddImageToFavoriteCollectionResponse>({
     url: `/api/favorite-collections/${collectionId}/images`,
     method: "POST",
     data,
   });
 }
+
+export const favoriteCollectionsApi = {
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  addImage,
+};

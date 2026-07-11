@@ -1,8 +1,9 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { Download, Heart } from "lucide-react";
-import { addImageToFavoriteCollection } from "@/api/generation/favorites";
+import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import { AppSelect } from "@/components/ui/app-select";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import styles from "./history-image-actions.module.css";
@@ -26,10 +27,10 @@ export function HistoryImageActions({
   downloadUrl: string;
   downloadFileName: string;
 }) {
-  const [favoriteOpen, setFavoriteOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
   const [collectionId, setCollectionId] = useState(collections[0]?.id || "");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function addToCollection() {
     if (!collectionId) {
@@ -41,28 +42,31 @@ export function HistoryImageActions({
     setMessage("");
 
     try {
-      await addImageToFavoriteCollection(collectionId, { generatedImageId });
+      await favoriteCollectionsApi.addImage(collectionId, { generatedImageId });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "收藏失败");
+      setMessage(getErrorMessage(error));
       setLoading(false);
       return;
     }
 
     setMessage("已收藏");
-    setFavoriteOpen(false);
+    setOpen(false);
     setLoading(false);
   }
 
   return (
     <div className={styles.historyImageActions}>
       <div className={styles.historyImageActions__row}>
-        <PublishGalleryButton generatedImageId={generatedImageId} initialPublished={initialPublished} />
+        <PublishGalleryButton
+          generatedImageId={generatedImageId}
+          initialPublished={initialPublished}
+        />
 
         <button
           type="button"
           aria-label="收藏到合集"
           title="收藏到合集"
-          onClick={() => setFavoriteOpen((current) => !current)}
+          onClick={() => setOpen((current) => !current)}
           className={styles.historyImageActions__iconButton}
         >
           <Heart size={15} />
@@ -81,7 +85,7 @@ export function HistoryImageActions({
         </a>
       </div>
 
-      {favoriteOpen ? (
+      {isOpen ? (
         <div className={styles.historyImageActions__panel}>
           {collections.length > 0 ? (
             <>
@@ -96,11 +100,11 @@ export function HistoryImageActions({
               />
               <button
                 type="button"
-                disabled={loading}
+                disabled={isLoading}
                 onClick={addToCollection}
                 className={styles.historyImageActions__saveButton}
               >
-                {loading ? "收藏中" : "收藏"}
+                {isLoading ? "收藏中" : "收藏"}
               </button>
             </>
           ) : (

@@ -1,39 +1,48 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { requireOwnedConversation } from "@/server/bff/generation";
-import { createGenerationTask } from "@/server/bff/generation";
-import { jsonError, jsonOk } from "@/server/http";
+import { createTask, requireConversation } from "@/server/bff/generation";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const generationSchema = z.object({
+  conversationId: z.string().trim().min(1, "请选择对话").max(128),
+  prompt: z.string().trim().min(1, "请输入提示词").max(4000),
+  mode: z.enum(["text", "edit"]),
+  quality: z.enum(["low", "medium", "high"]),
+  outputFormat: z.enum(["png", "webp", "jpeg"]),
+  size: z
+    .string()
+    .regex(/^\d{2,4}x\d{2,4}$/, "图片尺寸格式不正确")
+    .refine((value) => value.split("x").every((item) => Number(item) <= 4096), {
+      message: "图片尺寸不能超过 4096",
+    }),
+  imageCount: z.number().int().min(1).max(4),
+  inputMediaIds: z.array(z.string().min(1).max(128)).max(4),
+});
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const payload = (await request.json()) as {
-    conversationId?: string;
-    prompt?: string;
-    mode?: "text" | "edit";
-    quality?: "low" | "medium" | "high";
-    outputFormat?: "png" | "webp" | "jpeg";
-    size?: string;
-    imageCount?: number;
-  };
+    const parsed = await parseJson(request, generationSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!payload.conversationId || !payload.prompt?.trim()) {
-    return jsonError("请输入提示词");
-  }
+    const payload = parsed.data;
 
-  try {
-    await requireOwnedConversation(current.profile.id, payload.conversationId);
-    const task = await createGenerationTask({
+    await requireConversation(current.profile.id, payload.conversationId);
+    const task = await createTask({
       userProfileId: current.profile.id,
       conversationId: payload.conversationId,
       prompt: payload.prompt,
-      mode: payload.mode === "edit" ? "edit" : "text",
-      quality: payload.quality === "low" || payload.quality === "high" ? payload.quality : "medium",
-      outputFormat: payload.outputFormat === "jpeg" || payload.outputFormat === "webp" ? payload.outputFormat : "png",
-      size: payload.size || "1024x1024",
-      imageCount: Math.min(Math.max(Number(payload.imageCount || 1), 1), 4),
+      mode: payload.mode,
+      quality: payload.quality,
+      outputFormat: payload.outputFormat,
+      size: payload.size,
+      imageCount: payload.imageCount,
+      inputMediaIds: payload.inputMediaIds,
     });
 
     return jsonOk({
@@ -48,7 +57,5 @@ export async function POST(request: Request) {
         createdAt: task.createdAt.toISOString(),
       },
     });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "创建任务失败");
-  }
+  });
 }

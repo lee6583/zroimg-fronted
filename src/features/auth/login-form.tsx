@@ -1,9 +1,11 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
-import { loginWithEmail } from "@/api/auth";
+import { authApi } from "@/api/auth/email-auth";
 import styles from "./auth-form.module.css";
 
 export function LoginForm() {
@@ -11,18 +13,18 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
       setLoading(true);
       setMessage("");
-      await loginWithEmail({ email, password });
+      await authApi.loginWithEmail({ email, password });
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "登录失败");
+      setMessage(getErrorMessage(error));
       return;
     }
 
@@ -49,7 +51,12 @@ export function LoginForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>密码</span>
+          <span className={styles.authForm__labelRow}>
+            <span className={styles.authForm__fieldLabel}>密码</span>
+            <Link href="/forgot-password" className={styles.authForm__fieldLink}>
+              忘记密码？
+            </Link>
+          </span>
           <span className={styles.authForm__control}>
             <Lock className={styles.authForm__icon} />
             <input
@@ -62,11 +69,15 @@ export function LoginForm() {
           </span>
         </label>
 
-        {message ? <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>{message}</p> : null}
+        {message ? (
+          <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>
+            {message}
+          </p>
+        ) : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={loading}>
-        {loading ? "登录中" : "登录"}
+      <button className={styles.authForm__submit} disabled={isLoading}>
+        {isLoading ? "登录中" : "登录"}
       </button>
     </form>
   );

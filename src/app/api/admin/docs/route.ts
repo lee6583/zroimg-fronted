@@ -1,7 +1,30 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { getDocsConfig, updateDocsConfig } from "@/server/bff/content";
+import { updateDocsConfig } from "@/server/bff/content";
 import { jsonError, jsonOk } from "@/server/http";
 import { addAuditLog } from "@/server/bff/mock-store";
+import { parseJson } from "@/server/validation";
+
+const docsSchema = z.object({
+  title: z.string().trim().min(1, "请输入文档标题").max(120),
+  description: z.string().trim().max(500),
+  groups: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1, "分组标题不能为空").max(120),
+        items: z
+          .array(
+            z.object({
+              id: z.string().trim().min(1, "文档 ID 不能为空").max(128),
+              title: z.string().trim().min(1, "文档标题不能为空").max(120),
+              body: z.string().max(50_000, "单篇文档内容过长"),
+            }),
+          )
+          .max(100),
+      }),
+    )
+    .max(50),
+});
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();
@@ -9,20 +32,15 @@ export async function POST(request: Request) {
     return jsonError("无权限", 403);
   }
 
-  const payload = (await request.json()) as {
-    title?: string;
-    description?: string;
-    groups?: unknown;
-  };
+  const parsed = await parseJson(request, docsSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!payload.title?.trim() || !Array.isArray(payload.groups)) {
-    return jsonError("文档结构不完整");
-  }
+  const payload = parsed.data;
 
   const docs = await updateDocsConfig({
-    title: payload.title.trim(),
-    description: payload.description?.trim() || "",
-    groups: payload.groups as Awaited<ReturnType<typeof getDocsConfig>>["groups"],
+    title: payload.title,
+    description: payload.description,
+    groups: payload.groups,
   });
 
   addAuditLog({

@@ -1,29 +1,30 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { addFeedbackMessage } from "@/server/bff/account";
-import { jsonError, jsonOk } from "@/server/http";
+import { addTicketMessage } from "@/server/bff/account";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const messageSchema = z.object({
+  body: z.string().trim().min(1, "请输入追问内容").max(5000, "回复最多 5000 位"),
+});
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
-  const { body } = (await request.json()) as { body?: string };
+    const { id } = await context.params;
+    const parsed = await parseJson(request, messageSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!body?.trim()) {
-    return jsonError("请输入追问内容");
-  }
-
-  try {
-    await addFeedbackMessage({
+    await addTicketMessage({
       ticketId: id,
       authorProfileId: current.profile.id,
       isAdmin: false,
-      body,
+      body: parsed.data.body,
     });
     return jsonOk({ ok: true });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "发送失败");
-  }
+  });
 }

@@ -2,8 +2,8 @@ import { getStore } from "@/server/bff/mock-store";
 import type { DocsConfig } from "@/types/content";
 
 export const defaultDocsConfig: DocsConfig = {
-  title: "ZroCodeImg 文档",
-  description: "了解 ZroCodeImg 的创作方式、积分闭环和账户配置，先完成前端迁移，再接 Java 后端。",
+  title: "ZroImg 文档",
+  description: "了解 ZroImg 的创作方式、积分闭环和账户配置，先完成前端迁移，再接 Java 后端。",
   groups: [
     {
       title: "快速开始",
@@ -12,7 +12,7 @@ export const defaultDocsConfig: DocsConfig = {
           id: "overview",
           title: "项目概览",
           body: `# 项目概览
-ZroCodeImg 是一个面向创作者的图片生成产品，当前前端已从旧项目迁移出来，后端部分暂时使用 mock 数据承接页面展示和交互。
+ZroImg 是一个面向创作者的图片生成产品，当前前端已从旧项目迁移出来，后端部分暂时使用 mock 数据承接页面展示和交互。
 
 ## 当前阶段
 - 前端：Next.js SSR 页面、样式和交互已经迁移。

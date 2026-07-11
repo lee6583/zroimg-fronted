@@ -1,22 +1,33 @@
-type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+import { getErrorMessage } from "@/utils/error";
+import type {
+  ApiEnvelope,
+  ApiErrorCode,
+  ApiErrorInfo,
+  JavaResult,
+  RequestOptions,
+} from "@/types/api";
 
-type RequestOptions = {
+export class ApiRequestError extends Error implements ApiErrorInfo {
+  code: ApiErrorCode | string;
+  status: number;
   url: string;
-  method?: RequestMethod;
-  params?: Record<string, string | number | boolean | undefined | null>;
-  data?: unknown;
-  headers?: HeadersInit;
-  body?: BodyInit | null;
-  credentials?: RequestCredentials;
-};
+  method: ApiErrorInfo["method"];
+  payload: unknown;
 
-type ApiEnvelope<T> = {
-  success?: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  [key: string]: unknown;
-};
+  constructor(info: ApiErrorInfo) {
+    super(info.message);
+    this.name = "ApiRequestError";
+    this.code = info.code;
+    this.status = info.status;
+    this.url = info.url;
+    this.method = info.method;
+    this.payload = info.payload;
+  }
+}
+
+export function isApiRequestError(error: unknown): error is ApiRequestError {
+  return error instanceof ApiRequestError;
+}
 
 function buildUrl(url: string, params?: RequestOptions["params"]) {
   if (!params) return url;
@@ -44,18 +55,116 @@ function isBodyInit(value: unknown): value is BodyInit {
   );
 }
 
+function readStringField(payload: unknown, field: string) {
+  if (!payload || typeof payload !== "object") return "";
+  const value = (payload as Record<string, unknown>)[field];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function readNumberField(payload: unknown, field: string) {
+  if (!payload || typeof payload !== "object") return 0;
+  const value = (payload as Record<string, unknown>)[field];
+  return typeof value === "number" ? value : 0;
+}
+
 function readErrorMessage(payload: unknown, fallback: string) {
-  if (!payload || typeof payload !== "object") return fallback;
+  return readStringField(payload, "message") || readStringField(payload, "error") || fallback;
+}
 
-  if ("message" in payload && typeof payload.message === "string" && payload.message.trim()) {
-    return payload.message;
+function readPayloadCode(payload: unknown) {
+  const codeText = readStringField(payload, "code") || readStringField(payload, "errorCode");
+  if (codeText) return codeText;
+
+  const codeNumber = readNumberField(payload, "code");
+  if (codeNumber) return String(codeNumber);
+
+  return "";
+}
+
+function resolveErrorCode(status: number, payload: unknown): ApiErrorCode | string {
+  const payloadCode = readPayloadCode(payload);
+  if (payloadCode) return payloadCode;
+
+  if (status === 400) return "BAD_REQUEST";
+  if (status === 401) return "UNAUTHORIZED";
+  if (status === 403) return "FORBIDDEN";
+  if (status === 404) return "NOT_FOUND";
+  if (status === 409) return "CONFLICT";
+  if (status === 422) return "VALIDATION_ERROR";
+  if (status >= 500) return "SERVER_ERROR";
+  return "UNKNOWN_ERROR";
+}
+
+async function parsePayload<T>(response: Response) {
+  if (response.status === 204) return null;
+
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return (await response.json().catch(() => null)) as ApiEnvelope<T> | JavaResult<T> | T | null;
   }
 
-  if ("error" in payload && typeof payload.error === "string" && payload.error.trim()) {
-    return payload.error;
+  const text = await response.text().catch(() => "");
+  return text ? ({ message: text } as ApiEnvelope<T>) : null;
+}
+
+function throwApiError(info: ApiErrorInfo): never {
+  throw new ApiRequestError(info);
+}
+
+function isApiEnvelope<T>(
+  payload: ApiEnvelope<T> | JavaResult<T> | T | null,
+): payload is ApiEnvelope<T> {
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    typeof payload.success === "boolean",
+  );
+}
+
+function isJavaResult<T>(
+  payload: ApiEnvelope<T> | JavaResult<T> | T | null,
+): payload is JavaResult<T> {
+  if (!payload || typeof payload !== "object") {
+    return false;
   }
 
-  return fallback;
+  const code = (payload as Record<string, unknown>).code;
+  const message = (payload as Record<string, unknown>).message;
+
+  return typeof code === "number" && typeof message === "string";
+}
+
+function readFailedStatus(response: Response, javaResult: JavaResult<unknown> | null) {
+  if (!javaResult) {
+    return response.status || 0;
+  }
+
+  if (javaResult.code >= 400 && javaResult.code <= 599) {
+    return javaResult.code;
+  }
+
+  return response.status || javaResult.code;
+}
+
+function readJavaData<T>(javaResult: JavaResult<T>) {
+  const data = javaResult.data;
+  const message = javaResult.message;
+  const hasObjectData = data !== undefined && data !== null && typeof data === "object";
+  const canMergeMessage = hasObjectData && !Array.isArray(data);
+
+  if (canMergeMessage) {
+    return {
+      ...data,
+      message,
+    } as T;
+  }
+
+  if (data === undefined || data === null) {
+    return { message } as T;
+  }
+
+  return data;
 }
 
 export async function request<T>(options: RequestOptions): Promise<T> {
@@ -67,27 +176,70 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     if (isBodyInit(options.data)) {
       body = options.data;
     } else {
-      headers.set("Content-Type", "application/json");
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+      }
       body = JSON.stringify(options.data);
     }
   }
 
-  const response = await fetch(buildUrl(options.url, options.params), {
-    method,
-    headers,
-    body,
-    credentials: options.credentials || "same-origin",
-  });
+  const url = buildUrl(options.url, options.params);
+  let response: Response;
 
-  const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
-
-  if (!response.ok) {
-    throw new Error(readErrorMessage(payload, "请求失败"));
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      body,
+      credentials: options.credentials || "same-origin",
+    });
+  } catch (error) {
+    throwApiError({
+      message: getErrorMessage(error),
+      code: "NETWORK_ERROR",
+      status: 0,
+      url,
+      method,
+      payload: error,
+    });
   }
 
-  if (payload && typeof payload === "object" && "data" in payload && payload.data !== undefined) {
-    return payload.data as T;
+  const payload = await parsePayload<T>(response);
+  const envelope = isApiEnvelope(payload) ? payload : null;
+  const javaResult = isJavaResult(payload) ? payload : null;
+  const failedByEnvelope = envelope?.success === false;
+  const failedByJavaCode = Boolean(javaResult && javaResult.code !== 200);
+
+  if (!response.ok || failedByEnvelope || failedByJavaCode) {
+    const status = Number(envelope?.statusCode || readFailedStatus(response, javaResult));
+    throwApiError({
+      message: readErrorMessage(payload, "请求失败"),
+      code: resolveErrorCode(status, payload),
+      status,
+      url,
+      method,
+      payload,
+    });
   }
 
-  return (payload as T) ?? ({} as T);
+  if (envelope && "data" in envelope && envelope.data !== undefined) {
+    return envelope.data as T;
+  }
+
+  if (javaResult) {
+    return readJavaData(javaResult);
+  }
+
+  if (payload === null) {
+    throwApiError({
+      message: "服务端返回了空响应",
+      code: "SERVER_ERROR",
+      status: response.status,
+      url,
+      method,
+      payload,
+    });
+  }
+
+  return payload as T;
 }

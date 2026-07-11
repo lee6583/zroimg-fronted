@@ -1,36 +1,51 @@
-import { adjustProfileCredits, ensureTaskOutputs, getStore, nextId, resolvePendingGenerations } from "@/server/bff/mock-store";
+import {
+  adjustProfileCredits,
+  ensureTaskOutputs,
+  getStore,
+  nextId,
+  resolvePendingGenerations,
+} from "@/server/bff/mock-store";
+import { estimateGenerationCredits } from "@/utils/generation-credits";
 
-function parsePixels(size: string) {
-  const [width, height] = size.split("x").map(Number);
-  const safeWidth = Number.isFinite(width) ? width : 1024;
-  const safeHeight = Number.isFinite(height) ? height : 1024;
-  return { width: safeWidth, height: safeHeight, pixels: safeWidth * safeHeight };
-}
+function findThumbnail(thumbnailId: string | null) {
+  if (!thumbnailId) {
+    return null;
+  }
 
-function calculateCost(input: {
-  mode: "text" | "edit";
-  quality: "low" | "medium" | "high";
-  size: string;
-  imageCount: number;
-}) {
-  const { pixels } = parsePixels(input.size);
-  const modeBase = input.mode === "edit" ? 15 : 10;
-  const qualityMultiplier = input.quality === "high" ? 2 : input.quality === "medium" ? 1.5 : 1;
-  const sizeMultiplier = pixels <= 1_100_000 ? 1 : pixels <= 1_600_000 ? 1.5 : pixels <= 3_000_000 ? 2 : 3;
-  return Math.ceil(modeBase * qualityMultiplier * sizeMultiplier * input.imageCount);
-}
-
-function outputWithAssets(generatedImageId: string) {
   const store = getStore();
-  const generatedImage = store.generatedImages.find((item) => item.id === generatedImageId)!;
-  const outputAsset = store.mediaAssets.find((asset) => asset.id === generatedImage.outputAssetId)!;
-  const thumbnailAsset = generatedImage.thumbnailAssetId
-    ? store.mediaAssets.find((asset) => asset.id === generatedImage.thumbnailAssetId) || null
-    : null;
-  const galleryImage = store.galleryImages.find((item) => item.generatedImageId === generatedImage.id) || null;
+  const asset = store.mediaAssets.find((item) => item.id === thumbnailId);
+  if (!asset) {
+    return null;
+  }
+
+  return asset;
+}
+
+function ownsInput(mediaId: string, profileId: string) {
+  const store = getStore();
+  const asset = store.mediaAssets.find((item) => item.id === mediaId);
+  if (!asset) {
+    return false;
+  }
+
+  if (asset.ownerUserProfileId !== profileId) {
+    return false;
+  }
+
+  return asset.kind === "input";
+}
+
+function outputWithAssets(imageId: string) {
+  const store = getStore();
+  const image = store.generatedImages.find((item) => item.id === imageId)!;
+  const outputAsset = store.mediaAssets.find((asset) => asset.id === image.outputAssetId)!;
+  const thumbnailAsset = findThumbnail(image.thumbnailAssetId);
+
+  const gallery = store.galleryImages.find((item) => item.generatedImageId === image.id);
+  const galleryImage = gallery || null;
 
   return {
-    ...generatedImage,
+    ...image,
     outputAsset,
     thumbnailAsset,
     galleryImage,
@@ -43,32 +58,51 @@ function attachOutputs(taskId: string) {
   return outputs.map((output) => outputWithAssets(output.id));
 }
 
-export async function listGenerationTasks(userProfileId: string, conversationId: string) {
+export async function list(profileId: string, conversationId: string) {
   resolvePendingGenerations();
   const store = getStore();
   return store.generationTasks
-    .filter((task) => task.userProfileId === userProfileId && task.conversationId === conversationId)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .filter((task) => task.userProfileId === profileId && task.conversationId === conversationId)
+    .sort((a, b) => {
+      const timeA = a.createdAt.getTime();
+      const timeB = b.createdAt.getTime();
+      return timeB - timeA;
+    })
     .map((task) => ({
       ...task,
       outputs: attachOutputs(task.id),
     }));
 }
 
-export async function listHistoryGenerationTasks(
-  userProfileId: string,
+export async function listHistory(
+  profileId: string,
   input: { from?: Date; sort?: "asc" | "desc" } = {},
 ) {
   resolvePendingGenerations();
   const store = getStore();
+  const from = input.from;
+  const direction = input.sort ?? "desc";
+  const isAscending = direction === "asc";
   const tasks = store.generationTasks
-    .filter((task) => task.userProfileId === userProfileId)
-    .filter((task) => (input.from ? task.createdAt >= input.from : true))
-    .sort((a, b) =>
-      input.sort === "asc"
-        ? a.createdAt.getTime() - b.createdAt.getTime()
-        : b.createdAt.getTime() - a.createdAt.getTime(),
-    );
+    .filter((task) => task.userProfileId === profileId)
+    .filter((task) => {
+      if (!from) {
+        return true;
+      }
+
+      return task.createdAt >= from;
+    });
+
+  tasks.sort((a, b) => {
+    const timeA = a.createdAt.getTime();
+    const timeB = b.createdAt.getTime();
+
+    if (isAscending) {
+      return timeA - timeB;
+    }
+
+    return timeB - timeA;
+  });
 
   return tasks.map((task) => ({
     ...task,
@@ -76,9 +110,11 @@ export async function listHistoryGenerationTasks(
   }));
 }
 
-export async function getGenerationTaskForUser(userProfileId: string, taskId: string) {
+export async function getForUser(profileId: string, taskId: string) {
   resolvePendingGenerations();
-  const task = getStore().generationTasks.find((item) => item.id === taskId && item.userProfileId === userProfileId);
+  const task = getStore().generationTasks.find(
+    (item) => item.id === taskId && item.userProfileId === profileId,
+  );
   if (!task) return null;
   if (task.status === "succeeded") {
     ensureTaskOutputs(task.id);
@@ -89,7 +125,7 @@ export async function getGenerationTaskForUser(userProfileId: string, taskId: st
   };
 }
 
-export async function createGenerationTask(input: {
+export async function create(input: {
   userProfileId: string;
   conversationId: string;
   prompt: string;
@@ -98,14 +134,33 @@ export async function createGenerationTask(input: {
   outputFormat: "png" | "webp" | "jpeg";
   size: string;
   imageCount: number;
+  inputMediaIds: string[];
 }) {
   const store = getStore();
   const profile = store.profiles.find((item) => item.id === input.userProfileId);
   if (!profile) {
     throw new Error("用户不存在");
   }
+  const conversation = store.generationConversations.find(
+    (item) => item.id === input.conversationId && item.userProfileId === input.userProfileId,
+  );
+  if (!conversation) {
+    throw new Error("对话不存在");
+  }
+  if (input.mode === "edit" && input.inputMediaIds.length === 0) {
+    throw new Error("图生图需要参考图");
+  }
+  const ownsAllInputs = input.inputMediaIds.every((id) => ownsInput(id, input.userProfileId));
+  if (!ownsAllInputs) {
+    throw new Error("参考图不存在");
+  }
 
-  const costCredits = calculateCost(input);
+  const costCredits = estimateGenerationCredits({
+    mode: input.mode,
+    quality: input.quality,
+    size: input.size,
+    count: input.imageCount,
+  });
   if (profile.creditBalance < costCredits) {
     throw new Error("积分不足");
   }
@@ -131,13 +186,10 @@ export async function createGenerationTask(input: {
   };
 
   store.generationTasks.unshift(task);
-  const conversation = store.generationConversations.find((item) => item.id === input.conversationId);
-  if (conversation) {
-    conversation.updatedAt = new Date();
-    conversation.lastTaskAt = task.createdAt;
-    if (conversation.title === "新对话") {
-      conversation.title = input.prompt.trim().slice(0, 24) || "新对话";
-    }
+  conversation.updatedAt = new Date();
+  conversation.lastTaskAt = task.createdAt;
+  if (conversation.title === "新对话") {
+    conversation.title = input.prompt.trim().slice(0, 24) || "新对话";
   }
 
   return task;

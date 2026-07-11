@@ -26,7 +26,9 @@ export default async function CreditsPage() {
           <div className="flex flex-wrap items-end justify-between gap-5">
             <div>
               <p className="label">积分购买</p>
-              <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">购买积分</h1>
+              <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
+                购买积分
+              </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
                 给灵感多留一点余量。选择适合你的积分包，用于图片生成、编辑与更多版本探索。
               </p>
@@ -43,7 +45,9 @@ export default async function CreditsPage() {
               <WalletCards size={20} />
             </span>
             <p className="mt-4 label">当前余额</p>
-            <p className="mt-2 font-serif text-3xl font-medium tracking-tight">{current.profile.creditBalance}</p>
+            <p className="mt-2 font-serif text-3xl font-medium tracking-tight">
+              {current.profile.creditBalance}
+            </p>
           </div>
           <div className="surface rounded-xl p-5">
             <span className="grid h-11 w-11 place-items-center rounded-md bg-soft">

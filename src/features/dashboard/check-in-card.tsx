@@ -1,16 +1,14 @@
 "use client";
 
+import clsx from "clsx";
+import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { claimCheckIn } from "@/api/rewards/checkin";
+import { checkInApi } from "@/api/rewards/checkin";
 import type { CheckInStatus } from "@/types/checkin";
 import styles from "./check-in-card.module.css";
 
 const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
-
-function joinClassNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
 
 function firstWeekdayOffset(year: number, month: number) {
   const day = new Date(year, month - 1, 1).getDay();
@@ -23,7 +21,13 @@ function buildCalendar(status: CheckInStatus) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const offset = firstWeekdayOffset(year, month);
   const checkedDays = new Set(status.checkedDayKeys);
-  const cells: Array<{ key: string; day: number | null; dayKey?: string; checked?: boolean; today?: boolean }> = [];
+  const cells: Array<{
+    key: string;
+    day: number | null;
+    dayKey?: string;
+    checked?: boolean;
+    today?: boolean;
+  }> = [];
 
   for (let index = 0; index < offset; index += 1) {
     cells.push({ key: `empty-${index}`, day: null });
@@ -57,28 +61,37 @@ export function CheckInCard({
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [rewardAnimationKey, setRewardAnimationKey] = useState(0);
-  const [claimedCredits, setClaimedCredits] = useState(0);
+  const [isLoading, setLoading] = useState(false);
+  const [animationKey, setAnimationKey] = useState(0);
+  const [reward, setReward] = useState(0);
   const calendarCells = buildCalendar(status);
+  const canCheckIn = status.dailyCredits > 0;
+
+  let buttonLabel = "立即签到";
+  if (!canCheckIn) {
+    buttonLabel = "暂未开放";
+  } else if (status.checkedIn) {
+    buttonLabel = "今日已签到";
+  } else if (isLoading) {
+    buttonLabel = "签到中";
+  }
 
   async function claim() {
     setLoading(true);
     setMessage("");
     try {
-      const data = await claimCheckIn();
-      setLoading(false);
+      const data = await checkInApi.claim();
       const nextStatus = data.checkIn as CheckInStatus;
       setStatus(nextStatus);
       setMessage("");
-      setClaimedCredits(nextStatus.dailyCredits);
-      setRewardAnimationKey((current) => current + 1);
+      setReward(nextStatus.dailyCredits);
+      setAnimationKey((current) => current + 1);
       onClaimed?.(nextStatus.dailyCredits);
       router.refresh();
     } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "签到失败");
-      return;
     }
   }
 
@@ -92,23 +105,30 @@ export function CheckInCard({
       </div>
 
       <div className={styles.checkInCard__calendarHeader}>
-        <p className={styles.checkInCard__monthTitle}>{status.date.year} 年 {status.date.month} 月</p>
+        <p className={styles.checkInCard__monthTitle}>
+          {status.date.year} 年 {status.date.month} 月
+        </p>
       </div>
 
       <div className={styles.checkInCard__calendarWrap}>
-        {claimedCredits > 0 ? (
-          <span key={rewardAnimationKey} className={styles.checkInCard__rewardBurst}>
-            +{claimedCredits} 积分
+        {reward > 0 ? (
+          <span key={animationKey} className={styles.checkInCard__rewardBurst}>
+            +{reward} 积分
           </span>
         ) : null}
-        <div className={styles.checkInCard__calendar} aria-label={`${status.date.year} 年 ${status.date.month} 月签到日历`}>
+        <div
+          className={styles.checkInCard__calendar}
+          aria-label={`${status.date.year} 年 ${status.date.month} 月签到日历`}
+        >
           {weekDays.map((day) => (
-            <span key={day} className={styles.checkInCard__weekday}>{day}</span>
+            <span key={day} className={styles.checkInCard__weekday}>
+              {day}
+            </span>
           ))}
           {calendarCells.map((cell) => (
             <span
               key={cell.key}
-              className={joinClassNames(
+              className={clsx(
                 styles.checkInCard__dayCell,
                 !cell.day && styles.checkInCard__dayCellEmpty,
                 cell.checked && styles.checkInCard__dayCellChecked,
@@ -129,8 +149,13 @@ export function CheckInCard({
       </div>
 
       <div className={styles.checkInCard__actions}>
-        <button className={styles.checkInCard__button} type="button" disabled={loading || status.checkedIn} onClick={claim}>
-          {status.checkedIn ? "今日已签到" : loading ? "签到中" : "立即签到"}
+        <button
+          className={styles.checkInCard__button}
+          type="button"
+          disabled={!canCheckIn || isLoading || status.checkedIn}
+          onClick={claim}
+        >
+          {buttonLabel}
         </button>
         {message ? <p className={styles.checkInCard__message}>{message}</p> : null}
       </div>

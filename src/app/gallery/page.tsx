@@ -1,7 +1,8 @@
+import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
-import { MainNav } from "@/components/layout/main-nav";
-import { listPublicGalleryImages, normalizeGalleryCategory } from "@/server/bff/generation";
+import { ProductTopNav } from "@/components/layout/product-top-nav";
+import { listPublicImages, normalizeCategory } from "@/server/bff/generation";
 import { getMediaSignedUrl } from "@/server/bff/generation";
 import styles from "./gallery.module.css";
 
@@ -22,10 +23,6 @@ const categoryLabels: Record<string, string> = {
   other: "其他",
 };
 
-function joinClassNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
@@ -39,18 +36,18 @@ export default async function GalleryPage({
   searchParams: Promise<{ category?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const activeCategory = normalizeGalleryCategory(params.category);
-  const galleryImages = await listPublicGalleryImages(activeCategory);
-  const imageUrls = new Map<string, string>();
+  const category = normalizeCategory(params.category);
+  const images = await listPublicImages(category);
+  const urls = new Map<string, string>();
 
-  for (const item of galleryImages) {
+  for (const item of images) {
     const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
-    imageUrls.set(asset.id, await getMediaSignedUrl(asset.id));
+    urls.set(asset.id, await getMediaSignedUrl(asset.id));
   }
 
   return (
     <>
-      <MainNav />
+      <ProductTopNav />
       <main className={styles.gallery}>
         <section className={styles.gallery__hero}>
           <p className={styles.gallery__eyebrow}>Gallery</p>
@@ -62,12 +59,12 @@ export default async function GalleryPage({
 
         <nav className={styles.gallery__tabs} aria-label="作品分类">
           {categoryTabs.map((tab) => {
-            const active = activeCategory === tab.value || (!activeCategory && !tab.value);
+            const active = category === tab.value || (!category && !tab.value);
             return (
               <Link
                 key={tab.label}
                 href={tab.href}
-                className={joinClassNames(styles.gallery__tab, active && styles.gallery__tabActive)}
+                className={clsx(styles.gallery__tab, active && styles.gallery__tabActive)}
               >
                 {tab.label}
               </Link>
@@ -75,12 +72,13 @@ export default async function GalleryPage({
           })}
         </nav>
 
-        {galleryImages.length > 0 ? (
+        {images.length > 0 ? (
           <section className={styles.gallery__masonry} aria-label="社区作品">
-            {galleryImages.map((item) => {
+            {images.map((item) => {
               const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
-              const url = imageUrls.get(asset.id);
-              const authorName = item.userProfile.username || item.userProfile.user?.name || "创作者";
+              const url = urls.get(asset.id);
+              const authorName =
+                item.userProfile.username || item.userProfile.user?.name || "创作者";
 
               return (
                 <article key={item.id} className={styles.gallery__card}>

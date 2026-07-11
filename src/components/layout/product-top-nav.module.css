@@ -4,7 +4,7 @@
   z-index: 50;
   width: 100%;
   border-bottom: 1px solid var(--line);
-  background: color-mix(in oklab, var(--background) 80%, transparent);
+  background-color: color-mix(in oklab, var(--background) 92%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -64,6 +64,10 @@
   gap: 0.25rem;
 }
 
+.productTopNav__account {
+  position: relative;
+}
+
 .productTopNav__avatar {
   display: grid;
   width: 2.25rem;
@@ -75,7 +79,9 @@
   color: var(--foreground);
   font-size: 0.875rem;
   font-weight: 500;
+  font-family: inherit;
   text-decoration: none;
+  cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
@@ -83,11 +89,54 @@
   background: var(--soft);
 }
 
+.productTopNav__accountMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 70;
+  display: grid;
+  min-width: 10rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0.35rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.productTopNav__accountItem {
+  display: flex;
+  width: 100%;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  padding: 0 0.65rem;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.productTopNav__accountItem:hover {
+  background: var(--soft);
+}
+
+.productTopNav__accountItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .productTopNav__mobileNav {
   display: flex;
   justify-content: center;
   gap: 0.25rem;
   border-top: 1px solid var(--line);
+  background-color: inherit;
   padding: 0.5rem 1rem;
   color: var(--muted);
   font-size: 0.875rem;

@@ -1,22 +1,24 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { publishGeneratedImage } from "@/server/bff/generation";
-import { jsonError, jsonOk } from "@/server/http";
+import { publishImage } from "@/server/bff/generation";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const publishSchema = z.object({
+  generatedImageId: z.string().trim().min(1, "请选择作品").max(128),
+});
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { generatedImageId } = (await request.json()) as { generatedImageId?: string };
-  if (!generatedImageId) {
-    return jsonError("作品不存在");
-  }
+    const parsed = await parseJson(request, publishSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  try {
-    const galleryImage = await publishGeneratedImage(generatedImageId, current.profile.id);
+    const galleryImage = await publishImage(parsed.data.generatedImageId, current.profile.id);
     return jsonOk({ galleryImage });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "发布失败");
-  }
+  });
 }

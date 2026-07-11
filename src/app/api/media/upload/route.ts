@@ -1,6 +1,16 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { jsonError, jsonOk } from "@/server/http";
 import { uploadMedia } from "@/server/bff/generation";
+import { jsonError, jsonOk } from "@/server/http";
+import { parseForm } from "@/server/validation";
+import { isSupportedImageType, maxImageBytes } from "@/utils/media";
+
+const uploadSchema = z.object({
+  file: z
+    .instanceof(File, { error: "请选择文件" })
+    .refine((file) => isSupportedImageType(file.type), "仅支持 PNG、JPEG 和 WebP 图片")
+    .refine((file) => file.size > 0 && file.size <= maxImageBytes, "单张图片必须小于 10 MB"),
+});
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();
@@ -8,18 +18,13 @@ export async function POST(request: Request) {
     return jsonError("请先登录", 401);
   }
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-  const kind = formData.get("kind");
-
-  if (!(file instanceof File)) {
-    return jsonError("请选择文件");
-  }
+  const parsed = await parseForm(request, uploadSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
   const media = await uploadMedia({
     ownerUserProfileId: current.profile.id,
-    fileName: file.name,
-    kind: kind === "output" ? "output" : "input",
+    fileName: parsed.data.file.name,
+    kind: "input",
   });
 
   return jsonOk({

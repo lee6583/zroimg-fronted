@@ -1,17 +1,28 @@
 import { request } from "@/utils/request";
+import type {
+  AdjustUserCreditsRequest,
+  AdjustUserCreditsResponse,
+  UpdateUserStatusRequest,
+  UpdateUserStatusResponse,
+} from "@/types/admin";
 
-export function adjustUserCredits(userId: string, data: { amount: number; reason: string }) {
-  return request<{ ok?: boolean }>({
+function adjustCredits(userId: string, data: AdjustUserCreditsRequest) {
+  return request<AdjustUserCreditsResponse>({
     url: `/api/admin/users/${userId}/credits`,
     method: "POST",
     data,
   });
 }
 
-export function updateUserStatus(userId: string, data: { status: "active" | "banned" }) {
-  return request<{ ok?: boolean }>({
+function updateStatus(userId: string, data: UpdateUserStatusRequest) {
+  return request<UpdateUserStatusResponse>({
     url: `/api/admin/users/${userId}/status`,
     method: "POST",
     data,
   });
 }
+
+export const adminUsersApi = {
+  adjustCredits,
+  updateStatus,
+};

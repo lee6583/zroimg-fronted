@@ -1,30 +1,30 @@
+import { z } from "zod";
 import { createMockUser, findUserByEmail, getStore } from "@/server/bff/mock-store";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
-import { hasJavaApiBaseUrl, proxyRequestToJavaApi } from "@/server/java-api";
+import { proxyRequestToJavaApi } from "@/server/java-api";
+import { parseJson } from "@/server/validation";
+
+const registerSchema = z.object({
+  username: z.string().trim().min(2, "用户名至少 2 位").max(32, "用户名最多 32 位"),
+  email: z
+    .string()
+    .trim()
+    .email("邮箱格式不正确")
+    .transform((value) => value.toLowerCase()),
+  password: z.string().min(8, "密码至少 8 位").max(128, "密码最多 128 位"),
+  code: z.string().trim().min(1, "请输入验证码").max(12, "验证码格式不正确"),
+});
 
 export async function POST(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    return proxyRequestToJavaApi(request, "/v1/auth/register");
+  if (isJavaAuthEnabled()) {
+    return proxyRequestToJavaApi(request, "/auth/user/register");
   }
 
-  const payload = (await request.json()) as {
-    username?: string;
-    email?: string;
-    password?: string;
-    code?: string;
-  };
+  const parsed = await parseJson(request, registerSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  const username = payload.username?.trim() || "";
-  const email = payload.email?.trim().toLowerCase() || "";
-  const password = payload.password?.trim() || "";
-  const code = payload.code?.trim() || "";
-
-  if (!username || !email || !password || !code) {
-    return jsonError("请完整填写注册信息");
-  }
-  if (password.length < 6) {
-    return jsonError("密码至少 6 位");
-  }
+  const { username, email, password, code } = parsed.data;
   if (findUserByEmail(email)) {
     return jsonError("该邮箱已注册");
   }

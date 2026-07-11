@@ -19,3 +19,32 @@ export type TicketItem = {
   messages: TicketMessage[];
 };
 
+export type CreateTicketRequest = {
+  type: string;
+  subject: string;
+  content: string;
+};
+
+export type CreateTicketResponse = {
+  ticket: TicketItem;
+};
+
+export type ReplyTicketRequest = {
+  body: string;
+};
+
+export type ReplyTicketResponse = {
+  ok?: boolean;
+};
+
+export type AdminReplyTicketRequest = ReplyTicketRequest;
+
+export type AdminReplyTicketResponse = ReplyTicketResponse;
+
+export type UpdateTicketStatusRequest = {
+  status: string;
+};
+
+export type UpdateTicketStatusResponse = {
+  ok?: boolean;
+};

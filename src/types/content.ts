@@ -15,3 +15,12 @@ export type DocsConfig = {
   groups: DocsGroup[];
 };
 
+export type SaveDocsConfigRequest = {
+  title: string;
+  description: string;
+  groups: unknown;
+};
+
+export type SaveDocsConfigResponse = {
+  docs: DocsConfig;
+};

@@ -1,20 +1,18 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { requireOwnedConversation } from "@/server/bff/generation";
-import { listGenerationTasks } from "@/server/bff/generation";
-import { getMediaSignedUrl } from "@/server/bff/generation";
-import { jsonError, jsonOk } from "@/server/http";
+import { getMediaSignedUrl, listTasks, requireConversation } from "@/server/bff/generation";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
+    const { id } = await context.params;
 
-  try {
-    await requireOwnedConversation(current.profile.id, id);
-    const tasks = await listGenerationTasks(current.profile.id, id);
+    await requireConversation(current.profile.id, id);
+    const tasks = await listTasks(current.profile.id, id);
     const serializedTasks = await Promise.all(
       tasks.map(async (task) => ({
         id: task.id,
@@ -26,12 +24,12 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
         costCredits: task.costCredits,
         createdAt: task.createdAt.toISOString(),
         imageUrls: await Promise.all(
-          task.outputs.map((output) => getMediaSignedUrl(output.thumbnailAsset?.id || output.outputAsset.id)),
+          task.outputs.map((output) =>
+            getMediaSignedUrl(output.thumbnailAsset?.id || output.outputAsset.id),
+          ),
         ),
       })),
     );
     return jsonOk({ tasks: serializedTasks });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "加载失败");
-  }
+  });
 }

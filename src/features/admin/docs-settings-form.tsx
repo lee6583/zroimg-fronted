@@ -1,7 +1,8 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
-import { saveDocsConfig } from "@/api/admin/docs";
+import { adminDocsApi } from "@/api/admin/docs";
 import type { DocsConfig } from "@/types/content";
 
 export function DocsSettingsForm({
@@ -15,7 +16,7 @@ export function DocsSettingsForm({
   const [description, setDescription] = useState(initialDocs.description);
   const [groupsJson, setGroupsJson] = useState(JSON.stringify(initialDocs.groups, null, 2));
   const [message, setMessage] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [isSaving, setSaving] = useState(false);
 
   function useDefaultDocs() {
     setTitle(defaultDocs.title);
@@ -39,8 +40,16 @@ export function DocsSettingsForm({
     }
 
     try {
-      const data = await saveDocsConfig({ title, description, groups }) as {
-        docs: { title: string; description: string; groups: DocsConfig["groups"] };
+      const data = (await adminDocsApi.saveDocsConfig({
+        title,
+        description,
+        groups,
+      })) as {
+        docs: {
+          title: string;
+          description: string;
+          groups: DocsConfig["groups"];
+        };
       };
       setSaving(false);
       setTitle(data.docs.title);
@@ -49,7 +58,7 @@ export function DocsSettingsForm({
       setMessage("文档已保存，前台 /docs 会立即读取最新内容。");
     } catch (error) {
       setSaving(false);
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -61,7 +70,8 @@ export function DocsSettingsForm({
           <p className="label">Docs content</p>
           <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">编辑公开文档</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            文档页左侧导航来自分组和条目标题，右侧正文支持简单 Markdown：标题、列表、数字步骤、引用提示和代码块。
+            文档页左侧导航来自分组和条目标题，右侧正文支持简单
+            Markdown：标题、列表、数字步骤、引用提示和代码块。
           </p>
         </div>
         <button className="btn-secondary" type="button" onClick={useDefaultDocs}>
@@ -72,11 +82,19 @@ export function DocsSettingsForm({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2">
           <span className="label">页面标题</span>
-          <input className="field" value={title} onChange={(event) => setTitle(event.target.value)} />
+          <input
+            className="field"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
         </label>
         <label className="grid gap-2">
           <span className="label">页面简介</span>
-          <input className="field" value={description} onChange={(event) => setDescription(event.target.value)} />
+          <input
+            className="field"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
         </label>
       </div>
 
@@ -93,14 +111,15 @@ export function DocsSettingsForm({
       <div className="rounded-xl border border-line bg-soft p-4 text-sm leading-7 text-muted">
         <p className="font-medium text-foreground">结构示例</p>
         <p>
-          每个分组需要 `title` 和 `items`；每个条目需要 `id`、`title`、`body`。`id` 会用于页面锚点，只能使用字母、数字和短横线。
+          每个分组需要 `title` 和 `items`；每个条目需要 `id`、`title`、`body`。`id`
+          会用于页面锚点，只能使用字母、数字和短横线。
         </p>
       </div>
 
       {message ? <p className="text-sm text-muted">{message}</p> : null}
 
-      <button className="btn-primary w-full md:w-fit" disabled={saving}>
-        {saving ? "保存中" : "保存文档"}
+      <button className="btn-primary w-full md:w-fit" disabled={isSaving}>
+        {isSaving ? "保存中" : "保存文档"}
       </button>
     </form>
   );
