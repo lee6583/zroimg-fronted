@@ -24,9 +24,7 @@ export default async function DashboardPage() {
           <div className={styles.dashboard__heroGrid}>
             <div>
               <p className={styles.dashboard__eyebrow}>概览</p>
-              <h1 className={styles.dashboard__title}>
-                你好，{current.profile.username}
-              </h1>
+              <h1 className={styles.dashboard__title}>你好，{current.profile.username}</h1>
             </div>
             <div className={styles.dashboard__heroActions}>
               <Link href="/generate" className="btn-primary">
@@ -39,7 +37,7 @@ export default async function DashboardPage() {
 
         <DashboardOverview
           generatedCount={generatedCount}
-          initialCreditBalance={current.profile.creditBalance}
+          initialBalance={current.profile.creditBalance}
           checkInStatus={checkInStatus}
         />
       </div>

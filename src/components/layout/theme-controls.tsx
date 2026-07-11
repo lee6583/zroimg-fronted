@@ -6,9 +6,9 @@ import { useEffect, useSyncExternalStore } from "react";
 type Theme = "light" | "dark";
 type Locale = "ZH" | "EN";
 
-const themeKey = "zrocode-theme";
-const localeKey = "zrocode-locale";
-const settingsEvent = "zrocode-settings-change";
+const themeKey = "zroimg-theme";
+const localeKey = "zroimg-locale";
+const settingsEvent = "zroimg-settings-change";
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -64,11 +64,21 @@ export function ThemeControls() {
 
   return (
     <div className="flex items-center gap-1">
-      <button className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium" type="button" onClick={toggleLocale} aria-label="切换语言">
+      <button
+        className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium"
+        type="button"
+        onClick={toggleLocale}
+        aria-label="切换语言"
+      >
         <Globe2 size={16} />
         {locale}
       </button>
-      <button className="nav-icon-button" type="button" onClick={toggleTheme} aria-label="切换明暗模式">
+      <button
+        className="nav-icon-button"
+        type="button"
+        onClick={toggleTheme}
+        aria-label="切换明暗模式"
+      >
         {theme === "light" ? <Sun size={16} /> : <Moon size={16} />}
       </button>
     </div>

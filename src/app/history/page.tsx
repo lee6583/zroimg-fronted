@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock3, ImageOff } from "lucide-react";
@@ -5,8 +6,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
-import { listFavoriteCollections } from "@/server/bff/account";
-import { listHistoryGenerationTasks } from "@/server/bff/generation";
+import { listCollections } from "@/server/bff/account";
+import { listHistoryTasks } from "@/server/bff/generation";
 import { getMediaSignedUrl } from "@/server/bff/generation";
 import { HistorySortSelect } from "./history-sort-select";
 import styles from "./history.module.css";
@@ -24,7 +25,7 @@ const dateFilters = [
 type DateFilter = (typeof dateFilters)[number]["value"];
 type SortValue = "newest" | "oldest";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-type HistoryTask = Awaited<ReturnType<typeof listHistoryGenerationTasks>>[number];
+type HistoryTask = Awaited<ReturnType<typeof listHistoryTasks>>[number];
 type HistoryOutput = HistoryTask["outputs"][number];
 type HistoryItem = {
   id: string;
@@ -32,13 +33,13 @@ type HistoryItem = {
   output: HistoryOutput | null;
 };
 
-function joinClassNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
-  return Array.isArray(value) ? value[0] : value;
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
 }
 
 function normalizeDateFilter(value?: string): DateFilter {
@@ -47,7 +48,11 @@ function normalizeDateFilter(value?: string): DateFilter {
 }
 
 function normalizeSort(value?: string): SortValue {
-  return value === "oldest" ? "oldest" : "newest";
+  if (value === "oldest") {
+    return "oldest";
+  }
+
+  return "newest";
 }
 
 function getDateRange(filter: DateFilter) {
@@ -86,7 +91,37 @@ function historyHref(date: DateFilter, sort: SortValue) {
   if (sort === "oldest") params.set("sort", sort);
 
   const query = params.toString();
-  return query ? `/history?${query}` : "/history";
+  if (query) {
+    return `/history?${query}`;
+  }
+
+  return "/history";
+}
+
+function getPreviewAsset(output: HistoryOutput | null) {
+  if (!output) {
+    return null;
+  }
+
+  if (output.thumbnailAsset) {
+    return output.thumbnailAsset;
+  }
+
+  return output.outputAsset;
+}
+
+function getPreviewUrl(output: HistoryOutput | null, urls: Map<string, string>) {
+  const asset = getPreviewAsset(output);
+  if (!asset) {
+    return null;
+  }
+
+  const url = urls.get(asset.id);
+  if (!url) {
+    return null;
+  }
+
+  return url;
 }
 
 function formatDate(date: Date) {
@@ -123,7 +158,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
   const sortOrder = sort === "oldest" ? "asc" : "desc";
 
   const current = await requireUser();
-  const tasks = await listHistoryGenerationTasks(current.profile.id, { ...range, sort: sortOrder });
+  const tasks = await listHistoryTasks(current.profile.id, { ...range, sort: sortOrder });
   const historyItems = toHistoryItems(tasks);
   const urls = new Map<string, string>();
 
@@ -138,10 +173,12 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
 
   const activeFilter = dateFilter !== "all";
   const emptyTitle = activeFilter ? "这个时间段还没有创作记录" : "还没有创作记录";
-  const emptyText = activeFilter ? "换一个日期范围，或查看全部历史。" : "写下第一句提示词，让灵感在这里留下第一张图。";
+  const emptyText = activeFilter
+    ? "换一个日期范围，或查看全部历史。"
+    : "写下第一句提示词，让灵感在这里留下第一张图。";
   const emptyHref = activeFilter ? historyHref("all", sort) : "/generate";
   const emptyAction = activeFilter ? "查看全部" : "去创作";
-  const favoriteCollections = await listFavoriteCollections(current.profile.id);
+  const favoriteCollections = await listCollections(current.profile.id);
   const favoriteCollectionItems = favoriteCollections.map((collection) => ({
     id: collection.id,
     name: collection.name,
@@ -164,7 +201,10 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
                 <Link
                   key={item.value}
                   href={historyHref(item.value, sort)}
-                  className={joinClassNames(styles.history__dateFilter, active && styles.history__dateFilterActive)}
+                  className={clsx(
+                    styles.history__dateFilter,
+                    active && styles.history__dateFilterActive,
+                  )}
                 >
                   {item.label}
                 </Link>
@@ -180,9 +220,12 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
             {historyItems.map((item) => {
               const task = item.task;
               const output = item.output;
-              const asset = output ? output.thumbnailAsset || output.outputAsset : null;
-              const url = asset ? urls.get(asset.id) : null;
-              const modeLabel = task.mode === "edit" ? "图生图" : "文生图";
+              const asset = getPreviewAsset(output);
+              const url = getPreviewUrl(output, urls);
+              let modeLabel = "文生图";
+              if (task.mode === "edit") {
+                modeLabel = "图生图";
+              }
 
               return (
                 <article key={item.id} className={styles.history__card}>
@@ -221,7 +264,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
                           initialPublished={Boolean(output.galleryImage)}
                           collections={favoriteCollectionItems}
                           downloadUrl={urls.get(output.outputAsset.id) || url}
-                          downloadFileName={output.outputAsset.fileName || "zrocode-image.png"}
+                          downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
                         />
                       ) : (
                         <TaskPoller taskId={task.id} initialStatus={task.status} />

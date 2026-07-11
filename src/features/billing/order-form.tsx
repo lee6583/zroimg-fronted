@@ -24,7 +24,7 @@ export function OrderForm({ packages }: { packages: Package[] }) {
   const [paymentType, setPaymentType] = useState<"alipay" | "wxpay">("alipay");
   const [customAmount, setCustomAmount] = useState("29");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const customAmountNumber = Number(customAmount);
   const normalizedCustomAmount = Number.isFinite(customAmountNumber)
@@ -41,9 +41,7 @@ export function OrderForm({ packages }: { packages: Package[] }) {
         customAmountNumber < CUSTOM_MIN_AMOUNT_CNY ||
         customAmountNumber > CUSTOM_MAX_AMOUNT_CNY)
     ) {
-      setMessage(
-        `请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`,
-      );
+      setMessage(`请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`);
       setLoading(false);
       return;
     }
@@ -72,9 +70,7 @@ export function OrderForm({ packages }: { packages: Package[] }) {
   return (
     <div className="surface rounded-xl p-5">
       <p className="label">Recharge</p>
-      <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">
-        选择你的灵感额度
-      </h2>
+      <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">选择你的灵感额度</h2>
       <p className="mt-2 text-sm leading-6 text-muted">
         选好积分包后即可前往支付，让下一张图从这里开始。
       </p>
@@ -137,16 +133,9 @@ export function OrderForm({ packages }: { packages: Package[] }) {
             </label>
             <div className="rounded-lg bg-soft p-3 text-sm leading-6 text-muted">
               <p>
-                预计到账{" "}
-                <span className="font-medium text-foreground">
-                  {customCredits}
-                </span>{" "}
-                积分
+                预计到账 <span className="font-medium text-foreground">{customCredits}</span> 积分
               </p>
-              <p>
-                自定义购买按 ¥1 = {CUSTOM_CREDITS_PER_CNY}{" "}
-                积分折算，套餐通常会更划算。
-              </p>
+              <p>自定义购买按 ¥1 = {CUSTOM_CREDITS_PER_CNY} 积分折算，套餐通常会更划算。</p>
             </div>
           </div>
         )}
@@ -166,9 +155,9 @@ export function OrderForm({ packages }: { packages: Package[] }) {
         <button
           className="btn-primary"
           onClick={createOrder}
-          disabled={loading || (mode === "package" && packages.length === 0)}
+          disabled={isLoading || (mode === "package" && packages.length === 0)}
         >
-          {loading ? "创建中" : "去支付"}
+          {isLoading ? "创建中" : "去支付"}
         </button>
       </div>
     </div>

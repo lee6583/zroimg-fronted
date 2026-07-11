@@ -1,17 +1,18 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { GenerateForm } from "@/features/generation/generate-form";
 import { requireUser } from "@/server/auth";
-import { getOrCreateDefaultConversation, listGenerationConversations } from "@/server/bff/generation";
-import { listGenerationTasks } from "@/server/bff/generation";
+import { ensureDefaultConversation, listConversations, listTasks } from "@/server/bff/generation";
 
 export const dynamic = "force-dynamic";
 
 export default async function GeneratePage() {
   const current = await requireUser();
-  await getOrCreateDefaultConversation(current.profile.id);
-  const conversations = await listGenerationConversations(current.profile.id);
+  await ensureDefaultConversation(current.profile.id);
+  const conversations = await listConversations(current.profile.id);
   const activeConversationId = conversations[0]?.id;
-  const tasks = activeConversationId ? await listGenerationTasks(current.profile.id, activeConversationId) : [];
+  const tasks = activeConversationId
+    ? await listTasks(current.profile.id, activeConversationId)
+    : [];
   const conversationItems = conversations.map((conversation) => {
     const latestTask = conversation.tasks[0];
     return {
@@ -38,7 +39,11 @@ export default async function GeneratePage() {
 
   return (
     <AppShell flush>
-      <GenerateForm initialConversations={conversationItems} initialConversationId={activeConversationId} initialTasks={taskItems} />
+      <GenerateForm
+        initialConversations={conversationItems}
+        initialConversationId={activeConversationId}
+        initialTasks={taskItems}
+      />
     </AppShell>
   );
 }

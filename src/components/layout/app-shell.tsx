@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import clsx from "clsx";
 import Link from "next/link";
 import {
   BookMarked,
@@ -12,7 +13,8 @@ import {
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
-type AppSection = "overview" | "history" | "favorites" | "credits" | "billing" | "tickets" | "settings";
+type AppSection =
+  "overview" | "history" | "favorites" | "credits" | "billing" | "tickets" | "settings";
 
 const appNavItems: Array<{
   key: AppSection;
@@ -64,10 +66,6 @@ const appNavItems: Array<{
   },
 ];
 
-function joinClassNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export async function AppShell({
   active,
   children,
@@ -77,6 +75,11 @@ export async function AppShell({
   children: ReactNode;
   flush?: boolean;
 }) {
+  let mainClass = styles.shell__main;
+  if (flush) {
+    mainClass = styles.shell__mainFlush;
+  }
+
   return (
     <>
       <ProductTopNav />
@@ -92,13 +95,13 @@ export async function AppShell({
                     <Link
                       key={item.key}
                       href={item.href}
-                      className={joinClassNames(
+                      className={clsx(
                         styles.shell__navLink,
                         isActive && styles.shell__navLinkActive,
                       )}
                     >
                       <span
-                        className={joinClassNames(
+                        className={clsx(
                           styles.shell__navIcon,
                           isActive && styles.shell__navIconActive,
                         )}
@@ -115,7 +118,7 @@ export async function AppShell({
             </div>
           </aside>
 
-          <main className={flush ? styles.shell__mainFlush : styles.shell__main}>{children}</main>
+          <main className={mainClass}>{children}</main>
         </div>
       </div>
     </>

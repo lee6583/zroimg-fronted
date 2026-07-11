@@ -4,13 +4,7 @@ import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
 
-export function UserActions({
-  userId,
-  status,
-}: {
-  userId: string;
-  status: "active" | "banned";
-}) {
+export function UserActions({ userId, status }: { userId: string; status: "active" | "banned" }) {
   const [amount, setAmount] = useState(100);
   const [reason, setReason] = useState("Manual adjustment");
   const [message, setMessage] = useState("");
@@ -45,20 +39,14 @@ export function UserActions({
         value={amount}
         onChange={(event) => setAmount(Number(event.target.value))}
       />
-      <input
-        className="field"
-        value={reason}
-        onChange={(event) => setReason(event.target.value)}
-      />
+      <input className="field" value={reason} onChange={(event) => setReason(event.target.value)} />
       <button className="btn-secondary" onClick={adjustCredits}>
         调整积分
       </button>
       <button className="btn-secondary" onClick={toggleStatus}>
         {status === "active" ? "封禁" : "解封"}
       </button>
-      {message ? (
-        <p className="text-sm text-muted md:col-span-4">{message}</p>
-      ) : null}
+      {message ? <p className="text-sm text-muted md:col-span-4">{message}</p> : null}
     </div>
   );
 }

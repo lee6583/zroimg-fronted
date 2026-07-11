@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
-import { MainNav } from "@/components/layout/main-nav";
+import { ProductTopNav } from "@/components/layout/product-top-nav";
 import { getDocsConfig } from "@/server/bff/content";
 import styles from "./docs.module.css";
 
@@ -153,7 +153,7 @@ export default async function DocsPage() {
 
   return (
     <>
-      <MainNav />
+      <ProductTopNav />
       <main className={styles.docs}>
         <aside className={styles.docs__sidebar}>
           <div className={styles.docs__sidebarInner}>

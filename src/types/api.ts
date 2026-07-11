@@ -1,9 +1,6 @@
 export type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
-export type RequestParams = Record<
-  string,
-  string | number | boolean | undefined | null
->;
+export type RequestParams = Record<string, string | number | boolean | undefined | null>;
 
 export type RequestOptions = {
   url: string;
@@ -16,12 +13,19 @@ export type RequestOptions = {
 };
 
 export type ApiEnvelope<T> = {
-  success?: boolean;
+  success: boolean;
   data?: T;
   error?: string;
   message?: string;
   code?: string;
   statusCode?: number;
+  [key: string]: unknown;
+};
+
+export type JavaResult<T> = {
+  code: number;
+  message: string;
+  data?: T;
   [key: string]: unknown;
 };
 
@@ -46,12 +50,6 @@ export type ApiErrorInfo = {
 };
 
 export type OkResponse = {
-  ok?: boolean;
+  ok: true;
   message?: string;
 };
-
-export type RequestInterceptor = (
-  options: RequestOptions,
-) => RequestOptions | Promise<RequestOptions>;
-
-export type ApiErrorInterceptor = (error: ApiErrorInfo) => void | Promise<void>;

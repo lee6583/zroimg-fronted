@@ -1,8 +1,5 @@
 import { request } from "@/utils/request";
-import type {
-  PublishGalleryImageRequest,
-  PublishGalleryImageResponse,
-} from "@/types/generation";
+import type { PublishGalleryImageRequest, PublishGalleryImageResponse } from "@/types/generation";
 
 function publishImage(data: PublishGalleryImageRequest) {
   return request<PublishGalleryImageResponse>({

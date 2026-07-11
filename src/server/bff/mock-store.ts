@@ -7,7 +7,8 @@ export type MockPaymentType = "alipay" | "wxpay";
 export type MockOrderStatus = "pending" | "paid" | "fulfilled" | "expired" | "cancelled" | "failed";
 export type MockTaskStatus = "queued" | "running" | "succeeded" | "failed";
 export type MockGenerationMode = "text" | "edit";
-export type MockFeedbackType = "bug" | "billing" | "generation" | "account" | "suggestion" | "other";
+export type MockFeedbackType =
+  "bug" | "billing" | "generation" | "account" | "suggestion" | "other";
 export type MockFeedbackStatus = "open" | "in_progress" | "resolved" | "closed";
 export type MockGalleryCategory = "realistic" | "anime" | "art" | "other";
 
@@ -319,9 +320,33 @@ function createStore(): MockStore {
   ];
 
   const creditPackages: MockCreditPackage[] = [
-    { id: "package-1", code: "STARTER_100", name: "轻量试创", credits: 100, priceCny: 19.9, sortOrder: 1, isActive: true },
-    { id: "package-2", code: "PRO_500", name: "创作者", credits: 500, priceCny: 79.9, sortOrder: 2, isActive: true },
-    { id: "package-3", code: "MAX_1200", name: "灵感工作室", credits: 1200, priceCny: 169.9, sortOrder: 3, isActive: true },
+    {
+      id: "package-1",
+      code: "STARTER_100",
+      name: "轻量试创",
+      credits: 100,
+      priceCny: 19.9,
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "package-2",
+      code: "PRO_500",
+      name: "创作者",
+      credits: 500,
+      priceCny: 79.9,
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "package-3",
+      code: "MAX_1200",
+      name: "灵感工作室",
+      credits: 1200,
+      priceCny: 169.9,
+      sortOrder: 3,
+      isActive: true,
+    },
   ];
 
   const mediaAssets: MockMediaAsset[] = [
@@ -761,6 +786,8 @@ declare global {
 }
 
 export function getStore() {
+  assertMockBffEnabled();
+
   if (!globalThis.__zroimgMockStore) {
     globalThis.__zroimgMockStore = createStore();
   }
@@ -775,16 +802,27 @@ export function nextId(prefix: keyof MockStore["counters"] | string) {
 
 export function findUserByEmail(email: string) {
   const store = getStore();
-  const user = store.users.find((item) => item.email.toLowerCase() === email.trim().toLowerCase());
+  const targetEmail = email.trim().toLowerCase();
+  const user = store.users.find((item) => {
+    const userEmail = item.email.toLowerCase();
+    return userEmail === targetEmail;
+  });
   if (!user) return null;
+
   const profile = store.profiles.find((item) => item.userId === user.id);
   if (!profile) return null;
+
   return { user, profile };
 }
 
 export function findProfileById(profileId: string) {
   const store = getStore();
-  return store.profiles.find((item) => item.id === profileId) || null;
+  const profile = store.profiles.find((item) => item.id === profileId);
+  if (!profile) {
+    return null;
+  }
+
+  return profile;
 }
 
 export function findUserBundleByProfileId(profileId: string) {
@@ -912,7 +950,12 @@ export function resolvePendingGenerations() {
   }
 }
 
-export function adjustProfileCredits(userProfileId: string, amount: number, reason: string, type: MockCreditLedger["type"]) {
+export function adjustProfileCredits(
+  userProfileId: string,
+  amount: number,
+  reason: string,
+  type: MockCreditLedger["type"],
+) {
   const store = getStore();
   const profile = store.profiles.find((item) => item.id === userProfileId);
   if (!profile) {
@@ -965,3 +1008,6 @@ export function createMockUser(input: { username: string; email: string; passwor
   });
   return { user, profile };
 }
+import "server-only";
+
+import { assertMockBffEnabled } from "@/server/env";

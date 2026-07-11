@@ -10,11 +10,11 @@ import styles from "./product-top-nav.module.css";
 export function AccountMenu({ label }: { label: string }) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+  const [isLoggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
 
     function onPointerDown(event: PointerEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
@@ -34,7 +34,7 @@ export function AccountMenu({ label }: { label: string }) {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [isOpen]);
 
   async function logout() {
     try {
@@ -52,14 +52,14 @@ export function AccountMenu({ label }: { label: string }) {
         type="button"
         className={styles.productTopNav__avatar}
         aria-label="打开账户菜单"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setOpen((current) => !current)}
       >
         {label}
       </button>
 
-      {open ? (
+      {isOpen ? (
         <div className={styles.productTopNav__accountMenu} role="menu">
           <Link
             href="/settings"
@@ -74,7 +74,7 @@ export function AccountMenu({ label }: { label: string }) {
             type="button"
             className={styles.productTopNav__accountItem}
             role="menuitem"
-            disabled={loggingOut}
+            disabled={isLoggingOut}
             onClick={logout}
           >
             <LogOut size={15} />

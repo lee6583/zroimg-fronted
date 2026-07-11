@@ -1,21 +1,27 @@
 {
-  "name": "zroimg-fronted",
+  "name": "zroimg-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "test": "node --test tests/**/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "audit:prod": "pnpm audit --prod --registry=https://registry.npmjs.org",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.101.2",
     "clsx": "^2.1.1",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -25,9 +31,13 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
-    "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.16"
+    }
   }
 }

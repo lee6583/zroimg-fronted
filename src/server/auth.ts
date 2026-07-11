@@ -1,10 +1,15 @@
+import "server-only";
+
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { findUserBundleByUserId } from "@/server/bff/auth";
+import { isMockBffEnabled } from "@/server/env";
 
 export const MOCK_SESSION_COOKIE = "zroimg-mock-session";
 
 export async function getCurrentUserProfile() {
+  if (!isMockBffEnabled()) return null;
+
   const cookieStore = await cookies();
   const userId = cookieStore.get(MOCK_SESSION_COOKIE)?.value;
   if (!userId) return null;

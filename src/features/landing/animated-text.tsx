@@ -3,7 +3,15 @@
 import { useMemo } from "react";
 import styles from "./animated-text.module.css";
 
-export function WordsPullUp({ text, className = "", showAsterisk = false }: { text: string; className?: string; showAsterisk?: boolean }) {
+export function WordsPullUp({
+  text,
+  className = "",
+  showAsterisk = false,
+}: {
+  text: string;
+  className?: string;
+  showAsterisk?: boolean;
+}) {
   const words = text.split(" ");
 
   return (
@@ -17,7 +25,9 @@ export function WordsPullUp({ text, className = "", showAsterisk = false }: { te
           >
             {word}
             {showAsterisk && isLast ? (
-              <span className="absolute -right-[0.3em] top-[0.65em] text-[0.31em] leading-none">*</span>
+              <span className="absolute -right-[0.3em] top-[0.65em] text-[0.31em] leading-none">
+                *
+              </span>
             ) : null}
             {index < words.length - 1 ? "\u00a0" : null}
           </span>

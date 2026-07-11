@@ -1,13 +1,13 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { FavoriteCollectionsView } from "@/app/favorites/favorites-view";
 import { requireUser } from "@/server/auth";
-import { listFavoriteCollections } from "@/server/bff/account";
+import { listCollections } from "@/server/bff/account";
 
 export const dynamic = "force-dynamic";
 
 export default async function FavoritesPage() {
   const current = await requireUser();
-  const collections = await listFavoriteCollections(current.profile.id);
+  const collections = await listCollections(current.profile.id);
   const collectionItems = collections.map((collection) => ({
     id: collection.id,
     name: collection.name,

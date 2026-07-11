@@ -12,7 +12,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,16 +64,14 @@ export function LoginForm() {
         </label>
 
         {message ? (
-          <p
-            className={`${styles.authForm__message} ${styles.authForm__messageError}`}
-          >
+          <p className={`${styles.authForm__message} ${styles.authForm__messageError}`}>
             {message}
           </p>
         ) : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={loading}>
-        {loading ? "登录中" : "登录"}
+      <button className={styles.authForm__submit} disabled={isLoading}>
+        {isLoading ? "登录中" : "登录"}
       </button>
     </form>
   );
