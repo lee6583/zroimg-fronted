@@ -2,6 +2,7 @@
 
 import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
@@ -50,7 +51,12 @@ export function LoginForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>密码</span>
+          <span className={styles.authForm__labelRow}>
+            <span className={styles.authForm__fieldLabel}>密码</span>
+            <Link href="/forgot-password" className={styles.authForm__fieldLink}>
+              忘记密码？
+            </Link>
+          </span>
           <span className={styles.authForm__control}>
             <Lock className={styles.authForm__icon} />
             <input

@@ -53,8 +53,25 @@ CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推
 
 ```dotenv
 BFF_MODE=mock
+AUTH_BFF_MODE=mock
 JAVA_API_BASE_URL=http://localhost:8080
 ```
+
+### 混合联调
+
+当前后端只完成登录、注册、发码、重置密码等认证接口，而订单、生成、画廊、反馈等业务接口还没接完时，本地推荐使用混合模式：
+
+```dotenv
+BFF_MODE=mock
+AUTH_BFF_MODE=java
+JAVA_API_BASE_URL=http://api-dev.zroimg.com
+```
+
+含义：
+
+- `BFF_MODE=mock`：未接 Java 的业务页面继续读取本地 mock，避免页面开发被后端进度卡住。
+- `AUTH_BFF_MODE=java`：认证接口单独转发到 Java 后端，登录成功后使用 Java 返回的 `zroimg_user_token` Cookie。
+- 混合模式只适合本地开发和联调，不代表项目已经具备上线条件。
 
 ### `mock`
 
@@ -68,6 +85,7 @@ JAVA_API_BASE_URL=http://localhost:8080
 - Java 请求失败必须返回明确的 502，禁止静默回退到 mock。
 - 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
 - 本地联调 Java 后端时，在 `.env.local` 写入 `BFF_MODE=java` 和实际后端域名，例如 `JAVA_API_BASE_URL=http://api-dev.zroimg.com`。
+- 如果只联调认证模块，不要把全局 `BFF_MODE` 切成 `java`，而是使用 `AUTH_BFF_MODE=java`。
 
 当前 Java 模式尚未完成“当前用户、页面查询、订单、生成、收藏、反馈”等完整适配，因此仓库暂不具备生产部署条件。上线前必须让所有 `src/server/bff/*` facade 使用 Java 实现，并删除 `mock-store.ts`、`mock-db.ts` 和 `internal/*` mock。
 

@@ -2,20 +2,38 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { getCheckInStatus } from "@/server/bff/account";
+import { getCheckInDateInfo, getCheckInStatus } from "@/server/bff/account";
 import { prisma } from "@/server/bff/orders";
+import { isMockBffEnabled } from "@/server/env";
+import type { CheckInStatus } from "@/types/checkin";
 import { DashboardOverview } from "./dashboard-overview";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
 
+function buildEmptyCheckInStatus(): CheckInStatus {
+  return {
+    date: getCheckInDateInfo(),
+    dailyCredits: 0,
+    checkedIn: false,
+    checkedAt: null,
+    streakDays: 0,
+    totalCheckIns: 0,
+    checkedDayKeys: [],
+  };
+}
+
 export default async function DashboardPage() {
   const current = await requireUser();
+  let generatedCount = 0;
+  let checkInStatus = buildEmptyCheckInStatus();
 
-  const [generatedCount, checkInStatus] = await Promise.all([
-    prisma.generatedImage.count({ where: { userProfileId: current.profile.id } }),
-    getCheckInStatus(current.profile.id),
-  ]);
+  if (isMockBffEnabled()) {
+    generatedCount = await prisma.generatedImage.count({
+      where: { userProfileId: current.profile.id },
+    });
+    checkInStatus = await getCheckInStatus(current.profile.id);
+  }
 
   return (
     <AppShell active="overview">

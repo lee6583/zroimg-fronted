@@ -1,15 +1,12 @@
-import { MOCK_SESSION_COOKIE } from "@/server/auth";
-import { isMockBffEnabled } from "@/server/env";
+import { JAVA_SESSION_COOKIE, MOCK_SESSION_COOKIE } from "@/server/auth";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonOk } from "@/server/http";
-import { proxyRequestToJavaApi } from "@/server/java-api";
 
-export async function POST(request: Request) {
-  if (!isMockBffEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/user/logout");
-  }
-
+export async function POST() {
   const response = jsonOk({ ok: true as const });
-  response.cookies.set(MOCK_SESSION_COOKIE, "", {
+  const cookieName = isJavaAuthEnabled() ? JAVA_SESSION_COOKIE : MOCK_SESSION_COOKIE;
+
+  response.cookies.set(cookieName, "", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
