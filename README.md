@@ -54,6 +54,7 @@ CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推
 ```dotenv
 BFF_MODE=mock
 AUTH_BFF_MODE=mock
+ALLOW_MOCK_BFF=false
 JAVA_API_BASE_URL=http://localhost:8080
 ```
 
@@ -64,6 +65,7 @@ JAVA_API_BASE_URL=http://localhost:8080
 ```dotenv
 BFF_MODE=mock
 AUTH_BFF_MODE=java
+ALLOW_MOCK_BFF=true
 JAVA_API_BASE_URL=http://api-dev.zroimg.com
 ```
 
@@ -71,13 +73,14 @@ JAVA_API_BASE_URL=http://api-dev.zroimg.com
 
 - `BFF_MODE=mock`：未接 Java 的业务页面继续读取本地 mock，避免页面开发被后端进度卡住。
 - `AUTH_BFF_MODE=java`：认证接口单独转发到 Java 后端，登录成功后使用 Java 返回的 `zroimg_user_token` Cookie。
+- `ALLOW_MOCK_BFF=true`：允许 `next start` 这种生产运行方式在 dev 环境继续使用 mock。只允许用于测试/联调域名，正式生产必须关闭。
 - 混合模式只适合本地开发和联调，不代表项目已经具备上线条件。
 
 ### `mock`
 
 - 只用于 `next dev` 下的页面开发和交互联调。
 - 运行数据只存在于 `src/server/bff/`，不再维护第二份 `mock/*.json`。
-- `NODE_ENV=production` 时始终关闭，即使环境变量写成 `mock` 也不会启用。
+- `NODE_ENV=production` 时默认关闭；只有显式设置 `ALLOW_MOCK_BFF=true` 的 dev 部署才允许启用。
 
 ### `java`
 

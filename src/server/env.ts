@@ -16,14 +16,21 @@ function readAuthBffMode() {
   return readBffMode();
 }
 
+function readBooleanEnv(name: string) {
+  const value = readServerEnv(name).toLowerCase();
+  return value === "true" || value === "1" || value === "yes";
+}
+
 export const serverEnv = {
   bffMode: readBffMode(),
   authBffMode: readAuthBffMode(),
+  allowMockBff: readBooleanEnv("ALLOW_MOCK_BFF"),
   javaApiBaseUrl: readServerEnv("JAVA_API_BASE_URL"),
 };
 
 export function isMockBffEnabled() {
-  return serverEnv.bffMode === "mock" && process.env.NODE_ENV !== "production";
+  const isProduction = process.env.NODE_ENV === "production";
+  return serverEnv.bffMode === "mock" && (!isProduction || serverEnv.allowMockBff);
 }
 
 export function isJavaAuthEnabled() {
