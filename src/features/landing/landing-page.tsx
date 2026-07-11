@@ -18,12 +18,8 @@ export function LandingPage() {
       <main>
         <section className={styles.landing__hero}>
           <div className={styles.landing__heroInner}>
-            <h1 className={styles.landing__heroTitle}>
-              一念之间，万象生成
-            </h1>
-            <p className={styles.landing__heroText}>
-              输入一句描述，让 AI 创造独一无二的视觉作品。
-            </p>
+            <h1 className={styles.landing__heroTitle}>一念之间，万象生成</h1>
+            <p className={styles.landing__heroText}>输入一句描述，让 AI 创造独一无二的视觉作品。</p>
 
             <div className={styles.landing__heroActions}>
               <Link className="btn-primary" href="/generate">
@@ -54,7 +50,9 @@ export function LandingPage() {
             <div className={styles.landing__sectionHeader}>
               <p className={styles.landing__eyebrow}>核心功能</p>
               <h2 className={styles.landing__sectionTitle}>创作所需，一应俱全</h2>
-              <p className={styles.landing__sectionText}>从一句提示词到一组可用图片，把灵感、风格、参考图和成品管理放在一个地方。</p>
+              <p className={styles.landing__sectionText}>
+                从一句提示词到一组可用图片，把灵感、风格、参考图和成品管理放在一个地方。
+              </p>
             </div>
 
             <div className={styles.landing__featureGrid}>
@@ -78,9 +76,7 @@ export function LandingPage() {
           <div className={styles.landing__sectionInner}>
             <div className={styles.landing__sectionHeader}>
               <p className={styles.landing__eyebrow}>使用流程</p>
-              <h2 className={styles.landing__sectionTitle}>
-                从想法到图片，四步搞定
-              </h2>
+              <h2 className={styles.landing__sectionTitle}>从想法到图片，四步搞定</h2>
               <p className={styles.landing__sectionText}>
                 无需设计经验，也无需提示词技巧，几分钟即可开始创作。
               </p>
@@ -99,9 +95,7 @@ export function LandingPage() {
                       <p className={styles.landing__flowNumber}>
                         Step {String(index + 1).padStart(2, "0")}
                       </p>
-                      <h3 className={styles.landing__flowTitle}>
-                        {step.title}
-                      </h3>
+                      <h3 className={styles.landing__flowTitle}>{step.title}</h3>
                       <p className={styles.landing__flowText}>{step.text}</p>
                     </div>
                   </div>
@@ -129,9 +123,7 @@ export function LandingPage() {
               </div>
               <div className={styles.landing__vision}>
                 <p className={styles.landing__eyebrow}>推广目标</p>
-                <h3 className={styles.landing__visionTitle}>
-                  创作不再受限于工具
-                </h3>
+                <h3 className={styles.landing__visionTitle}>创作不再受限于工具</h3>
                 <p className={styles.landing__visionText}>
                   我们致力于把 AI 图像、视频创作推广到全球，让更多人把灵感带到真实生活与工作场景中。
                 </p>
@@ -190,9 +182,7 @@ export function LandingPage() {
               </div>
             </div>
 
-            <div className={styles.landing__copyright}>
-              © 2026 ZroImg
-            </div>
+            <div className={styles.landing__copyright}>© 2026 ZroImg</div>
           </div>
         </footer>
       </main>

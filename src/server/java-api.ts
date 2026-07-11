@@ -1,3 +1,5 @@
+import "server-only";
+
 import { getErrorMessage } from "@/utils/error";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -14,17 +16,14 @@ const FORWARDED_REQUEST_HEADERS = [
   "x-request-id",
 ] as const;
 
-const FORWARDED_RESPONSE_HEADERS = [
-  "cache-control",
-  "content-type",
-  "location",
-] as const;
+const FORWARDED_RESPONSE_HEADERS = ["cache-control", "content-type", "location"] as const;
 
 type HeaderSource = {
   get(name: string): string | null;
 };
 
 type JavaEnvelope<T> = {
+  code?: number;
   success?: boolean;
   data?: T;
   settings?: T;
@@ -107,20 +106,18 @@ function readJavaErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
-export function hasJavaApiBaseUrl() {
-  return Boolean(normalizeJavaApiBaseUrl());
+function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
+  return typeof payload.code === "number" && payload.code !== 200;
 }
 
-export function isJavaUnavailableResponse(response: Response) {
-  return response.headers.get(JAVA_PROXY_ERROR_HEADER) === "java_unavailable";
-}
-
-export async function proxyRequestToJavaApi(request: Request, path: string, method = request.method) {
+export async function proxyRequestToJavaApi(
+  request: Request,
+  path: string,
+  method = request.method,
+) {
   try {
     const body =
-      method === "GET" || method === "HEAD"
-        ? undefined
-        : ((await request.text()) || undefined);
+      method === "GET" || method === "HEAD" ? undefined : (await request.text()) || undefined;
 
     const response = await fetch(buildJavaApiUrl(path), {
       method,
@@ -133,9 +130,18 @@ export async function proxyRequestToJavaApi(request: Request, path: string, meth
       status: response.status,
       headers: buildProxyResponseHeaders(response.headers),
     });
-  } catch {
+  } catch (error) {
+    console.error("Java API proxy failed", {
+      method,
+      path,
+      message: getErrorMessage(error),
+    });
     return NextResponse.json(
-      { error: "Java 后端暂时不可用，请稍后重试" },
+      {
+        success: false,
+        message: "Java 后端暂时不可用，请稍后重试",
+        code: "JAVA_UNAVAILABLE",
+      },
       {
         status: 502,
         headers: {
@@ -155,16 +161,17 @@ export async function getJavaApiData<T>(path: string) {
       cache: "no-store",
     });
     const payload = (await response.json()) as JavaEnvelope<T>;
+    const failedByJavaCode = isFailedJavaEnvelope(payload);
 
-    if (!response.ok) {
+    if (!response.ok || failedByJavaCode) {
       throw new Error(readJavaErrorMessage(payload, "读取 Java 后端数据失败"));
     }
 
-    if (payload.data) {
+    if (payload.data !== undefined) {
       return payload.data;
     }
 
-    if (payload.settings) {
+    if (payload.settings !== undefined) {
       return payload.settings;
     }
 

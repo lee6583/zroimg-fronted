@@ -16,10 +16,7 @@ function createCollection(data: CreateFavoriteCollectionRequest) {
   });
 }
 
-function updateCollection(
-  collectionId: string,
-  data: UpdateFavoriteCollectionRequest,
-) {
+function updateCollection(collectionId: string, data: UpdateFavoriteCollectionRequest) {
   return request<FavoriteCollectionMutationResponse>({
     url: `/api/favorite-collections/${collectionId}`,
     method: "PATCH",
@@ -34,10 +31,7 @@ function deleteCollection(collectionId: string) {
   });
 }
 
-function addImage(
-  collectionId: string,
-  data: AddImageToFavoriteCollectionRequest,
-) {
+function addImage(collectionId: string, data: AddImageToFavoriteCollectionRequest) {
   return request<AddImageToFavoriteCollectionResponse>({
     url: `/api/favorite-collections/${collectionId}/images`,
     method: "POST",

@@ -13,7 +13,7 @@ export default async function SettingsPage() {
       <div className={styles.settings}>
         <section className={styles.settings__header}>
           <h1 className={styles.settings__title}>账户设置</h1>
-          <p className={styles.settings__description}>管理个人资料、登录密码，以及仅保存在当前浏览器里的自定义生图配置。</p>
+          <p className={styles.settings__description}>管理个人资料与登录密码。</p>
         </section>
 
         <AccountSettingsForm

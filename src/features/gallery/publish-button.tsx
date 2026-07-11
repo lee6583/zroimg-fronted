@@ -13,8 +13,8 @@ export function PublishGalleryButton({
   generatedImageId: string;
   initialPublished: boolean;
 }) {
-  const [published, setPublished] = useState(initialPublished);
-  const [loading, setLoading] = useState(false);
+  const [isPublished, setPublished] = useState(initialPublished);
+  const [isLoading, setLoading] = useState(false);
   const [label, setLabel] = useState(initialPublished ? "已发布" : "发布");
 
   async function publishImage() {
@@ -39,7 +39,7 @@ export function PublishGalleryButton({
       <button
         type="button"
         onClick={publishImage}
-        disabled={loading || published}
+        disabled={isLoading || isPublished}
         className={styles.publishButton__action}
       >
         <Send size={14} />

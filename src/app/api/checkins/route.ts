@@ -1,18 +1,15 @@
-import { getErrorMessage } from "@/utils/error";
 import { getCurrentUserProfile } from "@/server/auth";
 import { claimDailyCheckIn } from "@/server/bff/account";
-import { jsonError, jsonOk } from "@/server/http";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 
 export async function POST() {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  try {
     const checkIn = await claimDailyCheckIn(current.profile.id);
     return jsonOk({ checkIn });
-  } catch (error) {
-    return jsonError(getErrorMessage(error));
-  }
+  });
 }

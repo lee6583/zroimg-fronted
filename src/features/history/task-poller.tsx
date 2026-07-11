@@ -11,13 +11,7 @@ const statusLabels: Record<string, string> = {
   failed: "失败",
 };
 
-export function TaskPoller({
-  taskId,
-  initialStatus,
-}: {
-  taskId: string;
-  initialStatus: string;
-}) {
+export function TaskPoller({ taskId, initialStatus }: { taskId: string; initialStatus: string }) {
   const [status, setStatus] = useState(initialStatus);
 
   useEffect(() => {
@@ -36,9 +30,5 @@ export function TaskPoller({
     return () => window.clearInterval(timer);
   }, [status, taskId]);
 
-  return (
-    <span className={styles.taskPoller__badge}>
-      {statusLabels[status] ?? status}
-    </span>
-  );
+  return <span className={styles.taskPoller__badge}>{statusLabels[status] ?? status}</span>;
 }

@@ -4,8 +4,7 @@ export type GenerationQuality = "low" | "medium" | "high";
 
 export type GenerationOutputFormat = "png" | "webp" | "jpeg";
 
-export type GenerationTaskStatus =
-  "queued" | "running" | "succeeded" | "failed";
+export type GenerationTaskStatus = "queued" | "running" | "succeeded" | "failed";
 
 export type UploadedMediaApiItem = {
   id: string;
@@ -17,58 +16,55 @@ export type GenerationTaskApiItem = {
   id: string;
   prompt: string;
   mode: GenerationMode;
-  status: GenerationTaskStatus | string;
+  status: GenerationTaskStatus;
   size: string;
   imageCount: number;
   costCredits: number;
   createdAt: string;
-  source?: "platform" | "local";
   imageUrls?: string[];
 };
 
 export type GenerationConversationTaskSummary = {
-  status: string;
+  status: GenerationTaskStatus;
   costCredits: number;
 };
 
 export type GenerationConversationApiItem = {
   id: string;
   title: string;
-  taskCount?: number;
-  latestTaskStatus?: string | null;
-  latestTaskCost?: number | null;
-  lastTaskAt?: string | null;
+  lastTaskAt: string | null;
   updatedAt: string;
   createdAt: string;
-  _count?: { tasks: number };
-  tasks?: GenerationConversationTaskSummary[];
+  _count: { tasks: number };
+  tasks: GenerationConversationTaskSummary[];
 };
 
-export type FetchGenerationConversationsResponse =
-  | { conversations?: GenerationConversationApiItem[] }
-  | GenerationConversationApiItem[];
+export type FetchGenerationConversationsResponse = {
+  conversations: GenerationConversationApiItem[];
+};
 
 export type CreateGenerationConversationRequest = {
   title?: string;
 };
 
 export type CreateGenerationConversationResponse = {
-  conversation?: GenerationConversationApiItem;
+  conversation: GenerationConversationApiItem;
 };
 
-export type FetchConversationTasksResponse =
-  { tasks?: GenerationTaskApiItem[] } | GenerationTaskApiItem[];
+export type FetchConversationTasksResponse = {
+  tasks: GenerationTaskApiItem[];
+};
 
 export type UpdateGenerationConversationRequest = {
   title: string;
 };
 
 export type UpdateGenerationConversationResponse = {
-  conversation?: GenerationConversationApiItem;
+  conversation: GenerationConversationApiItem;
 };
 
 export type DeleteGenerationConversationResponse = {
-  ok?: boolean;
+  ok: true;
 };
 
 export type UploadMediaResponse = {
@@ -78,12 +74,12 @@ export type UploadMediaResponse = {
 export type CreateGenerationTaskRequest = {
   conversationId: string;
   prompt: string;
-  mode?: GenerationMode;
-  quality?: GenerationQuality;
-  outputFormat?: GenerationOutputFormat;
-  size?: string;
-  imageCount?: number;
-  inputMediaIds?: string[];
+  mode: GenerationMode;
+  quality: GenerationQuality;
+  outputFormat: GenerationOutputFormat;
+  size: string;
+  imageCount: number;
+  inputMediaIds: string[];
 };
 
 export type CreateGenerationTaskResponse = {

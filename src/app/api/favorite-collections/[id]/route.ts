@@ -1,43 +1,39 @@
-import { getErrorMessage } from "@/utils/error";
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import {
-  deleteFavoriteCollection,
-  updateFavoriteCollectionName,
-} from "@/server/bff/account";
-import { jsonError, jsonOk } from "@/server/http";
+import { deleteCollection, updateCollectionName } from "@/server/bff/account";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const collectionSchema = z.object({
+  name: z.string().trim().min(1, "请输入合集名称").max(64, "合集名称最多 64 位"),
+});
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
-  const { name } = (await request.json()) as { name?: string };
-  if (!name?.trim()) {
-    return jsonError("请输入合集名称");
-  }
+    const { id } = await context.params;
+    const parsed = await parseJson(request, collectionSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  try {
-    const collection = await updateFavoriteCollectionName(current.profile.id, id, name);
+    const collection = await updateCollectionName(current.profile.id, id, parsed.data.name);
     return jsonOk({ collection });
-  } catch (error) {
-    return jsonError(getErrorMessage(error));
-  }
+  });
 }
 
 export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
+    const { id } = await context.params;
 
-  try {
-    await deleteFavoriteCollection(current.profile.id, id);
+    await deleteCollection(current.profile.id, id);
     return jsonOk({ ok: true });
-  } catch (error) {
-    return jsonError(getErrorMessage(error));
-  }
+  });
 }

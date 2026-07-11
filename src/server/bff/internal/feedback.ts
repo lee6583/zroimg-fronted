@@ -6,14 +6,20 @@ function includesText(value: string, query?: string) {
   return value.toLowerCase().includes(query.toLowerCase());
 }
 
-function attachTicketMessages(ticketId: string) {
+function attachMessages(ticketId: string) {
   const store = getStore();
 
   return store.feedbackMessages
     .filter((item) => item.ticketId === ticketId)
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .sort((a, b) => {
+      const timeA = a.createdAt.getTime();
+      const timeB = b.createdAt.getTime();
+      return timeA - timeB;
+    })
     .map((message) => {
-      const authorProfile = store.profiles.find((profile) => profile.id === message.authorProfileId)!;
+      const authorProfile = store.profiles.find(
+        (profile) => profile.id === message.authorProfileId,
+      )!;
       return {
         ...message,
         authorProfile,
@@ -21,19 +27,23 @@ function attachTicketMessages(ticketId: string) {
     });
 }
 
-export async function listFeedbackTicketsForUser(userProfileId: string) {
+export async function listForUser(profileId: string) {
   const store = getStore();
 
   return store.feedbackTickets
-    .filter((ticket) => ticket.userProfileId === userProfileId)
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .filter((ticket) => ticket.userProfileId === profileId)
+    .sort((a, b) => {
+      const timeA = a.updatedAt.getTime();
+      const timeB = b.updatedAt.getTime();
+      return timeB - timeA;
+    })
     .map((ticket) => ({
       ...ticket,
-      messages: attachTicketMessages(ticket.id),
+      messages: attachMessages(ticket.id),
     }));
 }
 
-export async function createFeedbackTicket(input: {
+export async function createTicket(input: {
   userProfileId: string;
   type: MockFeedbackType;
   subject: string;
@@ -62,11 +72,11 @@ export async function createFeedbackTicket(input: {
   });
   return {
     ...ticket,
-    messages: attachTicketMessages(ticket.id),
+    messages: attachMessages(ticket.id),
   };
 }
 
-export async function addFeedbackMessage(input: {
+export async function addMessage(input: {
   ticketId: string;
   authorProfileId: string;
   isAdmin: boolean;
@@ -75,6 +85,9 @@ export async function addFeedbackMessage(input: {
   const store = getStore();
   const ticket = store.feedbackTickets.find((item) => item.id === input.ticketId);
   if (!ticket) {
+    throw new Error("反馈不存在");
+  }
+  if (!input.isAdmin && ticket.userProfileId !== input.authorProfileId) {
     throw new Error("反馈不存在");
   }
   if (ticket.status === "closed") {
@@ -97,7 +110,7 @@ export async function addFeedbackMessage(input: {
   return ticket;
 }
 
-export async function listAdminFeedbackTickets(input: {
+export async function listForAdmin(input: {
   q?: string;
   status?: string;
   type?: string;
@@ -121,7 +134,11 @@ export async function listAdminFeedbackTickets(input: {
         includesText(user.email, q)
       );
     })
-    .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
+    .sort((a, b) => {
+      const timeA = a.lastMessageAt.getTime();
+      const timeB = b.lastMessageAt.getTime();
+      return timeB - timeA;
+    });
 
   const start = (input.page - 1) * input.pageSize;
   const pageItems = filtered.slice(start, start + input.pageSize);
@@ -136,7 +153,7 @@ export async function listAdminFeedbackTickets(input: {
           ...userProfile,
           user,
         },
-        messages: attachTicketMessages(ticket.id),
+        messages: attachMessages(ticket.id),
       };
     }),
     total: filtered.length,
@@ -144,7 +161,7 @@ export async function listAdminFeedbackTickets(input: {
   };
 }
 
-export async function updateFeedbackTicketStatus(ticketId: string, status: MockFeedbackStatus) {
+export async function updateStatus(ticketId: string, status: MockFeedbackStatus) {
   const ticket = getStore().feedbackTickets.find((item) => item.id === ticketId);
   if (!ticket) {
     throw new Error("反馈不存在");

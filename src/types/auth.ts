@@ -1,5 +1,12 @@
 import type { OkResponse } from "@/types/api";
 
+export type AuthUser = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+};
+
 export type SliderTokenRequest = {
   email: string;
   scene?: string;
@@ -16,9 +23,8 @@ export type SendRegisterCodeRequest = {
 
 export type SendRegisterCodeResponse = {
   message: string;
-  code?: string;
-  cooldownSeconds?: number;
-  expiresInSeconds?: number;
+  cooldownSeconds: number;
+  expiresInSeconds: number;
 };
 
 export type RegisterAccountRequest = {
@@ -28,13 +34,18 @@ export type RegisterAccountRequest = {
   code: string;
 };
 
-export type RegisterAccountResponse = OkResponse;
+export type RegisterAccountResponse = {
+  message: string;
+};
 
 export type LoginWithEmailRequest = {
   email: string;
   password: string;
 };
 
-export type LoginWithEmailResponse = OkResponse;
+export type LoginWithEmailResponse = {
+  message: string;
+  user: AuthUser;
+};
 
 export type LogoutAccountResponse = OkResponse;

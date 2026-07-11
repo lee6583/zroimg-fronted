@@ -14,13 +14,11 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
-  const [verified, setVerified] = useState(false);
+  const [isVerified, setVerified] = useState(false);
   const [sliderToken, setSliderToken] = useState("");
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">(
-    "success",
-  );
-  const [loading, setLoading] = useState(false);
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
+  const [isLoading, setLoading] = useState(false);
 
   function resetSliderVerification() {
     setVerified(false);
@@ -49,7 +47,7 @@ export function RegisterForm() {
   }
 
   async function sendCode() {
-    if (!verified || !sliderToken) {
+    if (!isVerified || !sliderToken) {
       setMessageType("error");
       setMessage("请先完成安全验证");
       return;
@@ -68,7 +66,7 @@ export function RegisterForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!verified) {
+    if (!isVerified) {
       setMessageType("error");
       setMessage("请先完成安全验证");
       return;
@@ -107,9 +105,7 @@ export function RegisterForm() {
         <label className={styles.authForm__field}>
           <span className={styles.authForm__fieldLabel}>邮箱</span>
           <span className={styles.authForm__inlineRow}>
-            <span
-              className={`${styles.authForm__control} ${styles.authForm__controlGrow}`}
-            >
+            <span className={`${styles.authForm__control} ${styles.authForm__controlGrow}`}>
               <Mail className={styles.authForm__icon} />
               <input
                 className={styles.authForm__input}
@@ -123,11 +119,7 @@ export function RegisterForm() {
                 required
               />
             </span>
-            <button
-              type="button"
-              className={styles.authForm__secondaryButton}
-              onClick={sendCode}
-            >
+            <button type="button" className={styles.authForm__secondaryButton} onClick={sendCode}>
               发码
             </button>
           </span>
@@ -154,10 +146,12 @@ export function RegisterForm() {
             <input
               className={styles.authForm__input}
               type="password"
-              placeholder="至少 6 位"
+              placeholder="至少 8 位"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              minLength={8}
+              maxLength={128}
             />
           </span>
         </label>
@@ -167,10 +161,7 @@ export function RegisterForm() {
             <ShieldCheck className={styles.authForm__verificationIcon} />
             <span>安全验证</span>
           </div>
-          <SliderVerification
-            verified={verified}
-            onVerified={requestSliderToken}
-          />
+          <SliderVerification verified={isVerified} onVerified={requestSliderToken} />
         </div>
 
         {message ? (
@@ -182,20 +173,15 @@ export function RegisterForm() {
         ) : null}
       </div>
 
-      <button
-        className={styles.authForm__submit}
-        disabled={loading || !verified}
-      >
-        {loading ? "注册中" : "注册"}
+      <button className={styles.authForm__submit} disabled={isLoading || !isVerified}>
+        {isLoading ? "注册中" : "注册"}
       </button>
 
       <div className={styles.authForm__reward}>
         <Gift className={styles.authForm__rewardIcon} />
         <div>
           <p className={styles.authForm__rewardTitle}>注册即送 10 积分</p>
-          <p className={styles.authForm__rewardText}>
-            首次注册自动到账，立即开始创作。
-          </p>
+          <p className={styles.authForm__rewardText}>首次注册自动到账，立即开始创作。</p>
         </div>
       </div>
     </form>

@@ -1,7 +1,29 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { adjustProfileCredits, getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
-import { calculateCustomCredits } from "@/utils/credits";
+import { parseJson } from "@/server/validation";
+import {
+  calculateCustomCredits,
+  CUSTOM_MAX_AMOUNT_CNY,
+  CUSTOM_MIN_AMOUNT_CNY,
+} from "@/utils/credits";
+
+const orderSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("package"),
+    packageCode: z.string().trim().min(1, "请选择积分套餐").max(64),
+    paymentType: z.enum(["alipay", "wxpay"]),
+  }),
+  z.object({
+    mode: z.literal("custom"),
+    amountCny: z
+      .number()
+      .min(CUSTOM_MIN_AMOUNT_CNY, "购买金额过低")
+      .max(CUSTOM_MAX_AMOUNT_CNY, "购买金额过高"),
+    paymentType: z.enum(["alipay", "wxpay"]),
+  }),
+]);
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();
@@ -9,28 +31,23 @@ export async function POST(request: Request) {
     return jsonError("请先登录", 401);
   }
 
-  const payload = (await request.json()) as {
-    mode?: "package" | "custom";
-    packageCode?: string;
-    amountCny?: number;
-    paymentType?: "alipay" | "wxpay";
-  };
+  const parsed = await parseJson(request, orderSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
+
+  const payload = parsed.data;
 
   const store = getStore();
   if (!store.settings.easypay.enabled) {
     return jsonError("支付能力已关闭");
   }
 
-  const paymentType: "alipay" | "wxpay" = payload.paymentType === "wxpay" ? "wxpay" : "alipay";
+  const paymentType = payload.paymentType;
   let credits = 0;
   let amountCny = 0;
   let creditPackageId: string | null = null;
 
   if (payload.mode === "custom") {
-    amountCny = Number(payload.amountCny || 0);
-    if (!Number.isFinite(amountCny) || amountCny <= 0) {
-      return jsonError("请输入有效金额");
-    }
+    amountCny = payload.amountCny;
     credits = calculateCustomCredits(amountCny);
   } else {
     const creditPackage = store.creditPackages.find((item) => item.code === payload.packageCode);
@@ -59,7 +76,12 @@ export async function POST(request: Request) {
   };
 
   store.paymentOrders.unshift(order);
-  adjustProfileCredits(current.profile.id, credits, payload.mode === "custom" ? "自定义充值" : `套餐购买 ${payload.packageCode}`, "purchase");
+  adjustProfileCredits(
+    current.profile.id,
+    credits,
+    payload.mode === "custom" ? "自定义充值" : `套餐购买 ${payload.packageCode}`,
+    "purchase",
+  );
 
   return jsonOk({
     order: {

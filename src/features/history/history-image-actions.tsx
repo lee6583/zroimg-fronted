@@ -27,10 +27,10 @@ export function HistoryImageActions({
   downloadUrl: string;
   downloadFileName: string;
 }) {
-  const [favoriteOpen, setFavoriteOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
   const [collectionId, setCollectionId] = useState(collections[0]?.id || "");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function addToCollection() {
     if (!collectionId) {
@@ -50,7 +50,7 @@ export function HistoryImageActions({
     }
 
     setMessage("已收藏");
-    setFavoriteOpen(false);
+    setOpen(false);
     setLoading(false);
   }
 
@@ -66,7 +66,7 @@ export function HistoryImageActions({
           type="button"
           aria-label="收藏到合集"
           title="收藏到合集"
-          onClick={() => setFavoriteOpen((current) => !current)}
+          onClick={() => setOpen((current) => !current)}
           className={styles.historyImageActions__iconButton}
         >
           <Heart size={15} />
@@ -85,7 +85,7 @@ export function HistoryImageActions({
         </a>
       </div>
 
-      {favoriteOpen ? (
+      {isOpen ? (
         <div className={styles.historyImageActions__panel}>
           {collections.length > 0 ? (
             <>
@@ -100,24 +100,20 @@ export function HistoryImageActions({
               />
               <button
                 type="button"
-                disabled={loading}
+                disabled={isLoading}
                 onClick={addToCollection}
                 className={styles.historyImageActions__saveButton}
               >
-                {loading ? "收藏中" : "收藏"}
+                {isLoading ? "收藏中" : "收藏"}
               </button>
             </>
           ) : (
-            <p className={styles.historyImageActions__message}>
-              请先到收藏合集里新建合集
-            </p>
+            <p className={styles.historyImageActions__message}>请先到收藏合集里新建合集</p>
           )}
         </div>
       ) : null}
 
-      {message ? (
-        <p className={styles.historyImageActions__message}>{message}</p>
-      ) : null}
+      {message ? <p className={styles.historyImageActions__message}>{message}</p> : null}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import clsx from "clsx";
 import Link from "next/link";
 import {
   Activity,
@@ -13,7 +14,8 @@ import {
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
-type AdminSection = "overview" | "users" | "orders" | "generations" | "tickets" | "docs" | "settings" | "audit";
+type AdminSection =
+  "overview" | "users" | "orders" | "generations" | "tickets" | "docs" | "settings" | "audit";
 
 const adminNavItems: Array<{
   key: AdminSection;
@@ -30,10 +32,6 @@ const adminNavItems: Array<{
   { key: "settings", label: "系统设置", href: "/admin/settings", icon: Settings },
   { key: "audit", label: "审计日志", href: "/admin/audit-logs", icon: FileClock },
 ];
-
-function joinClassNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export async function AdminShell({
   active,
@@ -61,13 +59,13 @@ export async function AdminShell({
                     <Link
                       key={item.key}
                       href={item.href}
-                      className={joinClassNames(
+                      className={clsx(
                         styles.shell__navLink,
                         isActive && styles.shell__navLinkActive,
                       )}
                     >
                       <span
-                        className={joinClassNames(
+                        className={clsx(
                           styles.shell__navIcon,
                           isActive && styles.shell__navIconActive,
                         )}

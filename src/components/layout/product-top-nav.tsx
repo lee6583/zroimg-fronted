@@ -20,7 +20,13 @@ function avatarLabel(name?: string | null) {
 
 export async function ProductTopNav() {
   const current = await getCurrentUserProfile();
-  const centerLinks = current ? (current.profile.role === "admin" ? [...appCenterLinks, adminCenterLink] : appCenterLinks) : publicCenterLinks;
+  let centerLinks = publicCenterLinks;
+  if (current) {
+    centerLinks = appCenterLinks;
+  }
+  if (current?.profile.role === "admin") {
+    centerLinks = [...appCenterLinks, adminCenterLink];
+  }
 
   return (
     <header className={styles.productTopNav}>

@@ -1,8 +1,5 @@
 import { request } from "@/utils/request";
-import type {
-  SaveDocsConfigRequest,
-  SaveDocsConfigResponse,
-} from "@/types/content";
+import type { SaveDocsConfigRequest, SaveDocsConfigResponse } from "@/types/content";
 
 function saveDocsConfig(data: SaveDocsConfigRequest) {
   return request<SaveDocsConfigResponse>({

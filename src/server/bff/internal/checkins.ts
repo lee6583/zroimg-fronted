@@ -12,7 +12,8 @@ export function getCheckInDateInfo(date = new Date()): CheckInDateInfo {
     weekday: "long",
   }).formatToParts(date);
 
-  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
   const year = value("year");
   const month = value("month");
   const day = value("day");
@@ -66,7 +67,9 @@ export async function getCheckInStatus(userProfileId: string): Promise<CheckInSt
 export async function claimDailyCheckIn(userProfileId: string) {
   const store = getStore();
   const today = getCheckInDateInfo();
-  const existing = store.checkInRecords.find((item) => item.userProfileId === userProfileId && item.dayKey === today.dayKey);
+  const existing = store.checkInRecords.find(
+    (item) => item.userProfileId === userProfileId && item.dayKey === today.dayKey,
+  );
   if (existing) {
     throw new Error("今日已签到");
   }
@@ -79,6 +82,11 @@ export async function claimDailyCheckIn(userProfileId: string) {
     createdAt: new Date(),
   });
 
-  adjustProfileCredits(userProfileId, store.settings.checkin.dailyCredits, `每日签到 ${today.dayKey}`, "checkin");
+  adjustProfileCredits(
+    userProfileId,
+    store.settings.checkin.dailyCredits,
+    `每日签到 ${today.dayKey}`,
+    "checkin",
+  );
   return getCheckInStatus(userProfileId);
 }

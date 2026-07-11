@@ -7,12 +7,10 @@ import { ticketsApi } from "@/api/support/tickets";
 import { AppSelect } from "@/components/ui/app-select";
 import { type FeedbackStatus, feedbackStatusLabels } from "@/utils/feedback";
 
-const statusOptions = Object.entries(feedbackStatusLabels).map(
-  ([value, label]) => ({
-    value: value as FeedbackStatus,
-    label,
-  }),
-);
+const statusOptions = Object.entries(feedbackStatusLabels).map(([value, label]) => ({
+  value: value as FeedbackStatus,
+  label,
+}));
 
 export function FeedbackActions({
   ticketId,
@@ -25,7 +23,7 @@ export function FeedbackActions({
   const [status, setStatus] = useState<FeedbackStatus>(currentStatus);
   const [body, setBody] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function updateStatus() {
     setLoading(true);
@@ -67,12 +65,7 @@ export function FeedbackActions({
           options={statusOptions}
           triggerClassName="min-h-10 text-sm"
         />
-        <button
-          type="button"
-          className="btn-secondary"
-          disabled={loading}
-          onClick={updateStatus}
-        >
+        <button type="button" className="btn-secondary" disabled={isLoading} onClick={updateStatus}>
           更新状态
         </button>
       </div>
@@ -85,7 +78,7 @@ export function FeedbackActions({
       <button
         type="button"
         className="btn-primary w-fit"
-        disabled={loading || !body.trim()}
+        disabled={isLoading || !body.trim()}
         onClick={reply}
       >
         发送回复

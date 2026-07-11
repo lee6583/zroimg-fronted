@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Link from "next/link";
 import { FileClock, Plus } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
@@ -20,10 +21,6 @@ const paymentTypeLabels: Record<string, string> = {
   alipay: "alipay",
   wxpay: "wxpay",
 };
-
-function classNames(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -77,7 +74,7 @@ export default async function BillingPage() {
         {orders.length > 0 ? (
           <section className={styles.billing__tableCard} aria-label="我的订单列表">
             <div className={styles.billing__tableScroller}>
-              <div className={classNames(styles.billing__tableRow, styles.billing__tableHead)}>
+              <div className={clsx(styles.billing__tableRow, styles.billing__tableHead)}>
                 <span>订单号</span>
                 <span>金额</span>
                 <span>积分</span>
@@ -93,14 +90,20 @@ export default async function BillingPage() {
                     <span className={styles.billing__orderNo}>{order.orderNo}</span>
                     <span className={styles.billing__amount}>{formatAmount(order.amountCny)}</span>
                     <span className={styles.billing__credits}>{formatCredits(order.credits)}</span>
-                    <span className={styles.billing__muted}>{paymentTypeLabels[order.paymentType] ?? order.paymentType}</span>
+                    <span className={styles.billing__muted}>
+                      {paymentTypeLabels[order.paymentType] ?? order.paymentType}
+                    </span>
                     <span>
-                      <span className={classNames(styles.billing__statusBadge, statusClassName(order.status))}>
+                      <span
+                        className={clsx(styles.billing__statusBadge, statusClassName(order.status))}
+                      >
                         {orderStatusLabels[order.status] ?? order.status}
                       </span>
                     </span>
                     <span className={styles.billing__muted}>{formatDate(order.createdAt)}</span>
-                    <span className={styles.billing__muted}>{order.paidAt ? formatDate(order.paidAt) : "—"}</span>
+                    <span className={styles.billing__muted}>
+                      {order.paidAt ? formatDate(order.paidAt) : "—"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -110,7 +113,9 @@ export default async function BillingPage() {
           <section className={styles.billing__empty}>
             <FileClock size={24} />
             <p className={styles.billing__emptyTitle}>还没有订单</p>
-            <p className={styles.billing__emptyText}>购买积分后，订单记录和到账状态会显示在这里。</p>
+            <p className={styles.billing__emptyText}>
+              购买积分后，订单记录和到账状态会显示在这里。
+            </p>
             <Link href="/credits" className={styles.billing__emptyAction}>
               去充值
             </Link>

@@ -6,10 +6,7 @@ import { adminSettingsApi } from "@/api/admin/settings";
 import type { GenerationProviderAdminConfig } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
-const sourceLabels: Record<
-  GenerationProviderAdminConfig["apiKeySource"],
-  string
-> = {
+const sourceLabels: Record<GenerationProviderAdminConfig["apiKeySource"], string> = {
   database: "后台数据库",
   env: ".env 兜底",
   none: "未配置",
@@ -21,13 +18,13 @@ export function GenerationSettingsForm({
   initialSettings: GenerationProviderAdminConfig;
 }) {
   const [settings, setSettings] = useState(initialSettings);
-  const [enabled, setEnabled] = useState(initialSettings.enabled);
+  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
   const [baseUrl, setBaseUrl] = useState(initialSettings.baseUrl ?? "");
   const [model, setModel] = useState(initialSettings.model);
   const [apiKey, setApiKey] = useState("");
-  const [clearApiKey, setClearApiKey] = useState(false);
+  const [shouldClearKey, setClearKey] = useState(false);
   const [message, setMessage] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [isSaving, setSaving] = useState(false);
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,16 +33,16 @@ export function GenerationSettingsForm({
 
     try {
       const data = await adminSettingsApi.saveGenerationSettings({
-        enabled,
+        enabled: isEnabled,
         baseUrl,
         model,
         apiKey,
-        clearApiKey,
+        clearApiKey: shouldClearKey,
       });
       setSaving(false);
       setSettings(data.settings);
       setApiKey("");
-      setClearApiKey(false);
+      setClearKey(false);
       setMessage("已保存，新的生成任务会使用这套配置。");
     } catch (error) {
       setSaving(false);
@@ -55,23 +52,20 @@ export function GenerationSettingsForm({
   }
 
   return (
-    <form
-      className="surface mt-6 grid gap-5 rounded-md p-5"
-      onSubmit={saveSettings}
-    >
+    <form className="surface mt-6 grid gap-5 rounded-md p-5" onSubmit={saveSettings}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="label">Provider</p>
           <h2 className="text-2xl font-black">生图服务配置</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            支持 OpenAI Images API 或兼容 OpenAI SDK
-            的中转地址。前端不会拿到密钥，worker 执行任务时从服务端读取。
+            支持 OpenAI Images API 或兼容 OpenAI SDK 的中转地址。前端不会拿到密钥，worker
+            执行任务时从服务端读取。
           </p>
         </div>
         <label className={styles.adminForms__enablePill}>
           <input
             type="checkbox"
-            checked={enabled}
+            checked={isEnabled}
             onChange={(event) => setEnabled(event.target.checked)}
           />
           启用生图
@@ -111,12 +105,10 @@ export function GenerationSettingsForm({
           className="field"
           type="password"
           autoComplete="new-password"
-          placeholder={
-            settings.hasApiKey ? "留空表示保留当前密钥" : "请输入生图服务密钥"
-          }
+          placeholder={settings.hasApiKey ? "留空表示保留当前密钥" : "请输入生图服务密钥"}
           value={apiKey}
           onChange={(event) => setApiKey(event.target.value)}
-          disabled={clearApiKey}
+          disabled={shouldClearKey}
         />
         <span className="text-xs text-muted">
           当前状态：
@@ -129,19 +121,16 @@ export function GenerationSettingsForm({
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
-          checked={clearApiKey}
-          onChange={(event) => setClearApiKey(event.target.checked)}
+          checked={shouldClearKey}
+          onChange={(event) => setClearKey(event.target.checked)}
         />
         清空数据库里保存的密钥
       </label>
 
       {message ? <p className="text-sm text-muted">{message}</p> : null}
 
-      <button
-        className="btn-primary w-full md:w-fit"
-        disabled={saving || !model.trim()}
-      >
-        {saving ? "保存中" : "保存配置"}
+      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !model.trim()}>
+        {isSaving ? "保存中" : "保存配置"}
       </button>
     </form>
   );

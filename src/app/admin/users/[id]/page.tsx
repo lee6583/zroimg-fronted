@@ -43,13 +43,18 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     <AdminShell active="users">
       <div className="grid gap-6">
         <section className="surface rounded-xl p-5">
-          <Link href="/admin/users" className="text-sm font-medium text-muted transition hover:text-foreground">
+          <Link
+            href="/admin/users"
+            className="text-sm font-medium text-muted transition hover:text-foreground"
+          >
             返回用户管理
           </Link>
           <div className="mt-4 flex flex-wrap justify-between gap-4">
             <div>
               <p className="label">User detail</p>
-              <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight">{profile.username}</h1>
+              <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight">
+                {profile.username}
+              </h1>
               <p className="mt-2 text-sm text-muted">
                 {profile.user?.email || "-"} / {profile.role} / {profile.status}
               </p>
@@ -68,10 +73,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               {ledger.map((item) => (
                 <div key={item.id} className="rounded-lg border border-line p-3">
                   <div className="flex justify-between gap-3">
-                    <p className={item.amount >= 0 ? "text-foreground" : "text-danger"}>{item.amount > 0 ? `+${item.amount}` : item.amount}</p>
+                    <p className={item.amount >= 0 ? "text-foreground" : "text-danger"}>
+                      {item.amount > 0 ? `+${item.amount}` : item.amount}
+                    </p>
                     <p className="text-sm text-muted">{item.balanceAfter} 余额</p>
                   </div>
-                  <p className="mt-1 text-xs text-muted">{item.reason} / {formatDate(item.createdAt)}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {item.reason} / {formatDate(item.createdAt)}
+                  </p>
                 </div>
               ))}
               {ledger.length === 0 ? <p className="text-sm text-muted">暂无流水</p> : null}

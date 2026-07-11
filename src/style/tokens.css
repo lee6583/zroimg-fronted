@@ -44,7 +44,9 @@
   --color-warning-soft: var(--warning-soft);
   --shadow-card: var(--card-shadow);
   --shadow-premium: var(--premium-shadow);
-  --font-sans: Inter, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-sans:
+    Inter, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
+    sans-serif;
   --font-serif: "Playfair Display", Georgia, "Times New Roman", "Songti SC", "STSong", serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
