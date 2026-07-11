@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createMockUser, findUserByEmail, getStore } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
@@ -17,7 +17,7 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (!isMockBffEnabled()) {
+  if (isJavaAuthEnabled()) {
     return proxyRequestToJavaApi(request, "/auth/user/register");
   }
 

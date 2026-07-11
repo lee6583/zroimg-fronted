@@ -5,6 +5,10 @@ import type {
   LogoutAccountResponse,
   RegisterAccountRequest,
   RegisterAccountResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  SendPasswordResetCodeRequest,
+  SendPasswordResetCodeResponse,
   SendRegisterCodeRequest,
   SendRegisterCodeResponse,
   SliderTokenRequest,
@@ -27,9 +31,25 @@ function sendRegisterCode(data: SendRegisterCodeRequest) {
   });
 }
 
+function sendPasswordResetCode(data: SendPasswordResetCodeRequest) {
+  return request<SendPasswordResetCodeResponse>({
+    url: "/api/auth/password-reset/send-code",
+    method: "POST",
+    data,
+  });
+}
+
 function registerAccount(data: RegisterAccountRequest) {
   return request<RegisterAccountResponse>({
     url: "/api/auth/register",
+    method: "POST",
+    data,
+  });
+}
+
+function resetPassword(data: ResetPasswordRequest) {
+  return request<ResetPasswordResponse>({
+    url: "/api/auth/password-reset",
     method: "POST",
     data,
   });
@@ -53,7 +73,9 @@ function logoutAccount() {
 export const authApi = {
   getSliderToken,
   sendRegisterCode,
+  sendPasswordResetCode,
   registerAccount,
+  resetPassword,
   loginWithEmail,
   logoutAccount,
 };

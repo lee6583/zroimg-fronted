@@ -104,38 +104,38 @@ export function RegisterForm() {
 
         <label className={styles.authForm__field}>
           <span className={styles.authForm__fieldLabel}>邮箱</span>
+          <span className={styles.authForm__control}>
+            <Mail className={styles.authForm__icon} />
+            <input
+              className={styles.authForm__input}
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                resetSliderVerification();
+              }}
+              required
+            />
+          </span>
+        </label>
+
+        <label className={styles.authForm__field}>
+          <span className={styles.authForm__fieldLabel}>验证码</span>
           <span className={styles.authForm__inlineRow}>
             <span className={`${styles.authForm__control} ${styles.authForm__controlGrow}`}>
-              <Mail className={styles.authForm__icon} />
+              <Hash className={styles.authForm__icon} />
               <input
                 className={styles.authForm__input}
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  resetSliderVerification();
-                }}
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+                inputMode="numeric"
                 required
               />
             </span>
             <button type="button" className={styles.authForm__secondaryButton} onClick={sendCode}>
               发码
             </button>
-          </span>
-        </label>
-
-        <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>验证码</span>
-          <span className={styles.authForm__control}>
-            <Hash className={styles.authForm__icon} />
-            <input
-              className={styles.authForm__input}
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              inputMode="numeric"
-              required
-            />
           </span>
         </label>
 

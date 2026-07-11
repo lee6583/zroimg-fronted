@@ -65,9 +65,12 @@ export function CheckInCard({
   const [animationKey, setAnimationKey] = useState(0);
   const [reward, setReward] = useState(0);
   const calendarCells = buildCalendar(status);
+  const canCheckIn = status.dailyCredits > 0;
 
   let buttonLabel = "立即签到";
-  if (status.checkedIn) {
+  if (!canCheckIn) {
+    buttonLabel = "暂未开放";
+  } else if (status.checkedIn) {
     buttonLabel = "今日已签到";
   } else if (isLoading) {
     buttonLabel = "签到中";
@@ -149,7 +152,7 @@ export function CheckInCard({
         <button
           className={styles.checkInCard__button}
           type="button"
-          disabled={isLoading || status.checkedIn}
+          disabled={!canCheckIn || isLoading || status.checkedIn}
           onClick={claim}
         >
           {buttonLabel}

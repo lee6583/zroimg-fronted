@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { findUserByEmail } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
@@ -16,7 +16,7 @@ const signInSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (!isMockBffEnabled()) {
+  if (isJavaAuthEnabled()) {
     return proxyRequestToJavaApi(request, "/auth/admin/sign-in");
   }
 

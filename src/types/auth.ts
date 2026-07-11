@@ -27,6 +27,16 @@ export type SendRegisterCodeResponse = {
   expiresInSeconds: number;
 };
 
+export type SendPasswordResetCodeRequest = {
+  email: string;
+};
+
+export type SendPasswordResetCodeResponse = {
+  message: string;
+  cooldownSeconds: number;
+  expiresInSeconds: number;
+};
+
 export type RegisterAccountRequest = {
   username: string;
   email: string;
@@ -46,6 +56,16 @@ export type LoginWithEmailRequest = {
 export type LoginWithEmailResponse = {
   message: string;
   user: AuthUser;
+};
+
+export type ResetPasswordRequest = {
+  email: string;
+  code: string;
+  password: string;
+};
+
+export type ResetPasswordResponse = {
+  message: string;
 };
 
 export type LogoutAccountResponse = OkResponse;
