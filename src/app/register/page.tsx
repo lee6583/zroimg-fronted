@@ -1,21 +1,15 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/layout/brand-logo";
+import { ThemeControls } from "@/components/layout/theme-controls";
 import { RegisterForm } from "@/features/auth/register-form";
+import styles from "../login/login.module.css";
 
 export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-20 border-b border-line bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="font-serif text-xl font-medium tracking-tight">
-            ZroImg
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-muted transition hover:text-foreground"
-          >
-            登录
-          </Link>
-        </div>
+      <header className={styles.loginPage__topbar}>
+        <BrandLogo />
+        <ThemeControls />
       </header>
 
       <section className="flex min-h-screen items-center justify-center px-4 py-24">

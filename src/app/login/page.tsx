@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { LoginForm } from "@/features/auth/login-form";
 import styles from "./login.module.css";
@@ -7,9 +8,7 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className={styles.loginPage__topbar}>
-        <Link href="/" className={styles.loginPage__brand}>
-          ZroImg
-        </Link>
+        <BrandLogo />
         <ThemeControls />
       </header>
 

@@ -11,16 +11,33 @@ const localeKey = "zroimg-locale";
 const settingsEvent = "zroimg-settings-change";
 
 function subscribe(callback: () => void) {
+  const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function onSystemThemeChange() {
+    const systemTheme = themeQuery.matches ? "dark" : "light";
+    window.localStorage.setItem(themeKey, systemTheme);
+    document.documentElement.dataset.theme = systemTheme;
+    callback();
+  }
+
   window.addEventListener("storage", callback);
   window.addEventListener(settingsEvent, callback);
+  themeQuery.addEventListener("change", onSystemThemeChange);
+
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(settingsEvent, callback);
+    themeQuery.removeEventListener("change", onSystemThemeChange);
   };
 }
 
 function getThemeSnapshot(): Theme {
-  return window.localStorage.getItem(themeKey) === "dark" ? "dark" : "light";
+  const pageTheme = document.documentElement.dataset.theme;
+  if (pageTheme === "dark" || pageTheme === "light") {
+    return pageTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function getLocaleSnapshot(): Locale {

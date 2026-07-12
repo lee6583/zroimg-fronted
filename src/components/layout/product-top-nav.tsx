@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { getCurrentUserProfile } from "@/server/auth";
 import styles from "./product-top-nav.module.css";
@@ -31,9 +32,7 @@ export async function ProductTopNav() {
   return (
     <header className={styles.productTopNav}>
       <div className={styles.productTopNav__inner}>
-        <Link href="/" className={styles.productTopNav__brand}>
-          <span className={styles.productTopNav__brandText}>ZroImg</span>
-        </Link>
+        <BrandLogo />
 
         <nav className={styles.productTopNav__center}>
           {centerLinks.map((item) => (
