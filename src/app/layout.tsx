@@ -5,6 +5,10 @@ import "@/style/index.css";
 export const metadata: Metadata = {
   title: "ZroImg",
   description: "Image generation SaaS powered by gpt-image-2.",
+  icons: {
+    icon: [{ url: "/assets/icon.png", sizes: "512x512", type: "image/png" }],
+    apple: [{ url: "/assets/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 const themeBootstrapScript = `
