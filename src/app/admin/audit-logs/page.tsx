@@ -16,10 +16,8 @@ export default async function AdminAuditLogsPage() {
       <div className="grid gap-6">
         <section>
           <p className="label">Audit logs</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            审计日志
-          </h1>
-          <p className="mt-3 text-sm text-muted">
+          <h1 className="page-title">审计日志</h1>
+          <p className="page-description">
             记录管理员调整积分、修改状态、回复反馈和系统配置等操作。
           </p>
         </section>

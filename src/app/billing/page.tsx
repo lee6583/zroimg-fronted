@@ -62,8 +62,8 @@ export default async function BillingPage() {
       <div className={styles.billing}>
         <section className={styles.billing__header}>
           <div>
-            <h1 className={styles.billing__title}>我的订单</h1>
-            <p className={styles.billing__description}>查看充值历史与订单状态</p>
+            <h1 className="page-title">我的订单</h1>
+            <p className="page-description">查看充值历史与订单状态</p>
           </div>
           <Link href="/credits" className={styles.billing__rechargeButton}>
             <Plus size={17} />

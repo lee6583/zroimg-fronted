@@ -53,10 +53,8 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
       <div className="grid gap-6">
         <section>
           <p className="label">Feedback</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            意见反馈
-          </h1>
-          <p className="mt-3 text-sm text-muted">查看用户反馈、回复用户，并更新处理状态。</p>
+          <h1 className="page-title">意见反馈</h1>
+          <p className="page-description">查看用户反馈、回复用户，并更新处理状态。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

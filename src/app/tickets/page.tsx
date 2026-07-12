@@ -28,7 +28,13 @@ export default async function TicketsPage() {
 
   return (
     <AppShell active="tickets">
-      <FeedbackPanel initialTickets={ticketItems} />
+      <div className="grid gap-6">
+        <section>
+          <h1 className="page-title">意见反馈</h1>
+        </section>
+
+        <FeedbackPanel initialTickets={ticketItems} />
+      </div>
     </AppShell>
   );
 }

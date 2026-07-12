@@ -52,8 +52,8 @@ export default async function GalleryPage(props: GalleryPageProps) {
       <main className={styles.gallery}>
         <section className={styles.gallery__hero}>
           <p className={styles.gallery__eyebrow}>Gallery</p>
-          <h1 className={styles.gallery__title}>探索社区创作者的精彩作品</h1>
-          <p className={styles.gallery__description}>
+          <h1 className="page-title">探索社区创作者的精彩作品</h1>
+          <p className="page-description">
             从一句提示词到一张成片，看看其他创作者如何把想象变成画面。
           </p>
         </section>

@@ -1,10 +1,10 @@
 "use client";
 
+import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
-import { useState } from "react";
-import { Download, Heart } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, Star, X } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
-import { AppSelect } from "@/components/ui/app-select";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import styles from "./history-image-actions.module.css";
 
@@ -30,11 +30,31 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   const downloadFileName = props.downloadFileName;
 
   const [isOpen, setOpen] = useState(false);
-  const [collectionId, setCollectionId] = useState(collections[0]?.id || "");
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [isFavorited, setFavorited] = useState(false);
 
-  async function addToCollection() {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function closeByEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", closeByEscape);
+    return () => document.removeEventListener("keydown", closeByEscape);
+  }, [isOpen]);
+
+  function openPanel() {
+    setMessage("");
+    setOpen(true);
+  }
+
+  async function addToCollection(collectionId: string) {
     if (!collectionId) {
       setMessage("请先创建合集");
       return;
@@ -51,7 +71,8 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
       return;
     }
 
-    setMessage("已收藏");
+    setMessage("");
+    setFavorited(true);
     setOpen(false);
     setLoading(false);
   }
@@ -67,11 +88,14 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
         <button
           type="button"
           aria-label="收藏到合集"
-          title="收藏到合集"
-          onClick={() => setOpen((current) => !current)}
-          className={styles.historyImageActions__iconButton}
+          title={isFavorited ? "已收藏" : "收藏到合集"}
+          onClick={openPanel}
+          className={clsx(
+            styles.historyImageActions__iconButton,
+            isFavorited && styles.historyImageActions__iconButtonActive,
+          )}
         >
-          <Heart size={15} />
+          <Star size={16} fill={isFavorited ? "currentColor" : "none"} />
         </button>
 
         <a
@@ -88,30 +112,66 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
       </div>
 
       {isOpen ? (
-        <div className={styles.historyImageActions__panel}>
-          {collections.length > 0 ? (
-            <>
-              <AppSelect
-                value={collectionId}
-                onChange={setCollectionId}
-                options={collections.map((collection) => ({
-                  value: collection.id,
-                  label: `${collection.name} · ${collection.imageCount} 张`,
-                }))}
-                triggerClassName={styles.historyImageActions__selectTrigger}
-              />
+        <div
+          className={styles.historyImageActions__overlay}
+          role="presentation"
+          onClick={() => setOpen(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="选择收藏合集"
+            className={styles.historyImageActions__dialog}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.historyImageActions__dialogHeader}>
+              <div>
+                <h3 className={styles.historyImageActions__dialogTitle}>收藏到合集</h3>
+              </div>
               <button
                 type="button"
-                disabled={isLoading}
-                onClick={addToCollection}
-                className={styles.historyImageActions__saveButton}
+                aria-label="关闭收藏弹窗"
+                onClick={() => setOpen(false)}
+                className={styles.historyImageActions__closeButton}
               >
-                {isLoading ? "收藏中" : "收藏"}
+                <X size={15} />
               </button>
-            </>
-          ) : (
-            <p className={styles.historyImageActions__message}>请先到收藏合集里新建合集</p>
-          )}
+            </div>
+
+            {collections.length > 0 ? (
+              <div className={styles.historyImageActions__collectionList}>
+                {collections.map((collection) => {
+                  return (
+                    <button
+                      key={collection.id}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => addToCollection(collection.id)}
+                      className={styles.historyImageActions__collectionButton}
+                    >
+                      <span className={styles.historyImageActions__collectionIcon}>
+                        <Star size={15} />
+                      </span>
+                      <span className={styles.historyImageActions__collectionText}>
+                        <span className={styles.historyImageActions__collectionName}>
+                          {collection.name}
+                        </span>
+                        <span className={styles.historyImageActions__collectionMeta}>
+                          {collection.imageCount} 张图片
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className={styles.historyImageActions__empty}>请先到收藏合集里新建合集</p>
+            )}
+
+            {isLoading ? (
+              <p className={styles.historyImageActions__dialogText}>正在收藏...</p>
+            ) : null}
+          </section>
         </div>
       ) : null}
 

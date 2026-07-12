@@ -28,12 +28,8 @@ export default async function AdminPage() {
       <div className="grid gap-6">
         <section>
           <p className="label">Admin overview</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            管理概览
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-            查看站点运营状态、待处理反馈和关键业务指标。
-          </p>
+          <h1 className="page-title">管理概览</h1>
+          <p className="page-description max-w-2xl">查看站点运营状态、待处理反馈和关键业务指标。</p>
         </section>
 
         <section className="grid gap-4 md:grid-cols-5">

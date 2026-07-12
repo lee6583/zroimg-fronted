@@ -61,12 +61,7 @@ export function FeedbackActions(props: FeedbackActionsProps) {
   return (
     <div className="grid gap-3">
       <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-        <AppSelect
-          value={status}
-          onChange={setStatus}
-          options={statusOptions}
-          triggerClassName="min-h-10 text-sm"
-        />
+        <AppSelect value={status} onChange={setStatus} options={statusOptions} />
         <button type="button" className="btn-secondary" disabled={isLoading} onClick={updateStatus}>
           更新状态
         </button>

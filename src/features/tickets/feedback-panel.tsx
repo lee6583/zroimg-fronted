@@ -88,12 +88,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
         <div className="mt-5 grid gap-3">
           <label className="grid gap-2">
             <span className="text-sm font-medium">反馈类型</span>
-            <AppSelect
-              value={type}
-              onChange={setType}
-              options={typeOptions}
-              triggerClassName="min-h-10 text-sm"
-            />
+            <AppSelect value={type} onChange={setType} options={typeOptions} />
           </label>
           <label className="grid gap-2">
             <span className="text-sm font-medium">标题</span>

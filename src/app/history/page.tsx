@@ -129,11 +129,29 @@ function getPreviewUrl(output: HistoryOutput | null, urls: Map<string, string>) 
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
   }).format(date);
+}
+
+function getStatusLabel(status: HistoryTask["status"]) {
+  if (status === "succeeded") {
+    return "已完成";
+  }
+
+  if (status === "failed") {
+    return "失败";
+  }
+
+  if (status === "running") {
+    return "生成中";
+  }
+
+  return "排队中";
 }
 
 function toHistoryItems(tasks: HistoryTask[]) {
@@ -193,8 +211,8 @@ export default async function HistoryPage(props: HistoryPageProps) {
     <AppShell active="history">
       <main className={styles.history}>
         <section className={styles.history__header}>
-          <h1 className={styles.history__title}>创作历史</h1>
-          <p className={styles.history__description}>查看你的所有历史创作</p>
+          <h1 className="page-title">创作历史</h1>
+          <p className="page-description">查看你的所有历史创作</p>
         </section>
 
         <section className={styles.history__toolbar} aria-label="创作历史筛选">
@@ -220,64 +238,93 @@ export default async function HistoryPage(props: HistoryPageProps) {
         </section>
 
         {historyItems.length > 0 ? (
-          <section className={styles.history__grid} aria-label="历史作品">
-            {historyItems.map((item) => {
-              const task = item.task;
-              const output = item.output;
-              const asset = getPreviewAsset(output);
-              const url = getPreviewUrl(output, urls);
-              let modeLabel = "文生图";
-              if (task.mode === "edit") {
-                modeLabel = "图生图";
-              }
+          <section className={styles.history__tableCard} aria-label="历史作品">
+            <div className={styles.history__tableScroller}>
+              <div className={clsx(styles.history__tableRow, styles.history__tableHead)}>
+                <span>图片</span>
+                <span>提示词</span>
+                <span className={styles.history__centerCell}>模型</span>
+                <span className={styles.history__centerCell}>分辨率</span>
+                <span className={styles.history__centerCell}>消耗</span>
+                <span className={styles.history__centerCell}>状态</span>
+                <span className={styles.history__centerCell}>时间</span>
+                <span className={styles.history__centerCell}>操作</span>
+              </div>
 
-              return (
-                <article key={item.id} className={styles.history__card}>
-                  <div className={styles.history__preview}>
-                    {url && output && asset ? (
-                      <Image
-                        className={styles.history__image}
-                        src={url}
-                        alt={task.prompt}
-                        width={output.width || asset.width || 768}
-                        height={output.height || asset.height || 768}
-                        unoptimized
-                      />
-                    ) : (
-                      <div className={styles.history__placeholder}>
-                        <ImageOff size={22} />
+              <div className={styles.history__tableBody}>
+                {historyItems.map((item) => {
+                  const task = item.task;
+                  const output = item.output;
+                  const asset = getPreviewAsset(output);
+                  const url = getPreviewUrl(output, urls);
+                  const statusLabel = getStatusLabel(task.status);
+
+                  return (
+                    <article key={item.id} className={styles.history__tableRow}>
+                      <div className={styles.history__preview}>
+                        {url && output && asset ? (
+                          <Image
+                            className={styles.history__image}
+                            src={url}
+                            alt={task.prompt}
+                            width={output.width || asset.width || 768}
+                            height={output.height || asset.height || 768}
+                            unoptimized
+                          />
+                        ) : (
+                          <div className={styles.history__placeholder}>
+                            <ImageOff size={18} />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className={styles.history__cardBody}>
-                    <div className={styles.history__meta}>
-                      <span>{formatDate(task.createdAt)}</span>
-                      <span>{task.costCredits} 积分</span>
-                    </div>
-                    <h2 className={styles.history__prompt}>{task.prompt}</h2>
-                    <p className={styles.history__detail}>
-                      {modeLabel} · {task.size} · {task.quality} · {task.outputFormat}
-                    </p>
-                    {task.error ? <p className={styles.history__error}>{task.error}</p> : null}
+                      <div>
+                        <h2 className={styles.history__prompt}>{task.prompt}</h2>
+                        {task.error ? <p className={styles.history__error}>{task.error}</p> : null}
+                      </div>
 
-                    <div className={styles.history__actions}>
-                      {output && asset && url ? (
-                        <HistoryImageActions
-                          generatedImageId={output.id}
-                          initialPublished={Boolean(output.galleryImage)}
-                          collections={collectionOptions}
-                          downloadUrl={urls.get(output.outputAsset.id) || url}
-                          downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
-                        />
-                      ) : (
-                        <TaskPoller taskId={task.id} initialStatus={task.status} />
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
+                        {task.model}
+                      </p>
+                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
+                        {task.size}
+                      </p>
+                      <div className={clsx(styles.history__credits, styles.history__centerCell)}>
+                        <span>{task.costCredits}</span>
+                        <span>图片 {task.imageCount}</span>
+                      </div>
+                      <span
+                        className={clsx(
+                          styles.history__status,
+                          styles.history__centerCell,
+                          task.status === "succeeded" && styles.history__statusSuccess,
+                          task.status === "failed" && styles.history__statusDanger,
+                        )}
+                      >
+                        {statusLabel}
+                      </span>
+                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
+                        {formatDate(task.createdAt)}
+                      </p>
+
+                      <div className={styles.history__actions}>
+                        {output && asset && url ? (
+                          <HistoryImageActions
+                            generatedImageId={output.id}
+                            initialPublished={Boolean(output.galleryImage)}
+                            collections={collectionOptions}
+                            downloadUrl={urls.get(output.outputAsset.id) || url}
+                            downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
+                          />
+                        ) : (
+                          <TaskPoller taskId={task.id} initialStatus={task.status} />
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
           </section>
         ) : (
           <section className={styles.history__empty}>

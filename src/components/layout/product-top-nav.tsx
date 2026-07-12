@@ -5,14 +5,14 @@ import { getCurrentUserProfile } from "@/server/auth";
 import styles from "./product-top-nav.module.css";
 
 const publicCenterLinks = [
-  { label: "开始创作", href: "/generate" },
+  { label: "创作图片", href: "/generate" },
   { label: "作品画廊", href: "/gallery" },
   { label: "定价", href: "/pricing" },
   { label: "文档", href: "/docs" },
 ];
 
 const appCenterLinks = publicCenterLinks;
-const adminCenterLink = { label: "管理", href: "/admin" };
+const adminCenterLinks: typeof publicCenterLinks = [];
 
 function avatarLabel(name?: string | null) {
   return (name || "Z").trim().slice(0, 1).toUpperCase();
@@ -25,7 +25,7 @@ export async function ProductTopNav() {
     centerLinks = appCenterLinks;
   }
   if (current?.profile.role === "admin") {
-    centerLinks = [...appCenterLinks, adminCenterLink];
+    centerLinks = adminCenterLinks;
   }
 
   return (

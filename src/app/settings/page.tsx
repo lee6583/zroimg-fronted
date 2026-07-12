@@ -12,8 +12,8 @@ export default async function SettingsPage() {
     <AppShell active="settings">
       <div className={styles.settings}>
         <section className={styles.settings__header}>
-          <h1 className={styles.settings__title}>账户设置</h1>
-          <p className={styles.settings__description}>管理个人资料与登录密码。</p>
+          <h1 className="page-title">账户设置</h1>
+          <p className="page-description">管理个人资料与登录密码。</p>
         </section>
 
         <AccountSettingsForm
