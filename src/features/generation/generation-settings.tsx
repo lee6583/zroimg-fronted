@@ -62,7 +62,6 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         <AppSelect
           value={value.model}
           onChange={(model) => update("model", model)}
-          triggerClassName={styles.generateForm__selectTrigger}
           options={modelOptions.map((option) => ({
             value: option.value,
             label: `${option.label} · ${generationBaseCredits[value.mode]}`,
