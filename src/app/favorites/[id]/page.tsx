@@ -49,8 +49,8 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
             <ArrowLeft size={15} />
             返回合集
           </Link>
-          <h1 className={styles.favorites__detailTitle}>{collection.name}</h1>
-          <p className={styles.favorites__description}>{collection._count.items} 张图片</p>
+          <h1 className="page-title">{collection.name}</h1>
+          <p className="page-description">{collection._count.items} 张图片</p>
         </section>
 
         {collection.items.length > 0 ? (
