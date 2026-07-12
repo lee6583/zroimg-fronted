@@ -1,18 +1,5 @@
 .dashboard {
   display: grid;
-  gap: 1.25rem;
-}
-
-.dashboard__hero {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  background: var(--panel);
-  padding: 1.5rem;
-}
-
-.dashboard__heroGrid {
-  display: grid;
   gap: 1.5rem;
 }
 
@@ -24,85 +11,69 @@
   text-transform: uppercase;
 }
 
-.dashboard__title {
-  max-width: 48rem;
-  margin-top: 0.5rem;
-  font-family: var(--font-serif);
-  font-size: clamp(1.85rem, 5vw, 2.6rem);
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -0.035em;
-}
-
-.dashboard__heroActions {
-  display: flex;
-  align-items: end;
-  justify-content: flex-start;
-}
-
 .dashboard__summary {
   display: grid;
-  gap: 1rem;
-  margin-top: 1.4rem;
+  gap: 1.25rem;
 }
 
 .dashboard__summaryMain {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .dashboard__metrics {
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
 .dashboard__metric {
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  border-radius: 0.8rem;
   background: var(--panel);
-  padding: 1.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .dashboard__metricHeader {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.9rem;
 }
 
 .dashboard__metricValue {
-  margin-top: 1rem;
+  margin-top: 0.35rem;
   font-family: var(--font-serif);
-  font-size: clamp(2.25rem, 6vw, 3.25rem);
+  font-size: 1.35rem;
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.04em;
 }
 
 .dashboard__metricIcon {
   display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.55rem;
+  height: 2.55rem;
+  flex-shrink: 0;
   place-items: center;
-  border-radius: 1rem;
+  border-radius: 0.65rem;
   background: var(--soft);
 }
 
 .dashboard__creationCard {
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  border-radius: 0.8rem;
   background: var(--panel);
-  padding: 1.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .dashboard__creationTitle {
   margin-top: 0.25rem;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .dashboard__creationActions {
@@ -112,30 +83,15 @@
 }
 
 @media (min-width: 768px) {
-  .dashboard__hero {
-    padding: 2rem;
-  }
-
   .dashboard__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .dashboard__heroGrid {
-    grid-template-columns: 1fr 300px;
-    align-items: end;
-  }
-
-  .dashboard__heroActions {
-    justify-content: flex-end;
   }
 }
 
 @media (min-width: 1280px) {
   .dashboard__summary {
     grid-template-columns: minmax(0, 1fr) 24rem;
-    align-items: stretch;
+    align-items: start;
   }
 
   .dashboard__creationCard {

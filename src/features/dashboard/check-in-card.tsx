@@ -10,45 +10,57 @@ import styles from "./check-in-card.module.css";
 
 const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
 
-function firstWeekdayOffset(year: number, month: number) {
-  const day = new Date(year, month - 1, 1).getDay();
-  return day === 0 ? 6 : day - 1;
+function getMonday(date: Date) {
+  const day = date.getDay();
+  const offset = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+
+  monday.setDate(date.getDate() - offset);
+
+  return monday;
 }
 
-function buildCalendar(status: CheckInStatus) {
+function buildDayKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function buildWeek(status: CheckInStatus) {
   const year = Number(status.date.year);
   const month = Number(status.date.month);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const offset = firstWeekdayOffset(year, month);
+  const day = Number(status.date.day);
+  const today = new Date(year, month - 1, day);
+  const monday = getMonday(today);
   const checkedDays = new Set(status.checkedDayKeys);
-  const cells: Array<{
+  const weekCells: Array<{
     key: string;
-    day: number | null;
-    dayKey?: string;
+    weekday: string;
+    day: string;
     checked?: boolean;
     today?: boolean;
   }> = [];
 
-  for (let index = 0; index < offset; index += 1) {
-    cells.push({ key: `empty-${index}`, day: null });
-  }
+  for (let index = 0; index < 7; index += 1) {
+    const date = new Date(monday);
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const dayKey = `${status.date.year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({
+    date.setDate(monday.getDate() + index);
+
+    const dayKey = buildDayKey(date);
+    const dayText = String(date.getDate()).padStart(2, "0");
+
+    weekCells.push({
       key: dayKey,
-      day,
-      dayKey,
+      weekday: weekDays[index],
+      day: dayText,
       checked: checkedDays.has(dayKey),
       today: status.date.dayKey === dayKey,
     });
   }
 
-  while (cells.length % 7 !== 0) {
-    cells.push({ key: `empty-tail-${cells.length}`, day: null });
-  }
-
-  return cells;
+  return weekCells;
 }
 
 type CheckInCardProps = {
@@ -66,7 +78,7 @@ export function CheckInCard(props: CheckInCardProps) {
   const [isLoading, setLoading] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const [reward, setReward] = useState(0);
-  const calendarCells = buildCalendar(status);
+  const weekCells = buildWeek(status);
   const canCheckIn = status.dailyCredits > 0;
 
   let buttonLabel = "立即签到";
@@ -102,15 +114,9 @@ export function CheckInCard(props: CheckInCardProps) {
     <section className={styles.checkInCard}>
       <div className={styles.checkInCard__header}>
         <div>
-          <p className={styles.checkInCard__eyebrow}>Daily</p>
           <h2 className={styles.checkInCard__title}>每日签到</h2>
         </div>
-      </div>
-
-      <div className={styles.checkInCard__calendarHeader}>
-        <p className={styles.checkInCard__monthTitle}>
-          {status.date.year} 年 {status.date.month} 月
-        </p>
+        <p className={styles.checkInCard__streak}>连续 {status.streakDays} 天</p>
       </div>
 
       <div className={styles.checkInCard__calendarWrap}>
@@ -120,35 +126,30 @@ export function CheckInCard(props: CheckInCardProps) {
           </span>
         ) : null}
         <div
-          className={styles.checkInCard__calendar}
-          aria-label={`${status.date.year} 年 ${status.date.month} 月签到日历`}
+          className={styles.checkInCard__week}
+          aria-label={`${status.date.year} 年 ${status.date.month} 月本周签到`}
         >
-          {weekDays.map((day) => (
-            <span key={day} className={styles.checkInCard__weekday}>
-              {day}
-            </span>
-          ))}
-          {calendarCells.map((cell) => (
-            <span
+          {weekCells.map((cell) => (
+            <div
               key={cell.key}
               className={clsx(
-                styles.checkInCard__dayCell,
-                !cell.day && styles.checkInCard__dayCellEmpty,
-                cell.checked && styles.checkInCard__dayCellChecked,
-                cell.today && !cell.checked && styles.checkInCard__dayCellToday,
+                styles.checkInCard__weekDay,
+                cell.checked && styles.checkInCard__weekDayChecked,
+                cell.today && !cell.checked && styles.checkInCard__weekDayToday,
               )}
               aria-current={cell.today ? "date" : undefined}
-              title={cell.dayKey}
+              title={cell.key}
             >
-              {cell.day}
-            </span>
+              <span className={styles.checkInCard__weekday}>{cell.weekday}</span>
+              <span className={styles.checkInCard__dayText}>{cell.day}</span>
+            </div>
           ))}
         </div>
       </div>
 
       <div className={styles.checkInCard__meta}>
-        <span>连续 {status.streakDays} 天</span>
         <span>累计 {status.totalCheckIns} 天</span>
+        <span>每日 +{status.dailyCredits} 积分</span>
       </div>
 
       <div className={styles.checkInCard__actions}>

@@ -3,6 +3,7 @@ export {
   getCheckInDateInfo,
   getCheckInStatus,
 } from "@/server/bff/internal/checkins";
+export { getDashboardStats } from "@/server/bff/internal/dashboard";
 export {
   addImage as addImageToCollection,
   createCollection,
