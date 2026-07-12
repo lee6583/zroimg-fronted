@@ -1,71 +1,88 @@
 import type { OkResponse } from "@/types/api";
 
-export type AuthUser = {
+type AuthUser = {
   id: number;
   username: string;
   email: string;
   role: string;
 };
 
-export type SliderTokenRequest = {
+type SliderTokenRequest = {
   email: string;
   scene?: string;
 };
 
-export type SliderTokenResponse = {
+type SliderTokenResponse = {
   sliderToken: string;
 };
 
-export type SendRegisterCodeRequest = {
+type SendRegisterCodeRequest = {
   email: string;
   sliderToken: string;
 };
 
-export type SendRegisterCodeResponse = {
+type SendRegisterCodeResponse = {
   message: string;
   cooldownSeconds: number;
   expiresInSeconds: number;
 };
 
-export type SendPasswordResetCodeRequest = {
+type SendPasswordResetCodeRequest = {
   email: string;
 };
 
-export type SendPasswordResetCodeResponse = {
+type SendPasswordResetCodeResponse = {
   message: string;
   cooldownSeconds: number;
   expiresInSeconds: number;
 };
 
-export type RegisterAccountRequest = {
+type RegisterAccountRequest = {
   username: string;
   email: string;
   password: string;
   code: string;
 };
 
-export type RegisterAccountResponse = {
+type RegisterAccountResponse = {
   message: string;
 };
 
-export type LoginWithEmailRequest = {
+type LoginWithEmailRequest = {
   email: string;
   password: string;
 };
 
-export type LoginWithEmailResponse = {
+type LoginWithEmailResponse = {
   message: string;
   user: AuthUser;
 };
 
-export type ResetPasswordRequest = {
+type ResetPasswordRequest = {
   email: string;
   code: string;
   password: string;
 };
 
-export type ResetPasswordResponse = {
+type ResetPasswordResponse = {
   message: string;
 };
 
-export type LogoutAccountResponse = OkResponse;
+type LogoutAccountResponse = OkResponse;
+
+export type {
+  AuthUser,
+  SliderTokenRequest,
+  SliderTokenResponse,
+  SendRegisterCodeRequest,
+  SendRegisterCodeResponse,
+  SendPasswordResetCodeRequest,
+  SendPasswordResetCodeResponse,
+  RegisterAccountRequest,
+  RegisterAccountResponse,
+  LoginWithEmailRequest,
+  LoginWithEmailResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  LogoutAccountResponse,
+};

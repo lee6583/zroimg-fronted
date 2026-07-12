@@ -6,13 +6,15 @@ import { Send } from "lucide-react";
 import { galleryApi } from "@/api/generation/gallery";
 import styles from "./publish-button.module.css";
 
-export function PublishGalleryButton({
-  generatedImageId,
-  initialPublished,
-}: {
+type PublishGalleryButtonProps = {
   generatedImageId: string;
   initialPublished: boolean;
-}) {
+};
+
+export function PublishGalleryButton(props: PublishGalleryButtonProps) {
+  const generatedImageId = props.generatedImageId;
+  const initialPublished = props.initialPublished;
+
   const [isPublished, setPublished] = useState(initialPublished);
   const [isLoading, setLoading] = useState(false);
   const [label, setLabel] = useState(initialPublished ? "已发布" : "发布");

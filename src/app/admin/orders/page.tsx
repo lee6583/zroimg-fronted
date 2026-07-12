@@ -7,6 +7,9 @@ export const dynamic = "force-dynamic";
 
 const orderStatuses = ["pending", "paid", "fulfilled", "expired", "cancelled", "failed"] as const;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminOrdersPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -25,7 +28,9 @@ function href(input: { q?: string; status?: string; page: number }) {
   return `/admin/orders?${params.toString()}`;
 }
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
+  const searchParams = props.searchParams;
+
   await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();

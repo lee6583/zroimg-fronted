@@ -1,6 +1,6 @@
 import type { FeedbackStatus, FeedbackType } from "@/utils/feedback";
 
-export type TicketMessage = {
+type TicketMessage = {
   id: string;
   body: string;
   isAdmin: boolean;
@@ -8,7 +8,7 @@ export type TicketMessage = {
   authorName: string;
 };
 
-export type TicketItem = {
+type TicketItem = {
   id: string;
   type: FeedbackType;
   status: FeedbackStatus;
@@ -19,32 +19,45 @@ export type TicketItem = {
   messages: TicketMessage[];
 };
 
-export type CreateTicketRequest = {
+type CreateTicketRequest = {
   type: string;
   subject: string;
   content: string;
 };
 
-export type CreateTicketResponse = {
+type CreateTicketResponse = {
   ticket: TicketItem;
 };
 
-export type ReplyTicketRequest = {
+type ReplyTicketRequest = {
   body: string;
 };
 
-export type ReplyTicketResponse = {
+type ReplyTicketResponse = {
   ok?: boolean;
 };
 
-export type AdminReplyTicketRequest = ReplyTicketRequest;
+type AdminReplyTicketRequest = ReplyTicketRequest;
 
-export type AdminReplyTicketResponse = ReplyTicketResponse;
+type AdminReplyTicketResponse = ReplyTicketResponse;
 
-export type UpdateTicketStatusRequest = {
+type UpdateTicketStatusRequest = {
   status: string;
 };
 
-export type UpdateTicketStatusResponse = {
+type UpdateTicketStatusResponse = {
   ok?: boolean;
+};
+
+export type {
+  TicketMessage,
+  TicketItem,
+  CreateTicketRequest,
+  CreateTicketResponse,
+  ReplyTicketRequest,
+  ReplyTicketResponse,
+  AdminReplyTicketRequest,
+  AdminReplyTicketResponse,
+  UpdateTicketStatusRequest,
+  UpdateTicketStatusResponse,
 };

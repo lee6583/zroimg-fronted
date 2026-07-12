@@ -16,11 +16,13 @@ const themeBootstrapScript = `
   } catch {}
 `;
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type RootLayoutProps = Readonly<{
   children: React.ReactNode;
-}>) {
+}>;
+
+export default function RootLayout(props: RootLayoutProps) {
+  const children = props.children;
+
   return (
     <html lang="zh-CN" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>

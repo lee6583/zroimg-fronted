@@ -12,19 +12,32 @@ const sourceLabels: Record<GenerationProviderAdminConfig["apiKeySource"], string
   none: "未配置",
 };
 
-export function GenerationSettingsForm({
-  initialSettings,
-}: {
+type GenerationSettingsFormProps = {
   initialSettings: GenerationProviderAdminConfig;
-}) {
+};
+
+export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [settings, setSettings] = useState(initialSettings);
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
-  const [baseUrl, setBaseUrl] = useState(initialSettings.baseUrl ?? "");
-  const [model, setModel] = useState(initialSettings.model);
-  const [apiKey, setApiKey] = useState("");
-  const [shouldClearKey, setClearKey] = useState(false);
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    baseUrl: initialSettings.baseUrl ?? "",
+    model: initialSettings.model,
+    apiKey: "",
+    shouldClearKey: false,
+  });
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      return {
+        ...currentForm,
+        ...nextForm,
+      };
+    });
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,16 +46,18 @@ export function GenerationSettingsForm({
 
     try {
       const data = await adminSettingsApi.saveGenerationSettings({
-        enabled: isEnabled,
-        baseUrl,
-        model,
-        apiKey,
-        clearApiKey: shouldClearKey,
+        enabled: form.isEnabled,
+        baseUrl: form.baseUrl,
+        model: form.model,
+        apiKey: form.apiKey,
+        clearApiKey: form.shouldClearKey,
       });
       setSaving(false);
       setSettings(data.settings);
-      setApiKey("");
-      setClearKey(false);
+      updateForm({
+        apiKey: "",
+        shouldClearKey: false,
+      });
       setMessage("已保存，新的生成任务会使用这套配置。");
     } catch (error) {
       setSaving(false);
@@ -65,8 +80,8 @@ export function GenerationSettingsForm({
         <label className={styles.adminForms__enablePill}>
           <input
             type="checkbox"
-            checked={isEnabled}
-            onChange={(event) => setEnabled(event.target.checked)}
+            checked={form.isEnabled}
+            onChange={(event) => updateForm({ isEnabled: event.target.checked })}
           />
           启用生图
         </label>
@@ -78,8 +93,8 @@ export function GenerationSettingsForm({
           <input
             className="field"
             placeholder="留空使用 OpenAI SDK 默认地址，或填 https://your-gateway.example.com/v1"
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
+            value={form.baseUrl}
+            onChange={(event) => updateForm({ baseUrl: event.target.value })}
           />
           <span className="text-xs text-muted">
             如果你用第三方网关/自建代理，通常填到 `/v1` 这一层。
@@ -90,8 +105,8 @@ export function GenerationSettingsForm({
           <span className="label">模型名</span>
           <input
             className="field"
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
+            value={form.model}
+            onChange={(event) => updateForm({ model: event.target.value })}
           />
           <span className="text-xs text-muted">
             例如 `gpt-image-2`。任务创建时会把当时的模型名写入任务记录。
@@ -106,9 +121,9 @@ export function GenerationSettingsForm({
           type="password"
           autoComplete="new-password"
           placeholder={settings.hasApiKey ? "留空表示保留当前密钥" : "请输入生图服务密钥"}
-          value={apiKey}
-          onChange={(event) => setApiKey(event.target.value)}
-          disabled={shouldClearKey}
+          value={form.apiKey}
+          onChange={(event) => updateForm({ apiKey: event.target.value })}
+          disabled={form.shouldClearKey}
         />
         <span className="text-xs text-muted">
           当前状态：
@@ -121,15 +136,15 @@ export function GenerationSettingsForm({
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
-          checked={shouldClearKey}
-          onChange={(event) => setClearKey(event.target.checked)}
+          checked={form.shouldClearKey}
+          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
         />
         清空数据库里保存的密钥
       </label>
 
       {message ? <p className="text-sm text-muted">{message}</p> : null}
 
-      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !model.trim()}>
+      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !form.model.trim()}>
         {isSaving ? "保存中" : "保存配置"}
       </button>
     </form>

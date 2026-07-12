@@ -9,11 +9,9 @@ export default async function GeneratePage() {
   const current = await requireUser();
   await ensureDefaultConversation(current.profile.id);
   const conversations = await listConversations(current.profile.id);
-  const activeConversationId = conversations[0]?.id;
-  const tasks = activeConversationId
-    ? await listTasks(current.profile.id, activeConversationId)
-    : [];
-  const conversationItems = conversations.map((conversation) => {
+  const activeId = conversations[0]?.id;
+  const tasks = activeId ? await listTasks(current.profile.id, activeId) : [];
+  const items = conversations.map((conversation) => {
     const latestTask = conversation.tasks[0];
     return {
       id: conversation.id,
@@ -26,7 +24,7 @@ export default async function GeneratePage() {
       createdAt: conversation.createdAt.toISOString(),
     };
   });
-  const taskItems = tasks.map((task) => ({
+  const taskList = tasks.map((task) => ({
     id: task.id,
     prompt: task.prompt,
     mode: task.mode,
@@ -39,11 +37,7 @@ export default async function GeneratePage() {
 
   return (
     <AppShell flush>
-      <GenerateForm
-        initialConversations={conversationItems}
-        initialConversationId={activeConversationId}
-        initialTasks={taskItems}
-      />
+      <GenerateForm initialChats={items} initialId={activeId} initialTasks={taskList} />
     </AppShell>
   );
 }

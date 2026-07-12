@@ -16,6 +16,12 @@ import styles from "./shell.module.css";
 type AppSection =
   "overview" | "history" | "favorites" | "credits" | "billing" | "tickets" | "settings";
 
+type AppShellProps = {
+  active?: AppSection;
+  children: ReactNode;
+  flush?: boolean;
+};
+
 const appNavItems: Array<{
   key: AppSection;
   label: string;
@@ -66,15 +72,11 @@ const appNavItems: Array<{
   },
 ];
 
-export async function AppShell({
-  active,
-  children,
-  flush = false,
-}: {
-  active?: AppSection;
-  children: ReactNode;
-  flush?: boolean;
-}) {
+export async function AppShell(props: AppShellProps) {
+  const active = props.active;
+  const children = props.children;
+  const flush = props.flush ?? false;
+
   let mainClass = styles.shell__main;
   if (flush) {
     mainClass = styles.shell__mainFlush;

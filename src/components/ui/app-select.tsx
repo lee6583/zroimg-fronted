@@ -12,15 +12,7 @@ export type AppSelectOption<T extends string> = {
   disabled?: boolean;
 };
 
-export function AppSelect<T extends string>({
-  value,
-  options,
-  onChange,
-  placeholder = "请选择",
-  disabled = false,
-  className,
-  triggerClassName,
-}: {
+type AppSelectProps<T extends string> = {
   value: T;
   options: Array<AppSelectOption<T>>;
   onChange: (value: T) => void;
@@ -28,7 +20,17 @@ export function AppSelect<T extends string>({
   disabled?: boolean;
   className?: string;
   triggerClassName?: string;
-}) {
+};
+
+export function AppSelect<T extends string>(props: AppSelectProps<T>) {
+  const value = props.value;
+  const options = props.options;
+  const onChange = props.onChange;
+  const placeholder = props.placeholder ?? "请选择";
+  const disabled = props.disabled ?? false;
+  const className = props.className;
+  const triggerClassName = props.triggerClassName;
+
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);

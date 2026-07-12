@@ -17,6 +17,11 @@ import styles from "./shell.module.css";
 type AdminSection =
   "overview" | "users" | "orders" | "generations" | "tickets" | "docs" | "settings" | "audit";
 
+type AdminShellProps = {
+  active: AdminSection;
+  children: ReactNode;
+};
+
 const adminNavItems: Array<{
   key: AdminSection;
   label: string;
@@ -33,13 +38,10 @@ const adminNavItems: Array<{
   { key: "audit", label: "审计日志", href: "/admin/audit-logs", icon: FileClock },
 ];
 
-export async function AdminShell({
-  active,
-  children,
-}: {
-  active: AdminSection;
-  children: ReactNode;
-}) {
+export async function AdminShell(props: AdminShellProps) {
+  const active = props.active;
+  const children = props.children;
+
   return (
     <>
       <ProductTopNav />

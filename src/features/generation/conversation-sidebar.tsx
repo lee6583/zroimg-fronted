@@ -18,16 +18,16 @@ type ConversationSidebarProps = {
   onDelete: (id: string) => Promise<void>;
 };
 
-export function ConversationSidebar({
-  groups,
-  activeId,
-  summary,
-  onOpenSettings,
-  onCreate,
-  onSelect,
-  onRename,
-  onDelete,
-}: ConversationSidebarProps) {
+export function ConversationSidebar(props: ConversationSidebarProps) {
+  const groups = props.groups;
+  const activeId = props.activeId;
+  const summary = props.summary;
+  const onOpenSettings = props.onOpenSettings;
+  const onCreate = props.onCreate;
+  const onSelect = props.onSelect;
+  const onRename = props.onRename;
+  const onDelete = props.onDelete;
+
   const [editId, setEditId] = useState("");
   const [title, setTitle] = useState("");
   const [pendingId, setPendingId] = useState("");

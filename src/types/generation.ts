@@ -1,18 +1,18 @@
-export type GenerationMode = "text" | "edit";
+type GenerationMode = "text" | "edit";
 
-export type GenerationQuality = "low" | "medium" | "high";
+type GenerationQuality = "low" | "medium" | "high";
 
-export type GenerationOutputFormat = "png" | "webp" | "jpeg";
+type GenerationOutputFormat = "png" | "webp" | "jpeg";
 
-export type GenerationTaskStatus = "queued" | "running" | "succeeded" | "failed";
+type GenerationTaskStatus = "queued" | "running" | "succeeded" | "failed";
 
-export type UploadedMediaApiItem = {
+type UploadedMediaApiItem = {
   id: string;
   fileName: string | null;
   kind: "input" | "output";
 };
 
-export type GenerationTaskApiItem = {
+type GenerationTaskApiItem = {
   id: string;
   prompt: string;
   mode: GenerationMode;
@@ -24,12 +24,12 @@ export type GenerationTaskApiItem = {
   imageUrls?: string[];
 };
 
-export type GenerationConversationTaskSummary = {
+type GenerationConversationTaskSummary = {
   status: GenerationTaskStatus;
   costCredits: number;
 };
 
-export type GenerationConversationApiItem = {
+type GenerationConversationApiItem = {
   id: string;
   title: string;
   lastTaskAt: string | null;
@@ -39,39 +39,39 @@ export type GenerationConversationApiItem = {
   tasks: GenerationConversationTaskSummary[];
 };
 
-export type FetchGenerationConversationsResponse = {
+type FetchGenerationConversationsResponse = {
   conversations: GenerationConversationApiItem[];
 };
 
-export type CreateGenerationConversationRequest = {
+type CreateGenerationConversationRequest = {
   title?: string;
 };
 
-export type CreateGenerationConversationResponse = {
+type CreateGenerationConversationResponse = {
   conversation: GenerationConversationApiItem;
 };
 
-export type FetchConversationTasksResponse = {
+type FetchConversationTasksResponse = {
   tasks: GenerationTaskApiItem[];
 };
 
-export type UpdateGenerationConversationRequest = {
+type UpdateGenerationConversationRequest = {
   title: string;
 };
 
-export type UpdateGenerationConversationResponse = {
+type UpdateGenerationConversationResponse = {
   conversation: GenerationConversationApiItem;
 };
 
-export type DeleteGenerationConversationResponse = {
+type DeleteGenerationConversationResponse = {
   ok: true;
 };
 
-export type UploadMediaResponse = {
+type UploadMediaResponse = {
   media: UploadedMediaApiItem;
 };
 
-export type CreateGenerationTaskRequest = {
+type CreateGenerationTaskRequest = {
   conversationId: string;
   prompt: string;
   mode: GenerationMode;
@@ -82,42 +82,72 @@ export type CreateGenerationTaskRequest = {
   inputMediaIds: string[];
 };
 
-export type CreateGenerationTaskResponse = {
+type CreateGenerationTaskResponse = {
   task: GenerationTaskApiItem;
 };
 
-export type FetchGenerationTaskResponse = {
+type FetchGenerationTaskResponse = {
   task: GenerationTaskApiItem;
 };
 
-export type CreateFavoriteCollectionRequest = {
+type CreateFavoriteCollectionRequest = {
   name: string;
 };
 
-export type FavoriteCollectionMutationResponse = {
+type FavoriteCollectionMutationResponse = {
   collection: unknown;
 };
 
-export type UpdateFavoriteCollectionRequest = {
+type UpdateFavoriteCollectionRequest = {
   name: string;
 };
 
-export type DeleteFavoriteCollectionResponse = {
+type DeleteFavoriteCollectionResponse = {
   ok?: boolean;
 };
 
-export type AddImageToFavoriteCollectionRequest = {
+type AddImageToFavoriteCollectionRequest = {
   generatedImageId: string;
 };
 
-export type AddImageToFavoriteCollectionResponse = {
+type AddImageToFavoriteCollectionResponse = {
   ok?: boolean;
 };
 
-export type PublishGalleryImageRequest = {
+type PublishGalleryImageRequest = {
   generatedImageId: string;
 };
 
-export type PublishGalleryImageResponse = {
+type PublishGalleryImageResponse = {
   ok?: boolean;
+};
+
+export type {
+  GenerationMode,
+  GenerationQuality,
+  GenerationOutputFormat,
+  GenerationTaskStatus,
+  UploadedMediaApiItem,
+  GenerationTaskApiItem,
+  GenerationConversationTaskSummary,
+  GenerationConversationApiItem,
+  FetchGenerationConversationsResponse,
+  CreateGenerationConversationRequest,
+  CreateGenerationConversationResponse,
+  FetchConversationTasksResponse,
+  UpdateGenerationConversationRequest,
+  UpdateGenerationConversationResponse,
+  DeleteGenerationConversationResponse,
+  UploadMediaResponse,
+  CreateGenerationTaskRequest,
+  CreateGenerationTaskResponse,
+  FetchGenerationTaskResponse,
+  CreateFavoriteCollectionRequest,
+  FavoriteCollectionMutationResponse,
+  UpdateFavoriteCollectionRequest,
+  DeleteFavoriteCollectionResponse,
+  AddImageToFavoriteCollectionRequest,
+  AddImageToFavoriteCollectionResponse,
+  PublishGalleryImageRequest,
+  PublishGalleryImageResponse,
 };

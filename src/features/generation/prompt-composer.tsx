@@ -20,19 +20,19 @@ type PromptComposerProps = {
   onSubmit: () => Promise<void>;
 };
 
-export function PromptComposer({
-  inputs,
-  prompt,
-  mode,
-  estimate,
-  notice,
-  isBusy,
-  onPromptChange,
-  onFiles,
-  onRemove,
-  onNew,
-  onSubmit,
-}: PromptComposerProps) {
+export function PromptComposer(props: PromptComposerProps) {
+  const inputs = props.inputs;
+  const prompt = props.prompt;
+  const mode = props.mode;
+  const estimate = props.estimate;
+  const notice = props.notice;
+  const isBusy = props.isBusy;
+  const onPromptChange = props.onPromptChange;
+  const onFiles = props.onFiles;
+  const onRemove = props.onRemove;
+  const onNew = props.onNew;
+  const onSubmit = props.onSubmit;
+
   return (
     <div className={styles.generateForm__composerBar}>
       <div className={styles.generateForm__composer}>

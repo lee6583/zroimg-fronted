@@ -162,6 +162,7 @@ public/assets/         实际被页面引用的静态资源
 
 - 只跨模块复用的类型才进入 `src/types`。
 - 页面私有类型留在 feature 内。
+- `src/types` 文件先逐个定义 `type Xxx = ...`，文件末尾再用 `export type { Xxx }` 集中导出。
 - `utils` 必须是纯函数或明确的基础设施工具，不能弹消息、导航或读写组件状态。
 - 类型层不能反向依赖 UI 或 feature。
 
@@ -203,8 +204,10 @@ Java 后端成功响应统一为：
 - Java 后端 `code !== 200` 时，即使 HTTP 状态码是 200，前端也必须按失败处理并显示后端 `message`。
 - 不使用 `data.token || data.sliderToken`、数组/对象双形态等兼容兜底。
 - 不使用 `as { ... }` 代替运行时校验。
+- 后端返回类型确定后，把请求/响应类型写进 `src/types`，并在 `src/api` 的 `request<ResponseType>()` 上声明；页面和组件调用处不要再写 `as { ... }`。
 - JSON 请求使用 `parseJson()`，表单请求使用 `parseForm()`。
 - Zod schema 只放在外部输入边界，不给内部可信对象重复校验。
+- Zod schema 不写深层嵌套；对象、列表项和 union 分支都先拆成命名 schema，再由外层组合。
 - Java OpenAPI 稳定后，以后端契约为唯一来源生成共享类型。
 
 ## 7. 安全规则
@@ -286,15 +289,141 @@ items.sort((a, b) => {
 - 不使用链式或嵌套三元表达式；多分支逻辑使用提前命名和 `if/else`。
 - 不把三元表达式、数组查找、`|| null` 混在一行里；先取 id，再查对象，再用 `if` 处理空值。
 - 长表达式拆成 2 到 4 个中间变量，变量名短而清楚，避免在局部作用域重复完整业务前缀。
+- 表单字段较多时，把纯表单字段收进一个 `form` 对象状态；保存中、测试中、提示消息、后端配置快照等非表单状态继续单独维护。
+- 业务数据处理不要把过滤、排序、分页、补关联数据糅成一条链式调用；按步骤拆成变量，并在多步骤流程前加简短中文步骤注释。
+- DTO 或接口返回值里不要直接嵌套多层对象；先拼 `generatedImage`、`profileWithUser`、`count` 等中间对象，再拼最终 `result` 并返回。
+- 简单 JSX 列表渲染可以保留 `.map()`，但服务端业务查询、mock 数据整理、权限过滤和字段转换必须优先写成新手能读懂的步骤式代码。
 - 函数名表达动作即可，不为了“看起来完整”堆很长；同一文件已有业务上下文时优先使用短名。
 - 文件名、目录名、导入来源已经说明业务域时，不要在函数名里重复完整领域词。
 - 例如 `generation-conversations.ts` 内部使用 `list`、`create`、`updateTitle`、`remove`，不要写 `listGenerationConversations`、`updateGenerationConversationTitle`。
 - 跨模块 facade 可以补最少上下文，例如从 `src/server/bff/generation.ts` 导出 `listConversations`、`createTask`，不要堆成长串。
 - 局部变量也按同样规则收口，例如函数参数用 `profileId`，对象字段仍保留数据模型里的 `userProfileId`。
 - 排序回调只负责取值和比较；方向、默认值和可选参数在回调外先命名。
+- React 组件不在函数参数里解构 props，也不写内联 props 类型；先定义 `XxxProps`，函数接收 `props`，函数顶部再逐个 `const value = props.value`。
 - 单文件超过约 400 行时检查是否混入多个职责，但不按行数机械拆文件。
 - 注释只解释约束和原因，不复述代码。
 - TypeScript 是唯一业务语言，`tsconfig` 不接受新增 JavaScript 业务文件。
+
+类型文件推荐写法：
+
+```ts
+import type { OkResponse } from "@/types/api";
+
+type AuthUser = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+};
+
+type LoginWithEmailRequest = {
+  email: string;
+  password: string;
+};
+
+type LogoutAccountResponse = OkResponse;
+
+export type { AuthUser, LoginWithEmailRequest, LogoutAccountResponse };
+```
+
+组件 props 推荐写法：
+
+```tsx
+type DocsSettingsFormProps = {
+  initialDocs: DocsConfig;
+  defaultDocs: DocsConfig;
+};
+
+export function DocsSettingsForm(props: DocsSettingsFormProps) {
+  const initialDocs = props.initialDocs;
+  const defaultDocs = props.defaultDocs;
+
+  return <form />;
+}
+```
+
+字段较多的表单状态推荐写法：
+
+```tsx
+const [form, setForm] = useState({
+  isEnabled: initialSettings.enabled,
+  host: initialSettings.host ?? "",
+  port: String(initialSettings.port),
+  user: initialSettings.user ?? "",
+  password: "",
+});
+
+const [message, setMessage] = useState("");
+const [isSaving, setSaving] = useState(false);
+
+function updateForm(nextForm: Partial<typeof form>) {
+  setForm((currentForm) => {
+    const newForm = {
+      ...currentForm,
+      ...nextForm,
+    };
+
+    return newForm;
+  });
+}
+```
+
+Zod 分层示例：
+
+```ts
+const docItemSchema = z.object({
+  id: z.string().trim().min(1, "文档 ID 不能为空"),
+  title: z.string().trim().min(1, "文档标题不能为空"),
+});
+
+const docGroupSchema = z.object({
+  title: z.string().trim().min(1, "分组标题不能为空"),
+  items: z.array(docItemSchema),
+});
+
+const docsSchema = z.object({
+  groups: z.array(docGroupSchema),
+});
+```
+
+业务数据处理推荐写法：
+
+```ts
+function attachMessages(ticketId: string) {
+  const store = getStore();
+
+  // 第一步：找出属于当前反馈工单的消息。
+  const ticketMessages = store.feedbackMessages.filter((message) => {
+    return message.ticketId === ticketId;
+  });
+
+  // 第二步：按照消息创建时间，从早到晚排序。
+  ticketMessages.sort((messageA, messageB) => {
+    const timeA = messageA.createdAt.getTime();
+    const timeB = messageB.createdAt.getTime();
+
+    return timeA - timeB;
+  });
+
+  // 第三步：给每条消息补充作者信息。
+  const messagesWithAuthor = ticketMessages.map((message) => {
+    const authorProfile = store.profiles.find((profile) => {
+      return profile.id === message.authorProfileId;
+    });
+
+    if (!authorProfile) {
+      throw new Error(`没有找到消息作者：${message.authorProfileId}`);
+    }
+
+    return {
+      ...message,
+      authorProfile,
+    };
+  });
+
+  return messagesWithAuthor;
+}
+```
 
 Route Handler 推荐写法：
 

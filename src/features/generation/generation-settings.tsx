@@ -21,7 +21,23 @@ type GenerationSettingsProps = {
   onChange: (value: GenerationOptions) => void;
 };
 
-export function GenerationSettings({ value, estimate, onChange }: GenerationSettingsProps) {
+type OptionProps = {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+};
+
+type SettingGroupProps = {
+  title: string;
+  children: ReactNode;
+  hint?: string;
+};
+
+export function GenerationSettings(props: GenerationSettingsProps) {
+  const value = props.value;
+  const estimate = props.estimate;
+  const onChange = props.onChange;
+
   function update<Key extends keyof GenerationOptions>(
     key: Key,
     nextValue: GenerationOptions[Key],
@@ -127,15 +143,11 @@ export function GenerationSettings({ value, estimate, onChange }: GenerationSett
   );
 }
 
-function Option({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
+function Option(props: OptionProps) {
+  const active = props.active;
+  const children = props.children;
+  const onClick = props.onClick;
+
   return (
     <button
       type="button"
@@ -150,15 +162,11 @@ function Option({
   );
 }
 
-function SettingGroup({
-  title,
-  children,
-  hint,
-}: {
-  title: string;
-  children: ReactNode;
-  hint?: string;
-}) {
+function SettingGroup(props: SettingGroupProps) {
+  const title = props.title;
+  const children = props.children;
+  const hint = props.hint;
+
   return (
     <section className={styles.generateForm__settingGroup}>
       <h2 className={styles.generateForm__settingTitle}>{title}</h2>

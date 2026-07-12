@@ -14,11 +14,13 @@ type FavoriteCollectionItem = {
   imageCount: number;
 };
 
-export function FavoriteCollectionsView({
-  collections,
-}: {
+type FavoriteCollectionsViewProps = {
   collections: FavoriteCollectionItem[];
-}) {
+};
+
+export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
+  const collections = props.collections;
+
   const router = useRouter();
   const [isCreating, setCreating] = useState(false);
   const [name, setName] = useState("");

@@ -7,11 +7,17 @@ import { prisma } from "@/server/bff/orders";
 
 export const dynamic = "force-dynamic";
 
+type AdminUserDetailPageProps = {
+  params: Promise<{ id: string }>;
+};
+
 function formatDate(value: Date) {
   return value.toISOString().slice(0, 16).replace("T", " ");
 }
 
-export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminUserDetailPage(props: AdminUserDetailPageProps) {
+  const params = props.params;
+
   await requireAdmin();
   const { id } = await params;
   const profile = await prisma.userProfile.findUnique({

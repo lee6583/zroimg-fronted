@@ -14,21 +14,28 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     await requireConversation(current.profile.id, id);
     const tasks = await listTasks(current.profile.id, id);
     const serializedTasks = await Promise.all(
-      tasks.map(async (task) => ({
-        id: task.id,
-        prompt: task.prompt,
-        mode: task.mode,
-        status: task.status,
-        size: task.size,
-        imageCount: task.imageCount,
-        costCredits: task.costCredits,
-        createdAt: task.createdAt.toISOString(),
-        imageUrls: await Promise.all(
-          task.outputs.map((output) =>
-            getMediaSignedUrl(output.thumbnailAsset?.id || output.outputAsset.id),
-          ),
-        ),
-      })),
+      tasks.map(async (task) => {
+        const imageUrls = await Promise.all(
+          task.outputs.map((output) => {
+            const assetId = output.thumbnailAsset?.id || output.outputAsset.id;
+            return getMediaSignedUrl(assetId);
+          }),
+        );
+
+        const result = {
+          id: task.id,
+          prompt: task.prompt,
+          mode: task.mode,
+          status: task.status,
+          size: task.size,
+          imageCount: task.imageCount,
+          costCredits: task.costCredits,
+          createdAt: task.createdAt.toISOString(),
+          imageUrls: imageUrls,
+        };
+
+        return result;
+      }),
     );
     return jsonOk({ tasks: serializedTasks });
   });

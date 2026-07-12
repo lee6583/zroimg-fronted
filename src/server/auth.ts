@@ -51,7 +51,7 @@ function readRole(role: string | undefined): MockRole {
   return "user";
 }
 
-function getMockProfileForJavaUser(payload: JavaTokenPayload) {
+function getMockProfile(payload: JavaTokenPayload) {
   if (!isMockBffEnabled()) {
     return null;
   }
@@ -74,7 +74,7 @@ function getMockProfileForJavaUser(payload: JavaTokenPayload) {
   return bundle;
 }
 
-async function getJavaUserProfile() {
+async function getJavaUser() {
   const cookieStore = await cookies();
   const token = cookieStore.get(JAVA_SESSION_COOKIE)?.value;
 
@@ -87,7 +87,7 @@ async function getJavaUserProfile() {
     return null;
   }
 
-  const mockBundle = getMockProfileForJavaUser(payload);
+  const mockBundle = getMockProfile(payload);
   if (mockBundle) {
     return mockBundle;
   }
@@ -119,7 +119,7 @@ async function getJavaUserProfile() {
 
 export async function getCurrentUserProfile() {
   if (isJavaAuthEnabled()) {
-    return getJavaUserProfile();
+    return getJavaUser();
   }
 
   const cookieStore = await cookies();

@@ -14,19 +14,21 @@ type FavoriteCollection = {
   imageCount: number;
 };
 
-export function HistoryImageActions({
-  generatedImageId,
-  initialPublished,
-  collections,
-  downloadUrl,
-  downloadFileName,
-}: {
+type HistoryImageActionsProps = {
   generatedImageId: string;
   initialPublished: boolean;
   collections: FavoriteCollection[];
   downloadUrl: string;
   downloadFileName: string;
-}) {
+};
+
+export function HistoryImageActions(props: HistoryImageActionsProps) {
+  const generatedImageId = props.generatedImageId;
+  const initialPublished = props.initialPublished;
+  const collections = props.collections;
+  const downloadUrl = props.downloadUrl;
+  const downloadFileName = props.downloadFileName;
+
   const [isOpen, setOpen] = useState(false);
   const [collectionId, setCollectionId] = useState(collections[0]?.id || "");
   const [message, setMessage] = useState("");

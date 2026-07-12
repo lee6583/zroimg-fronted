@@ -7,7 +7,13 @@ import { LogOut, Settings } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
 import styles from "./product-top-nav.module.css";
 
-export function AccountMenu({ label }: { label: string }) {
+type AccountMenuProps = {
+  label: string;
+};
+
+export function AccountMenu(props: AccountMenuProps) {
+  const label = props.label;
+
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);

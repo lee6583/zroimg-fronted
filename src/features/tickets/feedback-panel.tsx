@@ -20,7 +20,13 @@ function formatDate(value: string) {
   return value.slice(0, 16).replace("T", " ");
 }
 
-export function FeedbackPanel({ initialTickets }: { initialTickets: TicketItem[] }) {
+type FeedbackPanelProps = {
+  initialTickets: TicketItem[];
+};
+
+export function FeedbackPanel(props: FeedbackPanelProps) {
+  const initialTickets = props.initialTickets;
+
   const router = useRouter();
   const [type, setType] = useState<FeedbackType>("generation");
   const [subject, setSubject] = useState("");
