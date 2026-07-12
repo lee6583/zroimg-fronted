@@ -17,17 +17,31 @@ const sourceLabels: Record<SecretSource, string> = {
   none: "未配置",
 };
 
-function Toggle({
-  checked,
-  onChange,
-  label,
-  description,
-}: {
+type ToggleProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
   description: string;
-}) {
+};
+
+type SmtpSettingsFormProps = {
+  initialSettings: SmtpAdminConfig;
+};
+
+type EasyPaySettingsFormProps = {
+  initialSettings: EasyPayAdminConfig;
+};
+
+type CheckInSettingsFormProps = {
+  initialSettings: CheckInSettingsConfig;
+};
+
+function Toggle(props: ToggleProps) {
+  const checked = props.checked;
+  const onChange = props.onChange;
+  const label = props.label;
+  const description = props.description;
+
   return (
     <button type="button" onClick={() => onChange(!checked)} className={styles.adminForms__toggle}>
       <span>
@@ -53,20 +67,35 @@ function Toggle({
   );
 }
 
-export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdminConfig }) {
+export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [settings, setSettings] = useState(initialSettings);
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
-  const [host, setHost] = useState(initialSettings.host ?? "");
-  const [port, setPort] = useState(String(initialSettings.port));
-  const [isSecure, setSecure] = useState(initialSettings.secure);
-  const [user, setUser] = useState(initialSettings.user ?? "");
-  const [password, setPassword] = useState("");
-  const [shouldClearPassword, setClearPassword] = useState(false);
-  const [from, setFrom] = useState(initialSettings.from);
-  const [testEmail, setTestEmail] = useState("");
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    host: initialSettings.host ?? "",
+    port: String(initialSettings.port),
+    isSecure: initialSettings.secure,
+    user: initialSettings.user ?? "",
+    password: "",
+    shouldClearPassword: false,
+    from: initialSettings.from,
+    testEmail: "",
+  });
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
   const [isTesting, setTesting] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      const newForm = {
+        ...currentForm,
+        ...nextForm,
+      };
+
+      return newForm;
+    });
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,19 +103,21 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
     setMessage("");
     try {
       const data = await adminSettingsApi.saveSmtpSettings({
-        enabled: isEnabled,
-        host,
-        port: Number(port),
-        secure: isSecure,
-        user,
-        password,
-        clearPassword: shouldClearPassword,
-        from,
+        enabled: form.isEnabled,
+        host: form.host,
+        port: Number(form.port),
+        secure: form.isSecure,
+        user: form.user,
+        password: form.password,
+        clearPassword: form.shouldClearPassword,
+        from: form.from,
       });
       setSaving(false);
       setSettings(data.settings);
-      setPassword("");
-      setClearPassword(false);
+      updateForm({
+        password: "",
+        shouldClearPassword: false,
+      });
       setMessage("SMTP 配置已保存。");
     } catch (error) {
       setSaving(false);
@@ -100,7 +131,7 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
     setMessage("");
     try {
       await adminSettingsApi.testSmtpSettings(
-        mode === "connection" ? { mode } : { mode, email: testEmail },
+        mode === "connection" ? { mode } : { mode, email: form.testEmail },
       );
       setTesting(false);
       setMessage(mode === "connection" ? "SMTP 连接测试通过。" : "测试邮件已发送。");
@@ -136,8 +167,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">SMTP 主机</span>
           <input
             className="field"
-            value={host}
-            onChange={(event) => setHost(event.target.value)}
+            value={form.host}
+            onChange={(event) => updateForm({ host: event.target.value })}
             placeholder="smtp.qq.com"
           />
         </label>
@@ -146,8 +177,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <input
             className="field"
             inputMode="numeric"
-            value={port}
-            onChange={(event) => setPort(event.target.value)}
+            value={form.port}
+            onChange={(event) => updateForm({ port: event.target.value })}
             placeholder="465"
           />
         </label>
@@ -155,8 +186,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">SMTP 用户名</span>
           <input
             className="field"
-            value={user}
-            onChange={(event) => setUser(event.target.value)}
+            value={form.user}
+            onChange={(event) => updateForm({ user: event.target.value })}
             placeholder="name@example.com"
           />
         </label>
@@ -166,10 +197,10 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
             className="field"
             type="password"
             autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            value={form.password}
+            onChange={(event) => updateForm({ password: event.target.value })}
             placeholder={settings.hasPassword ? "留空表示保留当前密码" : "请输入 SMTP 授权码或密码"}
-            disabled={shouldClearPassword}
+            disabled={form.shouldClearPassword}
           />
           <span className="text-xs text-muted">
             当前状态：
@@ -182,8 +213,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">发件人邮箱/名称</span>
           <input
             className="field"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
+            value={form.from}
+            onChange={(event) => updateForm({ from: event.target.value })}
             placeholder="ZroImg <noreply@example.com>"
           />
         </label>
@@ -192,21 +223,21 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
-          checked={shouldClearPassword}
-          onChange={(event) => setClearPassword(event.target.checked)}
+          checked={form.shouldClearPassword}
+          onChange={(event) => updateForm({ shouldClearPassword: event.target.checked })}
         />
         清空数据库里保存的 SMTP 密码
       </label>
 
       <Toggle
-        checked={isSecure}
-        onChange={setSecure}
+        checked={form.isSecure}
+        onChange={(nextValue) => updateForm({ isSecure: nextValue })}
         label="使用 TLS"
         description="465 端口通常开启 TLS，587 端口通常使用 STARTTLS。"
       />
       <Toggle
-        checked={isEnabled}
-        onChange={setEnabled}
+        checked={form.isEnabled}
+        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
         label="启用 SMTP"
         description="关闭后生产环境将无法发送注册验证码。"
       />
@@ -215,14 +246,14 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
         <input
           className="field"
           type="email"
-          value={testEmail}
-          onChange={(event) => setTestEmail(event.target.value)}
+          value={form.testEmail}
+          onChange={(event) => updateForm({ testEmail: event.target.value })}
           placeholder="test@example.com"
         />
         <button
           className="btn-secondary"
           type="button"
-          disabled={isTesting || !testEmail.trim()}
+          disabled={isTesting || !form.testEmail.trim()}
           onClick={() => testSmtp("email")}
         >
           发送测试邮件
@@ -238,17 +269,32 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
   );
 }
 
-export function EasyPaySettingsForm({ initialSettings }: { initialSettings: EasyPayAdminConfig }) {
+export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [settings, setSettings] = useState(initialSettings);
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
-  const [apiBase, setApiBase] = useState(initialSettings.apiBase ?? "");
-  const [pid, setPid] = useState(initialSettings.pid ?? "");
-  const [key, setKey] = useState("");
-  const [shouldClearKey, setClearKey] = useState(false);
-  const [notifyUrl, setNotifyUrl] = useState(initialSettings.notifyUrl);
-  const [returnUrl, setReturnUrl] = useState(initialSettings.returnUrl);
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    apiBase: initialSettings.apiBase ?? "",
+    pid: initialSettings.pid ?? "",
+    key: "",
+    shouldClearKey: false,
+    notifyUrl: initialSettings.notifyUrl,
+    returnUrl: initialSettings.returnUrl,
+  });
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      const newForm = {
+        ...currentForm,
+        ...nextForm,
+      };
+
+      return newForm;
+    });
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -256,18 +302,20 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
     setMessage("");
     try {
       const data = await adminSettingsApi.saveEasyPaySettings({
-        enabled: isEnabled,
-        apiBase,
-        pid,
-        key,
-        clearKey: shouldClearKey,
-        notifyUrl,
-        returnUrl,
+        enabled: form.isEnabled,
+        apiBase: form.apiBase,
+        pid: form.pid,
+        key: form.key,
+        clearKey: form.shouldClearKey,
+        notifyUrl: form.notifyUrl,
+        returnUrl: form.returnUrl,
       });
       setSaving(false);
       setSettings(data.settings);
-      setKey("");
-      setClearKey(false);
+      updateForm({
+        key: "",
+        shouldClearKey: false,
+      });
       setMessage("易支付配置已保存，新订单会使用这套配置。");
     } catch (error) {
       setSaving(false);
@@ -287,7 +335,7 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
           </p>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
-          {isEnabled ? "已启用" : "已停用"}
+          {form.isEnabled ? "已启用" : "已停用"}
         </span>
       </div>
 
@@ -296,8 +344,8 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
           <span className="label">API 地址</span>
           <input
             className="field"
-            value={apiBase}
-            onChange={(event) => setApiBase(event.target.value)}
+            value={form.apiBase}
+            onChange={(event) => updateForm({ apiBase: event.target.value })}
             placeholder="https://pay.example.com"
           />
           <span className="text-xs text-muted">填写易支付服务根地址，不需要带 `submit.php`。</span>
@@ -306,8 +354,8 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
           <span className="label">商户 PID</span>
           <input
             className="field"
-            value={pid}
-            onChange={(event) => setPid(event.target.value)}
+            value={form.pid}
+            onChange={(event) => updateForm({ pid: event.target.value })}
             placeholder="1000"
           />
         </label>
@@ -317,10 +365,10 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
             className="field"
             type="password"
             autoComplete="new-password"
-            value={key}
-            onChange={(event) => setKey(event.target.value)}
+            value={form.key}
+            onChange={(event) => updateForm({ key: event.target.value })}
             placeholder={settings.hasKey ? "留空表示保留当前密钥" : "请输入易支付商户密钥"}
-            disabled={shouldClearKey}
+            disabled={form.shouldClearKey}
           />
           <span className="text-xs text-muted">
             当前状态：
@@ -333,16 +381,16 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
           <span className="label">异步回调地址</span>
           <input
             className="field"
-            value={notifyUrl}
-            onChange={(event) => setNotifyUrl(event.target.value)}
+            value={form.notifyUrl}
+            onChange={(event) => updateForm({ notifyUrl: event.target.value })}
           />
         </label>
         <label className="grid gap-2">
           <span className="label">支付返回地址</span>
           <input
             className="field"
-            value={returnUrl}
-            onChange={(event) => setReturnUrl(event.target.value)}
+            value={form.returnUrl}
+            onChange={(event) => updateForm({ returnUrl: event.target.value })}
           />
         </label>
       </div>
@@ -350,15 +398,15 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
-          checked={shouldClearKey}
-          onChange={(event) => setClearKey(event.target.checked)}
+          checked={form.shouldClearKey}
+          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
         />
         清空数据库里保存的易支付密钥
       </label>
 
       <Toggle
-        checked={isEnabled}
-        onChange={setEnabled}
+        checked={form.isEnabled}
+        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
         label="启用易支付"
         description="关闭后用户将无法创建新的积分购买订单。"
       />
@@ -372,11 +420,9 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
   );
 }
 
-export function CheckInSettingsForm({
-  initialSettings,
-}: {
-  initialSettings: CheckInSettingsConfig;
-}) {
+export function CheckInSettingsForm(props: CheckInSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [dailyCredits, setDailyCredits] = useState(String(initialSettings.dailyCredits));
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);

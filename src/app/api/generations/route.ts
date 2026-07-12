@@ -4,6 +4,11 @@ import { createTask, requireConversation } from "@/server/bff/generation";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
+const mediaIdSchema = z
+  .string()
+  .min(1, "参考图 ID 不能为空")
+  .max(128, "参考图 ID 不能超过 128 个字符");
+
 const generationSchema = z.object({
   conversationId: z.string().trim().min(1, "请选择对话").max(128),
   prompt: z.string().trim().min(1, "请输入提示词").max(4000),
@@ -17,7 +22,7 @@ const generationSchema = z.object({
       message: "图片尺寸不能超过 4096",
     }),
   imageCount: z.number().int().min(1).max(4),
-  inputMediaIds: z.array(z.string().min(1).max(128)).max(4),
+  inputMediaIds: z.array(mediaIdSchema).max(4, "最多上传 4 张参考图"),
 });
 
 export async function POST(request: Request) {

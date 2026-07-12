@@ -12,13 +12,15 @@ const statusOptions = Object.entries(feedbackStatusLabels).map(([value, label]) 
   label,
 }));
 
-export function FeedbackActions({
-  ticketId,
-  currentStatus,
-}: {
+type FeedbackActionsProps = {
   ticketId: string;
   currentStatus: FeedbackStatus;
-}) {
+};
+
+export function FeedbackActions(props: FeedbackActionsProps) {
+  const ticketId = props.ticketId;
+  const currentStatus = props.currentStatus;
+
   const router = useRouter();
   const [status, setStatus] = useState<FeedbackStatus>(currentStatus);
   const [body, setBody] = useState("");

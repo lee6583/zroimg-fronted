@@ -3,15 +3,26 @@
 import { useMemo } from "react";
 import styles from "./animated-text.module.css";
 
-export function WordsPullUp({
-  text,
-  className = "",
-  showAsterisk = false,
-}: {
+type WordsPullUpProps = {
   text: string;
   className?: string;
   showAsterisk?: boolean;
-}) {
+};
+
+type WordsPullUpMultiStyleProps = {
+  segments: Array<{ text: string; className?: string }>;
+  className?: string;
+};
+
+type ScrollRevealTextProps = {
+  text: string;
+};
+
+export function WordsPullUp(props: WordsPullUpProps) {
+  const text = props.text;
+  const className = props.className ?? "";
+  const showAsterisk = props.showAsterisk ?? false;
+
   const words = text.split(" ");
 
   return (
@@ -37,13 +48,10 @@ export function WordsPullUp({
   );
 }
 
-export function WordsPullUpMultiStyle({
-  segments,
-  className = "",
-}: {
-  segments: Array<{ text: string; className?: string }>;
-  className?: string;
-}) {
+export function WordsPullUpMultiStyle(props: WordsPullUpMultiStyleProps) {
+  const segments = props.segments;
+  const className = props.className ?? "";
+
   const words = segments.flatMap((segment) =>
     segment.text.split(" ").map((word) => ({
       word,
@@ -65,7 +73,9 @@ export function WordsPullUpMultiStyle({
   );
 }
 
-export function ScrollRevealText({ text }: { text: string }) {
+export function ScrollRevealText(props: ScrollRevealTextProps) {
+  const text = props.text;
+
   const chars = useMemo(() => Array.from(text), [text]);
 
   return (

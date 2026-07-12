@@ -24,7 +24,11 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
   );
 }
 
-function ProfileForm({ username, email, bio }: AccountSettingsFormProps) {
+function ProfileForm(props: AccountSettingsFormProps) {
+  const username = props.username;
+  const email = props.email;
+  const bio = props.bio;
+
   const router = useRouter();
   const [name, setName] = useState(username);
   const [intro, setIntro] = useState(bio);

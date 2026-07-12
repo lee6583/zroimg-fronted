@@ -27,20 +27,18 @@ import { TaskPreview } from "./task-preview";
 import styles from "./generate-form.module.css";
 
 type GenerateFormProps = {
-  initialConversations: ConversationItem[];
-  initialConversationId?: string;
+  initialChats: ConversationItem[];
+  initialId?: string;
   initialTasks: TaskItem[];
 };
 
-export function GenerateForm({
-  initialConversations,
-  initialConversationId,
-  initialTasks,
-}: GenerateFormProps) {
-  const [conversations, setConversations] = useState(initialConversations);
-  const [activeId, setActiveId] = useState(
-    initialConversationId || initialConversations[0]?.id || "",
-  );
+export function GenerateForm(props: GenerateFormProps) {
+  const initialChats = props.initialChats;
+  const initialId = props.initialId;
+  const initialTasks = props.initialTasks;
+
+  const [chats, setChats] = useState(initialChats);
+  const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
   const [tasks, setTasks] = useState(initialTasks);
   const [prompt, setPrompt] = useState("");
   const [options, setOptions] = useState<GenerationOptions>(defaultOptions);
@@ -54,7 +52,7 @@ export function GenerateForm({
 
   const size = getGenerationSize(options);
   const estimate = estimateOptionsCredits(options);
-  const groups = groupConversations(conversations);
+  const groups = groupConversations(chats);
   const pendingKey = tasks
     .filter(isPending)
     .map((task) => `${task.id}:${task.status}`)
@@ -74,7 +72,7 @@ export function GenerateForm({
 
         setTasks(data.tasks);
         if (!data.tasks.some(isPending)) {
-          await refreshConversations();
+          await refreshList();
           return;
         }
       } catch {
@@ -91,16 +89,16 @@ export function GenerateForm({
     };
   }, [activeId, pendingKey]);
 
-  async function refreshConversations() {
+  async function refreshList() {
     try {
       const data = await generationConversationsApi.fetchConversations();
-      setConversations(data.conversations.map(normalizeConversation));
+      setChats(data.conversations.map(normalizeConversation));
     } catch {
       // The task list is still usable when this background refresh fails.
     }
   }
 
-  async function createConversation(clearPrompt = true) {
+  async function createChat(clearPrompt = true) {
     setNotice(null);
 
     try {
@@ -109,7 +107,7 @@ export function GenerateForm({
       });
       const item = normalizeConversation(data.conversation);
 
-      setConversations((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
+      setChats((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
       setActiveId(item.id);
       setTasks([]);
       if (clearPrompt) setPrompt("");
@@ -121,7 +119,7 @@ export function GenerateForm({
     }
   }
 
-  async function selectConversation(id: string) {
+  async function selectChat(id: string) {
     setActiveId(id);
     setMenuOpen(false);
     setNotice(null);
@@ -134,7 +132,7 @@ export function GenerateForm({
     }
   }
 
-  async function renameConversation(id: string, title: string) {
+  async function renameChat(id: string, title: string) {
     if (!title) {
       setNotice({ text: "对话名称不能为空", tone: "error" });
       return false;
@@ -146,7 +144,7 @@ export function GenerateForm({
         title,
       });
       const updated = normalizeConversation(data.conversation);
-      setConversations((current) => current.map((item) => (item.id === id ? updated : item)));
+      setChats((current) => current.map((item) => (item.id === id ? updated : item)));
       return true;
     } catch (error) {
       showError(error);
@@ -154,7 +152,7 @@ export function GenerateForm({
     }
   }
 
-  async function deleteConversation(id: string) {
+  async function deleteChat(id: string) {
     setNotice(null);
 
     try {
@@ -164,16 +162,16 @@ export function GenerateForm({
       return;
     }
 
-    const remaining = conversations.filter((item) => item.id !== id);
-    setConversations(remaining);
+    const remaining = chats.filter((item) => item.id !== id);
+    setChats(remaining);
     if (activeId !== id) return;
 
     setActiveId("");
     setTasks([]);
     if (remaining[0]) {
-      await selectConversation(remaining[0].id);
+      await selectChat(remaining[0].id);
     } else {
-      await createConversation();
+      await createChat();
     }
   }
 
@@ -239,7 +237,7 @@ export function GenerateForm({
     setNotice(null);
 
     try {
-      const conversationId = activeId || (await createConversation(false))?.id;
+      const conversationId = activeId || (await createChat(false))?.id;
       if (!conversationId) return;
 
       const data = await generationTasksApi.createTask({
@@ -255,7 +253,7 @@ export function GenerateForm({
       const task = data.task;
 
       setTasks((current) => [task, ...current]);
-      setConversations((current) =>
+      setChats((current) =>
         current.map((item) =>
           item.id === conversationId
             ? {
@@ -274,7 +272,7 @@ export function GenerateForm({
         text: `任务已提交，将消耗 ${task.costCredits} 积分`,
         tone: "info",
       });
-      await refreshConversations();
+      await refreshList();
     } catch (error) {
       showError(error);
     } finally {
@@ -292,10 +290,10 @@ export function GenerateForm({
       activeId={activeId}
       summary={summary}
       onOpenSettings={openSettings}
-      onCreate={createConversation}
-      onSelect={selectConversation}
-      onRename={renameConversation}
-      onDelete={deleteConversation}
+      onCreate={createChat}
+      onSelect={selectChat}
+      onRename={renameChat}
+      onDelete={deleteChat}
     />
   );
   const settingsPanel = (
@@ -381,7 +379,7 @@ export function GenerateForm({
             onPromptChange={setPrompt}
             onFiles={addFiles}
             onRemove={removeInput}
-            onNew={createConversation}
+            onNew={createChat}
             onSubmit={submit}
           />
         </section>

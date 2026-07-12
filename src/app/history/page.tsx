@@ -25,6 +25,9 @@ const dateFilters = [
 type DateFilter = (typeof dateFilters)[number]["value"];
 type SortValue = "newest" | "oldest";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type HistoryPageProps = {
+  searchParams: SearchParams;
+};
 type HistoryTask = Awaited<ReturnType<typeof listHistoryTasks>>[number];
 type HistoryOutput = HistoryTask["outputs"][number];
 type HistoryItem = {
@@ -150,7 +153,8 @@ function toHistoryItems(tasks: HistoryTask[]) {
   return items;
 }
 
-export default async function HistoryPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function HistoryPage(props: HistoryPageProps) {
+  const searchParams = props.searchParams;
   const params = await searchParams;
   const dateFilter = normalizeDateFilter(readParam(params, "date"));
   const sort = normalizeSort(readParam(params, "sort"));
@@ -178,8 +182,8 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
     : "写下第一句提示词，让灵感在这里留下第一张图。";
   const emptyHref = activeFilter ? historyHref("all", sort) : "/generate";
   const emptyAction = activeFilter ? "查看全部" : "去创作";
-  const favoriteCollections = await listCollections(current.profile.id);
-  const favoriteCollectionItems = favoriteCollections.map((collection) => ({
+  const collections = await listCollections(current.profile.id);
+  const collectionOptions = collections.map((collection) => ({
     id: collection.id,
     name: collection.name,
     imageCount: collection._count.items,
@@ -262,7 +266,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
                         <HistoryImageActions
                           generatedImageId={output.id}
                           initialPublished={Boolean(output.galleryImage)}
-                          collections={favoriteCollectionItems}
+                          collections={collectionOptions}
                           downloadUrl={urls.get(output.outputAsset.id) || url}
                           downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
                         />

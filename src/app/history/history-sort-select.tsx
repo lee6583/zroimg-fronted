@@ -6,12 +6,18 @@ import styles from "./history.module.css";
 
 type SortValue = "newest" | "oldest";
 
+type HistorySortSelectProps = {
+  value: SortValue;
+};
+
 const sortOptions: Array<{ value: SortValue; label: string }> = [
   { value: "newest", label: "最新" },
   { value: "oldest", label: "最早" },
 ];
 
-export function HistorySortSelect({ value }: { value: SortValue }) {
+export function HistorySortSelect(props: HistorySortSelectProps) {
+  const value = props.value;
+
   const router = useRouter();
   const searchParams = useSearchParams();
 

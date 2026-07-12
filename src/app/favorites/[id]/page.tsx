@@ -11,6 +11,10 @@ import styles from "../favorites.module.css";
 export const dynamic = "force-dynamic";
 
 type PageParams = Promise<{ id: string }>;
+type FavoriteCollectionPageProps = {
+  params: PageParams;
+};
+
 type CollectionItem = NonNullable<Awaited<ReturnType<typeof getCollection>>>["items"][number];
 
 function formatDate(date: Date) {
@@ -20,7 +24,9 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-export default async function FavoriteCollectionPage({ params }: { params: PageParams }) {
+export default async function FavoriteCollectionPage(props: FavoriteCollectionPageProps) {
+  const params = props.params;
+
   const current = await requireUser();
   const { id } = await params;
   const collection = await getCollection(current.profile.id, id);

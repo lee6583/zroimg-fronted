@@ -37,41 +37,78 @@ function ownsInput(mediaId: string, profileId: string) {
 
 function outputWithAssets(imageId: string) {
   const store = getStore();
-  const image = store.generatedImages.find((item) => item.id === imageId)!;
-  const outputAsset = store.mediaAssets.find((asset) => asset.id === image.outputAssetId)!;
+  const image = store.generatedImages.find((item) => item.id === imageId);
+  if (!image) {
+    throw new Error(`没有找到生成图片：${imageId}`);
+  }
+
+  const outputAsset = store.mediaAssets.find((asset) => asset.id === image.outputAssetId);
+  if (!outputAsset) {
+    throw new Error(`没有找到图片资源：${image.outputAssetId}`);
+  }
+
   const thumbnailAsset = findThumbnail(image.thumbnailAssetId);
 
   const gallery = store.galleryImages.find((item) => item.generatedImageId === image.id);
   const galleryImage = gallery || null;
 
-  return {
+  const result = {
     ...image,
-    outputAsset,
-    thumbnailAsset,
-    galleryImage,
+    outputAsset: outputAsset,
+    thumbnailAsset: thumbnailAsset,
+    galleryImage: galleryImage,
   };
+
+  return result;
 }
 
 function attachOutputs(taskId: string) {
   const store = getStore();
-  const outputs = store.generatedImages.filter((item) => item.taskId === taskId);
-  return outputs.map((output) => outputWithAssets(output.id));
+
+  // 第一步：找出当前任务生成出来的图片。
+  const outputs = store.generatedImages.filter((image) => {
+    return image.taskId === taskId;
+  });
+
+  // 第二步：给每张图片补充资源信息。
+  const outputsWithAssets = outputs.map((output) => {
+    return outputWithAssets(output.id);
+  });
+
+  return outputsWithAssets;
 }
 
 export async function list(profileId: string, conversationId: string) {
   resolvePendingGenerations();
   const store = getStore();
-  return store.generationTasks
-    .filter((task) => task.userProfileId === profileId && task.conversationId === conversationId)
-    .sort((a, b) => {
-      const timeA = a.createdAt.getTime();
-      const timeB = b.createdAt.getTime();
-      return timeB - timeA;
-    })
-    .map((task) => ({
+
+  // 第一步：找出当前用户、当前对话里的生成任务。
+  const tasks = store.generationTasks.filter((task) => {
+    const isOwner = task.userProfileId === profileId;
+    const isCurrentConversation = task.conversationId === conversationId;
+
+    return isOwner && isCurrentConversation;
+  });
+
+  // 第二步：按照创建时间，从新到旧排序。
+  tasks.sort((taskA, taskB) => {
+    const timeA = taskA.createdAt.getTime();
+    const timeB = taskB.createdAt.getTime();
+
+    return timeB - timeA;
+  });
+
+  // 第三步：给每个任务补充输出图片。
+  const tasksWithOutputs = tasks.map((task) => {
+    const result = {
       ...task,
       outputs: attachOutputs(task.id),
-    }));
+    };
+
+    return result;
+  });
+
+  return tasksWithOutputs;
 }
 
 export async function listHistory(
@@ -83,16 +120,20 @@ export async function listHistory(
   const from = input.from;
   const direction = input.sort ?? "desc";
   const isAscending = direction === "asc";
-  const tasks = store.generationTasks
-    .filter((task) => task.userProfileId === profileId)
-    .filter((task) => {
-      if (!from) {
-        return true;
-      }
 
+  // 第一步：找出当前用户的历史生成任务。
+  let tasks = store.generationTasks.filter((task) => {
+    return task.userProfileId === profileId;
+  });
+
+  // 第二步：如果传入起始时间，只保留起始时间之后的任务。
+  if (from) {
+    tasks = tasks.filter((task) => {
       return task.createdAt >= from;
     });
+  }
 
+  // 第三步：按照创建时间排序。
   tasks.sort((a, b) => {
     const timeA = a.createdAt.getTime();
     const timeB = b.createdAt.getTime();
@@ -104,10 +145,17 @@ export async function listHistory(
     return timeB - timeA;
   });
 
-  return tasks.map((task) => ({
-    ...task,
-    outputs: attachOutputs(task.id),
-  }));
+  // 第四步：给每个任务补充输出图片。
+  const tasksWithOutputs = tasks.map((task) => {
+    const result = {
+      ...task,
+      outputs: attachOutputs(task.id),
+    };
+
+    return result;
+  });
+
+  return tasksWithOutputs;
 }
 
 export async function getForUser(profileId: string, taskId: string) {
@@ -119,10 +167,13 @@ export async function getForUser(profileId: string, taskId: string) {
   if (task.status === "succeeded") {
     ensureTaskOutputs(task.id);
   }
-  return {
+
+  const result = {
     ...task,
     outputs: attachOutputs(task.id),
   };
+
+  return result;
 }
 
 export async function create(input: {

@@ -12,8 +12,17 @@ export function getCheckInDateInfo(date = new Date()): CheckInDateInfo {
     weekday: "long",
   }).formatToParts(date);
 
-  const value = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "";
+  const value = (type: Intl.DateTimeFormatPartTypes) => {
+    const part = parts.find((item) => {
+      return item.type === type;
+    });
+
+    if (!part) {
+      return "";
+    }
+
+    return part.value;
+  };
   const year = value("year");
   const month = value("month");
   const day = value("day");
@@ -48,20 +57,43 @@ export async function getCheckInStatus(userProfileId: string): Promise<CheckInSt
   const store = getStore();
   const today = getCheckInDateInfo();
   const monthPrefix = today.dayKey.slice(0, 7);
-  const records = store.checkInRecords.filter((item) => item.userProfileId === userProfileId);
-  const todayRecord = records.find((item) => item.dayKey === today.dayKey);
-  const monthRecords = records.filter((item) => item.dayKey.startsWith(monthPrefix));
-  const checkedDayKeys = new Set(records.map((item) => item.dayKey));
 
-  return {
+  // 第一步：找出当前用户所有签到记录。
+  const records = store.checkInRecords.filter((record) => {
+    return record.userProfileId === userProfileId;
+  });
+
+  // 第二步：找出今天是否已经签到。
+  const todayRecord = records.find((record) => {
+    return record.dayKey === today.dayKey;
+  });
+
+  // 第三步：找出当前月份内的签到记录。
+  const monthRecords = records.filter((record) => {
+    return record.dayKey.startsWith(monthPrefix);
+  });
+
+  // 第四步：把已签到日期放进 Set，方便计算连续签到天数。
+  const dayKeys = records.map((record) => {
+    return record.dayKey;
+  });
+  const checkedDayKeys = new Set(dayKeys);
+
+  const monthDayKeys = monthRecords.map((record) => {
+    return record.dayKey;
+  });
+
+  const result = {
     date: today,
     dailyCredits: store.settings.checkin.dailyCredits,
     checkedIn: Boolean(todayRecord),
     checkedAt: todayRecord?.createdAt.toISOString() ?? null,
     streakDays: getStreak(checkedDayKeys, Boolean(todayRecord)),
     totalCheckIns: records.length,
-    checkedDayKeys: monthRecords.map((item) => item.dayKey),
+    checkedDayKeys: monthDayKeys,
   };
+
+  return result;
 }
 
 export async function claimDailyCheckIn(userProfileId: string) {

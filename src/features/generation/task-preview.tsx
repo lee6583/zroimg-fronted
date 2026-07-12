@@ -7,7 +7,10 @@ type TaskPreviewProps = {
   onPromptChange: (value: string) => void;
 };
 
-export function TaskPreview({ tasks, onPromptChange }: TaskPreviewProps) {
+export function TaskPreview(props: TaskPreviewProps) {
+  const tasks = props.tasks;
+  const onPromptChange = props.onPromptChange;
+
   return (
     <div className={styles.generateForm__promptArea}>
       <div className={styles.generateForm__promptInner}>

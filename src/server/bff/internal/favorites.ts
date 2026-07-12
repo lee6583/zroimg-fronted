@@ -17,26 +17,39 @@ function findThumbnail(thumbnailId: string | null) {
 export async function listCollections(profileId: string) {
   const store = getStore();
 
-  return store.favoriteCollections
-    .filter((item) => item.userProfileId === profileId)
-    .sort((a, b) => {
-      const timeA = a.updatedAt.getTime();
-      const timeB = b.updatedAt.getTime();
-      return timeB - timeA;
-    })
-    .map((collection) => {
-      const items = store.favoriteCollectionItems.filter(
-        (item) => item.collectionId === collection.id,
-      );
-      const count = items.length;
+  // 第一步：找出当前用户自己的收藏合集。
+  const collections = store.favoriteCollections.filter((collection) => {
+    return collection.userProfileId === profileId;
+  });
 
-      return {
-        ...collection,
-        _count: {
-          items: count,
-        },
-      };
+  // 第二步：按照更新时间，从新到旧排序。
+  collections.sort((collectionA, collectionB) => {
+    const timeA = collectionA.updatedAt.getTime();
+    const timeB = collectionB.updatedAt.getTime();
+
+    return timeB - timeA;
+  });
+
+  // 第三步：给每个合集补充收藏数量。
+  const collectionsWithCount = collections.map((collection) => {
+    const items = store.favoriteCollectionItems.filter((item) => {
+      return item.collectionId === collection.id;
     });
+    const count = items.length;
+
+    const collectionCount = {
+      items: count,
+    };
+
+    const result = {
+      ...collection,
+      _count: collectionCount,
+    };
+
+    return result;
+  });
+
+  return collectionsWithCount;
 }
 
 export async function createCollection(profileId: string, name: string) {
@@ -116,39 +129,70 @@ export async function getCollection(profileId: string, collectionId: string) {
   );
   if (!collection) return null;
 
-  const items = store.favoriteCollectionItems
-    .filter((item) => item.collectionId === collectionId)
-    .sort((a, b) => {
-      const timeA = a.createdAt.getTime();
-      const timeB = b.createdAt.getTime();
-      return timeB - timeA;
-    })
-    .map((item) => {
-      const generatedImage = store.generatedImages.find(
-        (image) => image.id === item.generatedImageId,
-      )!;
-      const outputAsset = store.mediaAssets.find(
-        (asset) => asset.id === generatedImage.outputAssetId,
-      )!;
-      const thumbnailAsset = findThumbnail(generatedImage.thumbnailAssetId);
-      const task = store.generationTasks.find((entry) => entry.id === generatedImage.taskId)!;
+  // 第一步：找出当前合集里的收藏项。
+  const items = store.favoriteCollectionItems.filter((item) => {
+    return item.collectionId === collectionId;
+  });
 
-      return {
-        ...item,
-        generatedImage: {
-          ...generatedImage,
-          outputAsset,
-          thumbnailAsset,
-          task,
-        },
-      };
+  // 第二步：按照收藏时间，从新到旧排序。
+  items.sort((itemA, itemB) => {
+    const timeA = itemA.createdAt.getTime();
+    const timeB = itemB.createdAt.getTime();
+
+    return timeB - timeA;
+  });
+
+  // 第三步：给每个收藏项补充图片、资源和任务信息。
+  const itemsWithImage = items.map((item) => {
+    const generatedImage = store.generatedImages.find((image) => {
+      return image.id === item.generatedImageId;
     });
 
-  return {
-    ...collection,
-    _count: {
-      items: items.length,
-    },
-    items,
+    if (!generatedImage) {
+      throw new Error(`没有找到收藏图片：${item.generatedImageId}`);
+    }
+
+    const outputAsset = store.mediaAssets.find((asset) => {
+      return asset.id === generatedImage.outputAssetId;
+    });
+
+    if (!outputAsset) {
+      throw new Error(`没有找到图片资源：${generatedImage.outputAssetId}`);
+    }
+
+    const thumbnailAsset = findThumbnail(generatedImage.thumbnailAssetId);
+    const task = store.generationTasks.find((entry) => {
+      return entry.id === generatedImage.taskId;
+    });
+
+    if (!task) {
+      throw new Error(`没有找到生成任务：${generatedImage.taskId}`);
+    }
+
+    const imageWithAssets = {
+      ...generatedImage,
+      outputAsset: outputAsset,
+      thumbnailAsset: thumbnailAsset,
+      task: task,
+    };
+
+    const result = {
+      ...item,
+      generatedImage: imageWithAssets,
+    };
+
+    return result;
+  });
+
+  const count = {
+    items: itemsWithImage.length,
   };
+
+  const result = {
+    ...collection,
+    _count: count,
+    items: itemsWithImage,
+  };
+
+  return result;
 }

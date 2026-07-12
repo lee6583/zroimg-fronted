@@ -5,13 +5,15 @@ import { useState, type FormEvent } from "react";
 import { adminDocsApi } from "@/api/admin/docs";
 import type { DocsConfig } from "@/types/content";
 
-export function DocsSettingsForm({
-  initialDocs,
-  defaultDocs,
-}: {
+type DocsSettingsFormProps = {
   initialDocs: DocsConfig;
   defaultDocs: DocsConfig;
-}) {
+};
+
+export function DocsSettingsForm(props: DocsSettingsFormProps) {
+  const initialDocs = props.initialDocs;
+  const defaultDocs = props.defaultDocs;
+
   const [title, setTitle] = useState(initialDocs.title);
   const [description, setDescription] = useState(initialDocs.description);
   const [groupsJson, setGroupsJson] = useState(JSON.stringify(initialDocs.groups, null, 2));
@@ -40,17 +42,12 @@ export function DocsSettingsForm({
     }
 
     try {
-      const data = (await adminDocsApi.saveDocsConfig({
+      const data = await adminDocsApi.saveDocsConfig({
         title,
         description,
         groups,
-      })) as {
-        docs: {
-          title: string;
-          description: string;
-          groups: DocsConfig["groups"];
-        };
-      };
+      });
+
       setSaving(false);
       setTitle(data.docs.title);
       setDescription(data.docs.description);

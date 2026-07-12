@@ -4,7 +4,15 @@ import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
 
-export function UserActions({ userId, status }: { userId: string; status: "active" | "banned" }) {
+type UserActionsProps = {
+  userId: string;
+  status: "active" | "banned";
+};
+
+export function UserActions(props: UserActionsProps) {
+  const userId = props.userId;
+  const status = props.status;
+
   const [amount, setAmount] = useState(100);
   const [reason, setReason] = useState("Manual adjustment");
   const [message, setMessage] = useState("");

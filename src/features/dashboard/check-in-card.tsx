@@ -51,13 +51,15 @@ function buildCalendar(status: CheckInStatus) {
   return cells;
 }
 
-export function CheckInCard({
-  initialStatus,
-  onClaimed,
-}: {
+type CheckInCardProps = {
   initialStatus: CheckInStatus;
   onClaimed?: (credits: number) => void;
-}) {
+};
+
+export function CheckInCard(props: CheckInCardProps) {
+  const initialStatus = props.initialStatus;
+  const onClaimed = props.onClaimed;
+
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
   const [message, setMessage] = useState("");
@@ -81,7 +83,8 @@ export function CheckInCard({
     setMessage("");
     try {
       const data = await checkInApi.claim();
-      const nextStatus = data.checkIn as CheckInStatus;
+      const nextStatus = data.checkIn;
+
       setStatus(nextStatus);
       setMessage("");
       setReward(nextStatus.dailyCredits);

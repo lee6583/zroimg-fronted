@@ -7,6 +7,9 @@ import { prisma } from "@/server/bff/orders";
 export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminUsersPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -21,7 +24,9 @@ function pageHref(input: { q?: string; status?: string; page: number }) {
   return `/admin/users?${params.toString()}`;
 }
 
-export default async function AdminUsersPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function AdminUsersPage(props: AdminUsersPageProps) {
+  const searchParams = props.searchParams;
+
   await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();

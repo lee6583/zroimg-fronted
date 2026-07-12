@@ -3,13 +3,15 @@
 import { CircleAlert, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 
-export default function ErrorPage({
-  error,
-  unstable_retry,
-}: {
+type ErrorPageProps = {
   error: Error & { digest?: string };
   unstable_retry: () => void;
-}) {
+};
+
+export default function ErrorPage(props: ErrorPageProps) {
+  const error = props.error;
+  const unstable_retry = props.unstable_retry;
+
   useEffect(() => {
     console.error("Unhandled application error", {
       digest: error.digest,

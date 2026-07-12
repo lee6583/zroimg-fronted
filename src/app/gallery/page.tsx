@@ -23,6 +23,10 @@ const categoryLabels: Record<string, string> = {
   other: "其他",
 };
 
+type GalleryPageProps = {
+  searchParams: Promise<{ category?: string | string[] }>;
+};
+
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
@@ -30,11 +34,8 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-export default async function GalleryPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string | string[] }>;
-}) {
+export default async function GalleryPage(props: GalleryPageProps) {
+  const searchParams = props.searchParams;
   const params = await searchParams;
   const category = normalizeCategory(params.category);
   const images = await listPublicImages(category);

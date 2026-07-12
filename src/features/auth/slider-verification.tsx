@@ -15,7 +15,10 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function SliderVerification({ verified, onVerified }: SliderVerificationProps) {
+export function SliderVerification(props: SliderVerificationProps) {
+  const verified = props.verified;
+  const onVerified = props.onVerified;
+
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef(0);
   const dragStartOffset = useRef(0);

@@ -9,21 +9,24 @@ import {
   CUSTOM_MIN_AMOUNT_CNY,
 } from "@/utils/credits";
 
-const orderSchema = z.discriminatedUnion("mode", [
-  z.object({
-    mode: z.literal("package"),
-    packageCode: z.string().trim().min(1, "请选择积分套餐").max(64),
-    paymentType: z.enum(["alipay", "wxpay"]),
-  }),
-  z.object({
-    mode: z.literal("custom"),
-    amountCny: z
-      .number()
-      .min(CUSTOM_MIN_AMOUNT_CNY, "购买金额过低")
-      .max(CUSTOM_MAX_AMOUNT_CNY, "购买金额过高"),
-    paymentType: z.enum(["alipay", "wxpay"]),
-  }),
-]);
+const paymentTypeSchema = z.enum(["alipay", "wxpay"]);
+
+const packageOrderSchema = z.object({
+  mode: z.literal("package"),
+  packageCode: z.string().trim().min(1, "请选择积分套餐").max(64),
+  paymentType: paymentTypeSchema,
+});
+
+const customOrderSchema = z.object({
+  mode: z.literal("custom"),
+  amountCny: z
+    .number()
+    .min(CUSTOM_MIN_AMOUNT_CNY, "购买金额过低")
+    .max(CUSTOM_MAX_AMOUNT_CNY, "购买金额过高"),
+  paymentType: paymentTypeSchema,
+});
+
+const orderSchema = z.discriminatedUnion("mode", [packageOrderSchema, customOrderSchema]);
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();

@@ -19,18 +19,26 @@ type SerializedConversationInput = {
 };
 
 function serializeConversation(conversation: SerializedConversationInput) {
-  return {
+  const tasks = conversation.tasks.map((task) => {
+    const result = {
+      status: task.status,
+      costCredits: task.costCredits,
+    };
+
+    return result;
+  });
+
+  const result = {
     id: conversation.id,
     title: conversation.title,
     updatedAt: conversation.updatedAt.toISOString(),
     createdAt: conversation.createdAt.toISOString(),
     lastTaskAt: conversation.lastTaskAt?.toISOString() ?? null,
     _count: conversation._count,
-    tasks: conversation.tasks.map((task) => ({
-      status: task.status,
-      costCredits: task.costCredits,
-    })),
+    tasks: tasks,
   };
+
+  return result;
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {

@@ -7,15 +7,17 @@ import { CheckInCard } from "@/features/dashboard/check-in-card";
 import type { CheckInStatus } from "@/types/checkin";
 import styles from "./dashboard.module.css";
 
-function MetricCard({
-  label,
-  value,
-  icon: Icon,
-}: {
+type MetricCardProps = {
   label: string;
   value: string | number;
   icon: typeof WalletCards;
-}) {
+};
+
+function MetricCard(props: MetricCardProps) {
+  const label = props.label;
+  const value = props.value;
+  const Icon = props.icon;
+
   return (
     <div className={styles.dashboard__metric}>
       <div className={styles.dashboard__metricHeader}>
@@ -31,15 +33,17 @@ function MetricCard({
   );
 }
 
-export function DashboardOverview({
-  generatedCount,
-  initialBalance,
-  checkInStatus,
-}: {
+type DashboardOverviewProps = {
   generatedCount: number;
   initialBalance: number;
   checkInStatus: CheckInStatus;
-}) {
+};
+
+export function DashboardOverview(props: DashboardOverviewProps) {
+  const generatedCount = props.generatedCount;
+  const initialBalance = props.initialBalance;
+  const checkInStatus = props.checkInStatus;
+
   const [balance, setBalance] = useState(initialBalance);
 
   function onCheckInClaimed(credits: number) {

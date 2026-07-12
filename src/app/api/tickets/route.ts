@@ -38,22 +38,30 @@ export async function POST(request: Request) {
     content: payload.content,
   });
 
+  const messages = ticket.messages.map((message) => {
+    const result = {
+      id: message.id,
+      body: message.body,
+      isAdmin: message.isAdmin,
+      createdAt: message.createdAt.toISOString(),
+      authorName: message.authorProfile.username,
+    };
+
+    return result;
+  });
+
+  const ticketItem = {
+    id: ticket.id,
+    type: ticket.type,
+    status: ticket.status,
+    subject: ticket.subject,
+    content: ticket.content,
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+    messages: messages,
+  };
+
   return jsonOk({
-    ticket: {
-      id: ticket.id,
-      type: ticket.type,
-      status: ticket.status,
-      subject: ticket.subject,
-      content: ticket.content,
-      createdAt: ticket.createdAt.toISOString(),
-      updatedAt: ticket.updatedAt.toISOString(),
-      messages: ticket.messages.map((message) => ({
-        id: message.id,
-        body: message.body,
-        isAdmin: message.isAdmin,
-        createdAt: message.createdAt.toISOString(),
-        authorName: message.authorProfile.username,
-      })),
-    },
+    ticket: ticketItem,
   });
 }

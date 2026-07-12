@@ -8,6 +8,9 @@ import { feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
 export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminTicketsPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -27,7 +30,9 @@ function href(input: { q?: string; status?: string; type?: string; page: number 
   return `/admin/tickets?${params.toString()}`;
 }
 
-export default async function AdminTicketsPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
+  const searchParams = props.searchParams;
+
   await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();

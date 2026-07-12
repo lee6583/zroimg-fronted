@@ -18,7 +18,13 @@ type Package = {
   priceCny: string;
 };
 
-export function OrderForm({ packages }: { packages: Package[] }) {
+type OrderFormProps = {
+  packages: Package[];
+};
+
+export function OrderForm(props: OrderFormProps) {
+  const packages = props.packages;
+
   const [mode, setMode] = useState<"package" | "custom">("package");
   const [packageCode, setPackageCode] = useState(packages[0]?.code || "");
   const [paymentType, setPaymentType] = useState<"alipay" | "wxpay">("alipay");
@@ -26,20 +32,18 @@ export function OrderForm({ packages }: { packages: Package[] }) {
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
 
-  const customAmountNumber = Number(customAmount);
-  const normalizedCustomAmount = Number.isFinite(customAmountNumber)
-    ? Math.round(customAmountNumber * 100) / 100
-    : 0;
-  const customCredits = calculateCustomCredits(normalizedCustomAmount);
+  const rawAmount = Number(customAmount);
+  const amount = Number.isFinite(rawAmount) ? Math.round(rawAmount * 100) / 100 : 0;
+  const customCredits = calculateCustomCredits(amount);
 
   async function createOrder() {
     setLoading(true);
     setMessage("");
     if (
       mode === "custom" &&
-      (!Number.isFinite(customAmountNumber) ||
-        customAmountNumber < CUSTOM_MIN_AMOUNT_CNY ||
-        customAmountNumber > CUSTOM_MAX_AMOUNT_CNY)
+      (!Number.isFinite(rawAmount) ||
+        rawAmount < CUSTOM_MIN_AMOUNT_CNY ||
+        rawAmount > CUSTOM_MAX_AMOUNT_CNY)
     ) {
       setMessage(`请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`);
       setLoading(false);
@@ -51,7 +55,7 @@ export function OrderForm({ packages }: { packages: Package[] }) {
           ? { mode, packageCode, paymentType }
           : {
               mode,
-              amountCny: normalizedCustomAmount,
+              amountCny: amount,
               paymentType,
             },
       );

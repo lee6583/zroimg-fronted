@@ -7,6 +7,9 @@ export const dynamic = "force-dynamic";
 
 const generationStatuses = ["queued", "running", "succeeded", "failed"] as const;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminGenerationsPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -25,11 +28,9 @@ function href(input: { q?: string; status?: string; page: number }) {
   return `/admin/generations?${params.toString()}`;
 }
 
-export default async function AdminGenerationsPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function AdminGenerationsPage(props: AdminGenerationsPageProps) {
+  const searchParams = props.searchParams;
+
   await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();
