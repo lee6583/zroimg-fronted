@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe2, Moon, Sun } from "lucide-react";
+import { Globe, Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -65,13 +65,12 @@ export function ThemeControls() {
   return (
     <div className="flex items-center gap-1">
       <button
-        className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium"
+        className="nav-icon-button"
         type="button"
         onClick={toggleLocale}
         aria-label="切换语言"
       >
-        <Globe2 size={16} />
-        {locale}
+        <Globe size={17} />
       </button>
       <button
         className="nav-icon-button"

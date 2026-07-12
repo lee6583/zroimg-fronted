@@ -68,8 +68,8 @@ export default async function PricingPage() {
           <div className={styles.pricing__inner}>
             <div className={styles.pricing__header}>
               <p className={styles.pricing__eyebrow}>PRICING</p>
-              <h1 className={styles.pricing__title}>选择适合你的创作方案</h1>
-              <p className={styles.pricing__description}>
+              <h1 className="page-title">选择适合你的创作方案</h1>
+              <p className="page-description">
                 灵活积分，按需购买。灵感落笔之处，皆可成像；一念之间，万象生成。
               </p>
             </div>

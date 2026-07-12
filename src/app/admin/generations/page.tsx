@@ -68,10 +68,8 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
       <div className="grid gap-6">
         <section>
           <p className="label">Generation tasks</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            生成任务
-          </h1>
-          <p className="mt-3 text-sm text-muted">排查失败任务、查看用户消耗积分和模型参数。</p>
+          <h1 className="page-title">生成任务</h1>
+          <p className="page-description">排查失败任务、查看用户消耗积分和模型参数。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

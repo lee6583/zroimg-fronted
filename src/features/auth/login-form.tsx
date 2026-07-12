@@ -20,8 +20,14 @@ export function LoginForm() {
     try {
       setLoading(true);
       setMessage("");
-      await authApi.loginWithEmail({ email, password });
+      const data = await authApi.loginWithEmail({ email, password });
       setLoading(false);
+
+      if (data.user.role === "admin") {
+        router.push("/admin");
+        router.refresh();
+        return;
+      }
     } catch (error) {
       setLoading(false);
       setMessage(getErrorMessage(error));

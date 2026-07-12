@@ -2,11 +2,12 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 import Link from "next/link";
 import {
-  BookMarked,
   Clock3,
-  CreditCard,
+  Coins,
+  FolderHeart,
+  ImagePlus,
   LayoutDashboard,
-  LifeBuoy,
+  PencilLine,
   ReceiptText,
   Settings,
 } from "lucide-react";
@@ -14,7 +15,14 @@ import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
 type AppSection =
-  "overview" | "history" | "favorites" | "credits" | "billing" | "tickets" | "settings";
+  | "overview"
+  | "generate"
+  | "history"
+  | "favorites"
+  | "credits"
+  | "billing"
+  | "tickets"
+  | "settings";
 
 type AppShellProps = {
   active?: AppSection;
@@ -35,6 +43,12 @@ const appNavItems: Array<{
     icon: LayoutDashboard,
   },
   {
+    key: "generate",
+    label: "图片生成",
+    href: "/generate",
+    icon: ImagePlus,
+  },
+  {
     key: "history",
     label: "创作历史",
     href: "/history",
@@ -44,13 +58,13 @@ const appNavItems: Array<{
     key: "favorites",
     label: "收藏合集",
     href: "/favorites",
-    icon: BookMarked,
+    icon: FolderHeart,
   },
   {
     key: "credits",
     label: "积分购买",
     href: "/credits",
-    icon: CreditCard,
+    icon: Coins,
   },
   {
     key: "billing",
@@ -62,7 +76,7 @@ const appNavItems: Array<{
     key: "tickets",
     label: "意见反馈",
     href: "/tickets",
-    icon: LifeBuoy,
+    icon: PencilLine,
   },
   {
     key: "settings",

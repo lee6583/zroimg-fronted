@@ -65,10 +65,8 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
       <div className="grid gap-6">
         <section>
           <p className="label">Users</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            用户管理
-          </h1>
-          <p className="mt-3 text-sm text-muted">搜索用户、调整积分、封禁或查看用户详情。</p>
+          <h1 className="page-title">用户管理</h1>
+          <p className="page-description">搜索用户、调整积分、封禁或查看用户详情。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

@@ -36,7 +36,7 @@ export default async function GeneratePage() {
   }));
 
   return (
-    <AppShell flush>
+    <AppShell active="generate" flush>
       <GenerateForm initialChats={items} initialId={activeId} initialTasks={taskList} />
     </AppShell>
   );

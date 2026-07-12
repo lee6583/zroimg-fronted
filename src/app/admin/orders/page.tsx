@@ -68,10 +68,8 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
       <div className="grid gap-6">
         <section>
           <p className="label">Orders</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            订单管理
-          </h1>
-          <p className="mt-3 text-sm text-muted">查看支付订单、支付状态和积分套餐。</p>
+          <h1 className="page-title">订单管理</h1>
+          <p className="page-description">查看支付订单、支付状态和积分套餐。</p>
         </section>
 
         <section className="surface rounded-xl p-5">
