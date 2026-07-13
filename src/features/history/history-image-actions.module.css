@@ -5,13 +5,15 @@
 
 .historyImageActions__row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
 }
 
 .historyImageActions__iconButton {
   display: inline-grid;
+  flex: 0 0 auto;
   width: 2.125rem;
   height: 2.125rem;
   place-items: center;

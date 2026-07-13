@@ -7,6 +7,8 @@ import { useState } from "react";
 import type { ConversationGroup, ConversationItem } from "./generation-model";
 import styles from "./generate-form.module.css";
 
+const titlePreviewLength = 9;
+
 type ConversationSidebarProps = {
   groups: ConversationGroup[];
   activeId: string;
@@ -71,6 +73,12 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
     if (event.key === "Escape") cancelEdit();
   }
 
+  function getDisplayTitle(value: string) {
+    const normalized = value.trim();
+    if (normalized.length <= titlePreviewLength) return normalized;
+    return `${normalized.slice(0, titlePreviewLength)}...`;
+  }
+
   return (
     <aside className={styles.generateForm__sidebar}>
       <div className={styles.generateForm__sidebarHeader}>
@@ -107,6 +115,8 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                   const isActive = item.id === activeId;
                   const isEditing = item.id === editId;
                   const isPending = item.id === pendingId;
+                  const displayTitle = getDisplayTitle(item.title);
+                  const isTitleTruncated = displayTitle !== item.title.trim();
 
                   return (
                     <div
@@ -141,9 +151,19 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                             aria-label="编辑对话名称"
                           />
                         ) : (
-                          <span className={styles.generateForm__conversationTitle}>
-                            {item.title}
-                          </span>
+                          <>
+                            <span className={styles.generateForm__conversationTitle}>
+                              {displayTitle}
+                            </span>
+                            {isTitleTruncated ? (
+                              <span
+                                className={styles.generateForm__conversationTooltip}
+                                role="tooltip"
+                              >
+                                {item.title}
+                              </span>
+                            ) : null}
+                          </>
                         )}
                       </div>
                       <div className={styles.generateForm__conversationActions}>

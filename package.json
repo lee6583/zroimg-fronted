@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit --incremental false",
-    "test": "node --test tests/**/*.test.mjs",
+    "test": "node --experimental-strip-types --test tests/credits.test.ts tests/media.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit:prod": "pnpm audit --prod --registry=https://registry.npmjs.org",

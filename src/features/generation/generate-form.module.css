@@ -141,7 +141,9 @@
 }
 
 .generateForm__conversationItem {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   min-height: 2.25rem;
   align-items: center;
   gap: 0.5rem;
@@ -172,12 +174,12 @@
 }
 
 .generateForm__conversationIcon {
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .generateForm__conversationName {
+  position: relative;
   min-width: 0;
-  flex: 1;
 }
 
 .generateForm__conversationTitle {
@@ -185,6 +187,36 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.generateForm__conversationTooltip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 20;
+  width: max-content;
+  max-width: min(18rem, 70vw);
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--panel) 96%, var(--foreground));
+  padding: 0.45rem 0.6rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: normal;
+  opacity: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-0.25rem);
+  transition:
+    opacity 0.12s ease 0.75s,
+    transform 0.12s ease 0.75s;
+}
+
+.generateForm__conversationName:hover .generateForm__conversationTooltip,
+.generateForm__conversationName:focus-within .generateForm__conversationTooltip {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .generateForm__conversationInput {

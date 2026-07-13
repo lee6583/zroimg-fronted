@@ -88,7 +88,7 @@
   min-width: 72rem;
   grid-template-columns:
     4.5rem minmax(18rem, 1.8fr) minmax(7rem, 0.8fr) minmax(6rem, 0.65fr)
-    minmax(5rem, 0.55fr) minmax(5.5rem, 0.55fr) minmax(10rem, 0.9fr) minmax(8rem, 0.7fr);
+    minmax(5rem, 0.55fr) minmax(5.5rem, 0.55fr) minmax(10rem, 0.9fr) minmax(10.5rem, 0.85fr);
   align-items: center;
   gap: 1.15rem;
   padding: 0.9rem 1rem;
@@ -212,6 +212,7 @@
 .history__actions {
   display: grid;
   gap: 0.5rem;
+  min-width: 10.5rem;
   justify-items: center;
 }
 

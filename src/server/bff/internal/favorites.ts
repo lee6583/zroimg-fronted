@@ -74,7 +74,6 @@ export async function updateName(profileId: string, collectionId: string, name: 
     throw new Error("合集不存在");
   }
   collection.name = name.trim();
-  collection.updatedAt = new Date();
   return collection;
 }
 
