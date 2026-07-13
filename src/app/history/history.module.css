@@ -153,6 +153,7 @@
 .history__actions {
   display: grid;
   gap: 0.5rem;
+  min-width: 10.5rem;
   margin-top: 0.25rem;
 }
 

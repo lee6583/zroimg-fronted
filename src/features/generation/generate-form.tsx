@@ -95,6 +95,7 @@ const outputFormats: Array<{ value: OutputFormat; label: string }> = [
   { value: "jpeg", label: "JPG" },
 ];
 const imageCounts = [1, 2, 4];
+const conversationTitlePreviewLength = 9;
 const suggestions = ["一只在星空下弹吉他的猫", "未来城市的日落景色", "水彩风格的樱花园"];
 const statusLabels: Record<string, string> = {
   queued: "排队中",
@@ -155,6 +156,12 @@ function titleFromPrompt(prompt: string) {
   const normalized = prompt.replace(/\s+/g, " ").trim();
   if (!normalized) return "新对话";
   return normalized.length > 24 ? `${normalized.slice(0, 24)}...` : normalized;
+}
+
+function getConversationDisplayTitle(title: string) {
+  const normalized = title.trim();
+  if (normalized.length <= conversationTitlePreviewLength) return normalized;
+  return `${normalized.slice(0, conversationTitlePreviewLength)}...`;
 }
 
 function conversationTime(conversation: ConversationItem) {
@@ -704,6 +711,8 @@ export function GenerateForm({
                   const active = conversation.id === activeConversationId;
                   const editing = editingConversationId === conversation.id;
                   const pending = pendingConversationId === conversation.id;
+                  const displayTitle = getConversationDisplayTitle(conversation.title);
+                  const titleTruncated = displayTitle !== conversation.title.trim();
 
                   return (
                     <div
@@ -736,7 +745,14 @@ export function GenerateForm({
                             aria-label="编辑对话名称"
                           />
                         ) : (
-                          <span className={styles.generateForm__conversationTitle}>{conversation.title}</span>
+                          <>
+                            <span className={styles.generateForm__conversationTitle}>{displayTitle}</span>
+                            {titleTruncated ? (
+                              <span className={styles.generateForm__conversationTooltip} role="tooltip">
+                                {conversation.title}
+                              </span>
+                            ) : null}
+                          </>
                         )}
                       </div>
                       <div className={styles.generateForm__conversationActions}>

@@ -1,5 +1,6 @@
 .publishButton {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
 }
 
@@ -16,6 +17,7 @@
   color: var(--background);
   font-size: 0.75rem;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
 }
 

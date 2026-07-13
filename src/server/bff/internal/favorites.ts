@@ -34,7 +34,6 @@ export async function updateFavoriteCollectionName(userProfileId: string, collec
     throw new Error("合集不存在");
   }
   collection.name = name.trim();
-  collection.updatedAt = new Date();
   return collection;
 }
 

@@ -6,9 +6,9 @@ import { useEffect, useSyncExternalStore } from "react";
 type Theme = "light" | "dark";
 type Locale = "ZH" | "EN";
 
-const themeKey = "zrocode-theme";
-const localeKey = "zrocode-locale";
-const settingsEvent = "zrocode-settings-change";
+const themeKey = "zroimg-theme";
+const localeKey = "zroimg-locale";
+const settingsEvent = "zroimg-settings-change";
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -45,6 +45,7 @@ export function ThemeControls() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
     document.documentElement.lang = locale === "ZH" ? "zh-CN" : "en";
   }, [theme, locale]);
 
@@ -52,6 +53,7 @@ export function ThemeControls() {
     const nextTheme = theme === "light" ? "dark" : "light";
     window.localStorage.setItem(themeKey, nextTheme);
     document.documentElement.dataset.theme = nextTheme;
+    document.documentElement.style.colorScheme = nextTheme;
     emitSettingsChange();
   }
 
