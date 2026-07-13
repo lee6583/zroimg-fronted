@@ -175,8 +175,8 @@ export function GenerateForm(props: GenerateFormProps) {
     }
   }
 
-  function openSettings() {
-    setSettingsOpen(true);
+  function toggleSettings() {
+    setSettingsOpen((isOpen) => !isOpen);
     setMenuOpen(false);
   }
 
@@ -268,10 +268,6 @@ export function GenerateForm(props: GenerateFormProps) {
         ),
       );
       setPrompt("");
-      setNotice({
-        text: `任务已提交，将消耗 ${task.costCredits} 积分`,
-        tone: "info",
-      });
       await refreshList();
     } catch (error) {
       showError(error);
@@ -289,7 +285,7 @@ export function GenerateForm(props: GenerateFormProps) {
       groups={groups}
       activeId={activeId}
       summary={summary}
-      onOpenSettings={openSettings}
+      onOpenSettings={toggleSettings}
       onCreate={createChat}
       onSelect={selectChat}
       onRename={renameChat}

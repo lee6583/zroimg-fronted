@@ -18,20 +18,6 @@
   padding: 1rem 0.75rem;
 }
 
-.shell__adminHeader {
-  display: none;
-  margin-bottom: 1.25rem;
-  padding: 0 0.75rem;
-}
-
-.shell__adminTitle {
-  margin-top: 0.25rem;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  letter-spacing: -0.025em;
-}
-
 .shell__nav {
   display: flex;
   gap: 0.25rem;
@@ -112,10 +98,6 @@
 
   .shell__sidebarInner {
     padding: 2rem 0.75rem;
-  }
-
-  .shell__adminHeader {
-    display: block;
   }
 
   .shell__nav {
