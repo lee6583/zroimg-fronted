@@ -30,10 +30,12 @@ jobs:
       - run: pnpm build
       - run: pnpm audit:prod
 
-  build-image:
+  build-image-attempt-1:
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     needs: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
     permissions:
       contents: read
       packages: write
@@ -61,6 +63,82 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  build-image:
+    if: >-
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/dev' &&
+      needs.verify.result == 'success'
+    needs: [verify, build-image-attempt-1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Ensure image is available
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          image="ghcr.io/${owner}/zroimg-frontend"
+          sha_tag="sha-${GITHUB_SHA}"
+
+          logged_in=false
+          for attempt in 1 2 3; do
+            if printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin; then
+              logged_in=true
+              break
+            fi
+
+            sleep 10
+          done
+
+          if [ "$logged_in" != "true" ]; then
+            echo "Unable to log in to GHCR after 3 attempts" >&2
+            exit 1
+          fi
+
+          for attempt in 1 2 3; do
+            if docker manifest inspect "${image}:${sha_tag}" >/dev/null 2>&1; then
+              echo "Primary image build succeeded: ${image}:${sha_tag}"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              sleep 5
+            fi
+          done
+
+          echo "Primary image is unavailable; retrying with Docker CLI in 45 seconds"
+          sleep 45
+
+          source_dir="$RUNNER_TEMP/zroimg-source"
+          mkdir -p "$source_dir"
+
+          curl \
+            --fail-with-body \
+            --location \
+            --retry 3 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --header "Authorization: Bearer ${GHCR_TOKEN}" \
+            --header "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/tarball/${GITHUB_SHA}" |
+            tar -xz --strip-components=1 -C "$source_dir"
+
+          cd "$source_dir"
+          docker build \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            --tag "${image}:dev" \
+            --tag "${image}:${sha_tag}" \
+            .
+          docker push "${image}:${sha_tag}"
+          docker push "${image}:dev"
 
   deploy-development:
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
