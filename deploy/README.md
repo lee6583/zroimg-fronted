@@ -2,10 +2,16 @@
 
 本文只描述 `dev` 分支对应的开发/联调环境。当前业务仍包含 mock 数据，不得把这套配置当作正式生产环境发布。
 
+团队日常开发、发布验证、运营维护和面试说明见 [OPERATIONS.md](./OPERATIONS.md)。
+
 ## 1. 发布流程
 
 ```text
-代码合并到 dev
+功能分支开发并推送
+  -> 创建目标为 dev 的 Pull Request
+  -> verify 通过
+  -> 负责人审核
+  -> 合并到 dev
   -> GitHub Actions 执行格式、Lint、类型、测试、构建和依赖审计
   -> 构建 Docker 镜像
   -> 推送到 GHCR
@@ -15,6 +21,17 @@
   -> 健康检查
   -> 成功后记录版本，失败则回滚上一个版本
 ```
+
+Pull Request 阶段只执行 `verify`，不会构建镜像或连接服务器。只有代码合并到 `dev` 后产生的 push，才会触发完整自动部署。
+
+当前工作流包含四个任务：
+
+| 任务                    | 作用                                                             |
+| ----------------------- | ---------------------------------------------------------------- |
+| `verify`                | 安装依赖并执行格式、Lint、类型、测试、Next.js 构建和生产依赖审计 |
+| `build-image-attempt-1` | 第一次构建 Docker 镜像并推送到 GHCR，允许因临时网络故障失败      |
+| `build-image`           | 检查镜像；第一次未成功时等待 45 秒并自动重试一次                 |
+| `deploy-development`    | 通过 SSH 通知服务器拉取指定镜像，更新容器并执行健康检查          |
 
 镜像会同时保留两个标签：
 
@@ -197,14 +214,17 @@ Actions 不会覆盖 Nginx 配置，只会在新前端健康后执行一次 Ngin
 
 HTTPS 证书可在 DNS 生效后由服务器管理员使用 Certbot 配置。启用 HTTPS 前不要把登录 Cookie 和真实业务数据用于公网测试。
 
-## 9. 首次发布
+## 9. 首次配置完成后的验收
 
-1. 在 `chore/docker-deployment` 分支提交部署文件并推送。
+1. 从最新 `dev` 创建一个功能或测试分支，提交一项可确认的低风险修改并推送。
 2. 在 GitHub 创建 Pull Request，目标分支选择 `dev`。
-3. 等 CI 全部通过并由前端负责人审核。
+3. 等 `verify` 通过并由前端负责人审核。
 4. 合并 Pull Request 到 `dev`。
 5. 合并产生的 push 会自动构建镜像并部署。
-6. 在仓库的 `Actions -> CI` 中查看三个任务：`verify`、`build-image`、`deploy-development`。
+6. 在仓库的 `Actions -> CI` 中查看四个任务：`verify`、`build-image-attempt-1`、`build-image`、`deploy-development`。
+7. 以最新 `dev` 工作流的 `deploy-development` 绿色对勾为自动部署成功依据。
+
+注意：PR 分支上的绿色 `verify` 只表示代码检查通过，不代表镜像已推送或服务器已部署。
 
 服务器验证：
 
@@ -216,7 +236,15 @@ cat /opt/zroimg/frontend-image-dev/.deployed-tag
 
 ## 10. 日常发布
 
-其他同学仍按正常方式开发：功能分支提交 Pull Request 到 `dev`。只有代码进入 `dev` 后才自动部署，开发者不需要登录服务器，也不需要修改 Compose。
+团队统一遵循：
+
+```text
+功能分支 -> Pull Request -> verify 通过 -> 审核 -> 合并 dev -> 自动部署
+```
+
+其他同学只需要在功能分支开发并提交 Pull Request。只有代码进入 `dev` 后才自动部署，普通开发者不需要登录服务器，也不需要修改 Compose、Nginx、GitHub Secrets 或服务器配置。
+
+如果存在更新的 `dev` 工作流，旧工作流会由 `concurrency` 自动取消，防止旧版本晚于新版本部署。手动取消不是“构建失败”，自动重试不会接管；确认没有更新工作流后，才对最新记录选择 `Re-run all jobs`。
 
 禁止直接在服务器容器里改代码，因为容器重建后这些修改会消失。代码修改必须回到 Git 分支并经过 Pull Request。
 
@@ -241,3 +269,5 @@ docker compose down -v
 ```
 
 这些命令可能删除后端、MySQL、Redis 或其他项目正在使用的数据。
+
+完整故障判断、人工回滚、维护频率和术语解释见 [OPERATIONS.md](./OPERATIONS.md)。
