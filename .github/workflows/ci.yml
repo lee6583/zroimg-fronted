@@ -29,3 +29,79 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm audit:prod
+
+  build-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: metadata
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/zroimg-frontend
+          tags: |
+            type=raw,value=dev
+            type=sha,format=long,prefix=sha-
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-development:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: build-image
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          : "${DEPLOY_HOST:?Missing DEPLOY_HOST variable}"
+          : "${DEPLOY_USER:?Missing DEPLOY_USER variable}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          echo "DEPLOY_PORT=${DEPLOY_PORT}" >> "$GITHUB_ENV"
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Upload deployment files
+        run: |
+          DEPLOY_PATH="${DEPLOY_PATH:-/opt/zroimg/frontend-image-dev}"
+          echo "DEPLOY_PATH=${DEPLOY_PATH}" >> "$GITHUB_ENV"
+
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          scp -P "$DEPLOY_PORT" \
+            deploy/compose.dev.yml \
+            deploy/deploy-dev.sh \
+            deploy/nginx.dev.conf.example \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+      - name: Deploy image
+        run: |
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "chmod 750 '$DEPLOY_PATH/deploy-dev.sh' && '$DEPLOY_PATH/deploy-dev.sh' 'sha-$GITHUB_SHA'"
+      - name: Add deployment summary
+        run: |
+          echo "Development URL: ${{ vars.DEV_URL }}" >> "$GITHUB_STEP_SUMMARY"
