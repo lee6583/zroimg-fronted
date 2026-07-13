@@ -17,22 +17,6 @@
   padding: 0 1rem;
 }
 
-.productTopNav__brand {
-  display: flex;
-  width: fit-content;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--foreground);
-  text-decoration: none;
-}
-
-.productTopNav__brandText {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.025em;
-}
-
 .productTopNav__center {
   display: none;
   align-items: center;

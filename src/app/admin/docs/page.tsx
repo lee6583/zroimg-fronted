@@ -15,11 +15,7 @@ export default async function AdminDocsPage() {
       <div className="grid gap-6">
         <section className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="label">Documentation</p>
-            <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">文档管理</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              编辑公开文档页展示的站点介绍、快速开始、图片生成说明和账户帮助内容。
-            </p>
+            <h1 className="page-title">文档管理</h1>
           </div>
           <Link href="/docs" className="btn-secondary" target="_blank">
             预览文档

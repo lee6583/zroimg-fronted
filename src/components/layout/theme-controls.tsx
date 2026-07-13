@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe2, Moon, Sun } from "lucide-react";
+import { Globe, Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -10,9 +10,19 @@ const themeKey = "zroimg-theme";
 const localeKey = "zroimg-locale";
 const settingsEvent = "zroimg-settings-change";
 
+function readSavedTheme() {
+  const savedTheme = window.localStorage.getItem(themeKey);
+  if (savedTheme === "dark" || savedTheme === "light") {
+    return savedTheme;
+  }
+
+  return null;
+}
+
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(settingsEvent, callback);
+
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(settingsEvent, callback);
@@ -20,7 +30,12 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): Theme {
-  return window.localStorage.getItem(themeKey) === "dark" ? "dark" : "light";
+  const savedTheme = readSavedTheme();
+  if (savedTheme) {
+    return savedTheme;
+  }
+
+  return "light";
 }
 
 function getLocaleSnapshot(): Locale {
@@ -66,11 +81,20 @@ export function ThemeControls() {
 
   return (
     <div className="flex items-center gap-1">
-      <button className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium" type="button" onClick={toggleLocale} aria-label="切换语言">
-        <Globe2 size={16} />
-        {locale}
+      <button
+        className="nav-icon-button"
+        type="button"
+        onClick={toggleLocale}
+        aria-label="切换语言"
+      >
+        <Globe size={17} />
       </button>
-      <button className="nav-icon-button" type="button" onClick={toggleTheme} aria-label="切换明暗模式">
+      <button
+        className="nav-icon-button"
+        type="button"
+        onClick={toggleTheme}
+        aria-label="切换明暗模式"
+      >
         {theme === "light" ? <Sun size={16} /> : <Moon size={16} />}
       </button>
     </div>

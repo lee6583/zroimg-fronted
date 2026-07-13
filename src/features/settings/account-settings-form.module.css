@@ -147,37 +147,8 @@
   font-size: 0.82rem;
 }
 
-.accountSettings__statusLine {
-  color: var(--foreground);
-  font-size: 0.88rem;
-  font-weight: 500;
-}
-
-.accountSettings__switchRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.55;
-}
-
-.accountSettings__switchRow input {
-  margin-top: 0.2rem;
-}
-
-.accountSettings__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 @media (min-width: 1280px) {
   .accountSettings {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .accountSettings__wideCard {
-    grid-column: 1 / -1;
   }
 }

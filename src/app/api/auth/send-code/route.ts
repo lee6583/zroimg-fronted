@@ -1,28 +1,33 @@
+import { z } from "zod";
 import { getStore, nextId } from "@/server/bff/mock-store";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
-import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
+import { proxyRequestToJavaApi } from "@/server/java-api";
+import { parseJson } from "@/server/validation";
+
+const sendCodeSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("邮箱格式不正确")
+    .transform((value) => value.toLowerCase()),
+  sliderToken: z.string().trim().min(1, "请先完成安全验证").max(128, "安全验证格式不正确"),
+});
 
 export async function POST(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/register/send-code");
-    if (!isJavaUnavailableResponse(response)) {
-      return response;
-    }
+  if (isJavaAuthEnabled()) {
+    return proxyRequestToJavaApi(request, "/auth/user/send-code");
   }
 
-  const { email, sliderToken } = (await request.json()) as { email?: string; sliderToken?: string };
-  const normalizedEmail = email?.trim().toLowerCase();
-  const normalizedSliderToken = sliderToken?.trim() || "";
+  const parsed = await parseJson(request, sendCodeSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!normalizedEmail) {
-    return jsonError("请输入邮箱");
-  }
-  if (!normalizedSliderToken) {
-    return jsonError("请先完成安全验证");
-  }
+  const { email, sliderToken } = parsed.data;
 
   const store = getStore();
-  const token = store.sliderTokens.find((item) => item.token === normalizedSliderToken && item.email === normalizedEmail);
+  const token = store.sliderTokens.find(
+    (item) => item.token === sliderToken && item.email === email,
+  );
   if (!token || token.used || token.expiresAt < Date.now()) {
     return jsonError("安全验证已失效，请重新完成滑块验证", 401);
   }
@@ -31,10 +36,10 @@ export async function POST(request: Request) {
 
   // Mock 环境下固定验证码，方便在 Java 后端未接通前继续联调注册流程。
   const code = "123456";
-  store.verificationCodes = store.verificationCodes.filter((item) => item.email !== normalizedEmail);
+  store.verificationCodes = store.verificationCodes.filter((item) => item.email !== email);
   store.verificationCodes.push({
     id: nextId("verification"),
-    email: normalizedEmail,
+    email,
     code,
     expiresAt: Date.now() + 10 * 60 * 1000,
   });

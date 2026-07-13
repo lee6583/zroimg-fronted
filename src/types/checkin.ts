@@ -1,4 +1,4 @@
-export type CheckInDateInfo = {
+type CheckInDateInfo = {
   dayKey: string;
   year: string;
   month: string;
@@ -6,7 +6,7 @@ export type CheckInDateInfo = {
   weekday: string;
 };
 
-export type CheckInStatus = {
+type CheckInStatus = {
   date: CheckInDateInfo;
   dailyCredits: number;
   checkedIn: boolean;
@@ -16,3 +16,8 @@ export type CheckInStatus = {
   checkedDayKeys: string[];
 };
 
+type ClaimCheckInResponse = {
+  checkIn: CheckInStatus;
+};
+
+export type { CheckInDateInfo, CheckInStatus, ClaimCheckInResponse };

@@ -2,8 +2,38 @@ import type { Metadata } from "next";
 import "@/style/index.css";
 
 export const metadata: Metadata = {
-  title: "ZroCode SaaS",
+  title: "ZroImg",
   description: "Image generation SaaS powered by gpt-image-2.",
+  icons: {
+    icon: [
+      {
+        url: "/assets/day-icon.png",
+        sizes: "512x512",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/assets/night-icon.png",
+        sizes: "512x512",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: [
+      {
+        url: "/assets/day-icon.png",
+        sizes: "512x512",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/assets/night-icon.png",
+        sizes: "512x512",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
 };
 
 const themeBootstrapScript = `
@@ -16,11 +46,13 @@ const themeBootstrapScript = `
   } catch {}
 `;
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type RootLayoutProps = Readonly<{
   children: React.ReactNode;
-}>) {
+}>;
+
+export default function RootLayout(props: RootLayoutProps) {
+  const children = props.children;
+
   return (
     <html lang="zh-CN" data-theme="light" className="h-full antialiased" suppressHydrationWarning>
       <head>

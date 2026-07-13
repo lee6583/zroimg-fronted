@@ -1,22 +1,28 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { addFeedbackMessage } from "@/server/bff/account";
-import { jsonError, jsonOk } from "@/server/http";
+import { addTicketMessage } from "@/server/bff/account";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { addAuditLog } from "@/server/bff/mock-store";
+import { parseJson } from "@/server/validation";
+
+const replySchema = z.object({
+  body: z.string().trim().min(1, "请输入回复内容").max(5000, "回复最多 5000 位"),
+});
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current || current.profile.role !== "admin") {
-    return jsonError("无权限", 403);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current || current.profile.role !== "admin") {
+      return jsonError("无权限", 403);
+    }
 
-  const { id } = await context.params;
-  const { body } = (await request.json()) as { body?: string };
-  if (!body?.trim()) {
-    return jsonError("请输入回复内容");
-  }
+    const { id } = await context.params;
+    const parsed = await parseJson(request, replySchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  try {
-    await addFeedbackMessage({
+    const { body } = parsed.data;
+
+    await addTicketMessage({
       ticketId: id,
       authorProfileId: current.profile.id,
       isAdmin: true,
@@ -30,7 +36,5 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       detailJson: { bodyLength: body.trim().length },
     });
     return jsonOk({ ok: true });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "回复失败");
-  }
+  });
 }

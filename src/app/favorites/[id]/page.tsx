@@ -4,14 +4,18 @@ import { ArrowLeft, ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { getFavoriteCollectionForUser } from "@/server/bff/account";
+import { getCollection } from "@/server/bff/account";
 import { getMediaSignedUrl } from "@/server/bff/generation";
 import styles from "../favorites.module.css";
 
 export const dynamic = "force-dynamic";
 
 type PageParams = Promise<{ id: string }>;
-type CollectionItem = NonNullable<Awaited<ReturnType<typeof getFavoriteCollectionForUser>>>["items"][number];
+type FavoriteCollectionPageProps = {
+  params: PageParams;
+};
+
+type CollectionItem = NonNullable<Awaited<ReturnType<typeof getCollection>>>["items"][number];
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -20,10 +24,12 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-export default async function FavoriteCollectionPage({ params }: { params: PageParams }) {
+export default async function FavoriteCollectionPage(props: FavoriteCollectionPageProps) {
+  const params = props.params;
+
   const current = await requireUser();
   const { id } = await params;
-  const collection = await getFavoriteCollectionForUser(current.profile.id, id);
+  const collection = await getCollection(current.profile.id, id);
 
   if (!collection) notFound();
 
@@ -43,8 +49,8 @@ export default async function FavoriteCollectionPage({ params }: { params: PageP
             <ArrowLeft size={15} />
             返回合集
           </Link>
-          <h1 className={styles.favorites__detailTitle}>{collection.name}</h1>
-          <p className={styles.favorites__description}>{collection._count.items} 张图片</p>
+          <h1 className="page-title">{collection.name}</h1>
+          <p className="page-description">{collection._count.items} 张图片</p>
         </section>
 
         {collection.items.length > 0 ? (

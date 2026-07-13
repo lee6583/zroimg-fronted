@@ -3,7 +3,26 @@
 import { useMemo } from "react";
 import styles from "./animated-text.module.css";
 
-export function WordsPullUp({ text, className = "", showAsterisk = false }: { text: string; className?: string; showAsterisk?: boolean }) {
+type WordsPullUpProps = {
+  text: string;
+  className?: string;
+  showAsterisk?: boolean;
+};
+
+type WordsPullUpMultiStyleProps = {
+  segments: Array<{ text: string; className?: string }>;
+  className?: string;
+};
+
+type ScrollRevealTextProps = {
+  text: string;
+};
+
+export function WordsPullUp(props: WordsPullUpProps) {
+  const text = props.text;
+  const className = props.className ?? "";
+  const showAsterisk = props.showAsterisk ?? false;
+
   const words = text.split(" ");
 
   return (
@@ -17,7 +36,9 @@ export function WordsPullUp({ text, className = "", showAsterisk = false }: { te
           >
             {word}
             {showAsterisk && isLast ? (
-              <span className="absolute -right-[0.3em] top-[0.65em] text-[0.31em] leading-none">*</span>
+              <span className="absolute -right-[0.3em] top-[0.65em] text-[0.31em] leading-none">
+                *
+              </span>
             ) : null}
             {index < words.length - 1 ? "\u00a0" : null}
           </span>
@@ -27,13 +48,10 @@ export function WordsPullUp({ text, className = "", showAsterisk = false }: { te
   );
 }
 
-export function WordsPullUpMultiStyle({
-  segments,
-  className = "",
-}: {
-  segments: Array<{ text: string; className?: string }>;
-  className?: string;
-}) {
+export function WordsPullUpMultiStyle(props: WordsPullUpMultiStyleProps) {
+  const segments = props.segments;
+  const className = props.className ?? "";
+
   const words = segments.flatMap((segment) =>
     segment.text.split(" ").map((word) => ({
       word,
@@ -55,7 +73,9 @@ export function WordsPullUpMultiStyle({
   );
 }
 
-export function ScrollRevealText({ text }: { text: string }) {
+export function ScrollRevealText(props: ScrollRevealTextProps) {
+  const text = props.text;
+
   const chars = useMemo(() => Array.from(text), [text]);
 
   return (

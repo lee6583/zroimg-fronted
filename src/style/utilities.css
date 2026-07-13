@@ -21,8 +21,16 @@
 
 .bg-grid-subtle {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--line) 50%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--line) 50%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--line) 50%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--line) 50%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
 }
 
@@ -35,5 +43,7 @@
 }
 
 .shadow-premium {
-  box-shadow: 0 24px 80px -10px rgba(0, 0, 0, 0.06), 0 8px 24px -6px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    0 24px 80px -10px rgba(0, 0, 0, 0.06),
+    0 8px 24px -6px rgba(0, 0, 0, 0.03);
 }

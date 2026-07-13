@@ -7,7 +7,8 @@ export type MockPaymentType = "alipay" | "wxpay";
 export type MockOrderStatus = "pending" | "paid" | "fulfilled" | "expired" | "cancelled" | "failed";
 export type MockTaskStatus = "queued" | "running" | "succeeded" | "failed";
 export type MockGenerationMode = "text" | "edit";
-export type MockFeedbackType = "bug" | "billing" | "generation" | "account" | "suggestion" | "other";
+export type MockFeedbackType =
+  "bug" | "billing" | "generation" | "account" | "suggestion" | "other";
 export type MockFeedbackStatus = "open" | "in_progress" | "resolved" | "closed";
 export type MockGalleryCategory = "realistic" | "anime" | "art" | "other";
 
@@ -257,7 +258,7 @@ function svgDataUrl(title: string, accent = "#111111", soft = "#f5f5f5") {
       <rect width="768" height="768" fill="${soft}" />
       <rect x="32" y="32" width="704" height="704" rx="28" fill="white" stroke="#e5e5e5" />
       <rect x="96" y="112" width="576" height="320" rx="28" fill="${accent}" opacity="0.14" />
-      <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroCodeImg Mock Output</text>
+      <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroImg Mock Output</text>
       <text x="96" y="566" font-size="54" fill="#111111" font-family="Georgia, serif">${safeTitle.slice(0, 26)}</text>
       <text x="96" y="622" font-size="24" fill="#525252" font-family="Inter, sans-serif">Frontend preview</text>
       <text x="96" y="658" font-size="24" fill="#525252" font-family="Inter, sans-serif">Before Java backend integration</text>
@@ -319,9 +320,33 @@ function createStore(): MockStore {
   ];
 
   const creditPackages: MockCreditPackage[] = [
-    { id: "package-1", code: "STARTER_100", name: "轻量试创", credits: 100, priceCny: 19.9, sortOrder: 1, isActive: true },
-    { id: "package-2", code: "PRO_500", name: "创作者", credits: 500, priceCny: 79.9, sortOrder: 2, isActive: true },
-    { id: "package-3", code: "MAX_1200", name: "灵感工作室", credits: 1200, priceCny: 169.9, sortOrder: 3, isActive: true },
+    {
+      id: "package-1",
+      code: "STARTER_100",
+      name: "轻量试创",
+      credits: 100,
+      priceCny: 19.9,
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "package-2",
+      code: "PRO_500",
+      name: "创作者",
+      credits: 500,
+      priceCny: 79.9,
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "package-3",
+      code: "MAX_1200",
+      name: "灵感工作室",
+      credits: 1200,
+      priceCny: 169.9,
+      sortOrder: 3,
+      isActive: true,
+    },
   ];
 
   const mediaAssets: MockMediaAsset[] = [
@@ -719,7 +744,7 @@ function createStore(): MockStore {
         secure: true,
         user: "admin@zrocodeimg.dev",
         password: null,
-        from: "ZroCodeImg <noreply@zrocodeimg.dev>",
+        from: "ZroImg <noreply@zrocodeimg.dev>",
       },
       easypay: {
         enabled: true,
@@ -761,6 +786,8 @@ declare global {
 }
 
 export function getStore() {
+  assertMockBffEnabled();
+
   if (!globalThis.__zroimgMockStore) {
     globalThis.__zroimgMockStore = createStore();
   }
@@ -775,16 +802,27 @@ export function nextId(prefix: keyof MockStore["counters"] | string) {
 
 export function findUserByEmail(email: string) {
   const store = getStore();
-  const user = store.users.find((item) => item.email.toLowerCase() === email.trim().toLowerCase());
+  const targetEmail = email.trim().toLowerCase();
+  const user = store.users.find((item) => {
+    const userEmail = item.email.toLowerCase();
+    return userEmail === targetEmail;
+  });
   if (!user) return null;
+
   const profile = store.profiles.find((item) => item.userId === user.id);
   if (!profile) return null;
+
   return { user, profile };
 }
 
 export function findProfileById(profileId: string) {
   const store = getStore();
-  return store.profiles.find((item) => item.id === profileId) || null;
+  const profile = store.profiles.find((item) => item.id === profileId);
+  if (!profile) {
+    return null;
+  }
+
+  return profile;
 }
 
 export function findUserBundleByProfileId(profileId: string) {
@@ -912,7 +950,12 @@ export function resolvePendingGenerations() {
   }
 }
 
-export function adjustProfileCredits(userProfileId: string, amount: number, reason: string, type: MockCreditLedger["type"]) {
+export function adjustProfileCredits(
+  userProfileId: string,
+  amount: number,
+  reason: string,
+  type: MockCreditLedger["type"],
+) {
   const store = getStore();
   const profile = store.profiles.find((item) => item.id === userProfileId);
   if (!profile) {
@@ -965,3 +1008,6 @@ export function createMockUser(input: { username: string; email: string; passwor
   });
   return { user, profile };
 }
+import "server-only";
+
+import { assertMockBffEnabled } from "@/server/env";

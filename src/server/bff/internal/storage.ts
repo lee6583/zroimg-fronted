@@ -11,7 +11,7 @@ function normalizeMockSvgDataUrl(url: string) {
 
   try {
     let svg = Buffer.from(url.slice(prefix.length), "base64").toString("utf8");
-    if (!svg.includes("ZroCodeImg Mock Output")) {
+    if (!svg.includes("ZroImg Mock Output")) {
       return url;
     }
 

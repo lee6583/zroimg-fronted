@@ -1,28 +1,29 @@
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { findUserByEmail } from "@/server/bff/mock-store";
-import { jsonError } from "@/server/http";
-import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
+import { isJavaAuthEnabled } from "@/server/env";
+import { jsonError, jsonOk } from "@/server/http";
+import { proxyRequestToJavaApi } from "@/server/java-api";
+import { parseJson } from "@/server/validation";
+
+const signInSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("邮箱格式不正确")
+    .transform((value) => value.toLowerCase()),
+  password: z.string().min(1, "请输入密码").max(128, "密码格式不正确"),
+});
 
 export async function POST(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/sign-in/email");
-    if (!isJavaUnavailableResponse(response)) {
-      return response;
-    }
+  if (isJavaAuthEnabled()) {
+    return proxyRequestToJavaApi(request, "/auth/user/sign-in");
   }
 
-  const payload = (await request.json()) as {
-    email?: string;
-    password?: string;
-  };
+  const parsed = await parseJson(request, signInSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  const email = payload.email?.trim().toLowerCase() || "";
-  const password = payload.password?.trim() || "";
-
-  if (!email || !password) {
-    return jsonError("请完整填写登录信息", 400);
-  }
+  const { email, password } = parsed.data;
 
   const bundle = findUserByEmail(email);
   if (!bundle || bundle.user.password !== password) {
@@ -32,9 +33,10 @@ export async function POST(request: Request) {
     return jsonError("账号已被禁用", 403);
   }
 
-  const response = NextResponse.json({ ok: true });
+  const response = jsonOk({ ok: true as const });
   response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
   });

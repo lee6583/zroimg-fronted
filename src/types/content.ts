@@ -1,17 +1,28 @@
-export type DocsItem = {
+type DocsItem = {
   id: string;
   title: string;
   body: string;
 };
 
-export type DocsGroup = {
+type DocsGroup = {
   title: string;
   items: DocsItem[];
 };
 
-export type DocsConfig = {
+type DocsConfig = {
   title: string;
   description: string;
   groups: DocsGroup[];
 };
 
+type SaveDocsConfigRequest = {
+  title: string;
+  description: string;
+  groups: unknown;
+};
+
+type SaveDocsConfigResponse = {
+  docs: DocsConfig;
+};
+
+export type { DocsItem, DocsGroup, DocsConfig, SaveDocsConfigRequest, SaveDocsConfigResponse };

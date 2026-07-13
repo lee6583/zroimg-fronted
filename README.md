@@ -1,500 +1,489 @@
 # ZroImg Frontend
 
-这是 `ZroImg` 的前端仓库，定位是一个基于 Next.js App Router 的 SSR 前端项目，服务于图片生成 / 视频生成 / 积分购买 / 订单管理 / 用户反馈 / 管理后台这条产品闭环。
+ZroImg 是基于 Next.js App Router 的图片生成 SaaS 前端，覆盖游客页面、用户创作流程、积分与订单、反馈工单和管理后台。
 
-当前架构已经按“前后端分离”方向调整：
+这个仓库负责：
 
-- 前端仓库负责页面渲染、交互、同源 BFF 路由、登录态读取、基础协议转换。
-- Java 后端负责真实业务：用户、验证码、邮件、订单、积分、生成任务、支付回调、对象存储、运营配置。
-- 在 Java 后端尚未完全接入前，前端保留了一层 mock BFF，保证页面可以继续开发和联调。
+- Server Components 和页面渲染。
+- 浏览器交互与同源 API 调用。
+- Next.js Route Handlers 组成的 BFF。
+- Cookie、SSR 鉴权和前端权限入口。
+- Java 后端协议转换、错误归一化和开发期 mock。
 
-## 1. 项目目标
+Java 后端负责真实用户、会话、验证码、生成任务、积分、订单、支付、对象存储和运营配置。前端不得成为这些数据的最终权威来源。
 
-这个仓库不是纯展示官网，也不是临时原型。它的目标是承接真实业务前端，包括：
+## 1. 技术栈
 
-- 游客访问：首页、定价、文档、登录、注册。
-- 用户访问：概览、开始创作、创作历史、收藏合集、积分购买、我的订单、意见反馈、账户设置。
-- 管理员访问：管理后台、用户管理、订单管理、任务管理、文档配置、系统配置。
-- 技术职责：SSR 首屏、前端交互、BFF 转发、接口封装、样式规范、前后端联调。
+- Next.js 16.2，App Router、Server Components、Route Handlers。
+- React 19.2。
+- TypeScript 严格模式。
+- Tailwind CSS 4 和 CSS Modules。
+- Zod 4，用于 BFF 输入边界校验。
+- Lucide React，统一图标来源。
+- clsx，统一条件 class 拼接。
+- pnpm 10，唯一包管理器。
 
-## 2. 当前技术栈
+修改 Next.js API、路由、缓存或文件约定前，必须先阅读当前安装版本位于 `node_modules/next/dist/docs/` 的对应指南。
 
-- `Next.js 16`：App Router、SSR、Route Handlers。
-- `React 19`：页面与交互组件。
-- `TypeScript`：唯一业务开发语言。
-- `Tailwind CSS 4`：基础原子样式能力。
-- `CSS Modules`：页面和业务组件的局部样式。
-- `React Query`：适合后续接入更复杂的客户端异步状态。
-- `Zod`：接口入参和前端数据结构约束。
-- `Lucide React`：图标系统。
-
-当前仓库没有接入真实数据库，也不直接承载真实支付、真实 OSS、真实验证码发信。那部分会由 Java 后端负责。
-
-## 3. 启动方式
-
-### 3.1 安装依赖
+## 2. 本地开发
 
 ```bash
 pnpm install
-```
-
-### 3.2 启动开发环境
-
-```bash
+cp .env.example .env.local
 pnpm dev
 ```
 
-默认访问地址：
+默认地址：`http://localhost:3000`。
 
-```text
-http://localhost:3000
-```
-
-### 3.3 构建生产包
+常用命令：
 
 ```bash
-pnpm build
-pnpm start
+pnpm lint          # ESLint
+pnpm typecheck     # Next.js 路由类型 + TypeScript
+pnpm test          # Node.js 内建单元测试
+pnpm format:check  # Prettier 检查
+pnpm build         # 生产构建
+pnpm audit:prod    # 生产依赖安全审计
+pnpm check         # 提交前完整校验
 ```
 
-### 3.4 代码校验
+CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推送必须通过同样的质量门禁。
 
-```bash
-pnpm lint
+## 3. 环境与 BFF 模式
+
+```dotenv
+BFF_MODE=mock
+AUTH_BFF_MODE=mock
+ALLOW_MOCK_BFF=false
+JAVA_API_BASE_URL=http://localhost:8080
 ```
 
-## 4. 环境变量
+### 混合联调
 
-项目当前仅保留一个后端联调环境变量：
+当前后端只完成登录、注册、发码、重置密码等认证接口，而订单、生成、画廊、反馈等业务接口还没接完时，本地推荐使用混合模式：
 
-```bash
-JAVA_API_BASE_URL=
+```dotenv
+BFF_MODE=mock
+AUTH_BFF_MODE=java
+ALLOW_MOCK_BFF=true
+JAVA_API_BASE_URL=http://api-dev.zroimg.com
 ```
 
-示例：
+含义：
 
-```bash
-JAVA_API_BASE_URL=https://api-dev.zroimg.com
-```
+- `BFF_MODE=mock`：未接 Java 的业务页面继续读取本地 mock，避免页面开发被后端进度卡住。
+- `AUTH_BFF_MODE=java`：认证接口单独转发到 Java 后端，登录成功后使用 Java 返回的 `zroimg_user_token` Cookie。
+- `ALLOW_MOCK_BFF=true`：允许 `next start` 这种生产运行方式在 dev 环境继续使用 mock。只允许用于测试/联调域名，正式生产必须关闭。
+- 混合模式只适合本地开发和联调，不代表项目已经具备上线条件。
 
-说明：
+### `mock`
 
-- 未配置时：前端优先走本地 mock BFF。
-- 已配置时：部分接口会由 Next.js Route Handlers 转发到 Java 后端。
-- 这个变量属于服务端变量，不要写进 `NEXT_PUBLIC_*`。
+- 只用于 `next dev` 下的页面开发和交互联调。
+- 运行数据只存在于 `src/server/bff/`，不再维护第二份 `mock/*.json`。
+- `NODE_ENV=production` 时默认关闭；只有显式设置 `ALLOW_MOCK_BFF=true` 的 dev 部署才允许启用。
 
-建议新建 `.env.local`：
+### `java`
 
-```bash
-cp .env.example .env.local
-```
+- Route Handler 将已接入的接口转发到 `JAVA_API_BASE_URL`。
+- Java 请求失败必须返回明确的 502，禁止静默回退到 mock。
+- 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
+- 本地联调 Java 后端时，在 `.env.local` 写入 `BFF_MODE=java` 和实际后端域名，例如 `JAVA_API_BASE_URL=http://api-dev.zroimg.com`。
+- 如果只联调认证模块，不要把全局 `BFF_MODE` 切成 `java`，而是使用 `AUTH_BFF_MODE=java`。
 
-然后补上：
+当前 Java 模式尚未完成“当前用户、页面查询、订单、生成、收藏、反馈”等完整适配，因此仓库暂不具备生产部署条件。上线前必须让所有 `src/server/bff/*` facade 使用 Java 实现，并删除 `mock-store.ts`、`mock-db.ts` 和 `internal/*` mock。
 
-```bash
-JAVA_API_BASE_URL=https://api-dev.zroimg.com
-```
-
-## 5. 目录结构
-
-当前项目按“页面层 / 业务层 / 接口层 / BFF 层 / 类型层 / 样式层”拆分。
+## 4. 目录结构
 
 ```text
 src/
-  app/                 Next.js 页面、布局、Route Handlers
-  api/                 前端接口调用层，只写请求方法
-  components/          可复用组件
-    layout/            导航、外壳、站点级布局组件
-    ui/                通用 UI 组件
-  features/            按业务域拆分的页面组件和交互
-  server/              前端服务端逻辑与 BFF
-    bff/               面向页面的服务层
-  style/               全局样式、设计令牌、公共样式
-  types/               共享业务类型
-  utils/               request.ts 和纯工具函数
-public/
-  assets/              静态资源
+  app/                 页面、布局、错误边界和 Route Handlers
+  api/                 浏览器同源请求函数
+  components/
+    layout/            页面壳、导航和账户菜单
+    ui/                业务无关 UI
+  features/            按业务域组织的交互组件
+  server/
+    bff/               服务端业务 facade 和开发期 mock
+    auth.ts            SSR 会话入口
+    env.ts             服务端环境配置
+    http.ts            BFF JSON 响应
+    java-api.ts        Java 请求与代理
+    validation.ts      Zod 请求解析
+  style/               全局令牌、基础样式和公共组件样式
+  types/               跨模块业务契约
+  utils/               无 UI 副作用的纯函数
+tests/                 纯业务规则单元测试
+public/assets/         实际被页面引用的静态资源
 ```
 
-## 6. 各目录职责
+不要为了目录对称创建空层、barrel 或“以后可能用到”的 helper。文件没有消费者时直接删除。
+
+## 5. 模块边界
 
 ### `src/app`
 
-放 Next.js 页面、布局和 Route Handlers。
-
-包括：
-
-- 页面：`page.tsx`
-- 布局：`layout.tsx`
-- 局部页面样式：`*.module.css`
-- BFF 路由：`src/app/api/**`
-
-规则：
-
-- 页面优先做数据组织和结构拼装。
-- 不把复杂业务请求直接散落在页面里。
-- 不把大量复用交互逻辑堆到 `page.tsx`。
+- 页面默认是 Server Component。
+- 页面负责鉴权、首屏数据组织和结构拼装，不承载长业务流程。
+- Route Handler 是公开 HTTP 端点，必须独立完成鉴权、输入校验和错误映射。
+- `page.tsx` 不直接读取 `mock-store`，统一通过 `src/server/bff/*`。
+- 注册规范地址是 `/register`；`/signup` 只在 `next.config.ts` 保留 308 兼容重定向，不维护第二份页面。
 
 ### `src/api`
 
-只放前端接口定义，不放页面逻辑。
-
-当前按业务域拆分：
-
-- `src/api/auth`：登录、注册、验证码、滑块校验。
-- `src/api/account`：账户资料、修改密码。
-- `src/api/generation`：会话、任务、收藏、画廊。
-- `src/api/orders`：订单与积分购买。
-- `src/api/rewards`：签到奖励。
-- `src/api/support`：意见反馈。
-- `src/api/admin`：后台设置、文档、用户管理。
-
-规则：
-
-- 这里只写请求函数，例如 `fetchProfile()`、`createOrder()`。
-- 不写 `toast`、弹窗、跳转、组件状态。
-- 不写完整后端域名，只写同源路径，例如 `/api/orders`。
-- 统一通过 `src/utils/request.ts` 发请求。
-
-### `src/components`
-
-放可复用组件。
-
-- `src/components/layout`：导航、应用壳、管理后台壳、顶部栏、主题控件。
-- `src/components/ui`：下拉框、统计卡片等通用 UI。
-
-规则：
-
-- `layout` 放结构型组件。
-- `ui` 放业务无关的通用组件。
-- 组件样式复杂时，样式文件跟组件放同目录。
+- 只包含浏览器请求函数，不包含 toast、跳转或组件状态。
+- 统一调用 `src/utils/request.ts`，只请求同源 `/api/**`。
+- 从具体文件导入，不建立 `index.ts` barrel。
+- 请求和响应类型来自 `src/types`，不在 API 文件中重复声明。
 
 ### `src/features`
 
-按业务域拆分页面组件。
+- 组件按业务域就近放置。
+- 一个组件只维护自己负责的状态和事件。
+- 页面独有逻辑不要提前提取成全局 hook；出现真实复用后再提取。
 
-当前包括：
+生成工作区固定拆分为：
 
-- `auth`
-- `billing`
-- `dashboard`
-- `gallery`
-- `generation`
-- `history`
-- `landing`
-- `settings`
-- `tickets`
-- `admin`
+- `GenerateForm`：请求编排和工作区状态。
+- `ConversationSidebar`：对话选择、改名和删除。
+- `GenerationSettings`：模型、比例、分辨率、画质和数量。
+- `PromptComposer`：提示词、参考图和提交。
+- `TaskPreview`：最近任务及结果预览。
 
-规则：
-
-- 页面专属但又不适合直接放 `app` 的交互，放在 `features`。
-- 尽量一个业务域一个目录。
-- 不跨域堆大杂烩组件。
+不得重新加入浏览器直连生成供应商、API Key `localStorage` 或 IndexedDB 任务分支。生成密钥和资产必须留在服务端。
 
 ### `src/server`
 
-这是前端仓库中的“服务端辅助层”，不是 Java 业务后端本体。
+- 服务端文件使用 `import "server-only"` 建立编译边界。
+- 鉴权与资源归属校验尽量靠近数据源，不能只在页面隐藏按钮。
+- facade 返回页面 DTO，不向页面暴露 Java 原始 envelope 或数据库内部模型。
+- Java 和 mock 的选择只由环境层决定，业务函数内部不得自行降级。
 
-当前主要职责：
+### `src/types` 与 `src/utils`
 
-- `auth.ts`：SSR 读登录态、Cookie、权限守卫。
-- `env.ts`：读取服务端环境变量。
-- `java-api.ts`：统一请求 Java 后端。
-- `http.ts`：请求辅助逻辑。
-- `bff/*.ts`：给页面和 Route Handlers 使用的服务 facade。
-- `bff/internal/*`：当前 mock 实现。
-- `bff/mock-store.ts`、`bff/mock-db.ts`：本地 mock 数据。
+- 只跨模块复用的类型才进入 `src/types`。
+- 页面私有类型留在 feature 内。
+- `src/types` 文件先逐个定义 `type Xxx = ...`，文件末尾再用 `export type { Xxx }` 集中导出。
+- `utils` 必须是纯函数或明确的基础设施工具，不能弹消息、导航或读写组件状态。
+- 类型层不能反向依赖 UI 或 feature。
 
-规则：
+## 6. API 契约
 
-- 这里只放前端 SSR / BFF 需要的服务端代码。
-- 不把浏览器逻辑写进这里。
-- Java 后端接入后，优先替换 `bff/internal/*` 与 mock 数据，不动页面层。
+本地 BFF 成功响应统一为：
 
-### `src/types`
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
 
-放跨页面、跨模块复用的业务类型。
+Java 后端成功响应统一为：
 
-当前已经拆出的类型包括：
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {}
+}
+```
 
-- `admin.ts`
-- `checkin.ts`
-- `content.ts`
-- `feedback.ts`
-- `generation.ts`
-- `index.ts`
+错误响应统一为：
 
-规则：
-
-- 共享类型优先放这里。
-- 不要让 `features` 直接依赖 `server` 里的类型定义。
-- 页面本地独有类型，保留在就近文件即可。
-
-### `src/utils`
-
-放纯工具，不放页面逻辑。
-
-当前包括：
-
-- `request.ts`：统一请求封装。
-- `credits.ts`
-- `feedback.ts`
-- `local-generation.ts`
+```json
+{
+  "success": false,
+  "message": "请求参数不合法",
+  "code": "BAD_REQUEST"
+}
+```
 
 规则：
 
-- 保持无 UI 副作用。
-- 适合复用的纯函数和工具放这里。
+- HTTP 状态码表达请求结果，`code` 用于程序判断，`message` 用于用户反馈。
+- `request.ts` 只识别两种明确 envelope：本地 BFF 的布尔 `success`，Java 后端的数字 `code`。
+- Java 后端 `code !== 200` 时，即使 HTTP 状态码是 200，前端也必须按失败处理并显示后端 `message`。
+- 不使用 `data.token || data.sliderToken`、数组/对象双形态等兼容兜底。
+- 不使用 `as { ... }` 代替运行时校验。
+- 后端返回类型确定后，把请求/响应类型写进 `src/types`，并在 `src/api` 的 `request<ResponseType>()` 上声明；页面和组件调用处不要再写 `as { ... }`。
+- JSON 请求使用 `parseJson()`，表单请求使用 `parseForm()`。
+- Zod schema 只放在外部输入边界，不给内部可信对象重复校验。
+- Zod schema 不写深层嵌套；对象、列表项和 union 分支都先拆成命名 schema，再由外层组合。
+- Java OpenAPI 稳定后，以后端契约为唯一来源生成共享类型。
 
-### `src/style`
+## 7. 安全规则
 
-放全局样式资源，只保留真正跨页面复用的全局样式。
+- mock 登录、固定验证码、默认账号和内存数据只能存在于开发模式。
+- 生产环境禁止 mock 回退。
+- Session Cookie 必须由真实后端签名或绑定服务端会话，设置 `httpOnly`、`secure`、`sameSite` 和过期策略。
+- 每个写操作都验证当前用户及目标资源归属，尤其是工单、图片、收藏、订单和积分。
+- 管理员检查必须在服务端执行。
+- 上传图片仅允许 PNG、JPEG、WebP；最多 4 张，单张不超过 10 MB。真实存储服务还必须校验文件内容而不只信任 MIME。
+- 密钥、支付配置和 SMTP 密码只在服务端保存，页面只展示脱敏状态。
+- 不向浏览器返回内部异常、堆栈、密钥或 Java 原始错误对象。
+- 服务端代理失败必须记录不含敏感字段的请求方法、路径和错误摘要。
 
-当前结构建议固定为：
+## 8. Server 与 Client Component
 
-- `index.css`：唯一全局入口，负责引入 Tailwind 和其余样式文件。
-- `tokens.css`：设计令牌、颜色、字体、阴影变量。
-- `base.css`：浏览器基础样式、`html/body`、全局过渡。
-- `utilities.css`：工具类，例如滚动条隐藏、背景纹理、阴影、字体工具类。
-- `components/`：可复用视觉组件样式，例如按钮、表单、surface、导航、标题。
+只有以下情况使用 `"use client"`：
+
+- 表单输入、上传、弹层、轮询。
+- 浏览器事件和本地主题偏好。
+- 需要 React 客户端状态的交互。
 
 规则：
 
-- 不再继续往 `common.css`、`media.css`、`mixins.css` 这类大杂烩文件里堆内容。
-- 变量只放 `tokens.css`。
-- 浏览器和页面基础只放 `base.css`。
-- 工具类只放 `utilities.css`。
-- 可复用视觉组件类统一放 `src/style/components/*`。
-- 页面或业务专属样式继续放各自目录下的 `*.module.css`，不要写回全局样式目录。
+- 把 Client Component 边界放在最小交互组件，不要把整页变为客户端组件。
+- Client Component props 必须可序列化。
+- 服务端模块不得被客户端组件导入。
+- `window`、`document`、`localStorage`、`indexedDB` 和 `navigator` 只能在客户端事件或 effect 中使用。
+- 渲染期间禁止 `Math.random()` 和 `Date.now()` 等不确定值。
+- 轮询、计时器和浏览器事件必须清理，并防止卸载后的异步写入。
 
-规则：
+## 9. 命名与代码风格
 
-- 这里只放全局层样式。
-- 不放单个页面的私有样式。
-- 页面和组件私有样式用同目录 `*.module.css`。
+命名以“当前作用域是否已经提供上下文”为判断依据。
 
-## 7. 页面与组件分层规范
+```tsx
+// 同一组件只有一个弹层
+const [isOpen, setOpen] = useState(false);
 
-项目使用 App Router，页面和交互边界要明确。
+// 同一组件有多个弹层，需要保留区分
+const [isMenuOpen, setMenuOpen] = useState(false);
+const [isSettingsOpen, setSettingsOpen] = useState(false);
 
-### 页面层
+// ConversationSidebar 内部已经有领域上下文
+const [activeId, setActiveId] = useState("");
+const [editId, setEditId] = useState("");
+```
 
-页面默认优先 SSR。
-
-适合放在 Server Component 的内容：
-
-- 首屏数据读取
-- 权限判断
-- 路由跳转
-- 页面结构
-- SEO 文案
-
-### Client Component
-
-只有这些交互才使用 `"use client"`：
-
-- 表单输入
-- 上传
-- 弹窗
-- 下拉框
-- 轮询
-- 滑块验证码
-- 本地浏览器设置
-- 主题切换
-
-### 明确禁止
-
-在服务端渲染阶段不要直接使用：
-
-- `window`
-- `document`
-- `localStorage`
-- `indexedDB`
-- `navigator`
-- 渲染期的 `Math.random()`
-- 渲染期的 `Date.now()`
-
-否则容易出现 hydration 不一致。
-
-## 8. 接口规范
-
-### 前端请求层规范
-
-所有客户端请求统一走：
-
-- `src/api/**`
-- `src/utils/request.ts`
-
-不要在 `features` 或 `components` 里到处手写零散 `fetch("/api/...")`。
-
-标准写法示例：
+排序方向与字段比较必须分开表达，不在 `.sort()` 回调中嵌三元表达式：
 
 ```ts
-import { request } from "@/utils/request";
+const direction = args?.orderBy?.createdAt ?? "desc";
+const isAscending = direction === "asc";
 
-export function fetchOrders() {
-  return request<OrderItem[]>({
-    url: "/api/orders",
-    method: "GET",
+items.sort((a, b) => {
+  const timeA = a.createdAt.getTime();
+  const timeB = b.createdAt.getTime();
+
+  if (isAscending) {
+    return timeA - timeB;
+  }
+
+  return timeB - timeA;
+});
+```
+
+规则：
+
+- 布尔变量使用 `is`、`has`、`can`、`should` 前缀。
+- setter 使用动作名，避免 `setConversationPanelOpen` 这类重复上下文。
+- 跨模块 API 使用完整领域名，不能缩成难以搜索的字母或模糊缩写。
+- 条件 class 统一使用 `clsx`，不再复制 `classNames()` helper。
+- 前端表单提交使用 `try/catch/finally`，确保 loading 状态一定恢复。
+- Route Handler 不重复手写 `try/catch`，统一使用 `handleApi(async () => { ... })`。
+- 业务函数发现问题直接 `throw`，不要为了“看起来安全”每层都 `catch` 后原样抛出。
+- `catch` 必须有明确作用：转换错误、记录必要日志、展示错误、执行备用方案或释放资源。
+- 需要明确 HTTP 状态码时抛 `AppError`，例如 `throw new AppError("资源不存在", 404)`。
+- 复杂条件先命名；简单 happy path 不做多层防御和嵌套。
+- 不使用链式或嵌套三元表达式；多分支逻辑使用提前命名和 `if/else`。
+- 不把三元表达式、数组查找、`|| null` 混在一行里；先取 id，再查对象，再用 `if` 处理空值。
+- 长表达式拆成 2 到 4 个中间变量，变量名短而清楚，避免在局部作用域重复完整业务前缀。
+- 表单字段较多时，把纯表单字段收进一个 `form` 对象状态；保存中、测试中、提示消息、后端配置快照等非表单状态继续单独维护。
+- 业务数据处理不要把过滤、排序、分页、补关联数据糅成一条链式调用；按步骤拆成变量，并在多步骤流程前加简短中文步骤注释。
+- DTO 或接口返回值里不要直接嵌套多层对象；先拼 `generatedImage`、`profileWithUser`、`count` 等中间对象，再拼最终 `result` 并返回。
+- 简单 JSX 列表渲染可以保留 `.map()`，但服务端业务查询、mock 数据整理、权限过滤和字段转换必须优先写成新手能读懂的步骤式代码。
+- 函数名表达动作即可，不为了“看起来完整”堆很长；同一文件已有业务上下文时优先使用短名。
+- 文件名、目录名、导入来源已经说明业务域时，不要在函数名里重复完整领域词。
+- 例如 `generation-conversations.ts` 内部使用 `list`、`create`、`updateTitle`、`remove`，不要写 `listGenerationConversations`、`updateGenerationConversationTitle`。
+- 跨模块 facade 可以补最少上下文，例如从 `src/server/bff/generation.ts` 导出 `listConversations`、`createTask`，不要堆成长串。
+- 局部变量也按同样规则收口，例如函数参数用 `profileId`，对象字段仍保留数据模型里的 `userProfileId`。
+- 排序回调只负责取值和比较；方向、默认值和可选参数在回调外先命名。
+- React 组件不在函数参数里解构 props，也不写内联 props 类型；先定义 `XxxProps`，函数接收 `props`，函数顶部再逐个 `const value = props.value`。
+- 单文件超过约 400 行时检查是否混入多个职责，但不按行数机械拆文件。
+- 注释只解释约束和原因，不复述代码。
+- TypeScript 是唯一业务语言，`tsconfig` 不接受新增 JavaScript 业务文件。
+
+类型文件推荐写法：
+
+```ts
+import type { OkResponse } from "@/types/api";
+
+type AuthUser = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+};
+
+type LoginWithEmailRequest = {
+  email: string;
+  password: string;
+};
+
+type LogoutAccountResponse = OkResponse;
+
+export type { AuthUser, LoginWithEmailRequest, LogoutAccountResponse };
+```
+
+组件 props 推荐写法：
+
+```tsx
+type DocsSettingsFormProps = {
+  initialDocs: DocsConfig;
+  defaultDocs: DocsConfig;
+};
+
+export function DocsSettingsForm(props: DocsSettingsFormProps) {
+  const initialDocs = props.initialDocs;
+  const defaultDocs = props.defaultDocs;
+
+  return <form />;
+}
+```
+
+字段较多的表单状态推荐写法：
+
+```tsx
+const [form, setForm] = useState({
+  isEnabled: initialSettings.enabled,
+  host: initialSettings.host ?? "",
+  port: String(initialSettings.port),
+  user: initialSettings.user ?? "",
+  password: "",
+});
+
+const [message, setMessage] = useState("");
+const [isSaving, setSaving] = useState(false);
+
+function updateForm(nextForm: Partial<typeof form>) {
+  setForm((currentForm) => {
+    const newForm = {
+      ...currentForm,
+      ...nextForm,
+    };
+
+    return newForm;
   });
 }
 ```
 
-### BFF 规范
+Zod 分层示例：
 
-`src/app/api/**` 只做这些事情：
+```ts
+const docItemSchema = z.object({
+  id: z.string().trim().min(1, "文档 ID 不能为空"),
+  title: z.string().trim().min(1, "文档标题不能为空"),
+});
 
-- 读取 Cookie / 会话
-- 鉴权
-- 转发到 Java 后端
-- 把前端字段格式转换成后端需要的格式
-- Java 后端未接入时回退到 mock
+const docGroupSchema = z.object({
+  title: z.string().trim().min(1, "分组标题不能为空"),
+  items: z.array(docItemSchema),
+});
 
-不要在 Route Handler 里长期堆复杂业务逻辑。
+const docsSchema = z.object({
+  groups: z.array(docGroupSchema),
+});
+```
 
-## 9. Java 后端接入规范
+业务数据处理推荐写法：
 
-这个前端仓库已经为 Java 联调预留了一层 BFF 和 mock 回退。
+```ts
+function attachMessages(ticketId: string) {
+  const store = getStore();
 
-当前接入思路：
+  // 第一步：找出属于当前反馈工单的消息。
+  const ticketMessages = store.feedbackMessages.filter((message) => {
+    return message.ticketId === ticketId;
+  });
 
-1. 前端页面继续调用同源 `/api/**`。
-2. `src/app/api/**` 根据情况：
-   - 转发到 Java 后端。
-   - 或走 `src/server/bff/*`。
-3. `src/server/java-api.ts` 负责统一拼接 `JAVA_API_BASE_URL`、透传请求头、返回标准响应。
-4. Java 后端稳定后，再逐步移除 mock store。
+  // 第二步：按照消息创建时间，从早到晚排序。
+  ticketMessages.sort((messageA, messageB) => {
+    const timeA = messageA.createdAt.getTime();
+    const timeB = messageB.createdAt.getTime();
 
-这样做的好处：
+    return timeA - timeB;
+  });
 
-- 前端页面不需要直接感知 Java 域名。
-- 本地开发和联调环境切换更轻。
-- 后端接口演进时，页面改动更少。
+  // 第三步：给每条消息补充作者信息。
+  const messagesWithAuthor = ticketMessages.map((message) => {
+    const authorProfile = store.profiles.find((profile) => {
+      return profile.id === message.authorProfileId;
+    });
 
-## 10. UI 与样式规范
+    if (!authorProfile) {
+      throw new Error(`没有找到消息作者：${message.authorProfileId}`);
+    }
 
-整体视觉方向是克制、工具化、偏 KoImg 风格，不做模板味很重的 SaaS 页面。
+    return {
+      ...message,
+      authorProfile,
+    };
+  });
 
-### 视觉原则
+  return messagesWithAuthor;
+}
+```
 
-- 白底、黑字、细边框。
-- 少阴影，尽量不用悬浮大投影。
-- 避免大面积渐变、玻璃拟态、紫色科技风。
-- 大标题可以用 serif，工具区和表单用 sans。
-- 组件尺寸偏紧凑，不做过大的按钮和输入框。
+Route Handler 推荐写法：
 
-### 样式组织规则
+```ts
+export async function POST(request: Request) {
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-- 页面私有样式：放当前目录 `*.module.css`。
-- 业务组件私有样式：跟组件同目录。
-- 全局令牌和基础类：放 `src/style/*.css`。
-- 不要把页面专属类写进全局样式文件。
+    const parsed = await parseJson(request, schema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-### 命名规则
+    const data = await createSomething(parsed.data);
+    return jsonOk({ data });
+  });
+}
+```
 
-CSS Module 建议使用接近 BEM 的命名方式，例如：
+## 10. 生成与积分规则
 
-- `docs`
-- `docs__sidebar`
-- `docs__nav`
-- `docs__navLink`
-- `docs__navLinkActive`
+- 前端 `estimateGenerationCredits()` 只用于界面预估。
+- mock 服务端复用相同纯函数，避免开发期两套算法漂移。
+- Java 后端创建任务时返回的 `costCredits` 是最终权威值。
+- 真实扣费、失败退款和并发一致性必须由 Java 后端事务保证。
+- 前端不得根据本地估算直接修改积分余额。
 
-## 11. 代码规范
+## 11. UI 规范
 
-### 基本原则
+视觉目标是克制、工具化、适合重复操作，不做模板化 AI 营销页。
 
-- 先保证业务代码清楚，再考虑抽象。
-- 优先 happy path。
-- 复杂条件先拆成有语义的变量。
-- 普通页面逻辑不要过度防御。
-- 安全敏感边界再加必要保护。
+- 白底、黑字、细边框、少阴影。
+- 避免大面积渐变、玻璃拟态、发光装饰和蓝紫科技风。
+- 品牌和重要页面标题可使用 serif；表单、导航和数据使用 sans。
+- 按钮和输入保持紧凑，圆角以 `rounded-md` 到 `rounded-xl` 为主。
+- 使用 Lucide 图标，不手写已有图标。
+- 用边框和留白建立层级，避免卡片嵌套卡片。
+- 页面私有样式放同目录 CSS Module；令牌只放 `src/style/tokens.css`。
+- CSS Module 使用稳定的 BEM 风格名称，例如 `docs__navLinkActive`。
+- 移动端和桌面端都必须检查文字截断、固定工具尺寸和无重叠。
 
-### 推荐写法
+当前全局样式入口是 `src/style/index.css`，导航实现是 `src/components/layout/product-top-nav.tsx`，应用壳是 `src/components/layout/app-shell.tsx`。
 
-- 顺序型控制流。
-- 清晰变量名。
-- 一个函数只做一件主要的事。
-- 组件 props 尽量语义化。
+## 12. 开发流程
 
-### 不推荐写法
+新增页面：
 
-- 页面里塞很长的业务逻辑。
-- 多层嵌套 `try/catch`。
-- 到处复制相同请求代码。
-- 组件和接口层互相耦合。
-- 一个样式文件服务多个完全无关页面。
+1. 在 `src/app` 创建路由，默认使用 Server Component。
+2. 数据通过 `src/server/bff/*` 获取。
+3. 交互拆到对应 `src/features/<domain>`。
+4. 浏览器请求放到 `src/api/<domain>`。
+5. 请求/响应类型放到对应 `src/types/<domain>.ts`。
+6. Route Handler 使用 Zod 校验并完成鉴权。
+7. 为纯业务规则、权限边界和回归风险补测试。
+8. 运行 `pnpm check` 和 `pnpm audit:prod`。
 
-## 12. mock 说明
+提交要求：
 
-当前项目仍保留一套 mock 数据和 mock BFF，目的是在 Java 后端未完成前继续开发前端。
-
-mock 代码主要在：
-
-- `src/server/bff/internal/*`
-- `src/server/bff/mock-store.ts`
-- `src/server/bff/mock-db.ts`
-- `src/app/api/**`
-
-这些 mock 的作用：
-
-- 支撑登录注册演示
-- 支撑订单、签到、反馈、生成记录等前端页面
-- 作为后端接口未联通时的本地兜底
-
-后续 Java 后端完成后，优先替换的是 mock 实现，不是页面结构。
-
-## 13. 当前建议的开发流程
-
-### 新增页面
-
-1. 先在 `src/app` 建页面路由。
-2. 复杂交互拆到 `src/features/<domain>`。
-3. 样式用同目录 `*.module.css`。
-4. 数据请求放 `src/api/<domain>`。
-5. SSR 数据通过 `src/server/bff/*` 或 Route Handler 获取。
-
-### 新增接口联调
-
-1. 先确定前端调用路径是否统一走 `/api/**`。
-2. 在 `src/api` 新增请求函数。
-3. 在 `src/app/api` 新增或调整 Route Handler。
-4. Java 后端联通后，替换 `src/server/bff/internal/*` 的 mock 实现。
-
-### 新增共享类型
-
-1. 判断是否跨模块复用。
-2. 如果复用，放进 `src/types`。
-3. 如果仅页面本地使用，就近定义。
-
-## 14. 后续可继续整理的方向
-
-当前目录已经比之前清楚很多，但仍有几项可以继续整理：
-
-- 把 `src/app/layout.tsx` 中的样式导入路径与实际 `src/style` 目录彻底统一。
-- 继续把零散业务类型抽到 `src/types`。
-- Java 后端联通后，逐步清空 mock store。
-- 对 `src/app/api/**` 做更统一的返回结构封装。
-- 增加更明确的错误码约定和联调文档。
-
-## 15. 当前仓库里哪些文件是关键文件
-
-优先了解这些文件：
-
-- `README.md`
-- `AGENTS.md`
-- `package.json`
-- `src/app/layout.tsx`
-- `src/utils/request.ts`
-- `src/server/java-api.ts`
-- `src/server/auth.ts`
-- `src/server/bff/*`
-- `src/components/layout/*`
-- `src/api/*`
-
-## 16. 文档约定
-
-仓库根目录只保留一个面向开发者的主文档：`README.md`。
-
-如果后续还要补充说明，优先追加到 `README.md` 对应章节，不再额外新增一份平行规范文档，避免规范和实现长期漂移。
+- 不提交 `.idea`、构建缓存、环境密钥或真实用户数据。
+- 不保留没有消费者的依赖、文件、导出和静态资源。
+- 不同时维护两份 mock 数据源或平行规范文档。
+- README 是仓库唯一开发规范；实现变化必须同步更新对应章节。

@@ -1,30 +1,36 @@
 import { request } from "@/utils/request";
 import type {
-  GenerationTaskApiItem,
-  UploadedMediaApiItem,
+  CreateGenerationTaskRequest,
+  CreateGenerationTaskResponse,
+  FetchGenerationTaskResponse,
+  UploadMediaResponse,
 } from "@/types/generation";
 
-export type { GenerationTaskApiItem, UploadedMediaApiItem };
-
-export function uploadInputMedia(data: FormData) {
-  return request<{ media: UploadedMediaApiItem }>({
+function uploadMedia(data: FormData) {
+  return request<UploadMediaResponse>({
     url: "/api/media/upload",
     method: "POST",
     body: data,
   });
 }
 
-export function createGenerationTask(data: unknown) {
-  return request<{ task: GenerationTaskApiItem }>({
+function createTask(data: CreateGenerationTaskRequest) {
+  return request<CreateGenerationTaskResponse>({
     url: "/api/generations",
     method: "POST",
     data,
   });
 }
 
-export function fetchGenerationTask(taskId: string) {
-  return request<{ task: GenerationTaskApiItem }>({
+function fetchTask(taskId: string) {
+  return request<FetchGenerationTaskResponse>({
     url: `/api/generations/${taskId}`,
     method: "GET",
   });
 }
+
+export const generationTasksApi = {
+  uploadMedia,
+  createTask,
+  fetchTask,
+};

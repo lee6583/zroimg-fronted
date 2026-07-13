@@ -1,8 +1,13 @@
 import { request } from "@/utils/request";
+import type { ClaimCheckInResponse } from "@/types/checkin";
 
-export function claimCheckIn() {
-  return request<{ checkIn: unknown }>({
+function claim() {
+  return request<ClaimCheckInResponse>({
     url: "/api/checkins",
     method: "POST",
   });
 }
+
+export const checkInApi = {
+  claim,
+};

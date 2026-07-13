@@ -1,45 +1,55 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
-import { getCheckInStatus } from "@/server/bff/account";
-import { prisma } from "@/server/bff/orders";
+import { getCheckInDateInfo, getCheckInStatus, getDashboardStats } from "@/server/bff/account";
+import { isMockBffEnabled } from "@/server/env";
+import type { CheckInStatus } from "@/types/checkin";
 import { DashboardOverview } from "./dashboard-overview";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
 
+function buildEmptyCheckInStatus(): CheckInStatus {
+  return {
+    date: getCheckInDateInfo(),
+    dailyCredits: 0,
+    checkedIn: false,
+    checkedAt: null,
+    streakDays: 0,
+    totalCheckIns: 0,
+    checkedDayKeys: [],
+  };
+}
+
+function buildEmptyStats() {
+  return {
+    generatedCount: 0,
+    monthlyGeneratedCount: 0,
+    favoriteCount: 0,
+  };
+}
+
 export default async function DashboardPage() {
   const current = await requireUser();
+  let stats = buildEmptyStats();
+  let checkInStatus = buildEmptyCheckInStatus();
 
-  const [generatedCount, checkInStatus] = await Promise.all([
-    prisma.generatedImage.count({ where: { userProfileId: current.profile.id } }),
-    getCheckInStatus(current.profile.id),
-  ]);
+  if (isMockBffEnabled()) {
+    stats = await getDashboardStats(current.profile.id);
+    checkInStatus = await getCheckInStatus(current.profile.id);
+  }
 
   return (
     <AppShell active="overview">
       <div className={styles.dashboard}>
-        <section className={styles.dashboard__hero}>
-          <div className={styles.dashboard__heroGrid}>
-            <div>
-              <p className={styles.dashboard__eyebrow}>概览</p>
-              <h1 className={styles.dashboard__title}>
-                你好，{current.profile.username}
-              </h1>
-            </div>
-            <div className={styles.dashboard__heroActions}>
-              <Link href="/generate" className="btn-primary">
-                开始创作
-                <ArrowUpRight size={17} />
-              </Link>
-            </div>
-          </div>
+        <section>
+          <h1 className="page-title">概览</h1>
         </section>
 
         <DashboardOverview
-          generatedCount={generatedCount}
-          initialCreditBalance={current.profile.creditBalance}
+          generatedCount={stats.generatedCount}
+          monthlyGeneratedCount={stats.monthlyGeneratedCount}
+          favoriteCount={stats.favoriteCount}
+          initialBalance={current.profile.creditBalance}
           checkInStatus={checkInStatus}
         />
       </div>

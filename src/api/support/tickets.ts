@@ -1,33 +1,50 @@
 import { request } from "@/utils/request";
+import type {
+  AdminReplyTicketRequest,
+  AdminReplyTicketResponse,
+  CreateTicketRequest,
+  CreateTicketResponse,
+  ReplyTicketRequest,
+  ReplyTicketResponse,
+  UpdateTicketStatusRequest,
+  UpdateTicketStatusResponse,
+} from "@/types/feedback";
 
-export function createTicket(data: { type: string; subject: string; content: string }) {
-  return request<{ ticket: unknown }>({
+function createTicket(data: CreateTicketRequest) {
+  return request<CreateTicketResponse>({
     url: "/api/tickets",
     method: "POST",
     data,
   });
 }
 
-export function replyTicket(ticketId: string, data: { body: string }) {
-  return request<{ ok?: boolean }>({
+function replyTicket(ticketId: string, data: ReplyTicketRequest) {
+  return request<ReplyTicketResponse>({
     url: `/api/tickets/${ticketId}/messages`,
     method: "POST",
     data,
   });
 }
 
-export function adminReplyTicket(ticketId: string, data: { body: string }) {
-  return request<{ ok?: boolean }>({
+function adminReply(ticketId: string, data: AdminReplyTicketRequest) {
+  return request<AdminReplyTicketResponse>({
     url: `/api/admin/tickets/${ticketId}/reply`,
     method: "POST",
     data,
   });
 }
 
-export function adminUpdateTicketStatus(ticketId: string, data: { status: string }) {
-  return request<{ ok?: boolean }>({
+function updateStatus(ticketId: string, data: UpdateTicketStatusRequest) {
+  return request<UpdateTicketStatusResponse>({
     url: `/api/admin/tickets/${ticketId}/status`,
     method: "POST",
     data,
   });
 }
+
+export const ticketsApi = {
+  createTicket,
+  replyTicket,
+  adminReply,
+  updateStatus,
+};
