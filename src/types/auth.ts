@@ -1,7 +1,7 @@
 import type { OkResponse } from "@/types/api";
 
 type AuthUser = {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: string;

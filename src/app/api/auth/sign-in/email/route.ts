@@ -33,7 +33,15 @@ export async function POST(request: Request) {
     return jsonError("账号已被禁用", 403);
   }
 
-  const response = jsonOk({ ok: true as const });
+  const response = jsonOk({
+    message: "登录成功",
+    user: {
+      id: bundle.user.id,
+      username: bundle.profile.username,
+      email: bundle.user.email,
+      role: bundle.profile.role,
+    },
+  });
   response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
