@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { Hash, Lock, Mail } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { authApi } from "@/api/auth/email-auth";
 import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
 
 export function ForgotPasswordForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +17,6 @@ export function ForgotPasswordForm() {
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [isSending, setSending] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [isDone, setDone] = useState(false);
 
   async function sendCode() {
     try {
@@ -44,10 +44,16 @@ export function ForgotPasswordForm() {
     try {
       setLoading(true);
       setMessage("");
-      const data = await authApi.resetPassword({ email, code, password });
+      const data = await authApi.resetPassword({
+        email,
+        code,
+        password,
+        confirmPassword,
+      });
       setMessageType("success");
       setMessage(data.message);
-      setDone(true);
+      router.push("/login");
+      router.refresh();
     } catch (error) {
       setMessageType("error");
       setMessage(getErrorMessage(error));
@@ -141,15 +147,9 @@ export function ForgotPasswordForm() {
         ) : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={isLoading || isDone}>
+      <button className={styles.authForm__submit} disabled={isLoading}>
         {isLoading ? "重置中" : "重置密码"}
       </button>
-
-      {isDone ? (
-        <Link href="/login" className={styles.authForm__plainLink}>
-          返回登录
-        </Link>
-      ) : null}
     </form>
   );
 }

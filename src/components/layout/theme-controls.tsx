@@ -10,12 +10,34 @@ const themeKey = "zroimg-theme";
 const localeKey = "zroimg-locale";
 const settingsEvent = "zroimg-settings-change";
 
+function readSystemTheme(): Theme {
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (prefersDark) {
+    return "dark";
+  }
+
+  return "light";
+}
+
+function readSavedTheme() {
+  const savedTheme = window.localStorage.getItem(themeKey);
+  if (savedTheme === "dark" || savedTheme === "light") {
+    return savedTheme;
+  }
+
+  return null;
+}
+
 function subscribe(callback: () => void) {
   const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
   function onSystemThemeChange() {
-    const systemTheme = themeQuery.matches ? "dark" : "light";
-    window.localStorage.setItem(themeKey, systemTheme);
+    const savedTheme = readSavedTheme();
+    if (savedTheme) {
+      return;
+    }
+
+    const systemTheme = readSystemTheme();
     document.documentElement.dataset.theme = systemTheme;
     callback();
   }
@@ -32,12 +54,17 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): Theme {
+  const savedTheme = readSavedTheme();
+  if (savedTheme) {
+    return savedTheme;
+  }
+
   const pageTheme = document.documentElement.dataset.theme;
   if (pageTheme === "dark" || pageTheme === "light") {
     return pageTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return readSystemTheme();
 }
 
 function getLocaleSnapshot(): Locale {

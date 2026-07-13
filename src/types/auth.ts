@@ -62,6 +62,7 @@ type ResetPasswordRequest = {
   email: string;
   code: string;
   password: string;
+  confirmPassword: string;
 };
 
 type ResetPasswordResponse = {
