@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { getCurrentUserProfile } from "@/server/auth";
 import styles from "./product-top-nav.module.css";
 
 const publicCenterLinks = [
-  { label: "开始创作", href: "/generate" },
+  { label: "创作图片", href: "/generate" },
   { label: "作品画廊", href: "/gallery" },
   { label: "定价", href: "/pricing" },
   { label: "文档", href: "/docs" },
 ];
 
 const appCenterLinks = publicCenterLinks;
-const adminCenterLink = { label: "管理", href: "/admin" };
+const adminCenterLinks: typeof publicCenterLinks = [];
 
 function avatarLabel(name?: string | null) {
   return (name || "Z").trim().slice(0, 1).toUpperCase();
@@ -20,14 +21,18 @@ function avatarLabel(name?: string | null) {
 
 export async function ProductTopNav() {
   const current = await getCurrentUserProfile();
-  const centerLinks = current ? (current.profile.role === "admin" ? [...appCenterLinks, adminCenterLink] : appCenterLinks) : publicCenterLinks;
+  let centerLinks = publicCenterLinks;
+  if (current) {
+    centerLinks = appCenterLinks;
+  }
+  if (current?.profile.role === "admin") {
+    centerLinks = adminCenterLinks;
+  }
 
   return (
     <header className={styles.productTopNav}>
       <div className={styles.productTopNav__inner}>
-        <Link href="/" className={styles.productTopNav__brand}>
-          <span className={styles.productTopNav__brandText}>ZroImg</span>
-        </Link>
+        <BrandLogo />
 
         <nav className={styles.productTopNav__center}>
           {centerLinks.map((item) => (

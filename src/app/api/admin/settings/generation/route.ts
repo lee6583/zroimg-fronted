@@ -1,7 +1,17 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
 import { addAuditLog } from "@/server/bff/mock-store";
-import { updateGenerationProviderConfig } from "@/server/bff/account";
+import { updateGenerationConfig } from "@/server/bff/account";
+import { optionalHttpUrlSchema, parseJson } from "@/server/validation";
+
+const settingsSchema = z.object({
+  enabled: z.boolean(),
+  baseUrl: optionalHttpUrlSchema,
+  model: z.string().trim().min(1, "请输入模型名").max(100),
+  apiKey: z.string().trim().max(4096),
+  clearApiKey: z.boolean(),
+});
 
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();
@@ -9,20 +19,13 @@ export async function POST(request: Request) {
     return jsonError("无权限", 403);
   }
 
-  const payload = (await request.json()) as {
-    enabled?: boolean;
-    baseUrl?: string;
-    model?: string;
-    apiKey?: string;
-    clearApiKey?: boolean;
-  };
+  const parsed = await parseJson(request, settingsSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!payload.model?.trim()) {
-    return jsonError("请输入模型名");
-  }
+  const payload = parsed.data;
 
-  const settings = await updateGenerationProviderConfig({
-    enabled: Boolean(payload.enabled),
+  const settings = await updateGenerationConfig({
+    enabled: payload.enabled,
     baseUrl: payload.baseUrl,
     model: payload.model,
     apiKey: payload.apiKey,
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
     action: "update_generation_settings",
     targetType: "systemSetting",
     targetId: "generation",
-    detailJson: { model: payload.model, enabled: Boolean(payload.enabled) },
+    detailJson: { model: payload.model, enabled: payload.enabled },
   });
 
   return jsonOk({ settings });

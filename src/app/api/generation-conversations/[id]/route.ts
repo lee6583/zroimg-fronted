@@ -1,9 +1,12 @@
+import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import {
-  deleteGenerationConversation,
-  updateGenerationConversationTitle,
-} from "@/server/bff/generation";
-import { jsonError, jsonOk } from "@/server/http";
+import { deleteConversation, updateTitle } from "@/server/bff/generation";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { parseJson } from "@/server/validation";
+
+const renameSchema = z.object({
+  title: z.string().trim().min(1, "对话名称不能为空").max(80, "对话名称最多 80 位"),
+});
 
 type SerializedConversationInput = {
   id: string;
@@ -16,49 +19,56 @@ type SerializedConversationInput = {
 };
 
 function serializeConversation(conversation: SerializedConversationInput) {
-  return {
+  const tasks = conversation.tasks.map((task) => {
+    const result = {
+      status: task.status,
+      costCredits: task.costCredits,
+    };
+
+    return result;
+  });
+
+  const result = {
     id: conversation.id,
     title: conversation.title,
     updatedAt: conversation.updatedAt.toISOString(),
     createdAt: conversation.createdAt.toISOString(),
     lastTaskAt: conversation.lastTaskAt?.toISOString() ?? null,
     _count: conversation._count,
-    tasks: conversation.tasks.map((task) => ({
-      status: task.status,
-      costCredits: task.costCredits,
-    })),
+    tasks: tasks,
   };
+
+  return result;
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
-  const { title } = (await request.json()) as { title?: string };
+    const { id } = await context.params;
+    const parsed = await parseJson(request, renameSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  try {
-    const conversation = await updateGenerationConversationTitle(current.profile.id, id, title || "");
+    const { title } = parsed.data;
+
+    const conversation = await updateTitle(current.profile.id, id, title);
     return jsonOk({ conversation: serializeConversation(conversation) });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "更新失败");
-  }
+  });
 }
 
 export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
+    const { id } = await context.params;
 
-  try {
-    await deleteGenerationConversation(current.profile.id, id);
+    await deleteConversation(current.profile.id, id);
     return jsonOk({ ok: true });
-  } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "删除失败");
-  }
+  });
 }

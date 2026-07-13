@@ -1,5 +1,6 @@
 import { getStore, maskSecret } from "@/server/bff/mock-store";
-import { getJavaApiData, hasJavaApiBaseUrl } from "@/server/java-api";
+import { isMockBffEnabled } from "@/server/env";
+import { getJavaApiData } from "@/server/java-api";
 import type {
   CheckInSettingsConfig,
   EasyPayAdminConfig,
@@ -7,7 +8,7 @@ import type {
   SmtpAdminConfig,
 } from "@/types/admin";
 
-export async function getGenerationProviderAdminConfig(): Promise<GenerationProviderAdminConfig> {
+export async function getGenerationConfig(): Promise<GenerationProviderAdminConfig> {
   const settings = getStore().settings.generation;
   return {
     enabled: settings.enabled,
@@ -19,7 +20,7 @@ export async function getGenerationProviderAdminConfig(): Promise<GenerationProv
   };
 }
 
-export async function updateGenerationProviderConfig(input: {
+export async function updateGenerationConfig(input: {
   enabled: boolean;
   baseUrl?: string;
   model: string;
@@ -35,16 +36,12 @@ export async function updateGenerationProviderConfig(input: {
   } else if (input.apiKey?.trim()) {
     settings.apiKey = input.apiKey.trim();
   }
-  return getGenerationProviderAdminConfig();
+  return getGenerationConfig();
 }
 
 export async function getSmtpAdminConfig(): Promise<SmtpAdminConfig> {
-  if (hasJavaApiBaseUrl()) {
-    try {
-      return await getJavaApiData<SmtpAdminConfig>("/admin/settings/smtp");
-    } catch {
-      // Java 后端尚未完全接通时，保留 mock 数据兜底，避免后台页直接报错。
-    }
+  if (!isMockBffEnabled()) {
+    return getJavaApiData<SmtpAdminConfig>("/admin/settings/smtp");
   }
 
   const settings = getStore().settings.smtp;

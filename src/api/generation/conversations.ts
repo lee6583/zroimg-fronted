@@ -31,10 +31,7 @@ function fetchConversationTasks(conversationId: string) {
   });
 }
 
-function updateConversation(
-  conversationId: string,
-  data: UpdateGenerationConversationRequest,
-) {
+function updateConversation(conversationId: string, data: UpdateGenerationConversationRequest) {
   return request<UpdateGenerationConversationResponse>({
     url: `/api/generation-conversations/${conversationId}`,
     method: "PATCH",

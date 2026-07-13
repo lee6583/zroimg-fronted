@@ -297,6 +297,18 @@
   line-height: 1.75;
 }
 
+.landing__visionArtwork {
+  width: min(100vw - 2rem, 60rem);
+  margin: 0.5rem 50% 0;
+  transform: translateX(-50%);
+}
+
+.landing__visionImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .landing__footer {
   border-top: 1px solid var(--line);
 }

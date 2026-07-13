@@ -1,14 +1,11 @@
+import { getErrorMessage } from "@/utils/error";
 import type {
   ApiEnvelope,
   ApiErrorCode,
   ApiErrorInfo,
-  ApiErrorInterceptor,
-  RequestInterceptor,
+  JavaResult,
   RequestOptions,
 } from "@/types/api";
-
-const requestInterceptors: RequestInterceptor[] = [];
-const errorInterceptors: ApiErrorInterceptor[] = [];
 
 export class ApiRequestError extends Error implements ApiErrorInfo {
   code: ApiErrorCode | string;
@@ -30,23 +27,6 @@ export class ApiRequestError extends Error implements ApiErrorInfo {
 
 export function isApiRequestError(error: unknown): error is ApiRequestError {
   return error instanceof ApiRequestError;
-}
-
-export function addRequestInterceptor(interceptor: RequestInterceptor) {
-  requestInterceptors.push(interceptor);
-  return () => removeInterceptor(requestInterceptors, interceptor);
-}
-
-export function addApiErrorInterceptor(interceptor: ApiErrorInterceptor) {
-  errorInterceptors.push(interceptor);
-  return () => removeInterceptor(errorInterceptors, interceptor);
-}
-
-function removeInterceptor<T>(interceptors: T[], interceptor: T) {
-  const index = interceptors.indexOf(interceptor);
-  if (index >= 0) {
-    interceptors.splice(index, 1);
-  }
 }
 
 function buildUrl(url: string, params?: RequestOptions["params"]) {
@@ -81,26 +61,27 @@ function readStringField(payload: unknown, field: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readNumberField(payload: unknown, field: string) {
+  if (!payload || typeof payload !== "object") return 0;
+  const value = (payload as Record<string, unknown>)[field];
+  return typeof value === "number" ? value : 0;
+}
+
 function readErrorMessage(payload: unknown, fallback: string) {
-  return (
-    readStringField(payload, "message") ||
-    readStringField(payload, "error") ||
-    fallback
-  );
+  return readStringField(payload, "message") || readStringField(payload, "error") || fallback;
 }
 
 function readPayloadCode(payload: unknown) {
-  return (
-    readStringField(payload, "code") ||
-    readStringField(payload, "errorCode") ||
-    ""
-  );
+  const codeText = readStringField(payload, "code") || readStringField(payload, "errorCode");
+  if (codeText) return codeText;
+
+  const codeNumber = readNumberField(payload, "code");
+  if (codeNumber) return String(codeNumber);
+
+  return "";
 }
 
-function resolveErrorCode(
-  status: number,
-  payload: unknown,
-): ApiErrorCode | string {
+function resolveErrorCode(status: number, payload: unknown): ApiErrorCode | string {
   const payloadCode = readPayloadCode(payload);
   if (payloadCode) return payloadCode;
 
@@ -119,58 +100,90 @@ async function parsePayload<T>(response: Response) {
 
   const contentType = response.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
-    return (await response.json().catch(() => null)) as
-      ApiEnvelope<T> | T | null;
+    return (await response.json().catch(() => null)) as ApiEnvelope<T> | JavaResult<T> | T | null;
   }
 
   const text = await response.text().catch(() => "");
   return text ? ({ message: text } as ApiEnvelope<T>) : null;
 }
 
-async function applyRequestInterceptors(options: RequestOptions) {
-  let nextOptions = options;
-  for (const interceptor of requestInterceptors) {
-    nextOptions = await interceptor(nextOptions);
-  }
-  return nextOptions;
-}
-
-async function notifyErrorInterceptors(error: ApiRequestError) {
-  for (const interceptor of errorInterceptors) {
-    await interceptor(error);
-  }
-}
-
-async function throwApiError(info: ApiErrorInfo): Promise<never> {
-  const error = new ApiRequestError(info);
-  await notifyErrorInterceptors(error);
-  throw error;
+function throwApiError(info: ApiErrorInfo): never {
+  throw new ApiRequestError(info);
 }
 
 function isApiEnvelope<T>(
-  payload: ApiEnvelope<T> | T | null,
+  payload: ApiEnvelope<T> | JavaResult<T> | T | null,
 ): payload is ApiEnvelope<T> {
-  return Boolean(payload && typeof payload === "object");
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    typeof payload.success === "boolean",
+  );
+}
+
+function isJavaResult<T>(
+  payload: ApiEnvelope<T> | JavaResult<T> | T | null,
+): payload is JavaResult<T> {
+  if (!payload || typeof payload !== "object") {
+    return false;
+  }
+
+  const code = (payload as Record<string, unknown>).code;
+  const message = (payload as Record<string, unknown>).message;
+
+  return typeof code === "number" && typeof message === "string";
+}
+
+function readFailedStatus(response: Response, javaResult: JavaResult<unknown> | null) {
+  if (!javaResult) {
+    return response.status || 0;
+  }
+
+  if (javaResult.code >= 400 && javaResult.code <= 599) {
+    return javaResult.code;
+  }
+
+  return response.status || javaResult.code;
+}
+
+function readJavaData<T>(javaResult: JavaResult<T>) {
+  const data = javaResult.data;
+  const message = javaResult.message;
+  const hasObjectData = data !== undefined && data !== null && typeof data === "object";
+  const canMergeMessage = hasObjectData && !Array.isArray(data);
+
+  if (canMergeMessage) {
+    return {
+      ...data,
+      message,
+    } as T;
+  }
+
+  if (data === undefined || data === null) {
+    return { message } as T;
+  }
+
+  return data;
 }
 
 export async function request<T>(options: RequestOptions): Promise<T> {
-  const interceptedOptions = await applyRequestInterceptors(options);
-  const method = interceptedOptions.method || "GET";
-  const headers = new Headers(interceptedOptions.headers);
-  let body = interceptedOptions.body;
+  const method = options.method || "GET";
+  const headers = new Headers(options.headers);
+  let body = options.body;
 
-  if (body === undefined && interceptedOptions.data !== undefined) {
-    if (isBodyInit(interceptedOptions.data)) {
-      body = interceptedOptions.data;
+  if (body === undefined && options.data !== undefined) {
+    if (isBodyInit(options.data)) {
+      body = options.data;
     } else {
       if (!headers.has("Content-Type")) {
         headers.set("Content-Type", "application/json");
       }
-      body = JSON.stringify(interceptedOptions.data);
+      body = JSON.stringify(options.data);
     }
   }
 
-  const url = buildUrl(interceptedOptions.url, interceptedOptions.params);
+  const url = buildUrl(options.url, options.params);
   let response: Response;
 
   try {
@@ -178,11 +191,11 @@ export async function request<T>(options: RequestOptions): Promise<T> {
       method,
       headers,
       body,
-      credentials: interceptedOptions.credentials || "same-origin",
+      credentials: options.credentials || "same-origin",
     });
   } catch (error) {
-    return throwApiError({
-      message: error instanceof Error ? error.message : "网络连接失败",
+    throwApiError({
+      message: getErrorMessage(error),
       code: "NETWORK_ERROR",
       status: 0,
       url,
@@ -193,11 +206,13 @@ export async function request<T>(options: RequestOptions): Promise<T> {
 
   const payload = await parsePayload<T>(response);
   const envelope = isApiEnvelope(payload) ? payload : null;
+  const javaResult = isJavaResult(payload) ? payload : null;
   const failedByEnvelope = envelope?.success === false;
+  const failedByJavaCode = Boolean(javaResult && javaResult.code !== 200);
 
-  if (!response.ok || failedByEnvelope) {
-    const status = Number(envelope?.statusCode || response.status || 0);
-    await throwApiError({
+  if (!response.ok || failedByEnvelope || failedByJavaCode) {
+    const status = Number(envelope?.statusCode || readFailedStatus(response, javaResult));
+    throwApiError({
       message: readErrorMessage(payload, "请求失败"),
       code: resolveErrorCode(status, payload),
       status,
@@ -211,5 +226,20 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     return envelope.data as T;
   }
 
-  return (payload as T) ?? ({} as T);
+  if (javaResult) {
+    return readJavaData(javaResult);
+  }
+
+  if (payload === null) {
+    throwApiError({
+      message: "服务端返回了空响应",
+      code: "SERVER_ERROR",
+      status: response.status,
+      url,
+      method,
+      payload,
+    });
+  }
+
+  return payload as T;
 }

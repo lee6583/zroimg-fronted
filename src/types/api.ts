@@ -1,11 +1,8 @@
-export type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
-export type RequestParams = Record<
-  string,
-  string | number | boolean | undefined | null
->;
+type RequestParams = Record<string, string | number | boolean | undefined | null>;
 
-export type RequestOptions = {
+type RequestOptions = {
   url: string;
   method?: RequestMethod;
   params?: RequestParams;
@@ -15,8 +12,8 @@ export type RequestOptions = {
   credentials?: RequestCredentials;
 };
 
-export type ApiEnvelope<T> = {
-  success?: boolean;
+type ApiEnvelope<T> = {
+  success: boolean;
   data?: T;
   error?: string;
   message?: string;
@@ -25,7 +22,14 @@ export type ApiEnvelope<T> = {
   [key: string]: unknown;
 };
 
-export type ApiErrorCode =
+type JavaResult<T> = {
+  code: number;
+  message: string;
+  data?: T;
+  [key: string]: unknown;
+};
+
+type ApiErrorCode =
   | "BAD_REQUEST"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
@@ -36,7 +40,7 @@ export type ApiErrorCode =
   | "NETWORK_ERROR"
   | "UNKNOWN_ERROR";
 
-export type ApiErrorInfo = {
+type ApiErrorInfo = {
   message: string;
   code: ApiErrorCode | string;
   status: number;
@@ -45,13 +49,18 @@ export type ApiErrorInfo = {
   payload: unknown;
 };
 
-export type OkResponse = {
-  ok?: boolean;
+type OkResponse = {
+  ok: true;
   message?: string;
 };
 
-export type RequestInterceptor = (
-  options: RequestOptions,
-) => RequestOptions | Promise<RequestOptions>;
-
-export type ApiErrorInterceptor = (error: ApiErrorInfo) => void | Promise<void>;
+export type {
+  RequestMethod,
+  RequestParams,
+  RequestOptions,
+  ApiEnvelope,
+  JavaResult,
+  ApiErrorCode,
+  ApiErrorInfo,
+  OkResponse,
+};

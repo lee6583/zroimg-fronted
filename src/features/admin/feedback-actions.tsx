@@ -1,30 +1,31 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ticketsApi } from "@/api/support/tickets";
 import { AppSelect } from "@/components/ui/app-select";
 import { type FeedbackStatus, feedbackStatusLabels } from "@/utils/feedback";
 
-const statusOptions = Object.entries(feedbackStatusLabels).map(
-  ([value, label]) => ({
-    value: value as FeedbackStatus,
-    label,
-  }),
-);
+const statusOptions = Object.entries(feedbackStatusLabels).map(([value, label]) => ({
+  value: value as FeedbackStatus,
+  label,
+}));
 
-export function FeedbackActions({
-  ticketId,
-  currentStatus,
-}: {
+type FeedbackActionsProps = {
   ticketId: string;
   currentStatus: FeedbackStatus;
-}) {
+};
+
+export function FeedbackActions(props: FeedbackActionsProps) {
+  const ticketId = props.ticketId;
+  const currentStatus = props.currentStatus;
+
   const router = useRouter();
   const [status, setStatus] = useState<FeedbackStatus>(currentStatus);
   const [body, setBody] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   async function updateStatus() {
     setLoading(true);
@@ -36,7 +37,7 @@ export function FeedbackActions({
       router.refresh();
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "更新状态失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -52,7 +53,7 @@ export function FeedbackActions({
       router.refresh();
     } catch (error) {
       setLoading(false);
-      setMessage(error instanceof Error ? error.message : "回复失败");
+      setMessage(getErrorMessage(error));
       return;
     }
   }
@@ -60,18 +61,8 @@ export function FeedbackActions({
   return (
     <div className="grid gap-3">
       <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-        <AppSelect
-          value={status}
-          onChange={setStatus}
-          options={statusOptions}
-          triggerClassName="min-h-10 text-sm"
-        />
-        <button
-          type="button"
-          className="btn-secondary"
-          disabled={loading}
-          onClick={updateStatus}
-        >
+        <AppSelect value={status} onChange={setStatus} options={statusOptions} />
+        <button type="button" className="btn-secondary" disabled={isLoading} onClick={updateStatus}>
           更新状态
         </button>
       </div>
@@ -84,7 +75,7 @@ export function FeedbackActions({
       <button
         type="button"
         className="btn-primary w-fit"
-        disabled={loading || !body.trim()}
+        disabled={isLoading || !body.trim()}
         onClick={reply}
       >
         发送回复

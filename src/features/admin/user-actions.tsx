@@ -1,15 +1,18 @@
 "use client";
 
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
 
-export function UserActions({
-  userId,
-  status,
-}: {
+type UserActionsProps = {
   userId: string;
   status: "active" | "banned";
-}) {
+};
+
+export function UserActions(props: UserActionsProps) {
+  const userId = props.userId;
+  const status = props.status;
+
   const [amount, setAmount] = useState(100);
   const [reason, setReason] = useState("Manual adjustment");
   const [message, setMessage] = useState("");
@@ -20,7 +23,7 @@ export function UserActions({
       setMessage("已调整");
       window.location.reload();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "调整失败");
+      setMessage(getErrorMessage(error));
     }
   }
 
@@ -32,7 +35,7 @@ export function UserActions({
       setMessage("已更新");
       window.location.reload();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "更新失败");
+      setMessage(getErrorMessage(error));
     }
   }
 
@@ -44,20 +47,14 @@ export function UserActions({
         value={amount}
         onChange={(event) => setAmount(Number(event.target.value))}
       />
-      <input
-        className="field"
-        value={reason}
-        onChange={(event) => setReason(event.target.value)}
-      />
+      <input className="field" value={reason} onChange={(event) => setReason(event.target.value)} />
       <button className="btn-secondary" onClick={adjustCredits}>
         调整积分
       </button>
       <button className="btn-secondary" onClick={toggleStatus}>
         {status === "active" ? "封禁" : "解封"}
       </button>
-      {message ? (
-        <p className="text-sm text-muted md:col-span-4">{message}</p>
-      ) : null}
+      {message ? <p className="text-sm text-muted md:col-span-4">{message}</p> : null}
     </div>
   );
 }

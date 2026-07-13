@@ -1,29 +1,36 @@
+import { z } from "zod";
 import { getStore, nextId } from "@/server/bff/mock-store";
+import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
-import { hasJavaApiBaseUrl, isJavaUnavailableResponse, proxyRequestToJavaApi } from "@/server/java-api";
+import { proxyRequestToJavaApi } from "@/server/java-api";
+import { parseJson } from "@/server/validation";
+
+const sliderSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("邮箱格式不正确")
+    .transform((value) => value.toLowerCase()),
+  scene: z.string().max(32).optional(),
+});
 
 export async function POST(request: Request) {
-  if (hasJavaApiBaseUrl()) {
-    const response = await proxyRequestToJavaApi(request.clone(), "/auth/slider-token");
-    if (!isJavaUnavailableResponse(response)) {
-      return response;
-    }
+  if (isJavaAuthEnabled()) {
+    return proxyRequestToJavaApi(request, "/auth/user/slider-token");
   }
 
-  const { email } = (await request.json()) as { email?: string; scene?: string };
-  const normalizedEmail = email?.trim().toLowerCase();
+  const parsed = await parseJson(request, sliderSchema);
+  if (!parsed.ok) return jsonError(parsed.message);
 
-  if (!normalizedEmail) {
-    return jsonError("请先输入邮箱");
-  }
+  const { email } = parsed.data;
 
-  const token = `mock-slider-${nextId("slider")}`;
+  const sliderToken = `mock-slider-${nextId("slider")}`;
   getStore().sliderTokens.push({
-    token,
-    email: normalizedEmail,
+    token: sliderToken,
+    email,
     expiresAt: Date.now() + 5 * 60 * 1000,
     used: false,
   });
 
-  return jsonOk({ token });
+  return jsonOk({ sliderToken });
 }

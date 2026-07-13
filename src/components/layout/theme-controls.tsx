@@ -1,18 +1,33 @@
 "use client";
 
-import { Globe2, Moon, Sun } from "lucide-react";
+import { Globe, Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 type Locale = "ZH" | "EN";
 
-const themeKey = "zrocode-theme";
-const localeKey = "zrocode-locale";
-const settingsEvent = "zrocode-settings-change";
+const themeKey = "zroimg-theme";
+const localeKey = "zroimg-locale";
+const settingsEvent = "zroimg-settings-change";
+
+function readStoredTheme() {
+  const storedTheme = window.localStorage.getItem(themeKey);
+  if (storedTheme === "dark" || storedTheme === "light") {
+    return storedTheme;
+  }
+
+  return null;
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+}
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(settingsEvent, callback);
+
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(settingsEvent, callback);
@@ -20,7 +35,17 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): Theme {
-  return window.localStorage.getItem(themeKey) === "dark" ? "dark" : "light";
+  const storedTheme = readStoredTheme();
+  if (storedTheme) {
+    return storedTheme;
+  }
+
+  const pageTheme = document.documentElement.dataset.theme;
+  if (pageTheme === "dark" || pageTheme === "light") {
+    return pageTheme;
+  }
+
+  return "light";
 }
 
 function getLocaleSnapshot(): Locale {
@@ -44,14 +69,14 @@ export function ThemeControls() {
   const locale = useSyncExternalStore(subscribe, getLocaleSnapshot, getServerLocaleSnapshot);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    applyTheme(theme);
     document.documentElement.lang = locale === "ZH" ? "zh-CN" : "en";
   }, [theme, locale]);
 
   function toggleTheme() {
     const nextTheme = theme === "light" ? "dark" : "light";
     window.localStorage.setItem(themeKey, nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
+    applyTheme(nextTheme);
     emitSettingsChange();
   }
 
@@ -64,11 +89,20 @@ export function ThemeControls() {
 
   return (
     <div className="flex items-center gap-1">
-      <button className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium" type="button" onClick={toggleLocale} aria-label="切换语言">
-        <Globe2 size={16} />
-        {locale}
+      <button
+        className="nav-icon-button"
+        type="button"
+        onClick={toggleLocale}
+        aria-label="切换语言"
+      >
+        <Globe size={17} />
       </button>
-      <button className="nav-icon-button" type="button" onClick={toggleTheme} aria-label="切换明暗模式">
+      <button
+        className="nav-icon-button"
+        type="button"
+        onClick={toggleTheme}
+        aria-label="切换明暗模式"
+      >
         {theme === "light" ? <Sun size={16} /> : <Moon size={16} />}
       </button>
     </div>

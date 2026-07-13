@@ -1,19 +1,29 @@
-export type PaymentType = "alipay" | "wxpay";
+type PaymentType = "alipay" | "wxpay";
 
-export type CreateOrderRequest =
-  | {
-      mode: "package";
-      packageCode: string;
-      paymentType: PaymentType;
-    }
-  | {
-      mode: "custom";
-      amountCny: number;
-      paymentType: PaymentType;
-    };
+type PackageOrderRequest = {
+  mode: "package";
+  packageCode: string;
+  paymentType: PaymentType;
+};
 
-export type CreateOrderResponse = {
+type CustomOrderRequest = {
+  mode: "custom";
+  amountCny: number;
+  paymentType: PaymentType;
+};
+
+type CreateOrderRequest = PackageOrderRequest | CustomOrderRequest;
+
+type CreateOrderResponse = {
   order?: {
     payUrl?: string | null;
   };
+};
+
+export type {
+  PaymentType,
+  PackageOrderRequest,
+  CustomOrderRequest,
+  CreateOrderRequest,
+  CreateOrderResponse,
 };

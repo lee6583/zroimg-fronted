@@ -1,11 +1,13 @@
 .publishButton {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
 }
 
 .publishButton__action {
   display: inline-flex;
   min-height: 2.125rem;
+  white-space: nowrap;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;

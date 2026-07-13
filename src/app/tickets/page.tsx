@@ -1,14 +1,14 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { FeedbackPanel } from "@/features/tickets/feedback-panel";
 import { requireUser } from "@/server/auth";
-import { listFeedbackTicketsForUser } from "@/server/bff/account";
+import { listTicketsForUser } from "@/server/bff/account";
 import type { TicketItem } from "@/types/feedback";
 
 export const dynamic = "force-dynamic";
 
 export default async function TicketsPage() {
   const current = await requireUser();
-  const tickets = await listFeedbackTicketsForUser(current.profile.id);
+  const tickets = await listTicketsForUser(current.profile.id);
   const ticketItems: TicketItem[] = tickets.map((ticket) => ({
     id: ticket.id,
     type: ticket.type,
@@ -28,7 +28,13 @@ export default async function TicketsPage() {
 
   return (
     <AppShell active="tickets">
-      <FeedbackPanel initialTickets={ticketItems} />
+      <div className="grid gap-6">
+        <section>
+          <h1 className="page-title">意见反馈</h1>
+        </section>
+
+        <FeedbackPanel initialTickets={ticketItems} />
+      </div>
     </AppShell>
   );
 }
