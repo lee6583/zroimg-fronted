@@ -212,7 +212,6 @@ export default async function HistoryPage(props: HistoryPageProps) {
       <main className={styles.history}>
         <section className={styles.history__header}>
           <h1 className="page-title">创作历史</h1>
-          <p className="page-description">查看你的所有历史创作</p>
         </section>
 
         <section className={styles.history__toolbar} aria-label="创作历史筛选">

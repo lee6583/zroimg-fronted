@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import Link from "next/link";
-import { FileClock, Plus } from "lucide-react";
+import { FileClock } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
 import { prisma } from "@/server/bff/orders";
@@ -65,10 +65,6 @@ export default async function BillingPage() {
             <h1 className="page-title">我的订单</h1>
             <p className="page-description">查看充值历史与订单状态</p>
           </div>
-          <Link href="/credits" className={styles.billing__rechargeButton}>
-            <Plus size={17} />
-            充值
-          </Link>
         </section>
 
         {orders.length > 0 ? (
