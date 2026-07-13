@@ -21,6 +21,16 @@
 - `dev`：始终指向最近一次通过检查的开发版。
 - `sha-<完整提交号>`：指向一个不可混淆的代码版本，用于部署和回滚。
 
+### 镜像构建自动重试
+
+`build-image-attempt-1` 优先使用标准 Docker Actions 和 GitHub Actions 缓存构建镜像。随后 `build-image` 检查当前 Git SHA 镜像是否已经存在：
+
+- 镜像存在：直接进入部署。
+- 镜像不存在：等待 45 秒，使用 Runner 自带的 Docker CLI 重新构建并推送一次。
+- 第二次仍失败：停止流水线，不执行服务器部署。
+
+备用构建不依赖外部 Docker Action 下载，因此可以处理 `Failed to resolve action download info`、`Service Unavailable` 等临时平台故障。现有 concurrency 会在 `dev` 出现更新提交时取消旧流水线，避免旧提交重试后覆盖新版本。
+
 ## 2. 服务器前提检查
 
 以下命令在 MobaXterm 的服务器终端执行：
