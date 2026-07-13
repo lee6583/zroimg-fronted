@@ -52,9 +52,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
     <AdminShell active="tickets">
       <div className="grid gap-6">
         <section>
-          <p className="label">Feedback</p>
           <h1 className="page-title">意见反馈</h1>
-          <p className="page-description">查看用户反馈、回复用户，并更新处理状态。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

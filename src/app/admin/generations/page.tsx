@@ -67,9 +67,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
     <AdminShell active="generations">
       <div className="grid gap-6">
         <section>
-          <p className="label">Generation tasks</p>
           <h1 className="page-title">生成任务</h1>
-          <p className="page-description">排查失败任务、查看用户消耗积分和模型参数。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

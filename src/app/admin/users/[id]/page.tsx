@@ -57,11 +57,7 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
           </Link>
           <div className="mt-4 flex flex-wrap justify-between gap-4">
             <div>
-              <p className="label">User detail</p>
               <h1 className="page-title">{profile.username}</h1>
-              <p className="page-description">
-                {profile.user?.email || "-"} / {profile.role} / {profile.status}
-              </p>
             </div>
             <p className="text-2xl font-semibold">{profile.creditBalance} 积分</p>
           </div>

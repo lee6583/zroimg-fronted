@@ -64,9 +64,7 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
     <AdminShell active="users">
       <div className="grid gap-6">
         <section>
-          <p className="label">Users</p>
           <h1 className="page-title">用户管理</h1>
-          <p className="page-description">搜索用户、调整积分、封禁或查看用户详情。</p>
         </section>
 
         <section className="surface rounded-xl p-5">

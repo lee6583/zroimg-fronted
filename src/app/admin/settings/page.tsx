@@ -28,11 +28,7 @@ export default async function AdminSettingsPage() {
     <AdminShell active="settings">
       <div className="grid gap-6">
         <section>
-          <p className="label">Admin settings</p>
           <h1 className="page-title">系统设置</h1>
-          <p className="page-description">
-            配置生图服务、邮件发送、第三方支付和签到积分。密钥只在服务端保存，页面仅展示脱敏状态。
-          </p>
         </section>
 
         <GenerationSettingsForm initialSettings={generationSettings} />

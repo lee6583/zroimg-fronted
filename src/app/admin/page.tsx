@@ -27,9 +27,7 @@ export default async function AdminPage() {
     <AdminShell active="overview">
       <div className="grid gap-6">
         <section>
-          <p className="label">Admin overview</p>
           <h1 className="page-title">管理概览</h1>
-          <p className="page-description max-w-2xl">查看站点运营状态、待处理反馈和关键业务指标。</p>
         </section>
 
         <section className="grid gap-4 md:grid-cols-5">
@@ -43,8 +41,7 @@ export default async function AdminPage() {
         <section className="surface rounded-xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="label">Feedback</p>
-              <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">最近反馈</h2>
+              <h2 className="font-serif text-2xl font-medium tracking-tight">最近反馈</h2>
             </div>
             <Link href="/admin/tickets" className="btn-secondary">
               查看全部

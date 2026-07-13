@@ -15,11 +15,7 @@ export default async function AdminAuditLogsPage() {
     <AdminShell active="audit">
       <div className="grid gap-6">
         <section>
-          <p className="label">Audit logs</p>
           <h1 className="page-title">审计日志</h1>
-          <p className="page-description">
-            记录管理员调整积分、修改状态、回复反馈和系统配置等操作。
-          </p>
         </section>
         <div className="mt-6 grid gap-2">
           {logs.map((log) => (

@@ -67,9 +67,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
     <AdminShell active="orders">
       <div className="grid gap-6">
         <section>
-          <p className="label">Orders</p>
           <h1 className="page-title">订单管理</h1>
-          <p className="page-description">查看支付订单、支付状态和积分套餐。</p>
         </section>
 
         <section className="surface rounded-xl p-5">
