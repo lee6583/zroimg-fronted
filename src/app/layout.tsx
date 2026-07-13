@@ -56,7 +56,10 @@ export default function RootLayout(props: RootLayoutProps) {
   return (
     <html lang="zh-CN" data-theme="light" className="h-full antialiased" suppressHydrationWarning>
       <head>
-        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
+        />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}

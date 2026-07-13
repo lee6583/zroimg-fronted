@@ -156,7 +156,10 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                               {displayTitle}
                             </span>
                             {isTitleTruncated ? (
-                              <span className={styles.generateForm__conversationTooltip} role="tooltip">
+                              <span
+                                className={styles.generateForm__conversationTooltip}
+                                role="tooltip"
+                              >
                                 {item.title}
                               </span>
                             ) : null}
