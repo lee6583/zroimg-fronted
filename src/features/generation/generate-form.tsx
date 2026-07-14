@@ -236,9 +236,27 @@ export function GenerateForm(props: GenerateFormProps) {
     setSubmitting(true);
     setNotice(null);
 
+    let pendingId = "";
+
     try {
       const conversationId = activeId || (await createChat(false))?.id;
       if (!conversationId) return;
+
+      pendingId = `pending-${Date.now()}`;
+      const pendingTask: TaskItem = {
+        id: pendingId,
+        prompt: text,
+        mode: options.mode,
+        status: "running",
+        size,
+        imageCount: options.count,
+        costCredits: estimate,
+        createdAt: new Date().toISOString(),
+        imageUrls: [],
+      };
+
+      setTasks((current) => [pendingTask, ...current]);
+      setPrompt("");
 
       const data = await generationTasksApi.createTask({
         conversationId,
@@ -252,7 +270,7 @@ export function GenerateForm(props: GenerateFormProps) {
       });
       const task = data.task;
 
-      setTasks((current) => [task, ...current]);
+      setTasks((current) => current.map((item) => (item.id === pendingId ? task : item)));
       setChats((current) =>
         current.map((item) =>
           item.id === conversationId
@@ -267,10 +285,20 @@ export function GenerateForm(props: GenerateFormProps) {
             : item,
         ),
       );
-      setPrompt("");
       await refreshList();
     } catch (error) {
       showError(error);
+      setTasks((current) =>
+        current.map((item) => {
+          const isPendingTask = item.id === pendingId;
+          if (!isPendingTask) return item;
+
+          return {
+            ...item,
+            status: "failed",
+          };
+        }),
+      );
     } finally {
       setSubmitting(false);
     }

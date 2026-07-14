@@ -3,6 +3,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import {
   Clock3,
+  Clapperboard,
   Coins,
   FolderHeart,
   ImagePlus,
@@ -17,6 +18,7 @@ import styles from "./shell.module.css";
 type AppSection =
   | "overview"
   | "generate"
+  | "video"
   | "history"
   | "favorites"
   | "credits"
@@ -47,6 +49,12 @@ const appNavItems: Array<{
     label: "图片生成",
     href: "/generate",
     icon: ImagePlus,
+  },
+  {
+    key: "video",
+    label: "视频创作",
+    href: "/video",
+    icon: Clapperboard,
   },
   {
     key: "history",
