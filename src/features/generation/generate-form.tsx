@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Menu, PanelLeftClose } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
@@ -30,12 +30,14 @@ type GenerateFormProps = {
   initialChats: ConversationItem[];
   initialId?: string;
   initialTasks: TaskItem[];
+  initialBalance: number;
 };
 
 export function GenerateForm(props: GenerateFormProps) {
   const initialChats = props.initialChats;
   const initialId = props.initialId;
   const initialTasks = props.initialTasks;
+  const initialBalance = props.initialBalance;
 
   const [chats, setChats] = useState(initialChats);
   const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
@@ -44,6 +46,8 @@ export function GenerateForm(props: GenerateFormProps) {
   const [options, setOptions] = useState<GenerationOptions>(defaultOptions);
   const [inputs, setInputs] = useState<MediaInput[]>([]);
   const [notice, setNotice] = useState<Notice>(null);
+  const [balance, setBalance] = useState(initialBalance);
+  const [errorCost, setErrorCost] = useState<number | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
@@ -52,6 +56,7 @@ export function GenerateForm(props: GenerateFormProps) {
 
   const size = getGenerationSize(options);
   const estimate = estimateOptionsCredits(options);
+  const isCostError = balance < estimate || errorCost === estimate;
   const groups = groupConversations(chats);
   const pendingKey = tasks
     .filter(isPending)
@@ -225,6 +230,11 @@ export function GenerateForm(props: GenerateFormProps) {
   async function submit() {
     const text = prompt.trim();
     if (!text) return;
+    if (balance < estimate) {
+      setErrorCost(estimate);
+      setNotice(null);
+      return;
+    }
     if (options.mode === "edit" && !inputs.length) {
       setNotice({
         text: "图生图需要先上传至少 1 张参考图",
@@ -270,7 +280,14 @@ export function GenerateForm(props: GenerateFormProps) {
       });
       const task = data.task;
 
+      setErrorCost(null);
       setTasks((current) => current.map((item) => (item.id === pendingId ? task : item)));
+      setBalance((current) => {
+        const next = current - task.costCredits;
+        if (next < 0) return 0;
+
+        return next;
+      });
       setChats((current) =>
         current.map((item) =>
           item.id === conversationId
@@ -305,7 +322,14 @@ export function GenerateForm(props: GenerateFormProps) {
   }
 
   function showError(error: unknown) {
-    setNotice({ text: getErrorMessage(error), tone: "error" });
+    const message = getErrorMessage(error);
+    if (message === "积分不足") {
+      setErrorCost(estimate);
+      setNotice(null);
+      return;
+    }
+
+    setNotice({ text: message, tone: "error" });
   }
 
   const sidebar = (
@@ -352,7 +376,7 @@ export function GenerateForm(props: GenerateFormProps) {
                 className={styles.generateForm__collapseButton}
                 aria-label={isCollapsed ? "展开对话侧栏" : "收起对话侧栏"}
               >
-                <PanelLeftClose size={16} />
+                {isCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
               </button>
             ) : null}
           </div>
@@ -398,6 +422,7 @@ export function GenerateForm(props: GenerateFormProps) {
             prompt={prompt}
             mode={options.mode}
             estimate={estimate}
+            hasCostError={isCostError}
             notice={notice}
             isBusy={isSubmitting || isUploading}
             onPromptChange={setPrompt}

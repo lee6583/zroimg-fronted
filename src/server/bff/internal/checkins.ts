@@ -89,6 +89,7 @@ export async function getCheckInStatus(userProfileId: string): Promise<CheckInSt
     checkedIn: Boolean(todayRecord),
     checkedAt: todayRecord?.createdAt.toISOString() ?? null,
     streakDays: getStreak(checkedDayKeys, Boolean(todayRecord)),
+    weekSignDays: monthRecords.length,
     totalCheckIns: records.length,
     checkedDayKeys: monthDayKeys,
   };

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Bot, User } from "lucide-react";
 import clsx from "clsx";
+import { useEffect, useRef } from "react";
 import { taskStatusLabels, type TaskItem } from "./generation-model";
 import styles from "./generate-form.module.css";
 
@@ -15,9 +16,23 @@ export function TaskPreview(props: TaskPreviewProps) {
   const tasks = props.tasks;
   const onPromptChange = props.onPromptChange;
   const chatTasks = [...tasks].reverse();
+  const chatRef = useRef<HTMLDivElement>(null);
+  const scrollKey = tasks
+    .map((task) => {
+      const imageCount = task.imageUrls?.length ?? 0;
+      return `${task.id}:${task.status}:${imageCount}`;
+    })
+    .join("|");
+
+  useEffect(() => {
+    const chat = chatRef.current;
+    if (!chat) return;
+
+    chat.scrollTop = chat.scrollHeight;
+  }, [scrollKey]);
 
   return (
-    <div className={styles.generateForm__chatArea}>
+    <div ref={chatRef} className={styles.generateForm__chatArea}>
       <div className={styles.generateForm__chatInner}>
         {chatTasks.length ? (
           <div className={styles.generateForm__messageList}>

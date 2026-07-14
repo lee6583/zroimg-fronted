@@ -37,7 +37,12 @@ export default async function GeneratePage() {
 
   return (
     <AppShell active="generate" flush>
-      <GenerateForm initialChats={items} initialId={activeId} initialTasks={taskList} />
+      <GenerateForm
+        initialChats={items}
+        initialId={activeId}
+        initialTasks={taskList}
+        initialBalance={current.profile.creditBalance}
+      />
     </AppShell>
   );
 }

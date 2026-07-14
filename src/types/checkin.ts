@@ -12,12 +12,44 @@ type CheckInStatus = {
   checkedIn: boolean;
   checkedAt: string | null;
   streakDays: number;
+  weekSignDays: number;
   totalCheckIns: number;
   checkedDayKeys: string[];
 };
 
 type ClaimCheckInResponse = {
   checkIn: CheckInStatus;
+  addedCredits?: number;
+  totalCredits?: number;
 };
 
-export type { CheckInDateInfo, CheckInStatus, ClaimCheckInResponse };
+type SignWeekDay = {
+  date: string;
+  dayOfWeek: string;
+  day: number;
+  signed: boolean;
+  today: boolean;
+};
+
+type JavaSignCard = {
+  today: string;
+  dailySignPoints: number;
+  todaySigned: boolean;
+  weekSignDays: number;
+  continuousSignDays: number;
+  weekDays: SignWeekDay[];
+};
+
+type JavaSignResult = JavaSignCard & {
+  addedPoints: number;
+  totalPoints: number;
+};
+
+export type {
+  CheckInDateInfo,
+  CheckInStatus,
+  ClaimCheckInResponse,
+  JavaSignCard,
+  JavaSignResult,
+  SignWeekDay,
+};

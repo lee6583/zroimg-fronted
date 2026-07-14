@@ -6,7 +6,6 @@ import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
 import {
   calculateCustomCredits,
-  CUSTOM_CREDITS_PER_CNY,
   CUSTOM_MAX_AMOUNT_CNY,
   CUSTOM_MIN_AMOUNT_CNY,
 } from "@/utils/credits";
@@ -50,6 +49,7 @@ type OrderFormProps = {
 const defaultPaymentType = "alipay" as const;
 const quickAmounts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 const enterpriseAmount = 400;
+const amountTextPattern = /^\d*(\.\d{0,2})?$/;
 
 const packageCopy: Record<string, PackageCopy> = {
   STARTER_100: {
@@ -113,10 +113,28 @@ function getPackageCopy(item: Package): PackageCopy {
   };
 }
 
+function isValidAmountText(value: string) {
+  if (value === "") {
+    return true;
+  }
+
+  return amountTextPattern.test(value);
+}
+
+function isOverMaxAmount(value: string) {
+  const amountValue = Number(value);
+  if (!Number.isFinite(amountValue)) {
+    return false;
+  }
+
+  return amountValue > CUSTOM_MAX_AMOUNT_CNY;
+}
+
 export function OrderForm(props: OrderFormProps) {
   const packages = props.packages;
 
   const [customAmount, setCustomAmount] = useState("29");
+  const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
 
@@ -198,6 +216,27 @@ export function OrderForm(props: OrderFormProps) {
     setMessage("订单已创建，但支付地址为空，请检查易支付配置。");
   }
 
+  function handleQuickAmountClick(value: number) {
+    setSelectedQuickAmount(value);
+    setCustomAmount(String(value));
+    setMessage("");
+  }
+
+  function handleCustomAmountChange(value: string) {
+    if (!isValidAmountText(value)) {
+      return;
+    }
+
+    if (isOverMaxAmount(value)) {
+      setMessage(`单次购买金额不能超过 ¥${CUSTOM_MAX_AMOUNT_CNY}`);
+      return;
+    }
+
+    setSelectedQuickAmount(null);
+    setCustomAmount(value);
+    setMessage("");
+  }
+
   return (
     <div className={styles.orderForm}>
       <section className={styles.orderForm__section}>
@@ -269,13 +308,13 @@ export function OrderForm(props: OrderFormProps) {
         <div className={styles.orderForm__custom}>
           <div className={styles.orderForm__quickAmounts}>
             {quickAmounts.map((item) => {
-              const isActive = Number(customAmount) === item;
+              const isActive = selectedQuickAmount === item;
 
               return (
                 <button
                   key={item}
                   type="button"
-                  onClick={() => setCustomAmount(String(item))}
+                  onClick={() => handleQuickAmountClick(item)}
                   className={clsx(
                     styles.orderForm__quickAmount,
                     isActive && styles.orderForm__quickAmountActive,
@@ -294,17 +333,19 @@ export function OrderForm(props: OrderFormProps) {
               <input
                 className={clsx("field", styles.orderForm__input)}
                 inputMode="decimal"
+                min={CUSTOM_MIN_AMOUNT_CNY}
+                max={CUSTOM_MAX_AMOUNT_CNY}
+                pattern="^\d*(\.\d{0,2})?$"
                 value={customAmount}
-                onChange={(event) => setCustomAmount(event.target.value)}
+                onChange={(event) => handleCustomAmountChange(event.target.value)}
                 placeholder="输入购买金额"
               />
             </span>
           </label>
           <div className={styles.orderForm__hint}>
             <p>
-              预计到账 <span className="font-medium text-foreground">{customCredits}</span> 积分
+              到账 <span className="font-medium text-foreground">{customCredits}</span> 积分
             </p>
-            <p>自定义购买按 ¥1 = {CUSTOM_CREDITS_PER_CNY} 积分折算，套餐通常会更划算。</p>
           </div>
 
           <button className="btn-primary" onClick={() => createCustomOrder()} disabled={isLoading}>

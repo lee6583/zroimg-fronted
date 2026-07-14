@@ -105,10 +105,10 @@ export async function AppShell(props: AppShellProps) {
   }
 
   return (
-    <>
+    <div className={clsx(styles.shellPage, flush && styles.shellPageFlush)}>
       <ProductTopNav />
-      <div className={styles.shell}>
-        <div className={styles.shell__grid}>
+      <div className={clsx(styles.shell, flush && styles.shellFlush)}>
+        <div className={clsx(styles.shell__grid, flush && styles.shell__gridFlush)}>
           <aside className={styles.shell__sidebar}>
             <div className={styles.shell__sidebarInner}>
               <nav className={styles.shell__nav}>
@@ -145,6 +145,6 @@ export async function AppShell(props: AppShellProps) {
           <main className={mainClass}>{children}</main>
         </div>
       </div>
-    </>
+    </div>
   );
 }
