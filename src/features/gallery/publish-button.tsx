@@ -44,7 +44,7 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
         disabled={isLoading || isPublished}
         className={styles.publishButton__action}
       >
-        <Send size={14} />
+        <Send size={12} />
         {label}
       </button>
     </div>
