@@ -50,7 +50,12 @@ export function DashboardOverview(props: DashboardOverviewProps) {
 
   const [balance, setBalance] = useState(initialBalance);
 
-  function onCheckInClaimed(credits: number) {
+  function onCheckInClaimed(credits: number, totalCredits?: number) {
+    if (typeof totalCredits === "number") {
+      setBalance(totalCredits);
+      return;
+    }
+
     setBalance((current) => current + credits);
   }
 

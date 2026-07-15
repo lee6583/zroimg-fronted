@@ -1,7 +1,8 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
 import { getCheckInDateInfo, getCheckInStatus, getDashboardStats } from "@/server/bff/account";
-import { isMockBffEnabled } from "@/server/env";
+import { isJavaAuthEnabled, isMockBffEnabled } from "@/server/env";
+import { getJavaCheckInStatus } from "@/server/bff/internal/java-checkins";
 import type { CheckInStatus } from "@/types/checkin";
 import { DashboardOverview } from "./dashboard-overview";
 import styles from "./dashboard.module.css";
@@ -15,6 +16,7 @@ function buildEmptyCheckInStatus(): CheckInStatus {
     checkedIn: false,
     checkedAt: null,
     streakDays: 0,
+    weekSignDays: 0,
     totalCheckIns: 0,
     checkedDayKeys: [],
   };
@@ -36,6 +38,10 @@ export default async function DashboardPage() {
   if (isMockBffEnabled()) {
     stats = await getDashboardStats(current.profile.id);
     checkInStatus = await getCheckInStatus(current.profile.id);
+  }
+
+  if (isJavaAuthEnabled()) {
+    checkInStatus = await getJavaCheckInStatus();
   }
 
   return (

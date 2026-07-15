@@ -86,11 +86,6 @@ export const formats: Array<{
   { value: "jpeg", label: "JPG" },
 ];
 export const imageCounts = [1, 2, 4];
-export const promptSuggestions = [
-  "一只在星空下弹吉他的猫",
-  "未来城市的日落景色",
-  "水彩风格的樱花园",
-];
 export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
   queued: "排队中",
   running: "生成中",

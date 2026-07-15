@@ -10,7 +10,7 @@ import { estimateGenerationCredits } from "../src/utils/generation-credits.ts";
 test("custom purchases use the documented exchange rate", () => {
   assert.equal(calculateCustomCredits(CUSTOM_MIN_AMOUNT_CNY), 5);
   assert.equal(calculateCustomCredits(29.9), 149);
-  assert.equal(calculateCustomCredits(CUSTOM_MAX_AMOUNT_CNY), 49_995);
+  assert.equal(calculateCustomCredits(CUSTOM_MAX_AMOUNT_CNY), 25_000);
 });
 
 test("generation estimates account for mode, quality, size, and count", () => {

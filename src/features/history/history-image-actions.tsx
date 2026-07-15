@@ -95,7 +95,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
             isFavorited && styles.historyImageActions__iconButtonActive,
           )}
         >
-          <Star size={16} fill={isFavorited ? "currentColor" : "none"} />
+          <Star size={13} fill={isFavorited ? "currentColor" : "none"} />
         </button>
 
         <a
@@ -107,7 +107,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           rel="noreferrer"
           className={styles.historyImageActions__iconButton}
         >
-          <Download size={15} />
+          <Download size={13} />
         </a>
       </div>
 

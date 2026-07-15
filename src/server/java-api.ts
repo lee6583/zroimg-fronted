@@ -31,6 +31,12 @@ type JavaEnvelope<T> = {
   message?: string;
 };
 
+type JavaApiDataOptions = {
+  method?: "GET" | "POST";
+  headers?: HeadersInit;
+  body?: BodyInit | null;
+};
+
 function normalizeJavaApiBaseUrl() {
   const value = serverEnv.javaApiBaseUrl;
   if (!value) {
@@ -107,7 +113,11 @@ function readJavaErrorMessage(payload: unknown, fallback: string) {
 }
 
 function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
-  return typeof payload.code === "number" && payload.code !== 200;
+  if (typeof payload.code !== "number") {
+    return false;
+  }
+
+  return payload.code !== 200;
 }
 
 export async function proxyRequestToJavaApi(
@@ -152,12 +162,23 @@ export async function proxyRequestToJavaApi(
   }
 }
 
-export async function getJavaApiData<T>(path: string) {
+export async function requestJavaApiData<T>(path: string, options: JavaApiDataOptions = {}) {
   try {
+    const method = options.method || "GET";
     const headerStore = await headers();
+    const nextHeaders = buildForwardHeaders(headerStore);
+
+    if (options.headers) {
+      const customHeaders = new Headers(options.headers);
+      customHeaders.forEach((value, key) => {
+        nextHeaders.set(key, value);
+      });
+    }
+
     const response = await fetch(buildJavaApiUrl(path), {
-      method: "GET",
-      headers: buildForwardHeaders(headerStore),
+      method,
+      headers: nextHeaders,
+      body: options.body,
       cache: "no-store",
     });
     const payload = (await response.json()) as JavaEnvelope<T>;
@@ -179,4 +200,8 @@ export async function getJavaApiData<T>(path: string) {
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
+}
+
+export async function getJavaApiData<T>(path: string) {
+  return requestJavaApiData<T>(path);
 }

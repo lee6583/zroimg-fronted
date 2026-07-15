@@ -49,10 +49,6 @@ export async function AdminShell(props: AdminShellProps) {
         <div className={styles.shell__grid}>
           <aside className={styles.shell__sidebar}>
             <div className={styles.shell__sidebarInner}>
-              <div className={styles.shell__adminHeader}>
-                <p className="label">Admin</p>
-                <h2 className={styles.shell__adminTitle}>管理后台</h2>
-              </div>
               <nav className={styles.shell__nav}>
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;

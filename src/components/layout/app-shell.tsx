@@ -3,6 +3,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import {
   Clock3,
+  Clapperboard,
   Coins,
   FolderHeart,
   ImagePlus,
@@ -17,6 +18,7 @@ import styles from "./shell.module.css";
 type AppSection =
   | "overview"
   | "generate"
+  | "video"
   | "history"
   | "favorites"
   | "credits"
@@ -47,6 +49,12 @@ const appNavItems: Array<{
     label: "图片生成",
     href: "/generate",
     icon: ImagePlus,
+  },
+  {
+    key: "video",
+    label: "视频创作",
+    href: "/video",
+    icon: Clapperboard,
   },
   {
     key: "history",
@@ -97,10 +105,10 @@ export async function AppShell(props: AppShellProps) {
   }
 
   return (
-    <>
+    <div className={clsx(styles.shellPage, flush && styles.shellPageFlush)}>
       <ProductTopNav />
-      <div className={styles.shell}>
-        <div className={styles.shell__grid}>
+      <div className={clsx(styles.shell, flush && styles.shellFlush)}>
+        <div className={clsx(styles.shell__grid, flush && styles.shell__gridFlush)}>
           <aside className={styles.shell__sidebar}>
             <div className={styles.shell__sidebarInner}>
               <nav className={styles.shell__nav}>
@@ -137,6 +145,6 @@ export async function AppShell(props: AppShellProps) {
           <main className={mainClass}>{children}</main>
         </div>
       </div>
-    </>
+    </div>
   );
 }

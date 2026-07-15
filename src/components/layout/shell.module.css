@@ -1,11 +1,34 @@
+.shellPage {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+.shellPageFlush {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .shell {
   flex: 1;
+}
+
+.shellFlush {
+  display: flex;
+  min-height: 0;
 }
 
 .shell__grid {
   display: grid;
   width: 100%;
   grid-template-columns: minmax(0, 1fr);
+}
+
+.shell__gridFlush {
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .shell__sidebar {
@@ -16,20 +39,6 @@
 
 .shell__sidebarInner {
   padding: 1rem 0.75rem;
-}
-
-.shell__adminHeader {
-  display: none;
-  margin-bottom: 1.25rem;
-  padding: 0 0.75rem;
-}
-
-.shell__adminTitle {
-  margin-top: 0.25rem;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  letter-spacing: -0.025em;
 }
 
 .shell__nav {
@@ -87,7 +96,9 @@
 }
 
 .shell__mainFlush {
+  min-height: 0;
   min-width: 0;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -102,6 +113,15 @@
     grid-template-columns: 14rem minmax(0, 1fr);
   }
 
+  .shell__gridFlush {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .shell__gridFlush .shell__sidebar {
+    top: 0;
+    height: 100%;
+  }
+
   .shell__sidebar {
     position: sticky;
     top: 4rem;
@@ -112,10 +132,6 @@
 
   .shell__sidebarInner {
     padding: 2rem 0.75rem;
-  }
-
-  .shell__adminHeader {
-    display: block;
   }
 
   .shell__nav {

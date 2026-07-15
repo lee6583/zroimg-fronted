@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FolderHeart, Pencil, Plus, Trash2 } from "lucide-react";
+import { FolderHeart, Pencil, Plus, Trash2, X } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import styles from "./favorites.module.css";
 
@@ -123,7 +123,10 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
         </div>
         <button
           type="button"
-          onClick={() => setCreating(true)}
+          onClick={() => {
+            setError("");
+            setCreating(true);
+          }}
           className={styles.favorites__createButton}
         >
           <Plus size={17} />
@@ -132,22 +135,69 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
       </section>
 
       {isCreating ? (
-        <form className={styles.favorites__createPanel} onSubmit={createCollection}>
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className={styles.favorites__input}
-            placeholder="输入合集名称"
-            autoFocus
-          />
-          <button type="submit" disabled={isLoading} className={styles.favorites__submitButton}>
-            {isLoading ? "创建中" : "创建"}
-          </button>
-          <button type="button" onClick={cancelCreate} className={styles.favorites__cancelButton}>
-            取消
-          </button>
-          {error ? <p className={styles.favorites__error}>{error}</p> : null}
-        </form>
+        <div
+          className={styles.favorites__modalBackdrop}
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              cancelCreate();
+            }
+          }}
+        >
+          <section
+            className={styles.favorites__modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-collection-title"
+          >
+            <div className={styles.favorites__modalHeader}>
+              <div>
+                <h2 id="create-collection-title" className={styles.favorites__modalTitle}>
+                  新建合集
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={cancelCreate}
+                className={styles.favorites__modalClose}
+                aria-label="关闭弹窗"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form className={styles.favorites__createPanel} onSubmit={createCollection}>
+              <label className={styles.favorites__field}>
+                <input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  className={styles.favorites__input}
+                  placeholder="例如：头像参考"
+                  autoFocus
+                />
+              </label>
+
+              {error ? <p className={styles.favorites__error}>{error}</p> : null}
+
+              <div className={styles.favorites__modalActions}>
+                <button
+                  type="button"
+                  onClick={cancelCreate}
+                  className={styles.favorites__cancelButton}
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={styles.favorites__submitButton}
+                >
+                  {isLoading ? "创建中" : "创建"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       ) : null}
 
       <section

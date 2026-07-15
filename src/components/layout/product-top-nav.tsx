@@ -7,6 +7,7 @@ import styles from "./product-top-nav.module.css";
 
 const publicCenterLinks = [
   { label: "创作图片", href: "/generate" },
+  { label: "视频生成", href: "/video" },
   { label: "作品画廊", href: "/gallery" },
   { label: "定价", href: "/pricing" },
   { label: "文档", href: "/docs" },

@@ -212,7 +212,6 @@ export default async function HistoryPage(props: HistoryPageProps) {
       <main className={styles.history}>
         <section className={styles.history__header}>
           <h1 className="page-title">创作历史</h1>
-          <p className="page-description">查看你的所有历史创作</p>
         </section>
 
         <section className={styles.history__toolbar} aria-label="创作历史筛选">
@@ -241,8 +240,8 @@ export default async function HistoryPage(props: HistoryPageProps) {
           <section className={styles.history__tableCard} aria-label="历史作品">
             <div className={styles.history__tableScroller}>
               <div className={clsx(styles.history__tableRow, styles.history__tableHead)}>
-                <span>图片</span>
-                <span>提示词</span>
+                <span className={styles.history__centerCell}>图片</span>
+                <span className={styles.history__centerCell}>提示词</span>
                 <span className={styles.history__centerCell}>模型</span>
                 <span className={styles.history__centerCell}>分辨率</span>
                 <span className={styles.history__centerCell}>消耗</span>
@@ -278,7 +277,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                         )}
                       </div>
 
-                      <div>
+                      <div className={styles.history__promptCell}>
                         <h2 className={styles.history__prompt}>{task.prompt}</h2>
                         {task.error ? <p className={styles.history__error}>{task.error}</p> : null}
                       </div>
