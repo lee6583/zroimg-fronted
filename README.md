@@ -21,13 +21,14 @@ Java 后端负责真实用户、会话、验证码、生成任务、积分、订
 - Zod 4，用于 BFF 输入边界校验。
 - Lucide React，统一图标来源。
 - clsx，统一条件 class 拼接。
-- pnpm 10，唯一包管理器。
+- pnpm 11，唯一包管理器；具体版本由 `package.json` 的 `packageManager` 固定。
 
 修改 Next.js API、路由、缓存或文件约定前，必须先阅读当前安装版本位于 `node_modules/next/dist/docs/` 的对应指南。
 
 ## 2. 本地开发
 
 ```bash
+corepack enable
 pnpm install
 cp .env.example .env.local
 pnpm dev
