@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { requireUser } from "@/server/auth";
 import { getCheckInDateInfo, getCheckInStatus, getDashboardStats } from "@/server/bff/account";
 import { isJavaAuthEnabled, isMockBffEnabled } from "@/server/env";
@@ -36,8 +35,10 @@ export default async function DashboardPage() {
   let checkInStatus = buildEmptyCheckInStatus();
 
   if (isMockBffEnabled()) {
-    stats = await getDashboardStats(current.profile.id);
-    checkInStatus = await getCheckInStatus(current.profile.id);
+    [stats, checkInStatus] = await Promise.all([
+      getDashboardStats(current.profile.id),
+      getCheckInStatus(current.profile.id),
+    ]);
   }
 
   if (isJavaAuthEnabled()) {
@@ -45,20 +46,18 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell active="overview">
-      <div className={styles.dashboard}>
-        <section>
-          <h1 className="page-title">概览</h1>
-        </section>
+    <div className={styles.dashboard}>
+      <section>
+        <h1 className="page-title">概览</h1>
+      </section>
 
-        <DashboardOverview
-          generatedCount={stats.generatedCount}
-          monthlyGeneratedCount={stats.monthlyGeneratedCount}
-          favoriteCount={stats.favoriteCount}
-          initialBalance={current.profile.creditBalance}
-          checkInStatus={checkInStatus}
-        />
-      </div>
-    </AppShell>
+      <DashboardOverview
+        generatedCount={stats.generatedCount}
+        monthlyGeneratedCount={stats.monthlyGeneratedCount}
+        favoriteCount={stats.favoriteCount}
+        initialBalance={current.profile.creditBalance}
+        checkInStatus={checkInStatus}
+      />
+    </div>
   );
 }

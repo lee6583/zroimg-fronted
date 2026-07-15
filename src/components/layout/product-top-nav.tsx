@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { AnnouncementCenter } from "@/components/layout/announcement-center";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { getCurrentUserProfile } from "@/server/auth";
+import { getPublicAnnouncement } from "@/server/bff/account";
 import styles from "./product-top-nav.module.css";
 
 const publicCenterLinks = [
@@ -22,6 +24,7 @@ function avatarLabel(name?: string | null) {
 
 export async function ProductTopNav() {
   const current = await getCurrentUserProfile();
+  const announcement = await getPublicAnnouncement();
   let centerLinks = publicCenterLinks;
   if (current) {
     centerLinks = appCenterLinks;
@@ -44,6 +47,7 @@ export async function ProductTopNav() {
         </nav>
 
         <div className={styles.productTopNav__actions}>
+          <AnnouncementCenter announcement={announcement} shouldAutoOpen={Boolean(current)} />
           <ThemeControls />
           {current ? (
             <AccountMenu label={avatarLabel(current.profile.username)} />

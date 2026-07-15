@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { GenerateForm } from "@/features/generation/generate-form";
 import { requireUser } from "@/server/auth";
 import { ensureDefaultConversation, listConversations, listTasks } from "@/server/bff/generation";
@@ -36,13 +35,11 @@ export default async function GeneratePage() {
   }));
 
   return (
-    <AppShell active="generate" flush>
-      <GenerateForm
-        initialChats={items}
-        initialId={activeId}
-        initialTasks={taskList}
-        initialBalance={current.profile.creditBalance}
-      />
-    </AppShell>
+    <GenerateForm
+      initialChats={items}
+      initialId={activeId}
+      initialTasks={taskList}
+      initialBalance={current.profile.creditBalance}
+    />
   );
 }

@@ -102,15 +102,8 @@
 }
 
 @media (min-width: 768px) {
-  .shell__main {
-    padding-right: 2rem;
-    padding-left: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
   .shell__grid {
-    grid-template-columns: 14rem minmax(0, 1fr);
+    grid-template-columns: 12rem minmax(0, 1fr);
   }
 
   .shell__gridFlush {
@@ -131,7 +124,7 @@
   }
 
   .shell__sidebarInner {
-    padding: 2rem 0.75rem;
+    padding: 1.25rem 0.5rem;
   }
 
   .shell__nav {
@@ -144,6 +137,21 @@
     min-width: 0;
     padding-right: 0.5rem;
     padding-left: 0.5rem;
+  }
+
+  .shell__main {
+    padding-right: 2rem;
+    padding-left: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell__grid {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .shell__sidebarInner {
+    padding: 2rem 0.75rem;
   }
 
   .shell__main {

@@ -1,6 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Clock3,
   Clapperboard,
@@ -12,7 +16,6 @@ import {
   ReceiptText,
   Settings,
 } from "lucide-react";
-import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
 type AppSection =
@@ -26,10 +29,14 @@ type AppSection =
   | "tickets"
   | "settings";
 
-type AppShellProps = {
-  active?: AppSection;
+type ProductFrameProps = {
   children: ReactNode;
-  flush?: boolean;
+  topNav: ReactNode;
+};
+
+type PendingNav = {
+  href: string;
+  key: AppSection;
 };
 
 const appNavItems: Array<{
@@ -94,11 +101,36 @@ const appNavItems: Array<{
   },
 ];
 
-export async function AppShell(props: AppShellProps) {
-  const active = props.active;
-  const children = props.children;
-  const flush = props.flush ?? false;
+function getActiveSection(pathname: string): AppSection {
+  if (pathname.startsWith("/generate")) return "generate";
+  if (pathname.startsWith("/video")) return "video";
+  if (pathname.startsWith("/history")) return "history";
+  if (pathname.startsWith("/favorites")) return "favorites";
+  if (pathname.startsWith("/credits")) return "credits";
+  if (pathname.startsWith("/billing")) return "billing";
+  if (pathname.startsWith("/tickets")) return "tickets";
+  if (pathname.startsWith("/settings")) return "settings";
 
+  return "overview";
+}
+
+function getFlush(pathname: string) {
+  return pathname.startsWith("/generate") || pathname.startsWith("/video");
+}
+
+export function ProductFrame(props: ProductFrameProps) {
+  const children = props.children;
+  const topNav = props.topNav;
+  const pathname = usePathname();
+  const router = useRouter();
+  const active = useMemo(() => getActiveSection(pathname), [pathname]);
+  const flush = useMemo(() => getFlush(pathname), [pathname]);
+  const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
+
+  const isPendingCurrent =
+    pendingNav !== null &&
+    (pathname === pendingNav.href || pathname.startsWith(`${pendingNav.href}/`));
+  const visibleActive = pendingNav && !isPendingCurrent ? pendingNav.key : active;
   let mainClass = styles.shell__main;
   if (flush) {
     mainClass = styles.shell__mainFlush;
@@ -106,7 +138,7 @@ export async function AppShell(props: AppShellProps) {
 
   return (
     <div className={clsx(styles.shellPage, flush && styles.shellPageFlush)}>
-      <ProductTopNav />
+      {topNav}
       <div className={clsx(styles.shell, flush && styles.shellFlush)}>
         <div className={clsx(styles.shell__grid, flush && styles.shell__gridFlush)}>
           <aside className={styles.shell__sidebar}>
@@ -114,11 +146,16 @@ export async function AppShell(props: AppShellProps) {
               <nav className={styles.shell__nav}>
                 {appNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = active === item.key;
+                  const isActive = visibleActive === item.key;
+
                   return (
                     <Link
                       key={item.key}
                       href={item.href}
+                      prefetch
+                      onFocus={() => router.prefetch(item.href)}
+                      onMouseEnter={() => router.prefetch(item.href)}
+                      onClick={() => setPendingNav({ href: item.href, key: item.key })}
                       className={clsx(
                         styles.shell__navLink,
                         isActive && styles.shell__navLinkActive,

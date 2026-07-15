@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Gift, Hash, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
@@ -10,6 +10,7 @@ import styles from "./auth-form.module.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const codePattern = /^[0-9]{6}$/;
+const defaultCodeCooldownSeconds = 60;
 
 type RegisterFields = {
   username: string;
@@ -71,7 +72,23 @@ export function RegisterForm() {
   const [sliderToken, setSliderToken] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
+  const [isSendingCode, setSendingCode] = useState(false);
+  const [codeCountdown, setCodeCountdown] = useState(0);
   const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (codeCountdown <= 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCodeCountdown((currentCountdown) => {
+        return Math.max(currentCountdown - 1, 0);
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [codeCountdown]);
 
   function resetSliderVerification() {
     setVerified(false);
@@ -113,6 +130,10 @@ export function RegisterForm() {
   }
 
   async function sendCode() {
+    if (isSendingCode || codeCountdown > 0) {
+      return;
+    }
+
     const emailError = getEmailError(email);
     if (emailError) {
       setMessageType("error");
@@ -127,14 +148,18 @@ export function RegisterForm() {
     }
 
     try {
+      setSendingCode(true);
       setMessage("");
       const normalizedEmail = email.trim().toLowerCase();
       const data = await authApi.sendRegisterCode({ email: normalizedEmail, sliderToken });
+      setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
       setMessage(data.message);
     } catch (error) {
       setMessageType("error");
       setMessage(getErrorMessage(error));
+    } finally {
+      setSendingCode(false);
     }
   }
 
@@ -170,6 +195,13 @@ export function RegisterForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  let sendCodeText = "发码";
+  if (isSendingCode) {
+    sendCodeText = "发送中";
+  } else if (codeCountdown > 0) {
+    sendCodeText = `${codeCountdown}s`;
   }
 
   return (
@@ -208,6 +240,7 @@ export function RegisterForm() {
                 emailRef.current = nextEmail;
                 setEmail(nextEmail);
                 setCode("");
+                setCodeCountdown(0);
                 setMessage("");
                 resetSliderVerification();
               }}
@@ -238,8 +271,13 @@ export function RegisterForm() {
                 required
               />
             </span>
-            <button type="button" className={styles.authForm__secondaryButton} onClick={sendCode}>
-              发码
+            <button
+              type="button"
+              className={styles.authForm__secondaryButton}
+              onClick={sendCode}
+              disabled={isSendingCode || codeCountdown > 0}
+            >
+              {sendCodeText}
             </button>
           </span>
         </label>

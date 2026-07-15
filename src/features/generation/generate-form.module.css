@@ -547,6 +547,7 @@
   border-radius: 0.875rem;
   padding: 0.875rem 1rem;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .generateForm__userBubble {
@@ -601,10 +602,11 @@
 
 .generateForm__chatImage {
   width: 100%;
-  aspect-ratio: 1;
+  height: min(48dvh, 28rem);
   border: 1px solid var(--line);
   border-radius: 0.625rem;
-  object-fit: cover;
+  background: var(--soft);
+  object-fit: contain;
 }
 
 .generateForm__composerBar {
@@ -671,7 +673,14 @@
   color: var(--foreground);
   font-size: 0.875rem;
   line-height: 1.5;
+  overflow-y: auto;
   outline: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.generateForm__textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .generateForm__textarea::placeholder {

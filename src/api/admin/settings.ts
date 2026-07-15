@@ -1,5 +1,9 @@
 import { request } from "@/utils/request";
 import type {
+  SaveAnnouncementSettingsRequest,
+  SaveAnnouncementSettingsResponse,
+} from "@/types/announcement";
+import type {
   SaveCheckInSettingsRequest,
   SaveCheckInSettingsResponse,
   SaveEasyPaySettingsRequest,
@@ -52,10 +56,19 @@ function saveCheckInSettings(data: SaveCheckInSettingsRequest) {
   });
 }
 
+function saveAnnouncementSettings(data: SaveAnnouncementSettingsRequest) {
+  return request<SaveAnnouncementSettingsResponse>({
+    url: "/api/admin/settings/announcement",
+    method: "POST",
+    data,
+  });
+}
+
 export const adminSettingsApi = {
   saveGenerationSettings,
   saveSmtpSettings,
   testSmtpSettings,
   saveEasyPaySettings,
   saveCheckInSettings,
+  saveAnnouncementSettings,
 };

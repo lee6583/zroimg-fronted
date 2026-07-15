@@ -21,10 +21,13 @@ export {
 } from "@/server/bff/internal/feedback";
 export {
   getCheckInSettings,
+  getAnnouncementSettings,
   getEasyPayAdminConfig,
   getGenerationConfig,
+  getPublicAnnouncement,
   getSmtpAdminConfig,
   updateCheckInSettings,
+  updateAnnouncementSettings,
   updateEasyPaySettings,
   updateGenerationConfig,
   updateSmtpSettings,

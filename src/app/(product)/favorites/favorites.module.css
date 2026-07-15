@@ -160,7 +160,7 @@
 .favorites__grid {
   display: grid;
   width: 100%;
-  justify-content: start;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
@@ -445,7 +445,7 @@
 
 @media (min-width: 760px) {
   .favorites__grid {
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 25rem));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .favorites__imageGrid {
@@ -453,12 +453,20 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1320px) {
   .favorites__grid {
-    grid-template-columns: repeat(auto-fill, minmax(22rem, 25rem));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
 
+@media (min-width: 1280px) {
   .favorites__imageGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1720px) {
+  .favorites__grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

@@ -221,6 +221,12 @@ export type MockSettingsState = {
   checkin: {
     dailyCredits: number;
   };
+  announcement: {
+    enabled: boolean;
+    title: string;
+    content: string;
+    updatedAt: Date;
+  };
   docs: unknown;
 };
 
@@ -253,13 +259,19 @@ function base64(input: string) {
 
 function svgDataUrl(title: string, accent = "#111111", soft = "#f5f5f5") {
   const safeTitle = title.replace(/[<&>"]/g, "");
+  const displayTitle = safeTitle.length > 9 ? `${safeTitle.slice(0, 9)}...` : safeTitle;
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="768" height="768" viewBox="0 0 768 768" overflow="hidden">
+      <defs>
+        <clipPath id="mock-title-clip">
+          <rect x="96" y="520" width="576" height="70" />
+        </clipPath>
+      </defs>
       <rect width="768" height="768" fill="${soft}" />
       <rect x="32" y="32" width="704" height="704" rx="28" fill="white" stroke="#e5e5e5" />
       <rect x="96" y="112" width="576" height="320" rx="28" fill="${accent}" opacity="0.14" />
       <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroImg Mock Output</text>
-      <text x="96" y="566" font-size="54" fill="#111111" font-family="Georgia, serif">${safeTitle.slice(0, 26)}</text>
+      <text x="96" y="566" font-size="46" fill="#111111" font-family="Georgia, serif" clip-path="url(#mock-title-clip)">${displayTitle}</text>
       <text x="96" y="622" font-size="24" fill="#525252" font-family="Inter, sans-serif">Frontend preview</text>
       <text x="96" y="658" font-size="24" fill="#525252" font-family="Inter, sans-serif">Before Java backend integration</text>
     </svg>
@@ -756,6 +768,12 @@ function createStore(): MockStore {
       },
       checkin: {
         dailyCredits: 5,
+      },
+      announcement: {
+        enabled: true,
+        title: "系统公告",
+        content: "欢迎使用 ZroImg。当前为前端联调环境，部分功能仍使用 mock 数据。",
+        updatedAt: nowMinus(1),
       },
       docs: null,
     },

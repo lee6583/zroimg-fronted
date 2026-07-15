@@ -115,7 +115,14 @@
   font-family: inherit;
   font-size: 0.82rem;
   line-height: 1.6;
-  resize: vertical;
+  overflow-y: auto;
+  resize: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.videoPage__textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .videoPage__textarea:focus {

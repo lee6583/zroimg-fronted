@@ -1,12 +1,14 @@
 "use client";
 
 import { getErrorMessage } from "@/utils/error";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
 import styles from "./auth-form.module.css";
+
+const LOGIN_COOLDOWN_MS = 1500;
 
 export function LoginForm() {
   const router = useRouter();
@@ -14,28 +16,68 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [isCoolingDown, setCoolingDown] = useState(false);
+  const cooldownUntilRef = useRef(0);
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+      }
+    };
+  }, []);
+
+  function startCooldown() {
+    cooldownUntilRef.current = Date.now() + LOGIN_COOLDOWN_MS;
+    setCoolingDown(true);
+
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+    }
+
+    cooldownTimerRef.current = setTimeout(() => {
+      setCoolingDown(false);
+      cooldownTimerRef.current = null;
+    }, LOGIN_COOLDOWN_MS);
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const isInCooldown = Date.now() < cooldownUntilRef.current;
+    if (isLoading || isCoolingDown || isInCooldown) {
+      return;
+    }
+
+    startCooldown();
+
     try {
       setLoading(true);
       setMessage("");
       const data = await authApi.loginWithEmail({ email, password });
-      setLoading(false);
 
       if (data.user.role === "admin") {
         router.push("/admin");
         router.refresh();
         return;
       }
-    } catch (error) {
-      setLoading(false);
-      setMessage(getErrorMessage(error));
-      return;
-    }
 
-    router.push("/dashboard");
-    router.refresh();
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isSubmitDisabled = isLoading || isCoolingDown;
+  let submitText = "登录";
+  if (isLoading) {
+    submitText = "登录中";
+  } else if (isCoolingDown) {
+    submitText = "请稍候";
   }
 
   return (
@@ -82,8 +124,8 @@ export function LoginForm() {
         ) : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={isLoading}>
-        {isLoading ? "登录中" : "登录"}
+      <button className={styles.authForm__submit} disabled={isSubmitDisabled}>
+        {submitText}
       </button>
     </form>
   );

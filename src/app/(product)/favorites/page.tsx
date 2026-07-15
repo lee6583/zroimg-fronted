@@ -1,7 +1,6 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { FavoriteCollectionsView } from "@/app/favorites/favorites-view";
 import { requireUser } from "@/server/auth";
 import { listCollections } from "@/server/bff/account";
+import { FavoriteCollectionsView } from "./favorites-view";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +13,5 @@ export default async function FavoritesPage() {
     imageCount: collection._count.items,
   }));
 
-  return (
-    <AppShell active="favorites">
-      <FavoriteCollectionsView collections={collectionItems} />
-    </AppShell>
-  );
+  return <FavoriteCollectionsView collections={collectionItems} />;
 }

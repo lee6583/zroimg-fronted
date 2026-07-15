@@ -47,6 +47,7 @@ function errorCode(status: number): ApiErrorCode {
   if (status === 403) return "FORBIDDEN";
   if (status === 404) return "NOT_FOUND";
   if (status === 409) return "CONFLICT";
+  if (status === 429) return "RATE_LIMITED";
   if (status === 422) return "VALIDATION_ERROR";
   if (status >= 500) return "SERVER_ERROR";
   return "BAD_REQUEST";

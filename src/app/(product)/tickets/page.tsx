@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { FeedbackPanel } from "@/features/tickets/feedback-panel";
 import { requireUser } from "@/server/auth";
 import { listTicketsForUser } from "@/server/bff/account";
@@ -27,14 +26,12 @@ export default async function TicketsPage() {
   }));
 
   return (
-    <AppShell active="tickets">
-      <div className="grid gap-6">
-        <section>
-          <h1 className="page-title">意见反馈</h1>
-        </section>
+    <div className="grid gap-6">
+      <section>
+        <h1 className="page-title">意见反馈</h1>
+      </section>
 
-        <FeedbackPanel initialTickets={ticketItems} />
-      </div>
-    </AppShell>
+      <FeedbackPanel initialTickets={ticketItems} />
+    </div>
   );
 }

@@ -35,6 +35,7 @@ type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "RATE_LIMITED"
   | "VALIDATION_ERROR"
   | "SERVER_ERROR"
   | "NETWORK_ERROR"

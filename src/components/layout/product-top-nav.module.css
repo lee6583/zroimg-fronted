@@ -48,6 +48,74 @@
   gap: 0.25rem;
 }
 
+.productTopNav__announcementBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--background) 72%, transparent);
+  padding: 1rem;
+}
+
+.productTopNav__announcementDialog {
+  width: min(100%, 28rem);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  padding: 1.1rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.14);
+}
+
+.productTopNav__announcementHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.85rem;
+}
+
+.productTopNav__announcementKicker {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.productTopNav__announcementTitle {
+  margin-top: 0.2rem;
+  color: var(--foreground);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.productTopNav__announcementClose {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.productTopNav__announcementClose:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.productTopNav__announcementContent {
+  margin-top: 1rem;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
 .productTopNav__account {
   position: relative;
 }

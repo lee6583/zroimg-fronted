@@ -1,11 +1,13 @@
 "use client";
 
 import { Hash, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/api/auth/email-auth";
 import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
+
+const defaultCodeCooldownSeconds = 60;
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -16,13 +18,33 @@ export function ForgotPasswordForm() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [isSending, setSending] = useState(false);
+  const [codeCountdown, setCodeCountdown] = useState(0);
   const [isLoading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (codeCountdown <= 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCodeCountdown((currentCountdown) => {
+        return Math.max(currentCountdown - 1, 0);
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [codeCountdown]);
+
   async function sendCode() {
+    if (isSending || codeCountdown > 0) {
+      return;
+    }
+
     try {
       setSending(true);
       setMessage("");
       const data = await authApi.sendPasswordResetCode({ email });
+      setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
       setMessage(data.message);
     } catch (error) {
@@ -62,6 +84,13 @@ export function ForgotPasswordForm() {
     }
   }
 
+  let sendCodeText = "发码";
+  if (isSending) {
+    sendCodeText = "发送中";
+  } else if (codeCountdown > 0) {
+    sendCodeText = `${codeCountdown}s`;
+  }
+
   return (
     <form onSubmit={onSubmit} className={styles.authForm}>
       <div className={styles.authForm__fields}>
@@ -74,7 +103,10 @@ export function ForgotPasswordForm() {
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setCodeCountdown(0);
+              }}
               required
             />
           </span>
@@ -97,9 +129,9 @@ export function ForgotPasswordForm() {
               type="button"
               className={styles.authForm__secondaryButton}
               onClick={sendCode}
-              disabled={isSending || !email.trim()}
+              disabled={isSending || codeCountdown > 0 || !email.trim()}
             >
-              {isSending ? "发送中" : "发码"}
+              {sendCodeText}
             </button>
           </span>
         </label>
