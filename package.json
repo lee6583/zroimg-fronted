@@ -13,7 +13,6 @@
     "test": "node --experimental-strip-types --test tests/credits.test.ts tests/media.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "audit:prod": "pnpm audit --prod --registry=https://registry.npmjs.org",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
