@@ -82,6 +82,8 @@ git switch -c feature/功能名称
 根据修改范围运行检查：
 
 ```bash
+corepack enable
+pnpm --version
 pnpm install --frozen-lockfile
 pnpm format:check
 pnpm lint
@@ -89,6 +91,8 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+`pnpm --version` 应与 `package.json` 的 `packageManager` 一致。不要由每位协作者自行选择 pnpm 版本；版本升级和 CI 命令调整必须通过仓库 PR 统一完成。
 
 本地检查通过不能代替 GitHub Actions，但能更早发现问题，减少等待时间。
 
@@ -306,17 +310,18 @@ docker logs --tail 200 zroimg-frontend-dev
 
 ## 7. 常见状态与处理方法
 
-| 现象                         | 含义                                   | 处理方式                                                   |
-| ---------------------------- | -------------------------------------- | ---------------------------------------------------------- |
-| PR 的 `verify` 失败          | 代码、测试、构建或依赖审计有问题       | 在原功能分支修复并重新 push                                |
-| `build-image-attempt-1` 失败 | 第一次镜像构建未成功                   | 先等待 `build-image` 自动检查和重试                        |
-| `build-image` 成功           | SHA 镜像已经可用                       | 继续等待 `deploy-development`                              |
-| `build-image` 仍失败         | 重试后镜像仍不可用                     | 查看日志；网络故障可稍后重跑，配置或代码错误要先修复       |
-| Workflow 显示 `Cancelled`    | 被手动取消，或被更新的同分支运行替代   | 先看是否有更新运行；没有时对最新记录执行 `Re-run all jobs` |
-| `deploy-development` 失败    | SSH、拉镜像、容器健康或 Nginx 检查失败 | 查看失败步骤和服务器日志，确认自动回滚结果                 |
-| 网站显示 502                 | Nginx 无法访问前端容器                 | 检查容器状态、健康检查、Docker 网络和 Nginx 日志           |
-| Actions 成功但页面像旧版本   | 浏览器缓存、访问地址错误或版本判断错误 | 强制刷新，并核对 `.deployed-tag` 和 Actions 提交 SHA       |
-| GHCR 显示 unauthorized       | 服务器镜像读取凭据失效或权限不足       | 由管理员更新仅含 `read:packages` 的凭据                    |
+| 现象                         | 含义                                     | 处理方式                                                      |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| PR 的 `verify` 失败          | 代码、测试、构建或依赖审计有问题         | 在原功能分支修复并重新 push                                   |
+| `pnpm audit` 返回 `410`      | npm 旧审计接口已停用，不是协作者代码错误 | 同步最新 `dev`；由维护人统一升级 pnpm 或调整 CI，不要反复推送 |
+| `build-image-attempt-1` 失败 | 第一次镜像构建未成功                     | 先等待 `build-image` 自动检查和重试                           |
+| `build-image` 成功           | SHA 镜像已经可用                         | 继续等待 `deploy-development`                                 |
+| `build-image` 仍失败         | 重试后镜像仍不可用                       | 查看日志；网络故障可稍后重跑，配置或代码错误要先修复          |
+| Workflow 显示 `Cancelled`    | 被手动取消，或被更新的同分支运行替代     | 先看是否有更新运行；没有时对最新记录执行 `Re-run all jobs`    |
+| `deploy-development` 失败    | SSH、拉镜像、容器健康或 Nginx 检查失败   | 查看失败步骤和服务器日志，确认自动回滚结果                    |
+| 网站显示 502                 | Nginx 无法访问前端容器                   | 检查容器状态、健康检查、Docker 网络和 Nginx 日志              |
+| Actions 成功但页面像旧版本   | 浏览器缓存、访问地址错误或版本判断错误   | 强制刷新，并核对 `.deployed-tag` 和 Actions 提交 SHA          |
+| GHCR 显示 unauthorized       | 服务器镜像读取凭据失效或权限不足         | 由管理员更新仅含 `read:packages` 的凭据                       |
 
 黄色 warning 不一定代表失败，应以任务最终状态和具体日志为准。例如 Action 运行时版本弃用提示需要后续升级，但不等于本次部署失败。
 
