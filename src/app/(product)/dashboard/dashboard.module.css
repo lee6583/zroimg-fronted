@@ -13,10 +13,10 @@
 
 .dashboard__summary {
   display: grid;
-  gap: 1.25rem;
+  gap: 3rem;
 }
 
-.dashboard__summaryMain {
+.dashboard__topRow {
   display: grid;
   gap: 1.25rem;
 }
@@ -59,43 +59,75 @@
   background: var(--soft);
 }
 
-.dashboard__creationCard {
-  display: grid;
-  gap: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 0.8rem;
-  background: var(--panel);
-  padding: 1rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-}
-
-.dashboard__creationTitle {
-  margin-top: 0.25rem;
-  font-size: 0.95rem;
-  font-weight: 650;
+.dashboard__sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
-.dashboard__creationActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.dashboard__recent {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.dashboard__recentGrid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.dashboard__recentItem {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.dashboard__recentImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--soft);
+  object-fit: cover;
+}
+
+.dashboard__recentPrompt {
+  display: -webkit-box;
+  overflow: hidden;
+  padding: 0.75rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.dashboard__recentEmpty {
+  border: 1px dashed var(--line);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 
 @media (min-width: 768px) {
   .dashboard__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .dashboard__recentGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1280px) {
-  .dashboard__summary {
+  .dashboard__topRow {
     grid-template-columns: minmax(0, 1fr) 24rem;
-    align-items: start;
+    align-items: stretch;
   }
 
-  .dashboard__creationCard {
-    grid-template-columns: 1fr auto;
-    align-items: end;
+  .dashboard__recentGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

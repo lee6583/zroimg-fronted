@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Heart, ImageIcon, WalletCards } from "lucide-react";
+import Image from "next/image";
+import { CalendarDays, Heart, ImageIcon, WalletCards } from "lucide-react";
 import { useState } from "react";
 import { CheckInCard } from "@/features/dashboard/check-in-card";
 import type { CheckInStatus } from "@/types/checkin";
@@ -39,6 +39,15 @@ type DashboardOverviewProps = {
   favoriteCount: number;
   initialBalance: number;
   checkInStatus: CheckInStatus;
+  recentCreations: RecentCreation[];
+};
+
+type RecentCreation = {
+  id: string;
+  prompt: string;
+  imageUrl: string;
+  width: number;
+  height: number;
 };
 
 export function DashboardOverview(props: DashboardOverviewProps) {
@@ -47,6 +56,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
   const favoriteCount = props.favoriteCount;
   const initialBalance = props.initialBalance;
   const checkInStatus = props.checkInStatus;
+  const recentCreations = props.recentCreations;
 
   const [balance, setBalance] = useState(initialBalance);
 
@@ -61,7 +71,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
 
   return (
     <section className={styles.dashboard__summary}>
-      <div className={styles.dashboard__summaryMain}>
+      <div className={styles.dashboard__topRow}>
         <div className={styles.dashboard__metrics}>
           <MetricCard label="生成总数" value={generatedCount} icon={ImageIcon} />
           <MetricCard label="本月生成" value={monthlyGeneratedCount} icon={CalendarDays} />
@@ -69,24 +79,31 @@ export function DashboardOverview(props: DashboardOverviewProps) {
           <MetricCard label="剩余积分" value={balance} icon={WalletCards} />
         </div>
 
-        <section className={styles.dashboard__creationCard}>
-          <div>
-            <p className={styles.dashboard__eyebrow}>Create</p>
-            <h2 className={styles.dashboard__creationTitle}>创作起点</h2>
-          </div>
-          <div className={styles.dashboard__creationActions}>
-            <Link href="/generate" className="btn-primary">
-              开始创作
-              <ArrowUpRight size={16} />
-            </Link>
-            <Link href="/history" className="btn-secondary">
-              查看历史
-            </Link>
-          </div>
-        </section>
+        <CheckInCard initialStatus={checkInStatus} onClaimed={onCheckInClaimed} />
       </div>
 
-      <CheckInCard initialStatus={checkInStatus} onClaimed={onCheckInClaimed} />
+      <section className={styles.dashboard__recent}>
+        <h2 className={styles.dashboard__sectionTitle}>最近创作</h2>
+        {recentCreations.length > 0 ? (
+          <div className={styles.dashboard__recentGrid}>
+            {recentCreations.map((item) => (
+              <article key={item.id} className={styles.dashboard__recentItem}>
+                <Image
+                  className={styles.dashboard__recentImage}
+                  src={item.imageUrl}
+                  alt={item.prompt}
+                  width={item.width}
+                  height={item.height}
+                  unoptimized
+                />
+                <p className={styles.dashboard__recentPrompt}>{item.prompt}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.dashboard__recentEmpty}>还没有最近创作。</p>
+        )}
+      </section>
     </section>
   );
 }

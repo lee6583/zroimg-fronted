@@ -1,11 +1,18 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { FileClock } from "lucide-react";
+import { AppPagination } from "@/components/ui/app-pagination";
 import { requireUser } from "@/server/auth";
 import { prisma } from "@/server/bff/orders";
+import { OrderActions } from "./order-actions";
 import styles from "./billing.module.css";
 
 export const dynamic = "force-dynamic";
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type BillingPageProps = {
+  searchParams: SearchParams;
+};
 
 const orderStatusLabels: Record<string, string> = {
   pending: "待支付",
@@ -20,6 +27,40 @@ const paymentTypeLabels: Record<string, string> = {
   alipay: "alipay",
   wxpay: "wxpay",
 };
+
+const defaultPageSize = 10;
+const pageSizes = [10, 20, 50];
+
+function readParam(params: Record<string, string | string[] | undefined>, key: string) {
+  const value = params[key];
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function normalizePage(value?: string) {
+  const page = Number(value || 1);
+  if (!Number.isFinite(page)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(page));
+}
+
+function normalizePageSize(value?: string) {
+  const size = Number(value || defaultPageSize);
+  if (!Number.isFinite(size)) {
+    return defaultPageSize;
+  }
+
+  if (pageSizes.includes(size)) {
+    return size;
+  }
+
+  return defaultPageSize;
+}
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -48,12 +89,20 @@ function statusClassName(status: string) {
   return styles.billing__statusMuted;
 }
 
-export default async function BillingPage() {
+export default async function BillingPage(props: BillingPageProps) {
+  const params = await props.searchParams;
+  const rawPage = normalizePage(readParam(params, "page"));
+  const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
   const current = await requireUser();
+  const where = { userProfileId: current.profile.id };
+  const total = await prisma.paymentOrder.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / currentPageSize));
+  const currentPage = Math.min(rawPage, totalPages);
   const orders = await prisma.paymentOrder.findMany({
-    where: { userProfileId: current.profile.id },
+    where,
     orderBy: { createdAt: "desc" },
-    take: 50,
+    skip: (currentPage - 1) * currentPageSize,
+    take: currentPageSize,
   });
 
   return (
@@ -76,6 +125,7 @@ export default async function BillingPage() {
               <span>状态</span>
               <span>创建时间</span>
               <span>支付时间</span>
+              <span>操作</span>
             </div>
 
             <div className={styles.billing__tableBody}>
@@ -98,6 +148,13 @@ export default async function BillingPage() {
                   <span className={styles.billing__muted}>
                     {order.paidAt ? formatDate(order.paidAt) : "—"}
                   </span>
+                  <span className={styles.billing__muted}>
+                    {order.status === "pending" ? (
+                      <OrderActions orderNo={order.orderNo} />
+                    ) : (
+                      "—"
+                    )}
+                  </span>
                 </div>
               ))}
             </div>
@@ -113,6 +170,10 @@ export default async function BillingPage() {
           </Link>
         </section>
       )}
+
+      {orders.length > 0 ? (
+        <AppPagination current={currentPage} pageSize={currentPageSize} total={total} />
+      ) : null}
     </div>
   );
 }

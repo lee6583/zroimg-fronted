@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { adjustProfileCredits, getStore, nextId } from "@/server/bff/mock-store";
+import { getStore, nextId } from "@/server/bff/mock-store";
 import { jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 import {
@@ -28,6 +28,31 @@ const customOrderSchema = z.object({
 
 const orderSchema = z.discriminatedUnion("mode", [packageOrderSchema, customOrderSchema]);
 
+function buildPayUrl(input: {
+  amountCny: number;
+  orderNo: string;
+  paymentType: string;
+  settings: ReturnType<typeof getStore>["settings"]["easypay"];
+}) {
+  const apiBase = input.settings.apiBase?.trim();
+  if (!apiBase) {
+    return null;
+  }
+
+  let payUrl: URL;
+  try {
+    payUrl = new URL("/checkout", apiBase);
+  } catch {
+    return null;
+  }
+
+  payUrl.searchParams.set("type", input.paymentType);
+  payUrl.searchParams.set("orderNo", input.orderNo);
+  payUrl.searchParams.set("amount", input.amountCny.toFixed(2));
+  payUrl.searchParams.set("returnUrl", input.settings.returnUrl);
+  return payUrl.toString();
+}
+
 export async function POST(request: Request) {
   const current = await getCurrentUserProfile();
   if (!current) {
@@ -44,7 +69,18 @@ export async function POST(request: Request) {
     return jsonError("支付能力已关闭");
   }
 
+  const pendingOrder = store.paymentOrders.find((order) => {
+    const isOwner = order.userProfileId === current.profile.id;
+    const isPending = order.status === "pending";
+
+    return isOwner && isPending;
+  });
+  if (pendingOrder) {
+    return jsonError("已有待支付订单，请先完成支付或取消订单", 409);
+  }
+
   const paymentType = payload.paymentType;
+  const orderNo = `MOCK${Date.now()}`;
   let credits = 0;
   let amountCny = 0;
   let creditPackageId: string | null = null;
@@ -62,34 +98,34 @@ export async function POST(request: Request) {
     creditPackageId = creditPackage.id;
   }
 
-  const orderNo = `MOCK${Date.now()}`;
+  const payUrl = buildPayUrl({
+    amountCny,
+    orderNo,
+    paymentType,
+    settings: store.settings.easypay,
+  });
+  const resultUrl = `/billing/result?order=${orderNo}`;
   const order = {
     id: nextId("order"),
     userProfileId: current.profile.id,
     orderNo,
     paymentType,
-    status: "fulfilled" as const,
+    status: "pending" as const,
     credits,
     amountCny,
     creditPackageId,
-    providerTradeNo: `TRADE-${Date.now()}`,
-    payUrl: `/billing/result?order=${orderNo}`,
+    providerTradeNo: null,
+    payUrl,
     createdAt: new Date(),
-    paidAt: new Date(),
+    paidAt: null,
   };
 
   store.paymentOrders.unshift(order);
-  adjustProfileCredits(
-    current.profile.id,
-    credits,
-    payload.mode === "custom" ? "自定义充值" : `套餐购买 ${payload.packageCode}`,
-    "purchase",
-  );
 
   return jsonOk({
     order: {
       ...order,
-      payUrl: order.payUrl,
+      resultUrl,
     },
   });
 }

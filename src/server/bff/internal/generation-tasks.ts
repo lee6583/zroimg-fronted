@@ -113,11 +113,12 @@ export async function list(profileId: string, conversationId: string) {
 
 export async function listHistory(
   profileId: string,
-  input: { from?: Date; sort?: "asc" | "desc" } = {},
+  input: { from?: Date; to?: Date; sort?: "asc" | "desc" } = {},
 ) {
   resolvePendingGenerations();
   const store = getStore();
   const from = input.from;
+  const to = input.to;
   const direction = input.sort ?? "desc";
   const isAscending = direction === "asc";
 
@@ -133,7 +134,14 @@ export async function listHistory(
     });
   }
 
-  // 第三步：按照创建时间排序。
+  // 第三步：如果传入结束时间，只保留结束时间之前的任务。
+  if (to) {
+    tasks = tasks.filter((task) => {
+      return task.createdAt <= to;
+    });
+  }
+
+  // 第四步：按照创建时间排序。
   tasks.sort((a, b) => {
     const timeA = a.createdAt.getTime();
     const timeB = b.createdAt.getTime();
@@ -145,7 +153,7 @@ export async function listHistory(
     return timeB - timeA;
   });
 
-  // 第四步：给每个任务补充输出图片。
+  // 第五步：给每个任务补充输出图片。
   const tasksWithOutputs = tasks.map((task) => {
     const result = {
       ...task,

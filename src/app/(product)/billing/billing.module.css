@@ -59,7 +59,7 @@
   display: grid;
   grid-template-columns:
     minmax(10rem, 1.55fr) minmax(5.5rem, 0.7fr) minmax(5.5rem, 0.7fr) minmax(6.5rem, 0.8fr)
-    minmax(5.5rem, 0.75fr) minmax(9rem, 1fr) minmax(9rem, 1fr);
+    minmax(5.5rem, 0.75fr) minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(7rem, 0.75fr);
   align-items: center;
   gap: 0.8rem;
   padding: 1.15rem 1.35rem;
@@ -148,6 +148,59 @@
 .billing__statusMuted {
   background: var(--soft);
   color: var(--muted);
+}
+
+.billing__orderActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.billing__payButton,
+.billing__cancelButton {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.billing__payButton {
+  border: 1px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.billing__payButton:hover {
+  background: color-mix(in oklab, var(--foreground) 86%, var(--background));
+}
+
+.billing__cancelButton {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--foreground);
+}
+
+.billing__cancelButton:hover {
+  background: var(--soft);
+}
+
+.billing__cancelButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.billing__actionMessage {
+  width: 100%;
+  color: var(--danger);
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .billing__empty {

@@ -170,7 +170,7 @@ export function OrderForm(props: OrderFormProps) {
         packageCode,
         paymentType: defaultPaymentType,
       });
-      handleOrderResult(data.order?.payUrl ?? undefined);
+      handleOrderResult(data.order?.resultUrl ?? undefined);
     } catch (error) {
       setLoading(false);
       setMessage(getErrorMessage(error));
@@ -199,21 +199,21 @@ export function OrderForm(props: OrderFormProps) {
         amountCny: orderAmount,
         paymentType: defaultPaymentType,
       });
-      handleOrderResult(data.order?.payUrl ?? undefined);
+      handleOrderResult(data.order?.resultUrl ?? undefined);
     } catch (error) {
       setLoading(false);
       setMessage(getErrorMessage(error));
     }
   }
 
-  function handleOrderResult(payUrl?: string) {
+  function handleOrderResult(resultUrl?: string) {
     setLoading(false);
-    if (payUrl) {
-      window.location.assign(payUrl);
+    if (resultUrl) {
+      window.location.assign(resultUrl);
       return;
     }
 
-    setMessage("订单已创建，但支付地址为空，请检查易支付配置。");
+    setMessage("订单已创建，但订单确认页地址为空，请检查支付配置。");
   }
 
   function handleQuickAmountClick(value: number) {

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
+import "antd/dist/reset.css";
 import "@/style/index.css";
 
 export const metadata: Metadata = {
@@ -73,18 +75,15 @@ export default async function RootLayout(props: RootLayoutProps) {
 
   return (
     <html lang={locale} data-theme={theme} className="h-full antialiased" suppressHydrationWarning>
-      <head>
-        <script
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
-        />
-      </head>
       <body
         className="min-h-full flex flex-col"
         style={{ colorScheme: theme }}
         suppressHydrationWarning
       >
         {children}
+        <Script id="theme-bootstrap" strategy="beforeInteractive">
+          {themeBootstrapScript}
+        </Script>
       </body>
     </html>
   );

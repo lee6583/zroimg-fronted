@@ -1,5 +1,5 @@
 import { request } from "@/utils/request";
-import type { CreateOrderRequest, CreateOrderResponse } from "@/types/orders";
+import type { CancelOrderResponse, CreateOrderRequest, CreateOrderResponse } from "@/types/orders";
 
 function createOrder(data: CreateOrderRequest) {
   return request<CreateOrderResponse>({
@@ -9,6 +9,14 @@ function createOrder(data: CreateOrderRequest) {
   });
 }
 
+function cancelOrder(orderNo: string) {
+  return request<CancelOrderResponse>({
+    url: `/api/orders/${orderNo}/cancel`,
+    method: "POST",
+  });
+}
+
 export const ordersApi = {
+  cancelOrder,
   createOrder,
 };

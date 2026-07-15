@@ -39,12 +39,18 @@ export default async function GalleryPage(props: GalleryPageProps) {
   const params = await searchParams;
   const category = normalizeCategory(params.category);
   const images = await listPublicImages(category);
-  const urls = new Map<string, string>();
+  const signedUrls = await Promise.all(
+    images.map(async (item) => {
+      let asset = item.generatedImage.outputAsset;
+      if (item.generatedImage.thumbnailAsset) {
+        asset = item.generatedImage.thumbnailAsset;
+      }
 
-  for (const item of images) {
-    const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
-    urls.set(asset.id, await getMediaSignedUrl(asset.id));
-  }
+      const url = await getMediaSignedUrl(asset.id);
+      return [asset.id, url] as const;
+    }),
+  );
+  const urls = new Map(signedUrls);
 
   return (
     <>
@@ -76,7 +82,11 @@ export default async function GalleryPage(props: GalleryPageProps) {
         {images.length > 0 ? (
           <section className={styles.gallery__masonry} aria-label="社区作品">
             {images.map((item) => {
-              const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
+              let asset = item.generatedImage.outputAsset;
+              if (item.generatedImage.thumbnailAsset) {
+                asset = item.generatedImage.thumbnailAsset;
+              }
+
               const url = urls.get(asset.id);
               const authorName =
                 item.userProfile.username || item.userProfile.user?.name || "创作者";

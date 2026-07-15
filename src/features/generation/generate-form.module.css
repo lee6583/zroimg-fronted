@@ -551,11 +551,15 @@
 }
 
 .generateForm__userBubble {
+  max-width: min(100%, 26rem);
   background: var(--foreground);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
   color: var(--background);
 }
 
 .generateForm__assistantBubble {
+  max-width: min(100%, 34rem);
   background: var(--panel);
   color: var(--foreground);
 }
@@ -602,7 +606,7 @@
 
 .generateForm__chatImage {
   width: 100%;
-  height: min(48dvh, 28rem);
+  height: min(36dvh, 20rem);
   border: 1px solid var(--line);
   border-radius: 0.625rem;
   background: var(--soft);
