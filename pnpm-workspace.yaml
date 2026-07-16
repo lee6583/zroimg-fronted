@@ -2,6 +2,7 @@ packages:
   - .
 
 overrides:
+  "@rc-component/virtual-list": 1.3.2
   postcss: 8.5.16
 
 allowBuilds:
