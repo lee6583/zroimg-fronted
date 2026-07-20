@@ -4,17 +4,35 @@ import type {
   AdminReplyTicketResponse,
   CreateTicketRequest,
   CreateTicketResponse,
+  ListTicketsRequest,
+  ListTicketsResponse,
   ReplyTicketRequest,
   ReplyTicketResponse,
   UpdateTicketStatusRequest,
   UpdateTicketStatusResponse,
+  UploadTicketAttachmentResponse,
 } from "@/types/feedback";
+
+function listTickets(params: ListTicketsRequest) {
+  return request<ListTicketsResponse>({
+    url: "/api/tickets",
+    params,
+  });
+}
 
 function createTicket(data: CreateTicketRequest) {
   return request<CreateTicketResponse>({
     url: "/api/tickets",
     method: "POST",
     data,
+  });
+}
+
+function uploadAttachment(data: FormData) {
+  return request<UploadTicketAttachmentResponse>({
+    url: "/api/media/upload",
+    method: "POST",
+    body: data,
   });
 }
 
@@ -43,7 +61,9 @@ function updateStatus(ticketId: string, data: UpdateTicketStatusRequest) {
 }
 
 export const ticketsApi = {
+  listTickets,
   createTicket,
+  uploadAttachment,
   replyTicket,
   adminReply,
   updateStatus,

@@ -110,6 +110,22 @@
   background: var(--soft);
 }
 
+.generateForm__newConversationButton:disabled,
+.generateForm__composerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.generateForm__newConversationButton:disabled:hover {
+  background: var(--panel);
+  color: inherit;
+}
+
+.generateForm__composerButton:disabled:hover {
+  background: transparent;
+  color: var(--muted);
+}
+
 .generateForm__conversationScroll {
   min-height: 0;
   flex: 1;

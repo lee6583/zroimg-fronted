@@ -148,6 +148,7 @@ export type MockFeedbackTicket = {
   status: MockFeedbackStatus;
   subject: string;
   content: string;
+  attachmentMediaIds: string[];
   createdAt: Date;
   updatedAt: Date;
   lastMessageAt: Date;
@@ -550,6 +551,7 @@ function createStore(): MockStore {
       status: "open",
       subject: "生成结果比预期更暗",
       content: "同样的提示词在第二次生成时整体偏暗，希望有更稳定的亮度控制。",
+      attachmentMediaIds: ["asset-output-2"],
       createdAt: nowMinus(36),
       updatedAt: nowMinus(8),
       lastMessageAt: nowMinus(8),
@@ -561,6 +563,7 @@ function createStore(): MockStore {
       status: "resolved",
       subject: "订单到账时间咨询",
       content: "上一次订单到账很快，想确认是否都是实时到账。",
+      attachmentMediaIds: [],
       createdAt: nowMinus(96),
       updatedAt: nowMinus(90),
       lastMessageAt: nowMinus(90),

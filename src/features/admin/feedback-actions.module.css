@@ -1,0 +1,104 @@
+.feedbackActions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.feedbackActions__statusGroup {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.feedbackActions__statusButtons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.feedbackActions__statusButton {
+  min-height: 2.75rem;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  padding: 0 1.2rem;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.feedbackActions__statusButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.feedbackActions__statusButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.feedbackActions__statusButtonActive {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.feedbackActions__statusOpen {
+  background: color-mix(in oklab, #f97316 10%, transparent);
+  color: #c2410c;
+}
+
+.feedbackActions__statusOpen.feedbackActions__statusButtonActive {
+  background: color-mix(in oklab, #f97316 18%, transparent);
+}
+
+.feedbackActions__statusProgress {
+  background: color-mix(in oklab, #2563eb 10%, transparent);
+  color: #1d4ed8;
+}
+
+.feedbackActions__statusProgress.feedbackActions__statusButtonActive {
+  background: color-mix(in oklab, #2563eb 18%, transparent);
+}
+
+.feedbackActions__statusDone {
+  background: color-mix(in oklab, #16a34a 10%, transparent);
+  color: #15803d;
+}
+
+.feedbackActions__statusDone.feedbackActions__statusButtonActive {
+  background: color-mix(in oklab, #16a34a 18%, transparent);
+}
+
+.feedbackActions__reply {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.28rem;
+}
+
+.feedbackActions__label,
+.feedbackActions__reply span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.feedbackActions__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.feedbackActions__message {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 640px) {
+  .feedbackActions__footer {
+    justify-content: flex-start;
+  }
+}
