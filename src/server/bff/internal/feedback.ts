@@ -1,5 +1,11 @@
 import { getStore, nextId } from "@/server/bff/mock-store";
-import type { MockFeedbackStatus, MockFeedbackType } from "@/server/bff/mock-store";
+import type {
+  MockMediaAsset,
+  MockFeedbackStatus,
+  MockFeedbackTicket,
+  MockFeedbackType,
+} from "@/server/bff/mock-store";
+import type { TicketStatusFilter } from "@/types/feedback";
 
 function includesText(value: string, query?: string) {
   // 没有搜索关键词时，默认匹配成功。
@@ -51,6 +57,53 @@ function attachMessages(ticketId: string) {
   return messagesWithAuthor;
 }
 
+function toAttachmentItem(asset: MockMediaAsset) {
+  return {
+    id: asset.id,
+    fileName: asset.fileName,
+    url: asset.url,
+  };
+}
+
+function attachAttachments(mediaIds: string[]) {
+  const store = getStore();
+  const attachments = mediaIds.map((mediaId) => {
+    const asset = store.mediaAssets.find((item) => {
+      return item.id === mediaId;
+    });
+
+    if (!asset) {
+      throw new Error(`没有找到反馈附件：${mediaId}`);
+    }
+
+    return toAttachmentItem(asset);
+  });
+
+  return attachments;
+}
+
+function normalizeAttachmentIds(input: { userProfileId: string; attachmentMediaIds?: string[] }) {
+  const mediaIds = input.attachmentMediaIds ?? [];
+  const uniqueMediaIds = Array.from(new Set(mediaIds));
+
+  if (uniqueMediaIds.length > 4) {
+    throw new Error("反馈附件最多 4 张");
+  }
+
+  const store = getStore();
+  uniqueMediaIds.forEach((mediaId) => {
+    const asset = store.mediaAssets.find((item) => {
+      return item.id === mediaId;
+    });
+
+    if (!asset || asset.ownerUserProfileId !== input.userProfileId || asset.kind !== "input") {
+      throw new Error("反馈附件不存在");
+    }
+  });
+
+  return uniqueMediaIds;
+}
+
 export async function listForUser(profileId: string) {
   const store = getStore();
 
@@ -72,6 +125,7 @@ export async function listForUser(profileId: string) {
     const result = {
       ...ticket,
       messages: attachMessages(ticket.id),
+      attachments: attachAttachments(ticket.attachmentMediaIds ?? []),
     };
 
     return result;
@@ -80,13 +134,77 @@ export async function listForUser(profileId: string) {
   return ticketsWithMessages;
 }
 
+function isProcessedStatus(status: MockFeedbackStatus) {
+  return status === "resolved" || status === "closed";
+}
+
+function matchesUserStatus(ticket: MockFeedbackTicket, status?: TicketStatusFilter) {
+  if (!status || status === "all") return true;
+  if (status === "processed") return isProcessedStatus(ticket.status);
+  return ticket.status === status;
+}
+
+function summarizeUserTickets(tickets: MockFeedbackTicket[]) {
+  return {
+    all: tickets.length,
+    open: tickets.filter((ticket) => ticket.status === "open").length,
+    inProgress: tickets.filter((ticket) => ticket.status === "in_progress").length,
+    processed: tickets.filter((ticket) => isProcessedStatus(ticket.status)).length,
+  };
+}
+
+export async function listForUserPage(input: {
+  profileId: string;
+  status?: TicketStatusFilter;
+  page: number;
+  pageSize: number;
+}) {
+  const store = getStore();
+  const userTickets = store.feedbackTickets.filter((ticket) => {
+    return ticket.userProfileId === input.profileId;
+  });
+
+  userTickets.sort((ticketA, ticketB) => {
+    const timeA = ticketA.updatedAt.getTime();
+    const timeB = ticketB.updatedAt.getTime();
+
+    return timeB - timeA;
+  });
+
+  const filteredTickets = userTickets.filter((ticket) => matchesUserStatus(ticket, input.status));
+  const start = (input.page - 1) * input.pageSize;
+  const pageItems = filteredTickets.slice(start, start + input.pageSize);
+  const tickets = pageItems.map((ticket) => {
+    const result = {
+      ...ticket,
+      messages: attachMessages(ticket.id),
+      attachments: attachAttachments(ticket.attachmentMediaIds ?? []),
+    };
+
+    return result;
+  });
+
+  return {
+    tickets,
+    total: filteredTickets.length,
+    page: input.page,
+    pageSize: input.pageSize,
+    summary: summarizeUserTickets(userTickets),
+  };
+}
+
 export async function createTicket(input: {
   userProfileId: string;
   type: MockFeedbackType;
   subject: string;
   content: string;
+  attachmentMediaIds?: string[];
 }) {
   const store = getStore();
+  const attachmentMediaIds = normalizeAttachmentIds({
+    userProfileId: input.userProfileId,
+    attachmentMediaIds: input.attachmentMediaIds,
+  });
   const ticket = {
     id: nextId("ticket"),
     userProfileId: input.userProfileId,
@@ -94,6 +212,7 @@ export async function createTicket(input: {
     status: "open" as const,
     subject: input.subject.trim(),
     content: input.content.trim(),
+    attachmentMediaIds,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastMessageAt: new Date(),
@@ -110,6 +229,7 @@ export async function createTicket(input: {
   const result = {
     ...ticket,
     messages: attachMessages(ticket.id),
+    attachments: attachAttachments(ticket.attachmentMediaIds ?? []),
   };
 
   return result;
@@ -232,6 +352,7 @@ export async function listForAdmin(input: {
       ...ticket,
       userProfile: profileWithUser,
       messages: attachMessages(ticket.id),
+      attachments: attachAttachments(ticket.attachmentMediaIds ?? []),
     };
 
     return result;
@@ -241,6 +362,47 @@ export async function listForAdmin(input: {
     tickets,
     total: filtered.length,
     pageSize: input.pageSize,
+  };
+
+  return result;
+}
+
+export async function getForAdmin(ticketId: string) {
+  const store = getStore();
+  const ticket = store.feedbackTickets.find((item) => {
+    return item.id === ticketId;
+  });
+
+  if (!ticket) {
+    return null;
+  }
+
+  const userProfile = store.profiles.find((profile) => {
+    return profile.id === ticket.userProfileId;
+  });
+
+  if (!userProfile) {
+    throw new Error(`没有找到反馈用户资料：${ticket.userProfileId}`);
+  }
+
+  const user = store.users.find((entry) => {
+    return entry.id === userProfile.userId;
+  });
+
+  if (!user) {
+    throw new Error(`没有找到反馈用户：${userProfile.userId}`);
+  }
+
+  const profileWithUser = {
+    ...userProfile,
+    user: user,
+  };
+
+  const result = {
+    ...ticket,
+    userProfile: profileWithUser,
+    messages: attachMessages(ticket.id),
+    attachments: attachAttachments(ticket.attachmentMediaIds ?? []),
   };
 
   return result;

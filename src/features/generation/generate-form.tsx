@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { getErrorMessage } from "@/utils/error";
@@ -53,6 +53,8 @@ export function GenerateForm(props: GenerateFormProps) {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isCollapsed, setCollapsed] = useState(false);
+  const [isCreatingChat, setCreatingChat] = useState(false);
+  const isCreatingChatRef = useRef(false);
 
   const size = getGenerationSize(options);
   const estimate = estimateOptionsCredits(options);
@@ -104,6 +106,20 @@ export function GenerateForm(props: GenerateFormProps) {
   }
 
   async function createChat(clearPrompt = true) {
+    if (isCreatingChatRef.current) return null;
+
+    const activeChat = chats.find((item) => item.id === activeId);
+    if (activeChat && isReusableDraftChat(activeChat, tasks)) {
+      setActiveId(activeChat.id);
+      setTasks([]);
+      if (clearPrompt) setPrompt("");
+      setMenuOpen(false);
+      setNotice(null);
+      return activeChat;
+    }
+
+    isCreatingChatRef.current = true;
+    setCreatingChat(true);
     setNotice(null);
 
     try {
@@ -121,6 +137,9 @@ export function GenerateForm(props: GenerateFormProps) {
     } catch (error) {
       showError(error);
       return null;
+    } finally {
+      isCreatingChatRef.current = false;
+      setCreatingChat(false);
     }
   }
 
@@ -337,6 +356,7 @@ export function GenerateForm(props: GenerateFormProps) {
       groups={groups}
       activeId={activeId}
       summary={summary}
+      isCreating={isCreatingChat}
       onOpenSettings={toggleSettings}
       onCreate={createChat}
       onSelect={selectChat}
@@ -425,6 +445,7 @@ export function GenerateForm(props: GenerateFormProps) {
             hasCostError={isCostError}
             notice={notice}
             isBusy={isSubmitting || isUploading}
+            isCreating={isCreatingChat}
             onPromptChange={setPrompt}
             onFiles={addFiles}
             onRemove={removeInput}
@@ -472,6 +493,10 @@ function isPending(task: TaskItem) {
 function getTitle(prompt: string) {
   const text = prompt.replace(/\s+/g, " ").trim();
   return text.length > 24 ? `${text.slice(0, 24)}...` : text || "新对话";
+}
+
+function isReusableDraftChat(chat: ConversationItem, tasks: TaskItem[]) {
+  return chat.taskCount === 0 && !chat.lastTaskAt && tasks.length === 0;
 }
 
 async function uploadFile(file: File) {

@@ -15,8 +15,10 @@ export {
 export {
   addMessage as addTicketMessage,
   createTicket,
+  getForAdmin as getAdminTicket,
   listForAdmin as listAdminTickets,
   listForUser as listTicketsForUser,
+  listForUserPage as listTicketsForUserPage,
   updateStatus as updateTicketStatus,
 } from "@/server/bff/internal/feedback";
 export {

@@ -1,9 +1,9 @@
+import clsx from "clsx";
 import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { FeedbackActions } from "@/features/admin/feedback-actions";
 import { requireAdmin } from "@/server/auth";
 import { listAdminTickets } from "@/server/bff/account";
-import { feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
+import { feedbackTypeLabels } from "@/utils/feedback";
 import styles from "./tickets.module.css";
 
 export const dynamic = "force-dynamic";
@@ -22,13 +22,27 @@ function formatDate(value: Date) {
   return value.toISOString().slice(0, 16).replace("T", " ");
 }
 
-function href(input: { q?: string; status?: string; type?: string; page: number }) {
+function href(input: { q?: string; page: number }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
-  if (input.status) params.set("status", input.status);
-  if (input.type) params.set("type", input.type);
   params.set("page", String(input.page));
   return `/admin/tickets?${params.toString()}`;
+}
+
+function readStatusLabel(status: string) {
+  if (status === "open") return "待处理";
+  if (status === "in_progress") return "处理中";
+  if (status === "resolved") return "已处理";
+  if (status === "closed") return "已处理";
+  return status;
+}
+
+function readStatusClassName(status: string) {
+  if (status === "open") return styles.adminTickets__statusOpen;
+  if (status === "in_progress") return styles.adminTickets__statusProgress;
+  if (status === "resolved") return styles.adminTickets__statusDone;
+  if (status === "closed") return styles.adminTickets__statusDone;
+  return styles.adminTickets__statusMuted;
 }
 
 export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
@@ -37,13 +51,9 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
   await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();
-  const status = readParam(params, "status");
-  const type = readParam(params, "type");
   const page = Math.max(1, Number(readParam(params, "page") || 1));
   const { tickets, total, pageSize } = await listAdminTickets({
     q,
-    status,
-    type,
     page,
     pageSize: 20,
   });
@@ -51,13 +61,19 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
 
   return (
     <AdminShell active="tickets">
-      <div className="grid gap-6">
-        <section>
-          <h1 className="page-title">意见反馈</h1>
+      <div className={styles.adminTickets}>
+        <section className={styles.adminTickets__header}>
+          <div>
+            <p className="label">Support Tickets</p>
+            <h1 className="page-title">意见反馈</h1>
+          </div>
+          <p className={styles.adminTickets__summary}>
+            共 {total} 条，第 {page} / {totalPages} 页
+          </p>
         </section>
 
-        <section className="surface rounded-xl p-5">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto]">
+        <section className={styles.adminTickets__filters}>
+          <form className={styles.adminTickets__searchForm}>
             <input
               className="field text-sm"
               name="q"
@@ -67,95 +83,65 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
             <button className="btn-primary" type="submit">
               搜索
             </button>
-            {type ? <input type="hidden" name="type" value={type} /> : null}
-            {status ? <input type="hidden" name="status" value={status} /> : null}
           </form>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              className={`btn-secondary ${!status ? "bg-soft" : ""}`}
-              href={href({ q, type, page: 1 })}
-            >
-              全部状态
-            </Link>
-            {Object.entries(feedbackStatusLabels).map(([key, label]) => (
-              <Link
-                key={key}
-                className={`btn-secondary ${status === key ? "bg-soft" : ""}`}
-                href={href({ q, type, status: key, page: 1 })}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              className={`btn-secondary ${!type ? "bg-soft" : ""}`}
-              href={href({ q, status, page: 1 })}
-            >
-              全部类型
-            </Link>
-            {Object.entries(feedbackTypeLabels).map(([key, label]) => (
-              <Link
-                key={key}
-                className={`btn-secondary ${type === key ? "bg-soft" : ""}`}
-                href={href({ q, status, type: key, page: 1 })}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
         </section>
 
         <section className={styles.adminTickets__list}>
-          {tickets.map((ticket) => (
-            <article key={ticket.id} className={styles.adminTickets__card}>
-              <div className={styles.adminTickets__cardHeader}>
-                <div className={styles.adminTickets__cardMain}>
-                  <p className={styles.adminTickets__meta}>
-                    {feedbackTypeLabels[ticket.type]} / {feedbackStatusLabels[ticket.status]} /{" "}
-                    {ticket.userProfile?.user?.email || "-"}
-                  </p>
-                  <h2 className={styles.adminTickets__title}>{ticket.subject}</h2>
-                  <p className={styles.adminTickets__content}>{ticket.content}</p>
-                </div>
-                <p className={styles.adminTickets__date}>{formatDate(ticket.createdAt)}</p>
-              </div>
+          {tickets.map((ticket) => {
+            const userEmail = ticket.userProfile?.user?.email || "-";
+            const userName = ticket.userProfile?.username || ticket.userProfile?.user?.name || "-";
+            const statusClassName = readStatusClassName(ticket.status);
 
-              <div className={styles.adminTickets__messages}>
-                {ticket.messages.map((message) => (
-                  <div key={message.id} className={styles.adminTickets__message}>
-                    <p className={styles.adminTickets__messageMeta}>
-                      {message.isAdmin ? "管理员" : message.authorProfile.username} /{" "}
-                      {formatDate(message.createdAt)}
+            return (
+              <Link
+                key={ticket.id}
+                className={clsx(styles.adminTickets__card, styles.adminTickets__cardLink)}
+                href={`/admin/tickets/${ticket.id}`}
+              >
+                <div className={styles.adminTickets__cardHeader}>
+                  <div className={styles.adminTickets__cardMain}>
+                    <p className={styles.adminTickets__metaLine}>
+                      <span>{feedbackTypeLabels[ticket.type]}</span>
+                      <span
+                        className={clsx(styles.adminTickets__statusText, statusClassName)}
+                      >
+                        <span className={styles.adminTickets__statusDot} aria-hidden="true" />
+                        {readStatusLabel(ticket.status)}
+                      </span>
                     </p>
-                    <p className={styles.adminTickets__messageBody}>{message.body}</p>
+                    <h2 className={styles.adminTickets__title}>{ticket.subject}</h2>
+                    <p className={styles.adminTickets__content}>{ticket.content}</p>
                   </div>
-                ))}
-              </div>
-
-              <div className={styles.adminTickets__actions}>
-                <FeedbackActions ticketId={ticket.id} currentStatus={ticket.status} />
-              </div>
-            </article>
-          ))}
+                  <div className={styles.adminTickets__sideMeta}>
+                    <span>{formatDate(ticket.createdAt)}</span>
+                    <strong>{userEmail}</strong>
+                    <span>{userName}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
           {tickets.length === 0 ? (
-            <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配反馈</p>
+            <p className={styles.adminTickets__empty}>没有匹配的反馈</p>
           ) : null}
         </section>
 
-        <nav className="flex items-center justify-between">
+        <nav className={styles.adminTickets__pagination}>
           <Link
-            className="btn-secondary"
-            href={href({ q, status, type, page: Math.max(1, page - 1) })}
+            className={clsx("btn-secondary", page <= 1 && styles.adminTickets__paginationDisabled)}
+            href={href({ q, page: Math.max(1, page - 1) })}
           >
             上一页
           </Link>
-          <p className="text-sm text-muted">
-            第 {page} / {totalPages} 页，共 {total} 条反馈
+          <p>
+            第 {page} / {totalPages} 页，当前显示 {tickets.length} 条
           </p>
           <Link
-            className="btn-secondary"
-            href={href({ q, status, type, page: Math.min(totalPages, page + 1) })}
+            className={clsx(
+              "btn-secondary",
+              page >= totalPages && styles.adminTickets__paginationDisabled,
+            )}
+            href={href({ q, page: Math.min(totalPages, page + 1) })}
           >
             下一页
           </Link>

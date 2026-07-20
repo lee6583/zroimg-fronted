@@ -13,6 +13,7 @@ type ConversationSidebarProps = {
   groups: ConversationGroup[];
   activeId: string;
   summary: string;
+  isCreating: boolean;
   onOpenSettings: () => void;
   onCreate: () => Promise<unknown>;
   onSelect: (id: string) => Promise<void>;
@@ -31,6 +32,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
   const groups = props.groups;
   const activeId = props.activeId;
   const summary = props.summary;
+  const isCreating = props.isCreating;
   const onOpenSettings = props.onOpenSettings;
   const onCreate = props.onCreate;
   const onSelect = props.onSelect;
@@ -99,6 +101,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
         <button
           type="button"
           onClick={() => void onCreate()}
+          disabled={isCreating}
           className={styles.generateForm__newConversationButton}
         >
           <Plus size={15} />

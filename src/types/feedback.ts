@@ -8,6 +8,12 @@ type TicketMessage = {
   authorName: string;
 };
 
+type TicketAttachment = {
+  id: string;
+  fileName: string | null;
+  url: string;
+};
+
 type TicketItem = {
   id: string;
   type: FeedbackType;
@@ -17,12 +23,37 @@ type TicketItem = {
   createdAt: string;
   updatedAt: string;
   messages: TicketMessage[];
+  attachments: TicketAttachment[];
+};
+
+type TicketStatusFilter = "all" | "open" | "in_progress" | "processed";
+
+type TicketListSummary = {
+  all: number;
+  open: number;
+  inProgress: number;
+  processed: number;
+};
+
+type ListTicketsRequest = {
+  page: number;
+  pageSize: number;
+  status?: TicketStatusFilter;
+};
+
+type ListTicketsResponse = {
+  tickets: TicketItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  summary: TicketListSummary;
 };
 
 type CreateTicketRequest = {
   type: string;
   subject: string;
   content: string;
+  attachmentMediaIds?: string[];
 };
 
 type CreateTicketResponse = {
@@ -49,9 +80,22 @@ type UpdateTicketStatusResponse = {
   ok?: boolean;
 };
 
+type UploadTicketAttachmentResponse = {
+  media: {
+    id: string;
+    fileName: string | null;
+    kind: "input" | "output";
+  };
+};
+
 export type {
   TicketMessage,
+  TicketAttachment,
   TicketItem,
+  TicketStatusFilter,
+  TicketListSummary,
+  ListTicketsRequest,
+  ListTicketsResponse,
   CreateTicketRequest,
   CreateTicketResponse,
   ReplyTicketRequest,
@@ -60,4 +104,5 @@ export type {
   AdminReplyTicketResponse,
   UpdateTicketStatusRequest,
   UpdateTicketStatusResponse,
+  UploadTicketAttachmentResponse,
 };

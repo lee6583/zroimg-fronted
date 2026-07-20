@@ -14,6 +14,7 @@ type PromptComposerProps = {
   hasCostError: boolean;
   notice: Notice;
   isBusy: boolean;
+  isCreating: boolean;
   onPromptChange: (value: string) => void;
   onFiles: (files: FileList | null) => Promise<void>;
   onRemove: (id: string) => void;
@@ -29,6 +30,7 @@ export function PromptComposer(props: PromptComposerProps) {
   const hasCostError = props.hasCostError;
   const notice = props.notice;
   const isBusy = props.isBusy;
+  const isCreating = props.isCreating;
   const onPromptChange = props.onPromptChange;
   const onFiles = props.onFiles;
   const onRemove = props.onRemove;
@@ -74,6 +76,7 @@ export function PromptComposer(props: PromptComposerProps) {
             <button
               type="button"
               onClick={() => void onNew()}
+              disabled={isCreating || isBusy}
               className={clsx(
                 styles.generateForm__composerButton,
                 styles.generateForm__newChatComposerButton,
