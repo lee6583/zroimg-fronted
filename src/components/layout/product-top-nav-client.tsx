@@ -82,11 +82,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
 
         <nav className={styles.productTopNav__center}>
           {links.map((item) => {
-            return renderLink(
-              item,
-              styles.productTopNav__link,
-              styles.productTopNav__linkActive,
-            );
+            return renderLink(item, styles.productTopNav__link, styles.productTopNav__linkActive);
           })}
         </nav>
 

@@ -3,7 +3,7 @@
 }
 
 .history__header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--page-title-content-gap);
 }
 
 .history__title {
@@ -133,23 +133,39 @@
 .history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-range-hover::before),
 .history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-range-start::before),
 .history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-range-end::before),
-.history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-range-start:not(.ant-picker-cell-range-start-single)::before),
-.history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-range-end:not(.ant-picker-cell-range-end-single)::before) {
+.history__dateRangePopup
+  :global(
+    .ant-picker-cell-in-view.ant-picker-cell-range-start:not(
+        .ant-picker-cell-range-start-single
+      )::before
+  ),
+.history__dateRangePopup
+  :global(
+    .ant-picker-cell-in-view.ant-picker-cell-range-end:not(
+        .ant-picker-cell-range-end-single
+      )::before
+  ) {
   background: var(--soft) !important;
 }
 
-.history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner),
+.history__dateRangePopup
+  :global(.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner),
 .history__dateRangePopup
   :global(.ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner),
 .history__dateRangePopup
   :global(.ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner),
 .history__dateRangePopup
-  :global(.ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner) {
+  :global(
+    .ant-picker-time-panel-column
+      > li.ant-picker-time-panel-cell-selected
+      .ant-picker-time-panel-cell-inner
+  ) {
   background: var(--foreground) !important;
   color: var(--background) !important;
 }
 
-.history__dateRangePopup :global(.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before) {
+.history__dateRangePopup
+  :global(.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before) {
   border-color: var(--foreground) !important;
 }
 

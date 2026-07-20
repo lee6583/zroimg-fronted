@@ -1,6 +1,6 @@
 .dashboard {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--page-title-content-gap);
 }
 
 .dashboard__eyebrow {

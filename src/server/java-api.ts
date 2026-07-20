@@ -117,7 +117,7 @@ function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
     return false;
   }
 
-  return payload.code !== 200;
+  return payload.code !== 0 && payload.code !== 200;
 }
 
 export async function proxyRequestToJavaApi(

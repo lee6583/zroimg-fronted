@@ -26,7 +26,7 @@ export default async function TicketsPage() {
   }));
 
   return (
-    <div className="grid gap-6">
+    <div className="page-stack">
       <section>
         <h1 className="page-title">意见反馈</h1>
       </section>

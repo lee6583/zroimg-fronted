@@ -9,10 +9,12 @@ import styles from "./billing.module.css";
 
 type OrderActionsProps = {
   orderNo: string;
+  canCancel: boolean;
 };
 
 export function OrderActions(props: OrderActionsProps) {
   const orderNo = props.orderNo;
+  const canCancel = props.canCancel;
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -35,14 +37,16 @@ export function OrderActions(props: OrderActionsProps) {
       <Link className={styles.billing__payButton} href={`/billing/result?order=${orderNo}`}>
         支付
       </Link>
-      <button
-        type="button"
-        className={styles.billing__cancelButton}
-        disabled={isPending}
-        onClick={cancelOrder}
-      >
-        {isPending ? "取消中" : "取消"}
-      </button>
+      {canCancel ? (
+        <button
+          type="button"
+          className={styles.billing__cancelButton}
+          disabled={isPending}
+          onClick={cancelOrder}
+        >
+          {isPending ? "取消中" : "取消"}
+        </button>
+      ) : null}
       {message ? <p className={styles.billing__actionMessage}>{message}</p> : null}
     </div>
   );

@@ -7,7 +7,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.85rem;
+  margin-bottom: var(--page-title-content-gap);
 }
 
 .favorites__title {

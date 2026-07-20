@@ -1,6 +1,6 @@
 .settings {
   display: grid;
-  gap: 1.25rem;
+  gap: var(--page-title-content-gap);
 }
 
 .settings__header {

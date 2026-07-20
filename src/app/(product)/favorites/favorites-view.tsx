@@ -119,7 +119,6 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
       <section className={styles.favorites__header}>
         <div>
           <h1 className="page-title">收藏合集</h1>
-          <p className="page-description">管理你的收藏夹和合集</p>
         </div>
         <button
           type="button"

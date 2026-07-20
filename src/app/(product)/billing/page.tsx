@@ -3,7 +3,8 @@ import Link from "next/link";
 import { FileClock } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { requireUser } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { listRechargeOrders } from "@/server/bff/orders";
+import { isMockBffEnabled } from "@/server/env";
 import { OrderActions } from "./order-actions";
 import styles from "./billing.module.css";
 
@@ -21,11 +22,10 @@ const orderStatusLabels: Record<string, string> = {
   expired: "已过期",
   cancelled: "已取消",
   failed: "支付失败",
-};
-
-const paymentTypeLabels: Record<string, string> = {
-  alipay: "alipay",
-  wxpay: "wxpay",
+  credited: "已到账",
+  created: "已创建",
+  paying: "支付中",
+  success: "已支付",
 };
 
 const defaultPageSize = 10;
@@ -74,8 +74,17 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-function formatAmount(value: { toString: () => string }) {
-  return `¥${Number(value.toString()).toFixed(2)}`;
+function formatDateText(value?: string | null) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return formatDate(date);
 }
 
 function formatCredits(value: number) {
@@ -83,9 +92,18 @@ function formatCredits(value: number) {
 }
 
 function statusClassName(status: string) {
-  if (status === "fulfilled" || status === "paid") return styles.billing__statusSuccess;
-  if (status === "pending" || status === "expired") return styles.billing__statusWarning;
-  if (status === "failed" || status === "cancelled") return styles.billing__statusDanger;
+  if (status === "fulfilled" || status === "paid" || status === "credited") {
+    return styles.billing__statusSuccess;
+  }
+
+  if (status === "pending" || status === "expired" || status === "created" || status === "paying") {
+    return styles.billing__statusWarning;
+  }
+
+  if (status === "failed" || status === "cancelled") {
+    return styles.billing__statusDanger;
+  }
+
   return styles.billing__statusMuted;
 }
 
@@ -94,23 +112,34 @@ export default async function BillingPage(props: BillingPageProps) {
   const rawPage = normalizePage(readParam(params, "page"));
   const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
   const current = await requireUser();
-  const where = { userProfileId: current.profile.id };
-  const total = await prisma.paymentOrder.count({ where });
-  const totalPages = Math.max(1, Math.ceil(total / currentPageSize));
-  const currentPage = Math.min(rawPage, totalPages);
-  const orders = await prisma.paymentOrder.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    skip: (currentPage - 1) * currentPageSize,
-    take: currentPageSize,
+  const canCancelOrder = isMockBffEnabled();
+  let orderPage = await listRechargeOrders({
+    userProfileId: current.profile.id,
+    page: rawPage,
+    pageSize: currentPageSize,
   });
+
+  let totalPages = Math.max(1, orderPage.pages);
+  let currentPage = Math.min(rawPage, totalPages);
+
+  if (currentPage !== rawPage) {
+    orderPage = await listRechargeOrders({
+      userProfileId: current.profile.id,
+      page: currentPage,
+      pageSize: currentPageSize,
+    });
+    totalPages = Math.max(1, orderPage.pages);
+    currentPage = Math.min(currentPage, totalPages);
+  }
+
+  const total = orderPage.total;
+  const orders = orderPage.list;
 
   return (
     <div className={styles.billing}>
       <section className={styles.billing__header}>
         <div>
           <h1 className="page-title">我的订单</h1>
-          <p className="page-description">查看充值历史与订单状态</p>
         </div>
       </section>
 
@@ -130,27 +159,28 @@ export default async function BillingPage(props: BillingPageProps) {
 
             <div className={styles.billing__tableBody}>
               {orders.map((order) => (
-                <div key={order.id} className={styles.billing__tableRow}>
+                <div key={order.orderNo} className={styles.billing__tableRow}>
                   <span className={styles.billing__orderNo}>{order.orderNo}</span>
-                  <span className={styles.billing__amount}>{formatAmount(order.amountCny)}</span>
+                  <span className={styles.billing__amount}>{order.amountText}</span>
                   <span className={styles.billing__credits}>{formatCredits(order.credits)}</span>
                   <span className={styles.billing__muted}>
-                    {paymentTypeLabels[order.paymentType] ?? order.paymentType}
+                    {order.payChannelText || order.payChannel || "—"}
                   </span>
                   <span>
                     <span
-                      className={clsx(styles.billing__statusBadge, statusClassName(order.status))}
+                      className={clsx(
+                        styles.billing__statusBadge,
+                        statusClassName(order.displayStatus),
+                      )}
                     >
-                      {orderStatusLabels[order.status] ?? order.status}
+                      {orderStatusLabels[order.displayStatus] ?? order.displayStatus}
                     </span>
                   </span>
-                  <span className={styles.billing__muted}>{formatDate(order.createdAt)}</span>
+                  <span className={styles.billing__muted}>{formatDateText(order.createTime)}</span>
+                  <span className={styles.billing__muted}>{formatDateText(order.payTime)}</span>
                   <span className={styles.billing__muted}>
-                    {order.paidAt ? formatDate(order.paidAt) : "—"}
-                  </span>
-                  <span className={styles.billing__muted}>
-                    {order.status === "pending" ? (
-                      <OrderActions orderNo={order.orderNo} />
+                    {order.displayStatus === "pending" || order.displayStatus === "created" ? (
+                      <OrderActions orderNo={order.orderNo} canCancel={canCancelOrder} />
                     ) : (
                       "—"
                     )}
@@ -172,7 +202,9 @@ export default async function BillingPage(props: BillingPageProps) {
       )}
 
       {orders.length > 0 ? (
-        <AppPagination current={currentPage} pageSize={currentPageSize} total={total} />
+        <div className={styles.billing__pagination}>
+          <AppPagination current={currentPage} pageSize={currentPageSize} total={total} />
+        </div>
       ) : null}
     </div>
   );

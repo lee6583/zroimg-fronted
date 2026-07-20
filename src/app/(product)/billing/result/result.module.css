@@ -103,6 +103,11 @@
   background: color-mix(in oklab, var(--foreground) 86%, var(--background));
 }
 
+.result__payButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
 .result__cancelButton {
   border-color: var(--line);
   background: var(--panel);
@@ -133,6 +138,11 @@
 
 .result__secondaryButton:hover {
   background: var(--soft);
+}
+
+.result__secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
 }
 
 .result__warning {
