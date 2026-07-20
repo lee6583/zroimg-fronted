@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MOCK_SESSION_COOKIE } from "@/server/auth";
+import { clearAuthRateLimit, consumeAuthRateLimit } from "@/server/auth-rate-limit";
 import { findUserByEmail } from "@/server/bff/mock-store";
 import { isJavaAuthEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
@@ -16,14 +17,18 @@ const signInSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (isJavaAuthEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/admin/sign-in");
-  }
-
-  const parsed = await parseJson(request, signInSchema);
+  const parsed = await parseJson(request.clone(), signInSchema);
   if (!parsed.ok) return jsonError(parsed.message);
 
   const { email, password } = parsed.data;
+  const limit = consumeAuthRateLimit(request, "admin-login", email);
+  if (!limit.ok) {
+    return jsonError(`登录请求过于频繁，请 ${limit.retryAfterSeconds} 秒后再试`, 429);
+  }
+
+  if (isJavaAuthEnabled()) {
+    return proxyRequestToJavaApi(request, "/auth/admin/sign-in");
+  }
 
   const bundle = findUserByEmail(email);
   if (!bundle || bundle.user.password !== password) {
@@ -36,7 +41,17 @@ export async function POST(request: Request) {
     return jsonError("账号已被禁用", 403);
   }
 
-  const response = jsonOk({ ok: true as const });
+  clearAuthRateLimit(request, "admin-login", email);
+
+  const response = jsonOk({
+    message: "登录成功",
+    user: {
+      id: bundle.user.id,
+      username: bundle.profile.username,
+      email: bundle.user.email,
+      role: bundle.profile.role,
+    },
+  });
   response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

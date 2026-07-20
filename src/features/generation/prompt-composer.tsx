@@ -11,6 +11,7 @@ type PromptComposerProps = {
   prompt: string;
   mode: GenerationMode;
   estimate: number;
+  hasCostError: boolean;
   notice: Notice;
   isBusy: boolean;
   onPromptChange: (value: string) => void;
@@ -25,6 +26,7 @@ export function PromptComposer(props: PromptComposerProps) {
   const prompt = props.prompt;
   const mode = props.mode;
   const estimate = props.estimate;
+  const hasCostError = props.hasCostError;
   const notice = props.notice;
   const isBusy = props.isBusy;
   const onPromptChange = props.onPromptChange;
@@ -32,6 +34,10 @@ export function PromptComposer(props: PromptComposerProps) {
   const onRemove = props.onRemove;
   const onNew = props.onNew;
   const onSubmit = props.onSubmit;
+  let costText = `预计 ${estimate} 积分`;
+  if (hasCostError) {
+    costText = "积分不足";
+  }
 
   return (
     <div className={styles.generateForm__composerBar}>
@@ -92,7 +98,14 @@ export function PromptComposer(props: PromptComposerProps) {
           </div>
 
           <div className={styles.generateForm__submitArea}>
-            <span className={styles.generateForm__costLabel}>预计 {estimate} 积分</span>
+            <span
+              className={clsx(
+                styles.generateForm__costLabel,
+                hasCostError && styles.generateForm__costLabelError,
+              )}
+            >
+              {costText}
+            </span>
             <button
               type="button"
               onClick={() => void onSubmit()}

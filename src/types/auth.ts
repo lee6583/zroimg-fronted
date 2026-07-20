@@ -1,7 +1,7 @@
 import type { OkResponse } from "@/types/api";
 
 type AuthUser = {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: string;
@@ -63,6 +63,7 @@ type ResetPasswordRequest = {
   email: string;
   code: string;
   password: string;
+  confirmPassword: string;
 };
 
 type ResetPasswordResponse = {

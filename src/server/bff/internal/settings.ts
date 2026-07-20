@@ -7,6 +7,16 @@ import type {
   GenerationProviderAdminConfig,
   SmtpAdminConfig,
 } from "@/types/admin";
+import type { AnnouncementSettingsConfig, PublicAnnouncement } from "@/types/announcement";
+
+function defaultAnnouncementSettings() {
+  return {
+    enabled: true,
+    title: "系统公告",
+    content: "欢迎使用 ZroImg。当前为前端联调环境，部分功能仍使用 mock 数据。",
+    updatedAt: new Date(),
+  };
+}
 
 export async function getGenerationConfig(): Promise<GenerationProviderAdminConfig> {
   const settings = getStore().settings.generation;
@@ -129,4 +139,58 @@ export async function getCheckInSettings(): Promise<CheckInSettingsConfig> {
 export async function updateCheckInSettings(input: { dailyCredits: number }) {
   getStore().settings.checkin.dailyCredits = input.dailyCredits;
   return getCheckInSettings();
+}
+
+function toAnnouncementConfig(): AnnouncementSettingsConfig {
+  const store = getStore();
+
+  if (!store.settings.announcement) {
+    store.settings.announcement = defaultAnnouncementSettings();
+  }
+
+  const settings = store.settings.announcement;
+
+  return {
+    enabled: settings.enabled,
+    title: settings.title,
+    content: settings.content,
+    updatedAt: settings.updatedAt.toISOString(),
+  };
+}
+
+export async function getAnnouncementSettings(): Promise<AnnouncementSettingsConfig> {
+  return toAnnouncementConfig();
+}
+
+export async function getPublicAnnouncement(): Promise<PublicAnnouncement> {
+  if (!isMockBffEnabled()) {
+    return {
+      enabled: false,
+      title: "",
+      content: "",
+      updatedAt: "disabled",
+    };
+  }
+
+  return toAnnouncementConfig();
+}
+
+export async function updateAnnouncementSettings(input: {
+  enabled: boolean;
+  title: string;
+  content: string;
+}) {
+  const store = getStore();
+
+  if (!store.settings.announcement) {
+    store.settings.announcement = defaultAnnouncementSettings();
+  }
+
+  const settings = store.settings.announcement;
+  settings.enabled = input.enabled;
+  settings.title = input.title.trim();
+  settings.content = input.content.trim();
+  settings.updatedAt = new Date();
+
+  return getAnnouncementSettings();
 }

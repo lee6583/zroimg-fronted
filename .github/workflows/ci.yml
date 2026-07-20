@@ -28,4 +28,159 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm audit:prod
+      - name: Audit production dependencies
+        run: pnpm audit:prod
+
+  build-image-attempt-1:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: metadata
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/zroimg-frontend
+          tags: |
+            type=raw,value=dev
+            type=sha,format=long,prefix=sha-
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-image:
+    if: >-
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/dev' &&
+      needs.verify.result == 'success'
+    needs: [verify, build-image-attempt-1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Ensure image is available
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          image="ghcr.io/${owner}/zroimg-frontend"
+          sha_tag="sha-${GITHUB_SHA}"
+
+          logged_in=false
+          for attempt in 1 2 3; do
+            if printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin; then
+              logged_in=true
+              break
+            fi
+
+            sleep 10
+          done
+
+          if [ "$logged_in" != "true" ]; then
+            echo "Unable to log in to GHCR after 3 attempts" >&2
+            exit 1
+          fi
+
+          for attempt in 1 2 3; do
+            if docker manifest inspect "${image}:${sha_tag}" >/dev/null 2>&1; then
+              echo "Primary image build succeeded: ${image}:${sha_tag}"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              sleep 5
+            fi
+          done
+
+          echo "Primary image is unavailable; retrying with Docker CLI in 45 seconds"
+          sleep 45
+
+          source_dir="$RUNNER_TEMP/zroimg-source"
+          mkdir -p "$source_dir"
+
+          curl \
+            --fail-with-body \
+            --location \
+            --retry 3 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --header "Authorization: Bearer ${GHCR_TOKEN}" \
+            --header "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/tarball/${GITHUB_SHA}" |
+            tar -xz --strip-components=1 -C "$source_dir"
+
+          cd "$source_dir"
+          docker build \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            --tag "${image}:dev" \
+            --tag "${image}:${sha_tag}" \
+            .
+          docker push "${image}:${sha_tag}"
+          docker push "${image}:dev"
+
+  deploy-development:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: build-image
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          : "${DEPLOY_HOST:?Missing DEPLOY_HOST variable}"
+          : "${DEPLOY_USER:?Missing DEPLOY_USER variable}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          echo "DEPLOY_PORT=${DEPLOY_PORT}" >> "$GITHUB_ENV"
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Upload deployment files
+        run: |
+          DEPLOY_PATH="${DEPLOY_PATH:-/opt/zroimg/frontend-image-dev}"
+          echo "DEPLOY_PATH=${DEPLOY_PATH}" >> "$GITHUB_ENV"
+
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          scp -P "$DEPLOY_PORT" \
+            deploy/compose.dev.yml \
+            deploy/deploy-dev.sh \
+            deploy/nginx.dev.conf.example \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+      - name: Deploy image
+        run: |
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "chmod 750 '$DEPLOY_PATH/deploy-dev.sh' && '$DEPLOY_PATH/deploy-dev.sh' 'sha-$GITHUB_SHA'"
+      - name: Add deployment summary
+        run: |
+          echo "Development URL: ${{ vars.DEV_URL }}" >> "$GITHUB_STEP_SUMMARY"

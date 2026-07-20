@@ -65,7 +65,7 @@ function buildWeek(status: CheckInStatus) {
 
 type CheckInCardProps = {
   initialStatus: CheckInStatus;
-  onClaimed?: (credits: number) => void;
+  onClaimed?: (credits: number, totalCredits?: number) => void;
 };
 
 export function CheckInCard(props: CheckInCardProps) {
@@ -96,12 +96,13 @@ export function CheckInCard(props: CheckInCardProps) {
     try {
       const data = await checkInApi.claim();
       const nextStatus = data.checkIn;
+      const addedCredits = data.addedCredits ?? nextStatus.dailyCredits;
 
       setStatus(nextStatus);
       setMessage("");
-      setReward(nextStatus.dailyCredits);
+      setReward(addedCredits);
       setAnimationKey((current) => current + 1);
-      onClaimed?.(nextStatus.dailyCredits);
+      onClaimed?.(addedCredits, data.totalCredits);
       router.refresh();
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -148,7 +149,7 @@ export function CheckInCard(props: CheckInCardProps) {
       </div>
 
       <div className={styles.checkInCard__meta}>
-        <span>累计 {status.totalCheckIns} 天</span>
+        <span>本周 {status.weekSignDays} 天</span>
         <span>每日 +{status.dailyCredits} 积分</span>
       </div>
 

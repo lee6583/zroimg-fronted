@@ -64,6 +64,10 @@ function emitSettingsChange() {
   window.dispatchEvent(new Event(settingsEvent));
 }
 
+function saveCookie(name: string, value: string) {
+  document.cookie = `${name}=${value};path=/;max-age=31536000;samesite=lax`;
+}
+
 export function ThemeControls() {
   const theme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerThemeSnapshot);
   const locale = useSyncExternalStore(subscribe, getLocaleSnapshot, getServerLocaleSnapshot);
@@ -76,14 +80,17 @@ export function ThemeControls() {
   function toggleTheme() {
     const nextTheme = theme === "light" ? "dark" : "light";
     window.localStorage.setItem(themeKey, nextTheme);
+    saveCookie("zroimg-theme", nextTheme);
     applyTheme(nextTheme);
     emitSettingsChange();
   }
 
   function toggleLocale() {
     const nextLocale = locale === "ZH" ? "EN" : "ZH";
+    const htmlLocale = nextLocale === "ZH" ? "zh-CN" : "en";
     window.localStorage.setItem(localeKey, nextLocale);
-    document.documentElement.lang = nextLocale === "ZH" ? "zh-CN" : "en";
+    saveCookie("zroimg-locale", htmlLocale);
+    document.documentElement.lang = htmlLocale;
     emitSettingsChange();
   }
 

@@ -1,0 +1,96 @@
+.appPagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.appPagination :global(.ant-pagination) {
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.84rem;
+}
+
+.appPagination :global(.ant-pagination-total-text) {
+  color: var(--muted);
+}
+
+.appPagination :global(.ant-pagination-item),
+.appPagination :global(.ant-pagination-prev button),
+.appPagination :global(.ant-pagination-next button) {
+  border-color: var(--line);
+  border-radius: 0.4rem;
+  background: var(--panel);
+}
+
+.appPagination :global(.ant-pagination-item a),
+.appPagination :global(.ant-pagination-prev button),
+.appPagination :global(.ant-pagination-next button) {
+  color: var(--foreground);
+}
+
+.appPagination :global(.ant-pagination-item:hover),
+.appPagination :global(.ant-pagination-prev:hover button),
+.appPagination :global(.ant-pagination-next:hover button) {
+  border-color: var(--foreground);
+  background: var(--soft);
+}
+
+.appPagination :global(.ant-pagination-item-active) {
+  border-color: var(--foreground);
+  background: var(--foreground);
+}
+
+.appPagination :global(.ant-pagination-item-active a) {
+  color: var(--background);
+}
+
+.appPagination :global(.ant-pagination-disabled button),
+.appPagination :global(.ant-pagination-disabled:hover button) {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  opacity: 0.56;
+}
+
+.appPagination :global(.ant-select-selector) {
+  border-color: var(--line) !important;
+  border-radius: 0.4rem;
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+.appPagination :global(.ant-select:hover .ant-select-selector),
+.appPagination :global(.ant-select-focused .ant-select-selector) {
+  border-color: var(--foreground) !important;
+}
+
+.appPagination :global(.ant-select-arrow) {
+  color: var(--muted);
+}
+
+:global(
+  .ant-select-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled)
+) {
+  background: var(--foreground) !important;
+  color: var(--background) !important;
+}
+
+:global(
+  .ant-select-dropdown
+    .ant-select-item-option-selected:not(.ant-select-item-option-disabled)
+    .ant-select-item-option-content
+) {
+  color: var(--background) !important;
+}
+
+:global(.ant-select-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled)) {
+  background: var(--soft) !important;
+  color: var(--foreground) !important;
+}
+
+@media (max-width: 640px) {
+  .appPagination {
+    justify-content: center;
+  }
+}

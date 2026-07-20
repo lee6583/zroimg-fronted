@@ -1,0 +1,93 @@
+.adminTickets__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.adminTickets__card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--panel);
+  padding: 1.15rem;
+}
+
+.adminTickets__cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.adminTickets__cardMain {
+  min-width: 0;
+}
+
+.adminTickets__meta,
+.adminTickets__date,
+.adminTickets__messageMeta {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.adminTickets__date {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.adminTickets__title {
+  margin-top: 0.3rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+
+.adminTickets__content,
+.adminTickets__messageBody {
+  white-space: pre-wrap;
+  font-size: 0.86rem;
+  line-height: 1.75;
+}
+
+.adminTickets__content {
+  margin-top: 0.45rem;
+  color: var(--muted);
+}
+
+.adminTickets__messages {
+  display: grid;
+  gap: 0.75rem;
+  border-left: 1px solid var(--line);
+  padding-left: 0.85rem;
+}
+
+.adminTickets__message {
+  display: grid;
+  gap: 0.35rem;
+  border-radius: 0.65rem;
+  background: var(--soft);
+  padding: 0.75rem 0.85rem;
+}
+
+.adminTickets__messageBody {
+  color: var(--foreground);
+}
+
+.adminTickets__actions {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+@media (max-width: 720px) {
+  .adminTickets__cardHeader {
+    display: grid;
+  }
+
+  .adminTickets__date {
+    justify-self: start;
+  }
+}

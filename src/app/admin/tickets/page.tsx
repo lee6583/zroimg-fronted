@@ -4,6 +4,7 @@ import { FeedbackActions } from "@/features/admin/feedback-actions";
 import { requireAdmin } from "@/server/auth";
 import { listAdminTickets } from "@/server/bff/account";
 import { feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
+import styles from "./tickets.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -105,39 +106,34 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
           </div>
         </section>
 
-        <section className="grid gap-4">
+        <section className={styles.adminTickets__list}>
           {tickets.map((ticket) => (
-            <article key={ticket.id} className="surface rounded-xl p-5">
-              <div className="flex flex-wrap justify-between gap-4">
-                <div>
-                  <p className="text-xs font-medium text-muted">
+            <article key={ticket.id} className={styles.adminTickets__card}>
+              <div className={styles.adminTickets__cardHeader}>
+                <div className={styles.adminTickets__cardMain}>
+                  <p className={styles.adminTickets__meta}>
                     {feedbackTypeLabels[ticket.type]} / {feedbackStatusLabels[ticket.status]} /{" "}
                     {ticket.userProfile?.user?.email || "-"}
                   </p>
-                  <h2 className="mt-1 text-xl font-semibold">{ticket.subject}</h2>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">
-                    {ticket.content}
-                  </p>
+                  <h2 className={styles.adminTickets__title}>{ticket.subject}</h2>
+                  <p className={styles.adminTickets__content}>{ticket.content}</p>
                 </div>
-                <p className="text-xs text-muted">{formatDate(ticket.createdAt)}</p>
+                <p className={styles.adminTickets__date}>{formatDate(ticket.createdAt)}</p>
               </div>
 
-              <div className="mt-4 grid gap-2">
+              <div className={styles.adminTickets__messages}>
                 {ticket.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`rounded-lg border border-line p-3 ${message.isAdmin ? "bg-soft" : "bg-panel"}`}
-                  >
-                    <p className="text-xs font-medium text-muted">
+                  <div key={message.id} className={styles.adminTickets__message}>
+                    <p className={styles.adminTickets__messageMeta}>
                       {message.isAdmin ? "管理员" : message.authorProfile.username} /{" "}
                       {formatDate(message.createdAt)}
                     </p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.body}</p>
+                    <p className={styles.adminTickets__messageBody}>{message.body}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 rounded-xl border border-line p-3">
+              <div className={styles.adminTickets__actions}>
                 <FeedbackActions ticketId={ticket.id} currentStatus={ticket.status} />
               </div>
             </article>

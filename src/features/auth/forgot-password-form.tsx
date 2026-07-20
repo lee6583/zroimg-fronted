@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { Hash, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { authApi } from "@/api/auth/email-auth";
 import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
 
+const defaultCodeCooldownSeconds = 60;
+
 export function ForgotPasswordForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -15,14 +18,33 @@ export function ForgotPasswordForm() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [isSending, setSending] = useState(false);
+  const [codeCountdown, setCodeCountdown] = useState(0);
   const [isLoading, setLoading] = useState(false);
-  const [isDone, setDone] = useState(false);
+
+  useEffect(() => {
+    if (codeCountdown <= 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCodeCountdown((currentCountdown) => {
+        return Math.max(currentCountdown - 1, 0);
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [codeCountdown]);
 
   async function sendCode() {
+    if (isSending || codeCountdown > 0) {
+      return;
+    }
+
     try {
       setSending(true);
       setMessage("");
       const data = await authApi.sendPasswordResetCode({ email });
+      setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
       setMessage(data.message);
     } catch (error) {
@@ -44,16 +66,29 @@ export function ForgotPasswordForm() {
     try {
       setLoading(true);
       setMessage("");
-      const data = await authApi.resetPassword({ email, code, password });
+      const data = await authApi.resetPassword({
+        email,
+        code,
+        password,
+        confirmPassword,
+      });
       setMessageType("success");
       setMessage(data.message);
-      setDone(true);
+      router.push("/login");
+      router.refresh();
     } catch (error) {
       setMessageType("error");
       setMessage(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
+  }
+
+  let sendCodeText = "发码";
+  if (isSending) {
+    sendCodeText = "发送中";
+  } else if (codeCountdown > 0) {
+    sendCodeText = `${codeCountdown}s`;
   }
 
   return (
@@ -68,7 +103,10 @@ export function ForgotPasswordForm() {
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setCodeCountdown(0);
+              }}
               required
             />
           </span>
@@ -91,9 +129,9 @@ export function ForgotPasswordForm() {
               type="button"
               className={styles.authForm__secondaryButton}
               onClick={sendCode}
-              disabled={isSending || !email.trim()}
+              disabled={isSending || codeCountdown > 0 || !email.trim()}
             >
-              {isSending ? "发送中" : "发码"}
+              {sendCodeText}
             </button>
           </span>
         </label>
@@ -141,15 +179,9 @@ export function ForgotPasswordForm() {
         ) : null}
       </div>
 
-      <button className={styles.authForm__submit} disabled={isLoading || isDone}>
+      <button className={styles.authForm__submit} disabled={isLoading}>
         {isLoading ? "重置中" : "重置密码"}
       </button>
-
-      {isDone ? (
-        <Link href="/login" className={styles.authForm__plainLink}>
-          返回登录
-        </Link>
-      ) : null}
     </form>
   );
 }

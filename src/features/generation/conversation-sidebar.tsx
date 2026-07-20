@@ -7,6 +7,8 @@ import { useState } from "react";
 import type { ConversationGroup, ConversationItem } from "./generation-model";
 import styles from "./generate-form.module.css";
 
+const titlePreviewLength = 9;
+
 type ConversationSidebarProps = {
   groups: ConversationGroup[];
   activeId: string;
@@ -18,13 +20,11 @@ type ConversationSidebarProps = {
   onDelete: (id: string) => Promise<void>;
 };
 
-function shortTitle(value: string) {
-  const chars = [...value.trim()];
-  if (chars.length <= 9) {
-    return value;
-  }
-
-  return `${chars.slice(0, 9).join("")}...`;
+function getDisplayTitle(value: string) {
+  const normalized = value.trim();
+  const chars = [...normalized];
+  if (chars.length <= titlePreviewLength) return normalized;
+  return `${chars.slice(0, titlePreviewLength).join("")}...`;
 }
 
 export function ConversationSidebar(props: ConversationSidebarProps) {
@@ -116,8 +116,8 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                   const isActive = item.id === activeId;
                   const isEditing = item.id === editId;
                   const isPending = item.id === pendingId;
-                  const displayTitle = shortTitle(item.title);
-                  const isTruncated = displayTitle !== item.title;
+                  const displayTitle = getDisplayTitle(item.title);
+                  const isTitleTruncated = displayTitle !== item.title.trim();
 
                   return (
                     <div
@@ -152,12 +152,19 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                             aria-label="编辑对话名称"
                           />
                         ) : (
-                          <span
-                            className={styles.generateForm__conversationTitle}
-                            aria-label={isTruncated ? item.title : undefined}
-                          >
-                            {displayTitle}
-                          </span>
+                          <>
+                            <span className={styles.generateForm__conversationTitle}>
+                              {displayTitle}
+                            </span>
+                            {isTitleTruncated ? (
+                              <span
+                                className={styles.generateForm__conversationTooltip}
+                                role="tooltip"
+                              >
+                                {item.title}
+                              </span>
+                            ) : null}
+                          </>
                         )}
                       </div>
                       <div className={styles.generateForm__conversationActions}>
@@ -191,11 +198,6 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                           <Trash2 size={13} />
                         </button>
                       </div>
-                      {!isEditing && isTruncated ? (
-                        <span className={styles.generateForm__conversationTooltip}>
-                          {item.title}
-                        </span>
-                      ) : null}
                     </div>
                   );
                 })}

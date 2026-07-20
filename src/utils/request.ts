@@ -208,7 +208,7 @@ export async function request<T>(options: RequestOptions): Promise<T> {
   const envelope = isApiEnvelope(payload) ? payload : null;
   const javaResult = isJavaResult(payload) ? payload : null;
   const failedByEnvelope = envelope?.success === false;
-  const failedByJavaCode = Boolean(javaResult && javaResult.code !== 200);
+  const failedByJavaCode = Boolean(javaResult && javaResult.code !== 0 && javaResult.code !== 200);
 
   if (!response.ok || failedByEnvelope || failedByJavaCode) {
     const status = Number(envelope?.statusCode || readFailedStatus(response, javaResult));

@@ -23,10 +23,22 @@
   object-fit: contain;
 }
 
+.brandLogo__iconDark {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .brandLogo__iconLight {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .brandLogo__iconDark {
+  display: block;
+}
+
 .brandLogo__text {
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: 500;
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
   line-height: 1;
 }

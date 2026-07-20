@@ -1,0 +1,31 @@
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE in .env}:${IMAGE_TAG:-dev}
+    container_name: zroimg-frontend-dev
+    restart: unless-stopped
+    init: true
+    environment:
+      BFF_MODE: ${BFF_MODE:-java}
+      AUTH_BFF_MODE: ${AUTH_BFF_MODE:-java}
+      ALLOW_MOCK_BFF: ${ALLOW_MOCK_BFF:-false}
+      JAVA_API_BASE_URL: ${JAVA_API_BASE_URL:?Set JAVA_API_BASE_URL in .env}
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - zroimg
+
+networks:
+  zroimg:
+    external: true
+    name: zroimg_default
