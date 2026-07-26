@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
-import type { CreditPackage } from "@/types/orders";
+import type { CreditPackage, PaymentType } from "@/types/orders";
 import {
   calculateCustomCredits,
   CUSTOM_MAX_AMOUNT_CNY,
@@ -42,7 +42,10 @@ type OrderFormProps = {
   allowCustomOrder: boolean;
 };
 
-const defaultPaymentType = "alipay" as const;
+const paymentChannels: { value: PaymentType; label: string }[] = [
+  { value: "alipay", label: "支付宝" },
+  { value: "wxpay", label: "微信支付" },
+];
 const quickAmounts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 const enterpriseAmount = 400;
 const amountTextPattern = /^\d*(\.\d{0,2})?$/;
@@ -90,6 +93,7 @@ export function OrderForm(props: OrderFormProps) {
 
   const [customAmount, setCustomAmount] = useState("29");
   const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
+  const [paymentType, setPaymentType] = useState<PaymentType>("alipay");
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
 
@@ -125,7 +129,7 @@ export function OrderForm(props: OrderFormProps) {
       const data = await ordersApi.createOrder({
         mode: "package",
         packageId,
-        paymentType: defaultPaymentType,
+        paymentType,
       });
       handleOrderResult(data.order?.resultUrl ?? undefined);
     } catch (error) {
@@ -154,7 +158,7 @@ export function OrderForm(props: OrderFormProps) {
       const data = await ordersApi.createOrder({
         mode: "custom",
         amountCny: orderAmount,
-        paymentType: defaultPaymentType,
+        paymentType,
       });
       handleOrderResult(data.order?.resultUrl ?? undefined);
     } catch (error) {
@@ -196,6 +200,31 @@ export function OrderForm(props: OrderFormProps) {
 
   return (
     <div className={styles.orderForm}>
+      <section className={styles.orderForm__section}>
+        <div className={styles.orderForm__sectionHeader}>
+          <h2 className={styles.orderForm__sectionTitle}>支付方式</h2>
+        </div>
+        <div className={styles.orderForm__channels}>
+          {paymentChannels.map((channel) => {
+            const isActive = paymentType === channel.value;
+
+            return (
+              <button
+                key={channel.value}
+                type="button"
+                onClick={() => setPaymentType(channel.value)}
+                className={clsx(
+                  styles.orderForm__channel,
+                  isActive && styles.orderForm__channelActive,
+                )}
+              >
+                {channel.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <section className={styles.orderForm__section}>
         <div className={styles.orderForm__sectionHeader}>
           <h2 className={styles.orderForm__sectionTitle}>套餐购买</h2>

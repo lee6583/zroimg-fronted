@@ -236,3 +236,27 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.orderForm__channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.orderForm__channel {
+  min-width: 7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.orderForm__channel:hover,
+.orderForm__channelActive {
+  border-color: var(--foreground);
+  background: var(--soft);
+}

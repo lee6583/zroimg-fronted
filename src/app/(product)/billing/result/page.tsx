@@ -23,9 +23,12 @@ const statusLabels: Record<string, string> = {
   fulfilled: "已到账",
   expired: "已过期",
   cancelled: "已取消",
+  closed: "已关闭",
   failed: "支付失败",
+  credited: "已到账",
   created: "已创建",
   paying: "支付中",
+  confirming: "支付确认中",
   success: "已支付",
 };
 
@@ -94,6 +97,7 @@ function OrderNotFoundCard() {
 function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
   const order = props.order;
   const paymentLabel = order.payChannelText || order.payChannel || "—";
+  const isCancellable = order.displayStatus === "pending" || order.displayStatus === "confirming";
 
   return (
     <main className={styles.result}>
@@ -138,7 +142,7 @@ function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
           </div>
         </div>
 
-        <PaymentActions orderNo={order.orderNo} payUrl={null} canCancel={false} />
+        <PaymentActions orderNo={order.orderNo} payUrl={null} canCancel={isCancellable} />
       </section>
     </main>
   );

@@ -5,6 +5,9 @@ import { isMockBffEnabled } from "@/server/env";
 import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import { prisma } from "@/server/bff/mock-db";
 import type {
+  AdminRechargeOrder,
+  AdminRechargeOrderPage,
+  AdminRechargeOrderPageQuery,
   CreditPackage,
   RechargeOrder,
   RechargeOrderPage,
@@ -59,6 +62,18 @@ const javaRechargeOrderPageSchema = z.object({
   total: z.number(),
   pages: z.number(),
   list: z.array(javaRechargeOrderSchema),
+});
+
+const javaAdminRechargeOrderSchema = javaRechargeOrderSchema.extend({
+  userId: z.number(),
+  creditsErrorReason: z.string().nullable().optional(),
+  closeTime: z.string().nullable().optional(),
+});
+
+const javaAdminRechargeOrderPageSchema = z.object({
+  total: z.number(),
+  pages: z.number(),
+  list: z.array(javaAdminRechargeOrderSchema),
 });
 
 type PackageInput = {
@@ -366,11 +381,133 @@ async function detectJavaRechargeOrder(orderNo: string) {
   return parseJavaRechargeOrder(payload, "检测支付状态接口返回格式不正确");
 }
 
+function buildJavaAdminOrderPagePath(query: AdminRechargeOrderPageQuery) {
+  const params = new URLSearchParams();
+  params.set("pageNo", String(query.page));
+  params.set("pageSize", String(query.pageSize));
+  params.set("isAsc", "false");
+  params.set("sortBy", "createTime");
+
+  if (query.orderNo) {
+    params.set("orderNo", query.orderNo);
+  }
+
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  return `/order/admin/recharge-orders?${params.toString()}`;
+}
+
+const mockOrderStatuses = [
+  "pending",
+  "paid",
+  "fulfilled",
+  "expired",
+  "cancelled",
+  "failed",
+] as const;
+
+function readMockOrderStatus(status?: string) {
+  return mockOrderStatuses.find((item) => item === status);
+}
+
+async function listMockAdminOrders(
+  query: AdminRechargeOrderPageQuery,
+): Promise<AdminRechargeOrderPage> {
+  // 第一步:按状态和订单号过滤全部订单。
+  const orders = await prisma.paymentOrder.findMany({
+    where: {
+      ...(readMockOrderStatus(query.status) ? { status: readMockOrderStatus(query.status) } : {}),
+      ...(query.orderNo ? { OR: [{ orderNo: { contains: query.orderNo } }] } : {}),
+    },
+    include: {
+      creditPackage: true,
+      userProfile: { include: { user: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // 第二步:计算分页并截取当前页。
+  const total = orders.length;
+  const pages = Math.max(1, Math.ceil(total / query.pageSize));
+  const currentPage = Math.min(query.page, pages);
+  const start = (currentPage - 1) * query.pageSize;
+  const pageOrders = orders.slice(start, start + query.pageSize);
+
+  // 第三步:转换为管理端订单结构并补充用户信息。
+  const list: AdminRechargeOrder[] = pageOrders.map((order) => {
+    const baseOrder = mockOrderToRechargeOrder(order);
+
+    return {
+      ...baseOrder,
+      userText: order.userProfile?.user?.email || order.userProfileId,
+      creditsErrorReason: null,
+      closeTime: null,
+    };
+  });
+
+  return { total, pages, list };
+}
+
+async function listJavaAdminOrders(
+  query: AdminRechargeOrderPageQuery,
+): Promise<AdminRechargeOrderPage> {
+  const payload = await requestJavaApiData<unknown>(buildJavaAdminOrderPagePath(query));
+  const parsed = javaAdminRechargeOrderPageSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    throw new Error("管理端订单分页接口返回格式不正确");
+  }
+
+  const list: AdminRechargeOrder[] = parsed.data.list.map((item) => {
+    const { userId, ...order } = item;
+
+    return {
+      ...order,
+      userText: String(userId),
+    };
+  });
+
+  return {
+    total: parsed.data.total,
+    pages: parsed.data.pages,
+    list,
+  };
+}
+
+async function listAdminRechargeOrders(
+  query: AdminRechargeOrderPageQuery,
+): Promise<AdminRechargeOrderPage> {
+  if (isMockBffEnabled()) {
+    return listMockAdminOrders(query);
+  }
+
+  return listJavaAdminOrders(query);
+}
+
+async function reissueJavaRechargeCredits(orderNo: string) {
+  const safeOrderNo = encodeURIComponent(orderNo);
+  const payload = await requestJavaApiData<unknown>(
+    `/order/admin/recharge-orders/${safeOrderNo}/reissue-credits`,
+    { method: "POST" },
+  );
+  const parsed = javaAdminRechargeOrderSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    throw new Error("补发积分接口返回格式不正确");
+  }
+
+  return parsed.data;
+}
+
 export {
   detectJavaRechargeOrder,
   getJavaRechargeOrder,
   getRechargeOverview,
+  listAdminRechargeOrders,
   listRechargeOrders,
   listCreditPackages,
+  reissueJavaRechargeCredits,
   prisma,
 };

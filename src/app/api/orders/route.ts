@@ -83,10 +83,19 @@ function buildResultUrl(orderNo: string) {
   return `/billing/result?order=${encodeURIComponent(orderNo)}`;
 }
 
-async function createJavaPackageOrder(payload: z.output<typeof packageOrderSchema>) {
-  const packageId = normalizePackageId(payload.packageId);
-  if (!packageId) {
-    return jsonError("套餐 ID 格式不正确");
+async function createJavaOrder(payload: z.output<typeof orderSchema>) {
+  let requestBody: Record<string, unknown>;
+
+  if (payload.mode === "package") {
+    const packageId = normalizePackageId(payload.packageId);
+    if (!packageId) {
+      return jsonError("套餐 ID 格式不正确");
+    }
+
+    requestBody = { packageId, payChannel: payload.paymentType };
+  } else {
+    const amountCent = Math.round(payload.amountCny * 100);
+    requestBody = { amountCent, payChannel: payload.paymentType };
   }
 
   let data: unknown;
@@ -96,7 +105,7 @@ async function createJavaPackageOrder(payload: z.output<typeof packageOrderSchem
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ packageId }),
+      body: JSON.stringify(requestBody),
     });
   } catch (error) {
     return jsonError(getErrorMessage(error), 502);
@@ -211,9 +220,5 @@ export async function POST(request: Request) {
     return createMockOrder(payload, current.profile.id);
   }
 
-  if (payload.mode === "custom") {
-    return jsonError("后端暂未支持自定义金额购买", 400);
-  }
-
-  return createJavaPackageOrder(payload);
+  return createJavaOrder(payload);
 }

@@ -1,11 +1,26 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { listAdminRechargeOrders } from "@/server/bff/orders";
+import { ReissueButton } from "./reissue-button";
 
 export const dynamic = "force-dynamic";
 
-const orderStatuses = ["pending", "paid", "fulfilled", "expired", "cancelled", "failed"] as const;
+const orderStatuses = ["pending", "confirming", "paid", "credited", "closed", "failed"] as const;
+const pageSize = 20;
+
+const orderStatusLabels: Record<string, string> = {
+  pending: "待支付",
+  confirming: "支付确认中",
+  paid: "已支付",
+  credited: "已到账",
+  closed: "已关闭",
+  failed: "支付失败",
+  fulfilled: "已到账",
+  expired: "已过期",
+  cancelled: "已取消",
+};
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminOrdersPageProps = {
   searchParams: SearchParams;
@@ -16,8 +31,21 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDate(value: Date | null) {
-  return value ? value.toISOString().slice(0, 16).replace("T", " ") : "-";
+function formatDateText(value?: string | null) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toISOString().slice(0, 16).replace("T", " ");
+}
+
+function readStatusLabel(status: string) {
+  return orderStatusLabels[status] ?? status;
 }
 
 function href(input: { q?: string; status?: string; page: number }) {
@@ -36,32 +64,18 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const pageSize = 20;
-  const where = {
-    ...(orderStatuses.includes(status as (typeof orderStatuses)[number])
-      ? { status: status as (typeof orderStatuses)[number] }
-      : {}),
-    ...(q
-      ? {
-          OR: [
-            { orderNo: { contains: q, mode: "insensitive" as const } },
-            { providerTradeNo: { contains: q, mode: "insensitive" as const } },
-            { userProfile: { user: { email: { contains: q, mode: "insensitive" as const } } } },
-          ],
-        }
-      : {}),
-  };
-  const [orders, total] = await Promise.all([
-    prisma.paymentOrder.findMany({
-      where,
-      include: { userProfile: { include: { user: true } }, creditPackage: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.paymentOrder.count({ where }),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const isKnownStatus = orderStatuses.includes(status as (typeof orderStatuses)[number]);
+
+  const orderPage = await listAdminRechargeOrders({
+    page,
+    pageSize,
+    orderNo: q || undefined,
+    status: isKnownStatus ? status : undefined,
+  });
+
+  const orders = orderPage.list;
+  const total = orderPage.total;
+  const totalPages = Math.max(1, orderPage.pages);
 
   return (
     <AdminShell active="orders">
@@ -76,7 +90,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
               className="field text-sm"
               name="q"
               defaultValue={q || ""}
-              placeholder="搜索订单号、交易号或用户邮箱"
+              placeholder="搜索订单号"
             />
             <button className="btn-primary" type="submit">
               搜索
@@ -91,7 +105,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                   className={`btn-secondary ${status === item ? "bg-soft" : ""}`}
                   href={href({ q, status: item, page: 1 })}
                 >
-                  {item}
+                  {readStatusLabel(item)}
                 </Link>
               ))}
             </div>
@@ -100,27 +114,38 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
 
         <section className="grid gap-2">
           {orders.map((order) => (
-            <article key={order.id} className="surface rounded-xl p-4">
+            <article key={order.orderNo} className="surface rounded-xl p-4">
               <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
                 <div>
                   <p className="font-semibold">{order.orderNo}</p>
-                  <p className="mt-1 text-sm text-muted">{order.userProfile?.user?.email || "-"}</p>
+                  <p className="mt-1 text-sm text-muted">用户 {order.userText}</p>
                 </div>
                 <div>
-                  <p>{order.creditPackage?.name ?? "自定义充值"}</p>
+                  <p>{order.packageName}</p>
                   <p className="mt-1 text-sm text-muted">
-                    {order.credits} 积分 / ¥{order.amountCny.toString()}
+                    {order.credits} 积分 / {order.amountText}
                   </p>
                 </div>
                 <div>
-                  <p>{order.status}</p>
+                  <p>{readStatusLabel(order.displayStatus)}</p>
                   <p className="mt-1 text-sm text-muted">
-                    {order.paymentType} / {order.providerTradeNo || "无交易号"}
+                    {order.payChannelText || order.payChannel || "—"} /{" "}
+                    {order.thirdTradeNo || "无交易号"}
                   </p>
+                  {order.creditsErrorReason ? (
+                    <p className="mt-1 text-sm text-red-600">
+                      发放失败：{order.creditsErrorReason}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="text-sm text-muted lg:text-right">
-                  <p>创建 {formatDate(order.createdAt)}</p>
-                  <p>支付 {formatDate(order.paidAt)}</p>
+                <div className="grid gap-2 text-sm text-muted lg:justify-items-end lg:text-right">
+                  <div>
+                    <p>创建 {formatDateText(order.createTime)}</p>
+                    <p>支付 {formatDateText(order.payTime)}</p>
+                  </div>
+                  {order.creditsStatus === "failed" ? (
+                    <ReissueButton orderNo={order.orderNo} />
+                  ) : null}
                 </div>
               </div>
             </article>

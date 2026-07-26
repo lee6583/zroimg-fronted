@@ -98,6 +98,31 @@ type CreditPackage = {
   sort: number;
 };
 
+type AdminRechargeOrder = RechargeOrder & {
+  userText: string;
+  creditsErrorReason?: string | null;
+  closeTime?: string | null;
+};
+
+type AdminRechargeOrderPageQuery = {
+  page: number;
+  pageSize: number;
+  orderNo?: string;
+  status?: string;
+};
+
+type AdminRechargeOrderPage = {
+  total: number;
+  pages: number;
+  list: AdminRechargeOrder[];
+};
+
+type ReissueCreditsResponse = {
+  ok: boolean;
+  orderNo: string;
+  creditsStatus: string;
+};
+
 export type {
   PaymentType,
   PackageOrderRequest,
@@ -111,4 +136,8 @@ export type {
   RechargeOrderPageQuery,
   RechargeOrderPage,
   CreditPackage,
+  AdminRechargeOrder,
+  AdminRechargeOrderPageQuery,
+  AdminRechargeOrderPage,
+  ReissueCreditsResponse,
 };

@@ -2,13 +2,11 @@ import { CheckCircle2, Coins, ReceiptText, WalletCards } from "lucide-react";
 import { OrderForm } from "@/features/billing/order-form";
 import { requireUser } from "@/server/auth";
 import { getRechargeOverview, listCreditPackages } from "@/server/bff/orders";
-import { isMockBffEnabled } from "@/server/env";
 
 export const dynamic = "force-dynamic";
 
 export default async function CreditsPage() {
   const current = await requireUser();
-  const allowCustomOrder = isMockBffEnabled();
   const [packages, overview] = await Promise.all([
     listCreditPackages(),
     getRechargeOverview({
@@ -75,7 +73,7 @@ export default async function CreditsPage() {
         </section>
 
         <section>
-          <OrderForm packages={packages} allowCustomOrder={allowCustomOrder} />
+          <OrderForm packages={packages} allowCustomOrder />
         </section>
       </div>
     </div>
