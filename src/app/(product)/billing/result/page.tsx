@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/server/auth";
 import { getJavaRechargeOrder, prisma } from "@/server/bff/orders";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import type { RechargeOrder } from "@/types/orders";
 import { PaymentActions } from "./payment-actions";
 import styles from "./result.module.css";
@@ -39,6 +39,15 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   }
 
   return value;
+}
+
+function readOrderNo(params: Record<string, string | string[] | undefined>) {
+  const orderNo = readParam(params, "order");
+  if (orderNo) {
+    return orderNo;
+  }
+
+  return readParam(params, "out_trade_no");
 }
 
 function formatAmount(value: number) {
@@ -97,7 +106,12 @@ function OrderNotFoundCard() {
 function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
   const order = props.order;
   const paymentLabel = order.payChannelText || order.payChannel || "—";
+  const canPay = order.displayStatus === "pending" || order.displayStatus === "confirming";
   const isCancellable = order.displayStatus === "pending" || order.displayStatus === "confirming";
+  const canDetect =
+    order.displayStatus === "pending" ||
+    order.displayStatus === "confirming" ||
+    order.displayStatus === "paid";
 
   return (
     <main className={styles.result}>
@@ -142,7 +156,13 @@ function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
           </div>
         </div>
 
-        <PaymentActions orderNo={order.orderNo} payUrl={null} canCancel={isCancellable} />
+        <PaymentActions
+          orderNo={order.orderNo}
+          payUrl={null}
+          canPay={canPay}
+          canCancel={isCancellable}
+          canDetect={canDetect}
+        />
       </section>
     </main>
   );
@@ -158,14 +178,14 @@ async function readJavaOrder(orderNo: string) {
 
 export default async function BillingResultPage(props: BillingResultPageProps) {
   const params = await props.searchParams;
-  const orderNo = readParam(params, "order");
+  const orderNo = readOrderNo(params);
   const current = await requireUser();
 
   if (!orderNo) {
     return <OrderNotFoundCard />;
   }
 
-  if (!isMockBffEnabled()) {
+  if (!isMockPaymentBffEnabled()) {
     const javaOrder = await readJavaOrder(orderNo);
 
     if (!javaOrder) {
@@ -189,6 +209,8 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
   const paymentLabel = paymentTypeLabels[order.paymentType] ?? order.paymentType;
   const statusLabel = readStatusLabel(order.status);
   const packageName = order.creditPackage?.name ?? "自定义积分购买";
+  const canPay = order.status === "pending";
+  const canDetect = order.status === "pending";
 
   return (
     <main className={styles.result}>
@@ -229,7 +251,12 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
           </div>
         </div>
 
-        <PaymentActions orderNo={order.orderNo} payUrl={order.payUrl} />
+        <PaymentActions
+          orderNo={order.orderNo}
+          payUrl={order.payUrl}
+          canPay={canPay}
+          canDetect={canDetect}
+        />
       </section>
     </main>
   );

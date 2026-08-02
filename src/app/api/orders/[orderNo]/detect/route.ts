@@ -1,8 +1,9 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { detectJavaRechargeOrder } from "@/server/bff/orders";
 import { getStore } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
+import { getJavaApiErrorStatus } from "@/server/java-api";
 import { getErrorMessage } from "@/utils/error";
 
 function formatAmountText(amountCny: number) {
@@ -50,7 +51,7 @@ async function detectJavaOrder(orderNo: string) {
     const order = await detectJavaRechargeOrder(orderNo);
     return jsonOk(order);
   } catch (error) {
-    return jsonError(getErrorMessage(error), 502);
+    return jsonError(getErrorMessage(error), getJavaApiErrorStatus(error));
   }
 }
 
@@ -65,7 +66,7 @@ export async function POST(_request: Request, context: { params: Promise<{ order
     return jsonError("订单号不能为空");
   }
 
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return detectMockOrder(orderNo, current.profile.id);
   }
 

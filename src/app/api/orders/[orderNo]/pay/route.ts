@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { getStore } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
-import { requestJavaApiData } from "@/server/java-api";
+import { getJavaApiErrorStatus, requestJavaApiData } from "@/server/java-api";
 import { getErrorMessage } from "@/utils/error";
 
 const javaPaySchema = z.object({
@@ -57,7 +57,7 @@ async function createJavaPay(orderNo: string) {
       method: "POST",
     });
   } catch (error) {
-    return jsonError(getErrorMessage(error), 502);
+    return jsonError(getErrorMessage(error), getJavaApiErrorStatus(error));
   }
 
   const parsed = javaPaySchema.safeParse(data);
@@ -79,7 +79,7 @@ export async function POST(_request: Request, context: { params: Promise<{ order
     return jsonError("订单号不能为空");
   }
 
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return createMockPay(orderNo, current.profile.id);
   }
 
