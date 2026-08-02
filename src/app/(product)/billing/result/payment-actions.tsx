@@ -9,16 +9,21 @@ import styles from "./result.module.css";
 type PaymentActionsProps = {
   orderNo: string;
   payUrl: string | null;
+  canPay?: boolean;
   canCancel?: boolean;
+  canDetect?: boolean;
 };
 
 export function PaymentActions(props: PaymentActionsProps) {
   const orderNo = props.orderNo;
   const payUrl = props.payUrl;
+  const canPay = props.canPay ?? true;
   const canCancel = props.canCancel ?? true;
+  const canDetect = props.canDetect ?? true;
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isPaying, setPaying] = useState(false);
+  const [isDetecting, setDetecting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   async function confirmPayment() {
@@ -46,6 +51,20 @@ export function PaymentActions(props: PaymentActionsProps) {
     }
   }
 
+  async function detectPayment() {
+    setMessage("");
+    setDetecting(true);
+
+    try {
+      await ordersApi.detectPayment(orderNo);
+      router.refresh();
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setDetecting(false);
+    }
+  }
+
   function cancelPayment() {
     setMessage("");
 
@@ -62,19 +81,31 @@ export function PaymentActions(props: PaymentActionsProps) {
 
   return (
     <div className={styles.result__payBox}>
-      <button
-        type="button"
-        className={styles.result__payButton}
-        disabled={isPaying}
-        onClick={() => void confirmPayment()}
-      >
-        {isPaying ? "发起支付中" : "确认支付"}
-      </button>
+      {canPay ? (
+        <button
+          type="button"
+          className={styles.result__payButton}
+          disabled={isPaying}
+          onClick={() => void confirmPayment()}
+        >
+          {isPaying ? "发起支付中" : "确认支付"}
+        </button>
+      ) : null}
+      {canDetect ? (
+        <button
+          type="button"
+          className={styles.result__secondaryButton}
+          disabled={isDetecting}
+          onClick={() => void detectPayment()}
+        >
+          {isDetecting ? "查询中" : "刷新状态"}
+        </button>
+      ) : null}
       {canCancel ? (
         <button
           type="button"
           className={styles.result__cancelButton}
-          disabled={isPending}
+          disabled={isPending || isDetecting}
           onClick={cancelPayment}
         >
           {isPending ? "取消中" : "取消支付"}

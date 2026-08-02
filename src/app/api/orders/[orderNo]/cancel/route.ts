@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { getStore } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
-import { requestJavaApiData } from "@/server/java-api";
+import { getJavaApiErrorStatus, requestJavaApiData } from "@/server/java-api";
 import { getErrorMessage } from "@/utils/error";
 
 const javaCancelOrderSchema = z.object({
@@ -51,7 +51,7 @@ async function cancelJavaOrder(orderNo: string) {
       method: "POST",
     });
   } catch (error) {
-    return jsonError(getErrorMessage(error), 502);
+    return jsonError(getErrorMessage(error), getJavaApiErrorStatus(error));
   }
 
   const parsed = javaCancelOrderSchema.safeParse(data);
@@ -78,7 +78,7 @@ export async function POST(_request: Request, context: { params: Promise<{ order
       return jsonError("订单号不能为空");
     }
 
-    if (isMockBffEnabled()) {
+    if (isMockPaymentBffEnabled()) {
       return cancelMockOrder(orderNo, current.profile.id);
     }
 

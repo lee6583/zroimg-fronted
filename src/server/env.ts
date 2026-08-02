@@ -16,6 +16,12 @@ function readAuthBffMode() {
   return readBffMode();
 }
 
+function readPaymentBffMode() {
+  const mode = readServerEnv("PAYMENT_BFF_MODE");
+  if (mode === "mock" || mode === "java") return mode;
+  return readBffMode();
+}
+
 function readBooleanEnv(name: string) {
   const value = readServerEnv(name).toLowerCase();
   return value === "true" || value === "1" || value === "yes";
@@ -24,6 +30,7 @@ function readBooleanEnv(name: string) {
 export const serverEnv = {
   bffMode: readBffMode(),
   authBffMode: readAuthBffMode(),
+  paymentBffMode: readPaymentBffMode(),
   allowMockBff: readBooleanEnv("ALLOW_MOCK_BFF"),
   javaApiBaseUrl: readServerEnv("JAVA_API_BASE_URL"),
 };
@@ -35,6 +42,11 @@ export function isMockBffEnabled() {
 
 export function isJavaAuthEnabled() {
   return serverEnv.authBffMode === "java";
+}
+
+export function isMockPaymentBffEnabled() {
+  const isProduction = process.env.NODE_ENV === "production";
+  return serverEnv.paymentBffMode === "mock" && (!isProduction || serverEnv.allowMockBff);
 }
 
 export function assertMockBffEnabled() {

@@ -37,6 +37,24 @@ type JavaApiDataOptions = {
   body?: BodyInit | null;
 };
 
+export class JavaApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "JavaApiError";
+    this.status = status;
+  }
+}
+
+export function getJavaApiErrorStatus(error: unknown) {
+  if (error instanceof JavaApiError) {
+    return error.status;
+  }
+
+  return 502;
+}
+
 function normalizeJavaApiBaseUrl() {
   const value = serverEnv.javaApiBaseUrl;
   if (!value) {
@@ -185,7 +203,15 @@ export async function requestJavaApiData<T>(path: string, options: JavaApiDataOp
     const failedByJavaCode = isFailedJavaEnvelope(payload);
 
     if (!response.ok || failedByJavaCode) {
-      throw new Error(readJavaErrorMessage(payload, "读取 Java 后端数据失败"));
+      let status = response.status;
+      if (failedByJavaCode && payload.code && payload.code >= 400) {
+        status = payload.code;
+      }
+
+      throw new JavaApiError(
+        readJavaErrorMessage(payload, "读取 Java 后端数据失败"),
+        status || 502,
+      );
     }
 
     if (payload.data !== undefined) {
@@ -198,7 +224,11 @@ export async function requestJavaApiData<T>(path: string, options: JavaApiDataOp
 
     return payload as T;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
+    if (error instanceof JavaApiError) {
+      throw error;
+    }
+
+    throw new JavaApiError(getErrorMessage(error), 502);
   }
 }
 

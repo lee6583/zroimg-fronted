@@ -1,7 +1,8 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { reissueJavaRechargeCredits } from "@/server/bff/orders";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { getJavaApiErrorStatus } from "@/server/java-api";
 import { getErrorMessage } from "@/utils/error";
 
 export async function POST(_request: Request, context: { params: Promise<{ orderNo: string }> }) {
@@ -16,7 +17,7 @@ export async function POST(_request: Request, context: { params: Promise<{ order
       return jsonError("订单号不能为空");
     }
 
-    if (isMockBffEnabled()) {
+    if (isMockPaymentBffEnabled()) {
       return jsonError("mock 模式不支持补发积分", 400);
     }
 
@@ -24,7 +25,7 @@ export async function POST(_request: Request, context: { params: Promise<{ order
     try {
       order = await reissueJavaRechargeCredits(orderNo);
     } catch (error) {
-      return jsonError(getErrorMessage(error), 502);
+      return jsonError(getErrorMessage(error), getJavaApiErrorStatus(error));
     }
 
     return jsonOk({

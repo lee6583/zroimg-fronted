@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { getStore, nextId } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
-import { requestJavaApiData } from "@/server/java-api";
+import { getJavaApiErrorStatus, requestJavaApiData } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 import { getErrorMessage } from "@/utils/error";
 import {
@@ -108,7 +108,7 @@ async function createJavaOrder(payload: z.output<typeof orderSchema>) {
       body: JSON.stringify(requestBody),
     });
   } catch (error) {
-    return jsonError(getErrorMessage(error), 502);
+    return jsonError(getErrorMessage(error), getJavaApiErrorStatus(error));
   }
 
   const parsed = javaRechargeOrderSchema.safeParse(data);
@@ -216,7 +216,7 @@ export async function POST(request: Request) {
 
   const payload = parsed.data;
 
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return createMockOrder(payload, current.profile.id);
   }
 

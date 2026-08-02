@@ -1,7 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import { prisma } from "@/server/bff/mock-db";
 import type {
@@ -226,7 +226,7 @@ async function listJavaCreditPackages() {
 }
 
 async function listCreditPackages() {
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return listMockCreditPackages();
   }
 
@@ -277,7 +277,7 @@ async function getRechargeOverview(input: {
   userProfileId: string;
   totalPoints: number;
 }): Promise<RechargeOverview> {
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return getMockRechargeOverview(input);
   }
 
@@ -350,7 +350,7 @@ async function listJavaRechargeOrders(query: RechargeOrderPageQuery) {
 }
 
 async function listRechargeOrders(query: RechargeOrderPageQuery): Promise<RechargeOrderPage> {
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return listMockRechargeOrders(query);
   }
 
@@ -479,7 +479,7 @@ async function listJavaAdminOrders(
 async function listAdminRechargeOrders(
   query: AdminRechargeOrderPageQuery,
 ): Promise<AdminRechargeOrderPage> {
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return listMockAdminOrders(query);
   }
 

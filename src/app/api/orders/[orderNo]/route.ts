@@ -1,7 +1,7 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { getJavaRechargeOrder } from "@/server/bff/orders";
 import { getStore } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
+import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { getErrorMessage } from "@/utils/error";
 
@@ -65,7 +65,7 @@ export async function GET(_request: Request, context: { params: Promise<{ orderN
     return jsonError("订单号不能为空");
   }
 
-  if (isMockBffEnabled()) {
+  if (isMockPaymentBffEnabled()) {
     return getMockOrder(orderNo, current.profile.id);
   }
 
