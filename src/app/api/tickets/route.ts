@@ -9,7 +9,10 @@ const ticketSchema = z.object({
   type: z.enum(["bug", "billing", "generation", "account", "suggestion", "other"]),
   subject: z.string().trim().min(1, "请输入标题").max(120, "标题最大 120 位"),
   content: z.string().trim().min(1, "请输入详细描述").max(5000, "详细描述最大 5000 位"),
-  attachmentMediaIds: z.array(z.string().trim().min(1, "附件 ID 不能为空")).max(4, "最多上传 4 张附件").optional(),
+  attachmentMediaIds: z
+    .array(z.string().trim().min(1, "附件 ID 不能为空"))
+    .max(4, "最多上传 4 张附件")
+    .optional(),
 });
 
 const statusFilters = new Set<TicketStatusFilter>(["all", "open", "in_progress", "processed"]);

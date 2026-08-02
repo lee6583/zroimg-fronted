@@ -102,9 +102,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
                   <div className={styles.adminTickets__cardMain}>
                     <p className={styles.adminTickets__metaLine}>
                       <span>{feedbackTypeLabels[ticket.type]}</span>
-                      <span
-                        className={clsx(styles.adminTickets__statusText, statusClassName)}
-                      >
+                      <span className={clsx(styles.adminTickets__statusText, statusClassName)}>
                         <span className={styles.adminTickets__statusDot} aria-hidden="true" />
                         {readStatusLabel(ticket.status)}
                       </span>

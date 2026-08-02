@@ -965,7 +965,9 @@ function ensureBillingScenarioData(store: MockStore) {
   ];
 
   for (const order of billingScenarios) {
-    if (!store.paymentOrders.some((item) => item.id === order.id || item.orderNo === order.orderNo)) {
+    if (
+      !store.paymentOrders.some((item) => item.id === order.id || item.orderNo === order.orderNo)
+    ) {
       store.paymentOrders.push(order);
     }
   }
