@@ -1,9 +1,11 @@
 import { getStore } from "@/server/bff/mock-store";
+import { isJavaBffEnabled } from "@/server/env";
+import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import type { DocsConfig } from "@/types/content";
 
 export const defaultDocsConfig: DocsConfig = {
   title: "ZroImg 文档",
-  description: "了解 ZroImg 的创作方式、积分闭环和账户配置，先完成前端迁移，再接 Java 后端。",
+  description: "了解 ZroImg 的图片创作、积分、订单、收藏和账户使用方式。",
   groups: [
     {
       title: "快速开始",
@@ -12,12 +14,13 @@ export const defaultDocsConfig: DocsConfig = {
           id: "overview",
           title: "项目概览",
           body: `# 项目概览
-ZroImg 是一个面向创作者的图片生成产品，当前前端已从旧项目迁移出来，后端部分暂时使用 mock 数据承接页面展示和交互。
+ZroImg 是一个面向创作者的 AI 图片生成产品。
 
-## 当前阶段
-- 前端：Next.js SSR 页面、样式和交互已经迁移。
-- 后端：暂时由 mock route handlers 提供假数据。
-- 下一步：由 Java 后端补齐认证、积分、订单、任务和文件服务。`,
+## 核心能力
+- 使用邮箱完成注册、登录和密码重置。
+- 通过对话创建图片，上传参考图继续编辑。
+- 查看创作历史，将作品收藏或发布到公共画廊。
+- 购买积分、查看订单并通过每日签到获得积分。`,
         },
         {
           id: "workflow",
@@ -31,19 +34,16 @@ ZroImg 是一个面向创作者的图片生成产品，当前前端已从旧项�
       ],
     },
     {
-      title: "后端协作",
+      title: "账户与积分",
       items: [
         {
-          id: "backend-todo",
-          title: "Java 后端待接入",
-          body: `# Java 后端待接入
-> 当前文档、设置、订单、反馈和任务接口都还是 mock。
-
-- 登录注册与会话
-- 积分账户与流水
-- 易支付下单与回调
-- 生图任务队列与 OSS 文件
-- 管理后台查询与审计`,
+          id: "credits",
+          title: "积分与订单",
+          body: `# 积分与订单
+- 图片生成会按照模型、分辨率、画质和数量消耗积分。
+- 提交任务前会显示后端实时试算结果，实际扣费以后端记录为准。
+- 支付完成后由支付回调发放积分，不依赖浏览器跳转结果。
+- 生成失败时，系统会按照原任务流水退回积分。`,
         },
       ],
     },
@@ -51,11 +51,28 @@ ZroImg 是一个面向创作者的图片生成产品，当前前端已从旧项�
 };
 
 export async function getDocsConfig(): Promise<DocsConfig> {
+  if (isJavaBffEnabled()) {
+    const docs = await getJavaApiData<DocsConfig>("/content/public/docs");
+    if (!docs.title) {
+      throw new Error("Java 文档接口返回内容为空");
+    }
+
+    return docs;
+  }
+
   const docs = getStore().settings.docs;
   return (docs as DocsConfig) || defaultDocsConfig;
 }
 
 export async function updateDocsConfig(nextDocs: DocsConfig) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<DocsConfig>("/admin/settings/docs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nextDocs),
+    });
+  }
+
   getStore().settings.docs = nextDocs;
   return nextDocs;
 }

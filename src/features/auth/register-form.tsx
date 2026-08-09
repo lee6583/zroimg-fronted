@@ -19,6 +19,11 @@ type RegisterFields = {
   code: string;
 };
 
+type SliderChallenge = {
+  challengeId: string;
+  targetRatio: number;
+};
+
 function getEmailError(value: string) {
   const email = value.trim();
 
@@ -69,6 +74,7 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [isVerified, setVerified] = useState(false);
+  const [sliderChallenge, setSliderChallenge] = useState<SliderChallenge | null>(null);
   const [sliderToken, setSliderToken] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
@@ -92,10 +98,11 @@ export function RegisterForm() {
 
   function resetSliderVerification() {
     setVerified(false);
+    setSliderChallenge(null);
     setSliderToken("");
   }
 
-  async function requestSliderToken() {
+  async function requestSliderChallenge() {
     const emailError = getEmailError(email);
     if (emailError) {
       setMessageType("error");
@@ -107,7 +114,42 @@ export function RegisterForm() {
 
     try {
       setMessage("");
-      const data = await authApi.getSliderToken({ email: targetEmail, scene: "register" });
+      const data = await authApi.getSliderChallenge({ email: targetEmail, scene: "register" });
+      const currentEmail = emailRef.current.trim().toLowerCase();
+      if (currentEmail !== targetEmail) {
+        return false;
+      }
+
+      setSliderChallenge(data);
+      return data.targetRatio;
+    } catch (error) {
+      const currentEmail = emailRef.current.trim().toLowerCase();
+      if (currentEmail !== targetEmail) {
+        return false;
+      }
+
+      setMessageType("error");
+      setMessage(getErrorMessage(error));
+      resetSliderVerification();
+      return false;
+    }
+  }
+
+  async function requestSliderToken(proof: { positionRatio: number; durationMs: number }) {
+    if (!sliderChallenge) {
+      return false;
+    }
+
+    const targetEmail = email.trim().toLowerCase();
+    try {
+      setMessage("");
+      const data = await authApi.getSliderToken({
+        email: targetEmail,
+        scene: "register",
+        challengeId: sliderChallenge.challengeId,
+        positionRatio: proof.positionRatio,
+        durationMs: proof.durationMs,
+      });
       const currentEmail = emailRef.current.trim().toLowerCase();
       if (currentEmail !== targetEmail) {
         return false;
@@ -117,11 +159,6 @@ export function RegisterForm() {
       setVerified(true);
       return true;
     } catch (error) {
-      const currentEmail = emailRef.current.trim().toLowerCase();
-      if (currentEmail !== targetEmail) {
-        return false;
-      }
-
       setMessageType("error");
       setMessage(getErrorMessage(error));
       resetSliderVerification();
@@ -173,7 +210,7 @@ export function RegisterForm() {
       return;
     }
 
-    if (!isVerified) {
+    if (!isVerified || !sliderToken) {
       setMessageType("error");
       setMessage("请先完成安全验证");
       return;
@@ -306,7 +343,12 @@ export function RegisterForm() {
             <ShieldCheck className={styles.authForm__verificationIcon} />
             <span>安全验证</span>
           </div>
-          <SliderVerification key={email} verified={isVerified} onVerified={requestSliderToken} />
+          <SliderVerification
+            key={email}
+            verified={isVerified}
+            onStart={requestSliderChallenge}
+            onVerified={requestSliderToken}
+          />
         </div>
 
         {message ? (

@@ -13,7 +13,6 @@ type CheckInStatus = {
   checkedAt: string | null;
   streakDays: number;
   weekSignDays: number;
-  totalCheckIns: number;
   checkedDayKeys: string[];
 };
 

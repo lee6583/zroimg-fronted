@@ -3,7 +3,7 @@ import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { clearAuthRateLimit, consumeAuthRateLimit } from "@/server/auth-rate-limit";
 import { findUserByEmail } from "@/server/bff/mock-store";
 import { isJavaAuthEnabled } from "@/server/env";
-import { jsonError, jsonOk } from "@/server/http";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
@@ -17,46 +17,45 @@ const signInSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const parsed = await parseJson(request.clone(), signInSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+  return handleApi(async () => {
+    const parsed = await parseJson(request.clone(), signInSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const { email, password } = parsed.data;
-  const limit = consumeAuthRateLimit(request, "user-login", email);
-  if (!limit.ok) {
-    return jsonError(`登录请求过于频繁，请 ${limit.retryAfterSeconds} 秒后再试`, 429);
-  }
+    const { email, password } = parsed.data;
+    const limit = consumeAuthRateLimit(request, "user-login", email);
+    if (!limit.ok) {
+      return jsonError(`登录请求过于频繁，请 ${limit.retryAfterSeconds} 秒后再试`, 429);
+    }
 
-  if (isJavaAuthEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/user/sign-in");
-  }
+    if (isJavaAuthEnabled()) {
+      return proxyRequestToJavaApi(request, "/auth/user/sign-in");
+    }
 
-  const bundle = findUserByEmail(email);
-  if (!bundle || bundle.user.password !== password) {
-    return jsonError("邮箱或密码错误", 401);
-  }
-  if (bundle.profile.status !== "active") {
-    return jsonError("账号已被禁用", 403);
-  }
+    const bundle = findUserByEmail(email);
+    if (!bundle || bundle.user.password !== password) {
+      return jsonError("邮箱或密码错误", 401);
+    }
+    if (bundle.profile.status !== "active") {
+      return jsonError("账号已被禁用", 403);
+    }
 
-  clearAuthRateLimit(request, "user-login", email);
+    clearAuthRateLimit(request, "user-login", email);
 
-  const response = jsonOk({
-    ok: true as const,
-    message: "登录成功",
-    role: bundle.profile.role,
-    redirectTo: bundle.profile.role === "admin" ? "/admin" : "/dashboard",
-    user: {
-      id: bundle.user.id,
-      username: bundle.profile.username,
-      email: bundle.user.email,
-      role: bundle.profile.role,
-    },
+    const response = jsonOk({
+      message: "登录成功",
+      user: {
+        id: bundle.user.id,
+        username: bundle.profile.username,
+        email: bundle.user.email,
+        role: bundle.profile.role,
+      },
+    });
+    response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+    return response;
   });
-  response.cookies.set(MOCK_SESSION_COOKIE, bundle.user.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
-  return response;
 }

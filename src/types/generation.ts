@@ -1,10 +1,91 @@
 type GenerationMode = "text" | "edit";
 
-type GenerationQuality = "low" | "medium" | "high";
+type GenerationQuality = string;
 
-type GenerationOutputFormat = "png" | "webp" | "jpeg";
+type GenerationOutputFormat = string;
+
+type GenerationQualityOption = GenerationQuality | "auto";
 
 type GenerationTaskStatus = "queued" | "running" | "succeeded" | "failed";
+
+type GenerationAsset = {
+  id: string;
+  fileName: string | null;
+  width: number | null;
+  height: number | null;
+};
+
+type GenerationOutput = {
+  id: string;
+  width: number | null;
+  height: number | null;
+  outputAsset: GenerationAsset;
+  thumbnailAsset: GenerationAsset | null;
+  galleryImage: unknown | null;
+};
+
+type GenerationTaskView = {
+  id: string;
+  prompt: string;
+  mode: GenerationMode;
+  status: GenerationTaskStatus;
+  model: string;
+  size: string;
+  quality: GenerationQuality;
+  outputFormat: GenerationOutputFormat;
+  imageCount: number;
+  costCredits: number;
+  createdAt: Date;
+  updatedAt: Date;
+  imageUrls?: string[];
+  outputs: GenerationOutput[];
+  error: string | null;
+};
+
+type GenerationModelParams = {
+  ratios: string[];
+  resolutions: string[];
+  qualities: GenerationQualityOption[];
+  formats: GenerationOutputFormat[];
+  counts: number[];
+  defaults: {
+    ratio: string;
+    resolution: string;
+    quality: GenerationQualityOption;
+    format: GenerationOutputFormat;
+    count: number;
+  };
+};
+
+type GenerationModelOption = {
+  value: string;
+  label: string;
+  modes: GenerationMode[];
+  defaultMode: GenerationMode;
+  params: Partial<Record<GenerationMode, GenerationModelParams>>;
+};
+
+type GenerationPriceRequest = {
+  model: string;
+  mode: GenerationMode;
+  ratio: string;
+  resolution: string;
+  quality: GenerationQualityOption;
+  outputFormat: GenerationOutputFormat;
+  imageCount: number;
+  size: string;
+};
+
+type GenerationPriceResponse = {
+  priceVersion: string;
+  unitPoints: number;
+  imageCount: number;
+  requiredPoints: number;
+  currentPoints: number;
+  shortagePoints: number;
+  enough: boolean;
+  detail: string;
+};
 
 type UploadedMediaApiItem = {
   id: string;
@@ -73,10 +154,13 @@ type UploadMediaResponse = {
 
 type CreateGenerationTaskRequest = {
   conversationId: string;
+  model: string;
   prompt: string;
   mode: GenerationMode;
-  quality: GenerationQuality;
+  quality: GenerationQualityOption;
   outputFormat: GenerationOutputFormat;
+  ratio: string;
+  resolution: string;
   size: string;
   imageCount: number;
   inputMediaIds: string[];
@@ -125,8 +209,16 @@ type PublishGalleryImageResponse = {
 export type {
   GenerationMode,
   GenerationQuality,
+  GenerationQualityOption,
   GenerationOutputFormat,
   GenerationTaskStatus,
+  GenerationAsset,
+  GenerationOutput,
+  GenerationTaskView,
+  GenerationModelParams,
+  GenerationModelOption,
+  GenerationPriceRequest,
+  GenerationPriceResponse,
   UploadedMediaApiItem,
   GenerationTaskApiItem,
   GenerationConversationTaskSummary,

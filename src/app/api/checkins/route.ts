@@ -1,12 +1,12 @@
 import { getCurrentUserProfile } from "@/server/auth";
 import { claimDailyCheckIn, getCheckInStatus } from "@/server/bff/account";
 import { claimJavaCheckIn, getJavaCheckInStatus } from "@/server/bff/internal/java-checkins";
-import { isJavaAuthEnabled } from "@/server/env";
+import { isJavaBffEnabled } from "@/server/env";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 
 export async function GET() {
   return handleApi(async () => {
-    if (isJavaAuthEnabled()) {
+    if (isJavaBffEnabled()) {
       const checkIn = await getJavaCheckInStatus();
       return jsonOk({ checkIn });
     }
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST() {
   return handleApi(async () => {
-    if (isJavaAuthEnabled()) {
+    if (isJavaBffEnabled()) {
       const result = await claimJavaCheckIn();
       return jsonOk(result);
     }

@@ -1,11 +1,12 @@
 import { getStore, maskSecret } from "@/server/bff/mock-store";
-import { isMockBffEnabled } from "@/server/env";
-import { getJavaApiData } from "@/server/java-api";
+import { isJavaBffEnabled, isMockBffEnabled } from "@/server/env";
+import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import type {
   CheckInSettingsConfig,
   EasyPayAdminConfig,
   GenerationProviderAdminConfig,
   SmtpAdminConfig,
+  VideoProviderAdminConfig,
 } from "@/types/admin";
 import type { AnnouncementSettingsConfig, PublicAnnouncement } from "@/types/announcement";
 
@@ -19,6 +20,10 @@ function defaultAnnouncementSettings() {
 }
 
 export async function getGenerationConfig(): Promise<GenerationProviderAdminConfig> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<GenerationProviderAdminConfig>("/admin/settings/generation");
+  }
+
   const settings = getStore().settings.generation;
   return {
     enabled: settings.enabled,
@@ -37,6 +42,14 @@ export async function updateGenerationConfig(input: {
   apiKey?: string;
   clearApiKey?: boolean;
 }) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<GenerationProviderAdminConfig>("/admin/settings/generation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
   const settings = getStore().settings.generation;
   settings.enabled = input.enabled;
   settings.baseUrl = input.baseUrl?.trim() || null;
@@ -47,6 +60,42 @@ export async function updateGenerationConfig(input: {
     settings.apiKey = input.apiKey.trim();
   }
   return getGenerationConfig();
+}
+
+export async function getVideoConfig(): Promise<VideoProviderAdminConfig> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<VideoProviderAdminConfig>("/admin/settings/video");
+  }
+
+  const settings = getStore().settings.generation;
+  return {
+    enabled: false,
+    baseUrl: settings.baseUrl,
+    model: "video-generic",
+    publicBaseUrl: null,
+    apiKeySource: "none",
+    hasApiKey: false,
+    apiKeyPreview: null,
+  };
+}
+
+export async function updateVideoConfig(input: {
+  enabled: boolean;
+  baseUrl?: string;
+  model: string;
+  publicBaseUrl?: string;
+  apiKey?: string;
+  clearApiKey?: boolean;
+}) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<VideoProviderAdminConfig>("/admin/settings/video", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
+  return getVideoConfig();
 }
 
 export async function getSmtpAdminConfig(): Promise<SmtpAdminConfig> {
@@ -78,6 +127,14 @@ export async function updateSmtpSettings(input: {
   clearPassword?: boolean;
   from: string;
 }) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<SmtpAdminConfig>("/admin/settings/smtp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
   const settings = getStore().settings.smtp;
   settings.enabled = input.enabled;
   settings.host = input.host?.trim() || null;
@@ -94,6 +151,10 @@ export async function updateSmtpSettings(input: {
 }
 
 export async function getEasyPayAdminConfig(): Promise<EasyPayAdminConfig> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<EasyPayAdminConfig>("/admin/settings/easypay");
+  }
+
   const settings = getStore().settings.easypay;
   return {
     enabled: settings.enabled,
@@ -116,6 +177,14 @@ export async function updateEasyPaySettings(input: {
   notifyUrl?: string;
   returnUrl?: string;
 }) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<EasyPayAdminConfig>("/admin/settings/easypay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
   const settings = getStore().settings.easypay;
   settings.enabled = input.enabled;
   settings.apiBase = input.apiBase?.trim() || null;
@@ -131,12 +200,24 @@ export async function updateEasyPaySettings(input: {
 }
 
 export async function getCheckInSettings(): Promise<CheckInSettingsConfig> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<CheckInSettingsConfig>("/admin/settings/checkin");
+  }
+
   return {
     dailyCredits: getStore().settings.checkin.dailyCredits,
   };
 }
 
 export async function updateCheckInSettings(input: { dailyCredits: number }) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<CheckInSettingsConfig>("/admin/settings/checkin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
   getStore().settings.checkin.dailyCredits = input.dailyCredits;
   return getCheckInSettings();
 }
@@ -159,10 +240,18 @@ function toAnnouncementConfig(): AnnouncementSettingsConfig {
 }
 
 export async function getAnnouncementSettings(): Promise<AnnouncementSettingsConfig> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<AnnouncementSettingsConfig>("/admin/settings/announcement");
+  }
+
   return toAnnouncementConfig();
 }
 
 export async function getPublicAnnouncement(): Promise<PublicAnnouncement> {
+  if (isJavaBffEnabled()) {
+    return getJavaApiData<PublicAnnouncement>("/content/public/announcement");
+  }
+
   if (!isMockBffEnabled()) {
     return {
       enabled: false,
@@ -180,6 +269,14 @@ export async function updateAnnouncementSettings(input: {
   title: string;
   content: string;
 }) {
+  if (isJavaBffEnabled()) {
+    return requestJavaApiData<AnnouncementSettingsConfig>("/admin/settings/announcement", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  }
+
   const store = getStore();
 
   if (!store.settings.announcement) {

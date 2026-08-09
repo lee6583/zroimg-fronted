@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { isMockBffEnabled } from "@/server/env";
+import { isJavaBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
@@ -16,7 +16,7 @@ const testSchema = z
   });
 
 export async function POST(request: Request) {
-  if (!isMockBffEnabled()) {
+  if (isJavaBffEnabled()) {
     return proxyRequestToJavaApi(request, "/admin/settings/smtp/test");
   }
 
@@ -28,6 +28,5 @@ export async function POST(request: Request) {
   const parsed = await parseJson(request, testSchema);
   if (!parsed.ok) return jsonError(parsed.message);
 
-  // TODO(java-backend): trigger real SMTP connectivity and test email through backend service.
   return jsonOk({ ok: true });
 }

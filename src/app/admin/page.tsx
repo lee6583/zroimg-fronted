@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { getAdminOverview } from "@/server/bff/admin";
 import { feedbackStatusLabels } from "@/utils/feedback";
 import styles from "./admin.module.css";
 
@@ -10,18 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [users, tasks, orders, failedTasks, openTickets, latestTickets] = await Promise.all([
-    prisma.userProfile.count(),
-    prisma.generationTask.count(),
-    prisma.paymentOrder.count(),
-    prisma.generationTask.count({ where: { status: "failed" } }),
-    prisma.feedbackTicket.count({ where: { status: { in: ["open", "in_progress"] } } }),
-    prisma.feedbackTicket.findMany({
-      include: { userProfile: { include: { user: true } } },
-      orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }],
-      take: 5,
-    }),
-  ]);
+  const overview = await getAdminOverview();
 
   return (
     <AdminShell active="overview">
@@ -31,11 +20,11 @@ export default async function AdminPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-5">
-          <StatCard label="用户" value={users} />
-          <StatCard label="生成任务" value={tasks} />
-          <StatCard label="订单" value={orders} />
-          <StatCard label="失败任务" value={failedTasks} />
-          <StatCard label="待处理反馈" value={openTickets} />
+          <StatCard label="用户" value={overview.users} />
+          <StatCard label="生成任务" value={overview.tasks} />
+          <StatCard label="订单" value={overview.orders} />
+          <StatCard label="失败任务" value={overview.failedTasks} />
+          <StatCard label="待处理反馈" value={overview.openTickets} />
         </section>
 
         <section className="surface rounded-xl p-5">
@@ -48,10 +37,10 @@ export default async function AdminPage() {
             </Link>
           </div>
           <div className="mt-5 grid gap-2">
-            {latestTickets.length === 0 ? (
+            {overview.latestTickets.length === 0 ? (
               <p className={styles.adminOverview__emptyFeedback}>暂无反馈</p>
             ) : (
-              latestTickets.map((ticket) => (
+              overview.latestTickets.map((ticket) => (
                 <Link
                   key={ticket.id}
                   href="/admin/tickets"
@@ -59,11 +48,12 @@ export default async function AdminPage() {
                 >
                   <div className="flex flex-wrap justify-between gap-3">
                     <p className="font-medium">{ticket.subject}</p>
-                    <p className="text-sm text-muted">{feedbackStatusLabels[ticket.status]}</p>
+                    <p className="text-sm text-muted">
+                      {feedbackStatusLabels[ticket.status as keyof typeof feedbackStatusLabels] ||
+                        ticket.status}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-muted">
-                    {ticket.userProfile?.user?.email || "-"}
-                  </p>
+                  <p className="mt-1 text-sm text-muted">{ticket.email || "-"}</p>
                 </Link>
               ))
             )}

@@ -11,9 +11,19 @@ import type {
   SendPasswordResetCodeResponse,
   SendRegisterCodeRequest,
   SendRegisterCodeResponse,
+  SliderChallengeRequest,
+  SliderChallengeResponse,
   SliderTokenRequest,
   SliderTokenResponse,
 } from "@/types/auth";
+
+function getSliderChallenge(data: SliderChallengeRequest) {
+  return request<SliderChallengeResponse>({
+    url: "/api/auth/slider-challenge",
+    method: "POST",
+    data,
+  });
+}
 
 function getSliderToken(data: SliderTokenRequest) {
   return request<SliderTokenResponse>({
@@ -71,6 +81,7 @@ function logoutAccount() {
 }
 
 export const authApi = {
+  getSliderChallenge,
   getSliderToken,
   sendRegisterCode,
   sendPasswordResetCode,

@@ -44,6 +44,10 @@ export function isJavaAuthEnabled() {
   return serverEnv.authBffMode === "java";
 }
 
+export function isJavaBffEnabled() {
+  return serverEnv.bffMode === "java";
+}
+
 export function isMockPaymentBffEnabled() {
   const isProduction = process.env.NODE_ENV === "production";
   return serverEnv.paymentBffMode === "mock" && (!isProduction || serverEnv.allowMockBff);

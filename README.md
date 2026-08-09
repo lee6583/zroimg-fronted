@@ -55,27 +55,29 @@ CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推
 ```dotenv
 BFF_MODE=mock
 AUTH_BFF_MODE=mock
+PAYMENT_BFF_MODE=mock
 ALLOW_MOCK_BFF=false
 JAVA_API_BASE_URL=http://localhost:8080
 ```
 
-### 混合联调
+### Java 联调与部署
 
-当前后端只完成登录、注册、发码、重置密码等认证接口，而订单、生成、画廊、反馈等业务接口还没接完时，本地推荐使用混合模式：
+当前认证、账户、积分、订单、支付、生成、收藏、画廊、反馈和管理后台均已提供 Java BFF 适配。完整联调和服务器部署使用：
 
 ```dotenv
-BFF_MODE=mock
+BFF_MODE=java
 AUTH_BFF_MODE=java
-ALLOW_MOCK_BFF=true
-JAVA_API_BASE_URL=http://api-dev.zroimg.com
+PAYMENT_BFF_MODE=java
+ALLOW_MOCK_BFF=false
+JAVA_API_BASE_URL=https://api-dev.zroimg.com
 ```
 
 含义：
 
-- `BFF_MODE=mock`：未接 Java 的业务页面继续读取本地 mock，避免页面开发被后端进度卡住。
+- `BFF_MODE=java`：账户、生成、收藏、画廊、反馈、设置和管理后台读取 Java 后端。
 - `AUTH_BFF_MODE=java`：认证接口单独转发到 Java 后端，登录成功后使用 Java 返回的 `zroimg_user_token` Cookie。
-- `ALLOW_MOCK_BFF=true`：允许 `next start` 这种生产运行方式在 dev 环境继续使用 mock。只允许用于测试/联调域名，正式生产必须关闭。
-- 混合模式只适合本地开发和联调，不代表项目已经具备上线条件。
+- `PAYMENT_BFF_MODE=java`：积分套餐、充值订单和支付状态转发到 Java 后端。
+- `ALLOW_MOCK_BFF=false`：禁止生产运行模式读取进程内 mock 数据。
 
 ### `mock`
 
@@ -88,10 +90,9 @@ JAVA_API_BASE_URL=http://api-dev.zroimg.com
 - Route Handler 将已接入的接口转发到 `JAVA_API_BASE_URL`。
 - Java 请求失败必须返回明确的 502，禁止静默回退到 mock。
 - 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
-- 本地联调 Java 后端时，在 `.env.local` 写入 `BFF_MODE=java` 和实际后端域名，例如 `JAVA_API_BASE_URL=http://api-dev.zroimg.com`。
-- 如果只联调认证模块，不要把全局 `BFF_MODE` 切成 `java`，而是使用 `AUTH_BFF_MODE=java`。
-
-当前 Java 模式尚未完成“当前用户、页面查询、订单、生成、收藏、反馈”等完整适配，因此仓库暂不具备生产部署条件。上线前必须让所有 `src/server/bff/*` facade 使用 Java 实现，并删除 `mock-store.ts`、`mock-db.ts` 和 `internal/*` mock。
+- 本地联调 Java 后端时，在 `.env.local` 写入全 Java 配置和实际后端域名。
+- mock 文件保留用于纯前端开发和测试，不会在 Java 模式请求失败时自动回退。
+- 视频页只有在后端配置真实视频 Provider 并启用 `VIDEO_ENABLED` 后才具备实际生成能力。
 
 ## 4. 目录结构
 

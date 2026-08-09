@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { getStore } from "@/server/bff/mock-store";
-import { jsonError, jsonOk } from "@/server/http";
+import { isJavaAuthEnabled } from "@/server/env";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseForm } from "@/server/validation";
 
 const profileSchema = z.object({
@@ -10,19 +12,31 @@ const profileSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const parsed = await parseForm(request, profileSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+    const parsed = await parseForm(request, profileSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const { username, bio } = parsed.data;
+    if (isJavaAuthEnabled()) {
+      const headers = new Headers(request.headers);
+      headers.set("Content-Type", "application/json");
+      const javaRequest = new Request(request.url, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(parsed.data),
+      });
+      return proxyRequestToJavaApi(javaRequest, "/auth/user/profile");
+    }
 
-  const profile = getStore().profiles.find((item) => item.id === current.profile.id)!;
-  profile.username = username;
-  profile.bio = bio;
+    const { username, bio } = parsed.data;
+    const profile = getStore().profiles.find((item) => item.id === current.profile.id)!;
+    profile.username = username;
+    profile.bio = bio;
 
-  return jsonOk({ ok: true });
+    return jsonOk({ ok: true });
+  });
 }

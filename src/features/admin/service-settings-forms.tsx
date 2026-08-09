@@ -8,6 +8,7 @@ import type {
   EasyPayAdminConfig,
   SecretSource,
   SmtpAdminConfig,
+  VideoProviderAdminConfig,
 } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
@@ -34,6 +35,10 @@ type EasyPaySettingsFormProps = {
 
 type CheckInSettingsFormProps = {
   initialSettings: CheckInSettingsConfig;
+};
+
+type VideoSettingsFormProps = {
+  initialSettings: VideoProviderAdminConfig;
 };
 
 function Toggle(props: ToggleProps) {
@@ -264,6 +269,131 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
 
       <button className="btn-primary w-full md:w-fit" disabled={isSaving}>
         {isSaving ? "保存中" : "保存 SMTP 设置"}
+      </button>
+    </form>
+  );
+}
+
+export function VideoSettingsForm(props: VideoSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+  const [settings, setSettings] = useState(initialSettings);
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    baseUrl: initialSettings.baseUrl ?? "",
+    model: initialSettings.model,
+    publicBaseUrl: initialSettings.publicBaseUrl ?? "",
+    apiKey: "",
+    shouldClearKey: false,
+  });
+  const [message, setMessage] = useState("");
+  const [isSaving, setSaving] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      return { ...currentForm, ...nextForm };
+    });
+  }
+
+  async function saveSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    try {
+      const data = await adminSettingsApi.saveVideoSettings({
+        enabled: form.isEnabled,
+        baseUrl: form.baseUrl,
+        model: form.model,
+        publicBaseUrl: form.publicBaseUrl,
+        apiKey: form.apiKey,
+        clearApiKey: form.shouldClearKey,
+      });
+      setSettings(data.settings);
+      updateForm({ apiKey: "", shouldClearKey: false });
+      setMessage("视频 Provider 配置已保存。");
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+        <div>
+          <p className="label">Video Provider</p>
+          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">视频服务设置</h2>
+        </div>
+        <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
+          {form.isEnabled ? "已启用" : "已停用"}
+        </span>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="grid gap-2">
+          <span className="label">Provider 地址</span>
+          <input
+            className="field"
+            value={form.baseUrl}
+            onChange={(event) => updateForm({ baseUrl: event.target.value })}
+            placeholder="https://video.example.com"
+          />
+        </label>
+        <label className="grid gap-2">
+          <span className="label">模型名</span>
+          <input
+            className="field"
+            value={form.model}
+            onChange={(event) => updateForm({ model: event.target.value })}
+            placeholder="video-generic"
+          />
+        </label>
+        <label className="grid gap-2 md:col-span-2">
+          <span className="label">视频公开地址前缀</span>
+          <input
+            className="field"
+            value={form.publicBaseUrl}
+            onChange={(event) => updateForm({ publicBaseUrl: event.target.value })}
+            placeholder="https://dev.zroimg.com"
+          />
+        </label>
+        <label className="grid gap-2 md:col-span-2">
+          <span className="label">API Key</span>
+          <input
+            className="field"
+            type="password"
+            autoComplete="new-password"
+            value={form.apiKey}
+            onChange={(event) => updateForm({ apiKey: event.target.value })}
+            placeholder={settings.hasApiKey ? "留空表示保留当前密钥" : "请输入视频 Provider 密钥"}
+            disabled={form.shouldClearKey}
+          />
+          <span className="text-xs text-muted">
+            {settings.hasApiKey
+              ? `已配置（${settings.apiKeyPreview}，来源：${sourceLabels[settings.apiKeySource]}）`
+              : "未配置"}
+          </span>
+        </label>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-muted">
+        <input
+          type="checkbox"
+          checked={form.shouldClearKey}
+          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
+        />
+        清空数据库里的视频密钥
+      </label>
+      <Toggle
+        checked={form.isEnabled}
+        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
+        label="启用视频生成"
+        description="启用后，用户可以创建视频任务并消耗积分。"
+      />
+
+      {message ? <p className="text-sm text-muted">{message}</p> : null}
+      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !form.model.trim()}>
+        {isSaving ? "保存中" : "保存视频设置"}
       </button>
     </form>
   );

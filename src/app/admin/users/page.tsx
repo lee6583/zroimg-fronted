@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { UserActions } from "@/features/admin/user-actions";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { listAdminUsers } from "@/server/bff/users";
 
 export const dynamic = "force-dynamic";
 
@@ -34,31 +34,15 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
   const statusFilter = status === "active" || status === "banned" ? status : undefined;
   const page = Math.max(1, Number(readParam(params, "page") || 1));
   const pageSize = 20;
-  const where = {
-    ...(statusFilter ? { status: statusFilter } : {}),
-    ...(q
-      ? {
-          OR: [
-            { username: { contains: q, mode: "insensitive" as const } },
-            { user: { email: { contains: q, mode: "insensitive" as const } } },
-          ],
-        }
-      : {}),
-  };
-  const [users, total] = await Promise.all([
-    prisma.userProfile.findMany({
-      where,
-      include: {
-        user: true,
-        _count: { select: { tasks: true, paymentOrders: true, creditLedger: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.userProfile.count({ where }),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const userPage = await listAdminUsers({
+    page,
+    pageSize,
+    q,
+    status: statusFilter,
+  });
+  const users = userPage.list;
+  const total = userPage.total;
+  const totalPages = Math.max(1, userPage.pages);
 
   return (
     <AdminShell active="users">
@@ -109,14 +93,10 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
                     {profile.username}
                   </Link>
                   <p className="mt-1 text-sm text-muted">
-                    {profile.user?.email || "-"} / {profile.role} / {profile.status}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    任务 {profile._count?.tasks || 0} / 订单 {profile._count?.paymentOrders || 0} /
-                    流水 {profile._count?.creditLedger || 0}
+                    {profile.email || "-"} / {profile.role} / {profile.status}
                   </p>
                 </div>
-                <p className="font-semibold">{profile.creditBalance} 积分</p>
+                <p className="font-semibold">{profile.totalPoints} 积分</p>
               </div>
               <UserActions userId={profile.id} status={profile.status} />
             </article>

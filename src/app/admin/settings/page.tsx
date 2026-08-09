@@ -5,6 +5,7 @@ import {
   CheckInSettingsForm,
   EasyPaySettingsForm,
   SmtpSettingsForm,
+  VideoSettingsForm,
 } from "@/features/admin/service-settings-forms";
 import { requireAdmin } from "@/server/auth";
 import {
@@ -13,20 +14,28 @@ import {
   getEasyPayAdminConfig,
   getGenerationConfig,
   getSmtpAdminConfig,
+  getVideoConfig,
 } from "@/server/bff/account";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const [generationSettings, smtpSettings, easyPaySettings, checkInSettings, announcementSettings] =
-    await Promise.all([
-      getGenerationConfig(),
-      getSmtpAdminConfig(),
-      getEasyPayAdminConfig(),
-      getCheckInSettings(),
-      getAnnouncementSettings(),
-    ]);
+  const [
+    generationSettings,
+    videoSettings,
+    smtpSettings,
+    easyPaySettings,
+    checkInSettings,
+    announcementSettings,
+  ] = await Promise.all([
+    getGenerationConfig(),
+    getVideoConfig(),
+    getSmtpAdminConfig(),
+    getEasyPayAdminConfig(),
+    getCheckInSettings(),
+    getAnnouncementSettings(),
+  ]);
 
   return (
     <AdminShell active="settings">
@@ -36,6 +45,7 @@ export default async function AdminSettingsPage() {
         </section>
 
         <GenerationSettingsForm initialSettings={generationSettings} />
+        <VideoSettingsForm initialSettings={videoSettings} />
         <SmtpSettingsForm initialSettings={smtpSettings} />
         <EasyPaySettingsForm initialSettings={easyPaySettings} />
         <CheckInSettingsForm initialSettings={checkInSettings} />

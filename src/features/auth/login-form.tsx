@@ -56,8 +56,7 @@ export function LoginForm() {
       setLoading(true);
       setMessage("");
       const data = await authApi.loginWithEmail({ email, password });
-      const role = data.role || data.user?.role;
-      const redirectTo = data.redirectTo || (role === "admin" ? "/admin" : "/dashboard");
+      const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
 
       router.push(redirectTo);
       router.refresh();

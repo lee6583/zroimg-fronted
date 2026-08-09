@@ -1,11 +1,30 @@
 import { GenerateForm } from "@/features/generation/generate-form";
+import { getDefaultOptions, getGenerationSize } from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
-import { ensureDefaultConversation, listConversations, listTasks } from "@/server/bff/generation";
+import {
+  ensureDefaultConversation,
+  estimatePrice,
+  listConversations,
+  listModels,
+  listTasks,
+} from "@/server/bff/generation";
 
 export const dynamic = "force-dynamic";
 
 export default async function GeneratePage() {
   const current = await requireUser();
+  const modelOptions = await listModels();
+  const initialOptions = getDefaultOptions(modelOptions);
+  const initialPrice = await estimatePrice(current.profile.id, {
+    model: initialOptions.model,
+    mode: initialOptions.mode,
+    ratio: initialOptions.ratio,
+    resolution: initialOptions.resolution,
+    quality: initialOptions.quality,
+    outputFormat: initialOptions.format,
+    imageCount: initialOptions.count,
+    size: getGenerationSize(initialOptions),
+  });
   await ensureDefaultConversation(current.profile.id);
   const conversations = await listConversations(current.profile.id);
   const activeId = conversations[0]?.id;
@@ -39,7 +58,10 @@ export default async function GeneratePage() {
       initialChats={items}
       initialId={activeId}
       initialTasks={taskList}
-      initialBalance={current.profile.creditBalance}
+      initialBalance={initialPrice.currentPoints}
+      initialOptions={initialOptions}
+      initialEstimate={initialPrice.requiredPoints}
+      modelOptions={modelOptions}
     />
   );
 }

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { updateAnnouncementSettings } from "@/server/bff/account";
-import { addAuditLog } from "@/server/bff/mock-store";
-import { jsonError, jsonOk } from "@/server/http";
+import { addAuditLog } from "@/server/bff/audit";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
 const announcementSchema = z.object({
@@ -12,24 +12,24 @@ const announcementSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current || current.profile.role !== "admin") {
-    return jsonError("无权限", 403);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current || current.profile.role !== "admin") {
+      return jsonError("无权限", 403);
+    }
 
-  const parsed = await parseJson(request, announcementSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+    const parsed = await parseJson(request, announcementSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const payload = parsed.data;
-  const settings = await updateAnnouncementSettings(payload);
+    const settings = await updateAnnouncementSettings(parsed.data);
+    addAuditLog({
+      adminProfileId: current.profile.id,
+      action: "update_announcement_settings",
+      targetType: "systemSetting",
+      targetId: "announcement",
+      detailJson: { enabled: settings.enabled, title: settings.title },
+    });
 
-  addAuditLog({
-    adminProfileId: current.profile.id,
-    action: "update_announcement_settings",
-    targetType: "systemSetting",
-    targetId: "announcement",
-    detailJson: { enabled: settings.enabled, title: settings.title },
+    return jsonOk({ settings });
   });
-
-  return jsonOk({ settings });
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createMockUser, findUserByEmail, getStore } from "@/server/bff/mock-store";
 import { isJavaAuthEnabled } from "@/server/env";
-import { jsonError, jsonOk } from "@/server/http";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
@@ -17,32 +17,34 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (isJavaAuthEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/user/register");
-  }
+  return handleApi(async () => {
+    if (isJavaAuthEnabled()) {
+      return proxyRequestToJavaApi(request, "/auth/user/register");
+    }
 
-  const parsed = await parseJson(request, registerSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+    const parsed = await parseJson(request, registerSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const { username, email, password, code } = parsed.data;
-  if (findUserByEmail(email)) {
-    return jsonError("该邮箱已注册");
-  }
+    const { username, email, password, code } = parsed.data;
+    if (findUserByEmail(email)) {
+      return jsonError("该邮箱已注册");
+    }
 
-  const store = getStore();
-  const verification = store.verificationCodes.find((item) => item.email === email);
-  if (!verification || verification.expiresAt < Date.now()) {
-    return jsonError("验证码已过期，请重新获取");
-  }
-  if (verification.code !== code) {
-    return jsonError("验证码错误");
-  }
+    const store = getStore();
+    const verification = store.verificationCodes.find((item) => item.email === email);
+    if (!verification || verification.expiresAt < Date.now()) {
+      return jsonError("验证码已过期，请重新获取");
+    }
+    if (verification.code !== code) {
+      return jsonError("验证码错误");
+    }
 
-  createMockUser({ username, email, password });
-  store.verificationCodes = store.verificationCodes.filter((item) => item.id !== verification.id);
+    createMockUser({ username, email, password });
+    store.verificationCodes = store.verificationCodes.filter((item) => item.id !== verification.id);
 
-  return jsonOk({
-    ok: true,
-    message: "注册成功",
+    return jsonOk({
+      ok: true,
+      message: "注册成功",
+    });
   });
 }

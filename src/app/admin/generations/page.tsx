@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { listAdminGenerations } from "@/server/bff/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +16,8 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDate(value: Date | null) {
-  return value ? value.toISOString().slice(0, 16).replace("T", " ") : "-";
+function formatDate(value: string | null) {
+  return value ? new Date(value).toISOString().slice(0, 16).replace("T", " ") : "-";
 }
 
 function href(input: { q?: string; status?: string; page: number }) {
@@ -37,31 +37,17 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
   const status = readParam(params, "status");
   const page = Math.max(1, Number(readParam(params, "page") || 1));
   const pageSize = 20;
-  const where = {
-    ...(generationStatuses.includes(status as (typeof generationStatuses)[number])
-      ? { status: status as (typeof generationStatuses)[number] }
-      : {}),
-    ...(q
-      ? {
-          OR: [
-            { prompt: { contains: q, mode: "insensitive" as const } },
-            { model: { contains: q, mode: "insensitive" as const } },
-            { userProfile: { user: { email: { contains: q, mode: "insensitive" as const } } } },
-          ],
-        }
-      : {}),
-  };
-  const [tasks, total] = await Promise.all([
-    prisma.generationTask.findMany({
-      where,
-      include: { userProfile: { include: { user: true } }, outputs: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.generationTask.count({ where }),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const taskPage = await listAdminGenerations({
+    page,
+    pageSize,
+    q,
+    status: generationStatuses.includes(status as (typeof generationStatuses)[number])
+      ? status
+      : undefined,
+  });
+  const tasks = taskPage.list;
+  const total = taskPage.total;
+  const totalPages = Math.max(1, taskPage.pages);
 
   return (
     <AdminShell active="generations">
@@ -106,19 +92,18 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
             <article key={task.id} className="surface rounded-xl p-4">
               <div className="flex flex-wrap justify-between gap-3">
                 <div>
-                  <p className="font-semibold">{task.userProfile?.user?.email || "-"}</p>
+                  <p className="font-semibold">{task.userEmail}</p>
                   <p className="mt-1 text-sm text-muted">
                     {task.status} / {task.mode} / {task.model} / {task.size} / {task.quality}
                   </p>
                 </div>
                 <p className="text-sm text-muted">
-                  {task.costCredits} 积分 / {task.outputs?.length || 0} 张 /{" "}
-                  {formatDate(task.createdAt)}
+                  {task.requiredPoints} 积分 / {task.outputCount} 张 / {formatDate(task.createdAt)}
                 </p>
               </div>
               <p className="mt-3 text-sm leading-6">{task.prompt}</p>
-              {task.error ? (
-                <p className="mt-2 rounded-lg bg-soft p-3 text-sm text-danger">{task.error}</p>
+              {task.failReason ? (
+                <p className="mt-2 rounded-lg bg-soft p-3 text-sm text-danger">{task.failReason}</p>
               ) : null}
             </article>
           ))}

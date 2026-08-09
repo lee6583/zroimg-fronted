@@ -2,46 +2,28 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { findUserBundleByUserId } from "@/server/bff/auth";
 import { createMockUser, findUserByEmail } from "@/server/bff/mock-store";
 import { isJavaAuthEnabled, isMockBffEnabled } from "@/server/env";
+import { getJavaApiData, JavaApiError } from "@/server/java-api";
 import type { MockRole } from "@/server/bff/mock-store";
 
 export const MOCK_SESSION_COOKIE = "zroimg-mock-session";
 export const JAVA_SESSION_COOKIE = "zroimg_user_token";
 
-type JavaTokenPayload = {
-  userId?: number;
-  email?: string;
-  username?: string;
-  role?: string;
-  exp?: number;
-};
+const javaUserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  email: z.string(),
+  bio: z.string().nullable().optional(),
+  role: z.enum(["user", "admin"]),
+  status: z.number(),
+  totalPoints: z.number(),
+  createdAt: z.string(),
+});
 
-function parseJavaToken(token: string) {
-  const parts = token.split(".");
-  const payloadText = parts[1];
-
-  if (!payloadText) {
-    return null;
-  }
-
-  try {
-    const jsonText = Buffer.from(payloadText, "base64url").toString("utf8");
-    return JSON.parse(jsonText) as JavaTokenPayload;
-  } catch {
-    return null;
-  }
-}
-
-function isExpired(payload: JavaTokenPayload) {
-  if (!payload.exp) {
-    return false;
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  return payload.exp <= now;
-}
+type JavaUser = z.infer<typeof javaUserSchema>;
 
 function readRole(role: string | undefined): MockRole {
   if (role === "admin") {
@@ -51,26 +33,25 @@ function readRole(role: string | undefined): MockRole {
   return "user";
 }
 
-function getMockProfile(payload: JavaTokenPayload) {
+function getMockProfile(javaUser: JavaUser) {
   if (!isMockBffEnabled()) {
     return null;
   }
 
-  const email = payload.email || `${payload.userId}@java-user.local`;
-  const username = payload.username || email;
-  let bundle = findUserByEmail(email);
+  let bundle = findUserByEmail(javaUser.email);
 
   if (!bundle) {
     bundle = createMockUser({
-      username,
-      email,
+      username: javaUser.username,
+      email: javaUser.email,
       password: "",
     });
   }
 
-  bundle.profile.username = username;
-  bundle.profile.role = readRole(payload.role);
+  bundle.profile.username = javaUser.username;
+  bundle.profile.role = readRole(javaUser.role);
   bundle.profile.status = "active";
+  bundle.profile.creditBalance = javaUser.totalPoints;
   return bundle;
 }
 
@@ -82,37 +63,48 @@ async function getJavaUser() {
     return null;
   }
 
-  const payload = parseJavaToken(token);
-  if (!payload || !payload.userId || isExpired(payload)) {
-    return null;
+  let payload: unknown;
+  try {
+    payload = await getJavaApiData<unknown>("/auth/user/me");
+  } catch (error) {
+    if (error instanceof JavaApiError && error.status === 401) {
+      return null;
+    }
+
+    throw error;
   }
 
-  const mockBundle = getMockProfile(payload);
+  const parsed = javaUserSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error("当前用户接口返回格式不正确");
+  }
+
+  const javaUser = parsed.data;
+  const mockBundle = getMockProfile(javaUser);
   if (mockBundle) {
     return mockBundle;
   }
 
-  const userId = String(payload.userId);
-  const username = payload.username || payload.email || "用户";
-  const email = payload.email || "";
+  const userId = String(javaUser.id);
+  const createdAt = new Date(javaUser.createdAt);
 
   return {
     user: {
       id: userId,
-      email,
+      email: javaUser.email,
       password: "",
-      name: username,
-      createdAt: new Date(0),
+      name: javaUser.username,
+      createdAt,
     },
     profile: {
       id: userId,
       userId,
-      username,
-      role: readRole(payload.role),
+      username: javaUser.username,
+      role: readRole(javaUser.role),
       status: "active" as const,
-      creditBalance: 0,
-      bio: "",
-      createdAt: new Date(0),
+      creditBalance: javaUser.totalPoints,
+      bio: javaUser.bio ?? "",
+      createdAt,
     },
   };
 }

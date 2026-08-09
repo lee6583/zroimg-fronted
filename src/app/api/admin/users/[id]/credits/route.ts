@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addAuditLog, adjustProfileCredits } from "@/server/bff/mock-store";
+import { isJavaAuthEnabled } from "@/server/env";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
+import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
 const creditsSchema = z.object({
@@ -26,6 +28,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (!parsed.ok) return jsonError(parsed.message);
 
     const { amount, reason } = parsed.data;
+
+    if (isJavaAuthEnabled()) {
+      const headers = new Headers(request.headers);
+      headers.set("Content-Type", "application/json");
+      const javaRequest = new Request(request.url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ amount, reason }),
+      });
+      return proxyRequestToJavaApi(
+        javaRequest,
+        `/points/admin/users/${encodeURIComponent(id)}/adjust`,
+      );
+    }
 
     const profile = adjustProfileCredits(id, amount, reason, "adjustment");
     addAuditLog({

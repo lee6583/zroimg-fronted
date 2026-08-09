@@ -1,15 +1,26 @@
-import type { OkResponse } from "@/types/api";
-
 type AuthUser = {
   id: string;
   username: string;
   email: string;
-  role: string;
+  role: "user" | "admin";
+};
+
+type SliderChallengeRequest = {
+  email: string;
+  scene: "register";
+};
+
+type SliderChallengeResponse = {
+  challengeId: string;
+  targetRatio: number;
 };
 
 type SliderTokenRequest = {
   email: string;
-  scene?: string;
+  scene: "register";
+  challengeId: string;
+  positionRatio: number;
+  durationMs: number;
 };
 
 type SliderTokenResponse = {
@@ -53,10 +64,9 @@ type LoginWithEmailRequest = {
   password: string;
 };
 
-type LoginWithEmailResponse = OkResponse & {
-  role?: "user" | "admin";
-  redirectTo?: string;
-  user?: AuthUser;
+type LoginWithEmailResponse = {
+  message: string;
+  user: AuthUser;
 };
 
 type ResetPasswordRequest = {
@@ -70,10 +80,14 @@ type ResetPasswordResponse = {
   message: string;
 };
 
-type LogoutAccountResponse = OkResponse;
+type LogoutAccountResponse = {
+  message: string;
+};
 
 export type {
   AuthUser,
+  SliderChallengeRequest,
+  SliderChallengeResponse,
   SliderTokenRequest,
   SliderTokenResponse,
   SendRegisterCodeRequest,

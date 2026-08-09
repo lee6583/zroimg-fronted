@@ -39,9 +39,18 @@ function addImage(collectionId: string, data: AddImageToFavoriteCollectionReques
   });
 }
 
+function removeImage(collectionId: string, data: AddImageToFavoriteCollectionRequest) {
+  return request<AddImageToFavoriteCollectionResponse>({
+    url: `/api/favorite-collections/${collectionId}/images`,
+    method: "DELETE",
+    data,
+  });
+}
+
 export const favoriteCollectionsApi = {
   createCollection,
   updateCollection,
   deleteCollection,
   addImage,
+  removeImage,
 };

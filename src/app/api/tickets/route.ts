@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { createTicket, listTicketsForUserPage } from "@/server/bff/account";
-import { jsonError, jsonOk } from "@/server/http";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 import type { TicketStatusFilter } from "@/types/feedback";
 
@@ -68,51 +68,55 @@ function toTicketItem(ticket: TicketRecord) {
 }
 
 export async function GET(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const url = new URL(request.url);
-  const page = normalizePage(url.searchParams.get("page"));
-  const pageSize = normalizePageSize(url.searchParams.get("pageSize"));
-  const status = normalizeStatus(url.searchParams.get("status"));
-  const result = await listTicketsForUserPage({
-    profileId: current.profile.id,
-    status,
-    page,
-    pageSize,
-  });
+    const url = new URL(request.url);
+    const page = normalizePage(url.searchParams.get("page"));
+    const pageSize = normalizePageSize(url.searchParams.get("pageSize"));
+    const status = normalizeStatus(url.searchParams.get("status"));
+    const result = await listTicketsForUserPage({
+      profileId: current.profile.id,
+      status,
+      page,
+      pageSize,
+    });
 
-  return jsonOk({
-    tickets: result.tickets.map(toTicketItem),
-    total: result.total,
-    page: result.page,
-    pageSize: result.pageSize,
-    summary: result.summary,
+    return jsonOk({
+      tickets: result.tickets.map(toTicketItem),
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+      summary: result.summary,
+    });
   });
 }
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const parsed = await parseJson(request, ticketSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+    const parsed = await parseJson(request, ticketSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const payload = parsed.data;
+    const payload = parsed.data;
 
-  const ticket = await createTicket({
-    userProfileId: current.profile.id,
-    type: payload.type,
-    subject: payload.subject,
-    content: payload.content,
-    attachmentMediaIds: payload.attachmentMediaIds,
-  });
+    const ticket = await createTicket({
+      userProfileId: current.profile.id,
+      type: payload.type,
+      subject: payload.subject,
+      content: payload.content,
+      attachmentMediaIds: payload.attachmentMediaIds,
+    });
 
-  return jsonOk({
-    ticket: toTicketItem(ticket),
+    return jsonOk({
+      ticket: toTicketItem(ticket),
+    });
   });
 }

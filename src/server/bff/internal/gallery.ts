@@ -158,3 +158,14 @@ export async function publishImage(imageId: string, userId: string) {
   store.galleryImages.unshift(galleryImage);
   return galleryImage;
 }
+
+export async function unpublishImage(imageId: string, userId: string) {
+  const store = getStore();
+  const galleryImage = store.galleryImages.find((item) => {
+    return item.generatedImageId === imageId && item.userProfileId === userId;
+  });
+  if (!galleryImage) {
+    throw new Error("公开作品不存在");
+  }
+  galleryImage.isPublic = false;
+}

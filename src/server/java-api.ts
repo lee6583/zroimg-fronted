@@ -12,11 +12,18 @@ const FORWARDED_REQUEST_HEADERS = [
   "cookie",
   "user-agent",
   "x-forwarded-for",
+  "x-forwarded-proto",
   "x-real-ip",
   "x-request-id",
 ] as const;
 
-const FORWARDED_RESPONSE_HEADERS = ["cache-control", "content-type", "location"] as const;
+const FORWARDED_RESPONSE_HEADERS = [
+  "cache-control",
+  "content-disposition",
+  "content-length",
+  "content-type",
+  "location",
+] as const;
 
 type HeaderSource = {
   get(name: string): string | null;
@@ -32,7 +39,7 @@ type JavaEnvelope<T> = {
 };
 
 type JavaApiDataOptions = {
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   headers?: HeadersInit;
   body?: BodyInit | null;
 };
@@ -135,7 +142,7 @@ function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
     return false;
   }
 
-  return payload.code !== 0 && payload.code !== 200;
+  return payload.code !== 200;
 }
 
 export async function proxyRequestToJavaApi(
@@ -144,8 +151,7 @@ export async function proxyRequestToJavaApi(
   method = request.method,
 ) {
   try {
-    const body =
-      method === "GET" || method === "HEAD" ? undefined : (await request.text()) || undefined;
+    const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
     const response = await fetch(buildJavaApiUrl(path), {
       method,
@@ -191,6 +197,10 @@ export async function requestJavaApiData<T>(path: string, options: JavaApiDataOp
       customHeaders.forEach((value, key) => {
         nextHeaders.set(key, value);
       });
+    }
+
+    if (options.body instanceof FormData) {
+      nextHeaders.delete("content-type");
     }
 
     const response = await fetch(buildJavaApiUrl(path), {

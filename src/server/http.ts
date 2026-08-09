@@ -34,7 +34,15 @@ export async function handleApi(fn: ApiHandler) {
     }
 
     if (error instanceof Error) {
-      return jsonError(error.message);
+      const errorWithStatus = error as Error & { status?: unknown };
+      const hasHttpStatus = typeof errorWithStatus.status === "number";
+      if (hasHttpStatus) {
+        const status = errorWithStatus.status as number;
+        return jsonError(error.message, status);
+      }
+
+      console.error("Unhandled API error", error);
+      return jsonError("服务器内部错误", 500);
     }
 
     console.error("Unhandled API error", error);

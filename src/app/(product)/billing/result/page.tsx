@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/server/auth";
 import { getJavaRechargeOrder, prisma } from "@/server/bff/orders";
 import { isMockPaymentBffEnabled } from "@/server/env";
+import { getJavaApiErrorStatus } from "@/server/java-api";
 import type { RechargeOrder } from "@/types/orders";
 import { PaymentActions } from "./payment-actions";
 import styles from "./result.module.css";
@@ -103,6 +104,32 @@ function OrderNotFoundCard() {
   );
 }
 
+function OrderLoadErrorCard(props: { status: number }) {
+  const status = props.status;
+  let title = "订单暂时无法加载";
+  let description = "订单服务暂时不可用，请稍后重新加载。";
+
+  if (status === 401) {
+    title = "登录状态已失效";
+    description = "请重新登录后再查看订单。";
+  }
+
+  return (
+    <main className={styles.result}>
+      <section className={styles.result__card}>
+        <p className={styles.result__eyebrow}>Payment service</p>
+        <h1 className={styles.result__title}>{title}</h1>
+        <p className={styles.result__description}>{description}</p>
+        <div className={styles.result__actions}>
+          <Link href="/billing" className={styles.result__payButton}>
+            查看我的订单
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
   const order = props.order;
   const paymentLabel = order.payChannelText || order.payChannel || "—";
@@ -170,9 +197,9 @@ function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
 
 async function readJavaOrder(orderNo: string) {
   try {
-    return await getJavaRechargeOrder(orderNo);
-  } catch {
-    return null;
+    return { order: await getJavaRechargeOrder(orderNo), status: 200 };
+  } catch (error) {
+    return { order: null, status: getJavaApiErrorStatus(error) };
   }
 }
 
@@ -186,13 +213,17 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
   }
 
   if (!isMockPaymentBffEnabled()) {
-    const javaOrder = await readJavaOrder(orderNo);
+    const result = await readJavaOrder(orderNo);
 
-    if (!javaOrder) {
+    if (result.status === 404) {
       return <OrderNotFoundCard />;
     }
 
-    return <JavaRechargeOrderCard order={javaOrder} />;
+    if (!result.order) {
+      return <OrderLoadErrorCard status={result.status} />;
+    }
+
+    return <JavaRechargeOrderCard order={result.order} />;
   }
 
   const orders = await prisma.paymentOrder.findMany({

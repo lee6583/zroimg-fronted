@@ -2,6 +2,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
+import { AppPagination } from "@/components/ui/app-pagination";
 import { listPublicImages, normalizeCategory } from "@/server/bff/generation";
 import { getMediaSignedUrl } from "@/server/bff/generation";
 import styles from "./gallery.module.css";
@@ -24,8 +25,41 @@ const categoryLabels: Record<string, string> = {
 };
 
 type GalleryPageProps = {
-  searchParams: Promise<{ category?: string | string[] }>;
+  searchParams: Promise<{
+    category?: string | string[];
+    page?: string | string[];
+    pageSize?: string | string[];
+  }>;
 };
+
+const defaultPageSize = 20;
+const pageSizes = [10, 20, 50];
+
+function readParam(value?: string | string[]) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function normalizePage(value?: string) {
+  const page = Number(value || 1);
+  if (!Number.isFinite(page)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(page));
+}
+
+function normalizePageSize(value?: string) {
+  const size = Number(value || defaultPageSize);
+  if (pageSizes.includes(size)) {
+    return size;
+  }
+
+  return defaultPageSize;
+}
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -38,7 +72,10 @@ export default async function GalleryPage(props: GalleryPageProps) {
   const searchParams = props.searchParams;
   const params = await searchParams;
   const category = normalizeCategory(params.category);
-  const images = await listPublicImages(category);
+  const page = normalizePage(readParam(params.page));
+  const pageSize = normalizePageSize(readParam(params.pageSize));
+  const galleryPage = await listPublicImages({ category, page, pageSize });
+  const images = galleryPage.list;
   const signedUrls = await Promise.all(
     images.map(async (item) => {
       let asset = item.generatedImage.outputAsset;
@@ -46,7 +83,7 @@ export default async function GalleryPage(props: GalleryPageProps) {
         asset = item.generatedImage.thumbnailAsset;
       }
 
-      const url = await getMediaSignedUrl(asset.id);
+      const url = await getMediaSignedUrl(asset.id, true);
       return [asset.id, url] as const;
     }),
   );
@@ -80,43 +117,46 @@ export default async function GalleryPage(props: GalleryPageProps) {
         </nav>
 
         {images.length > 0 ? (
-          <section className={styles.gallery__masonry} aria-label="社区作品">
-            {images.map((item) => {
-              let asset = item.generatedImage.outputAsset;
-              if (item.generatedImage.thumbnailAsset) {
-                asset = item.generatedImage.thumbnailAsset;
-              }
+          <>
+            <section className={styles.gallery__masonry} aria-label="社区作品">
+              {images.map((item) => {
+                let asset = item.generatedImage.outputAsset;
+                if (item.generatedImage.thumbnailAsset) {
+                  asset = item.generatedImage.thumbnailAsset;
+                }
 
-              const url = urls.get(asset.id);
-              const authorName =
-                item.userProfile.username || item.userProfile.user?.name || "创作者";
+                const url = urls.get(asset.id);
+                const authorName =
+                  item.userProfile.username || item.userProfile.user?.name || "创作者";
 
-              return (
-                <article key={item.id} className={styles.gallery__card}>
-                  {url ? (
-                    <Image
-                      className={styles.gallery__image}
-                      src={url}
-                      alt={item.title || item.prompt}
-                      width={item.generatedImage.width || asset.width || 768}
-                      height={item.generatedImage.height || asset.height || 768}
-                      unoptimized
-                    />
-                  ) : null}
+                return (
+                  <article key={item.id} className={styles.gallery__card}>
+                    {url ? (
+                      <Image
+                        className={styles.gallery__image}
+                        src={url}
+                        alt={item.title || item.prompt}
+                        width={item.generatedImage.width || asset.width || 768}
+                        height={item.generatedImage.height || asset.height || 768}
+                        unoptimized
+                      />
+                    ) : null}
 
-                  <div className={styles.gallery__cardBody}>
-                    <div className={styles.gallery__cardMeta}>
-                      <span>{categoryLabels[item.category]}</span>
-                      <span>{formatDate(item.createdAt)}</span>
+                    <div className={styles.gallery__cardBody}>
+                      <div className={styles.gallery__cardMeta}>
+                        <span>{categoryLabels[item.category]}</span>
+                        <span>{formatDate(item.createdAt)}</span>
+                      </div>
+                      <h2 className={styles.gallery__cardTitle}>{item.title || "未命名作品"}</h2>
+                      <p className={styles.gallery__prompt}>{item.prompt}</p>
+                      <p className={styles.gallery__author}>by {authorName}</p>
                     </div>
-                    <h2 className={styles.gallery__cardTitle}>{item.title || "未命名作品"}</h2>
-                    <p className={styles.gallery__prompt}>{item.prompt}</p>
-                    <p className={styles.gallery__author}>by {authorName}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </section>
+                  </article>
+                );
+              })}
+            </section>
+            <AppPagination current={page} pageSize={pageSize} total={galleryPage.total} />
+          </>
         ) : (
           <section className={styles.gallery__empty}>
             <p className={styles.gallery__emptyLabel}>暂无公开作品</p>

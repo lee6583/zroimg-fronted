@@ -1,6 +1,6 @@
 # 前端开发环境自动部署
 
-本文只描述 `dev` 分支对应的开发/联调环境。当前业务仍包含 mock 数据，不得把这套配置当作正式生产环境发布。
+本文描述 `dev` 分支对应的开发/联调部署。部署环境使用全 Java BFF，禁止 mock 回退。
 
 团队日常开发、发布验证、运营维护和面试说明见 [OPERATIONS.md](./OPERATIONS.md)。
 
@@ -88,10 +88,11 @@ docker compose version
 
 ```dotenv
 FRONTEND_IMAGE=ghcr.io/lee6583/zroimg-frontend
-BFF_MODE=mock
+BFF_MODE=java
 AUTH_BFF_MODE=java
-ALLOW_MOCK_BFF=true
-JAVA_API_BASE_URL=http://api-dev.zroimg.com
+PAYMENT_BFF_MODE=java
+ALLOW_MOCK_BFF=false
+JAVA_API_BASE_URL=https://api-dev.zroimg.com
 ```
 
 权限设置：
@@ -103,9 +104,10 @@ chmod 600 /opt/zroimg/frontend-image-dev/.env
 说明：
 
 - `FRONTEND_IMAGE`：GHCR 中的镜像名称。
-- `BFF_MODE=mock`：未接 Java 的业务模块使用开发期模拟数据。
+- `BFF_MODE=java`：业务页面和 Route Handler 使用 Java 后端真实数据。
 - `AUTH_BFF_MODE=java`：认证请求转发到当前开发环境 Java 后端。
-- `ALLOW_MOCK_BFF=true`：允许开发容器在 production 运行模式下使用 mock。正式生产必须为 `false`。
+- `PAYMENT_BFF_MODE=java`：积分套餐、充值订单和支付请求转发到 Java 后端。
+- `ALLOW_MOCK_BFF=false`：生产运行模式禁止读取进程内 mock 数据。
 - `JAVA_API_BASE_URL`：容器能够访问的 Java 后端地址。不能写 `localhost`，因为容器里的 localhost 指前端容器自身。
 
 ## 5. 允许服务器读取 GHCR

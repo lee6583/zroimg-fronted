@@ -98,6 +98,18 @@ type CreditPackage = {
   sort: number;
 };
 
+type AdminCreditPackageInput = {
+  code: string;
+  name: string;
+  description: string;
+  amountCent: number;
+  credits: number;
+  highlights: string[];
+  recommended: boolean;
+  enabled: boolean;
+  sort: number;
+};
+
 type AdminRechargeOrder = RechargeOrder & {
   userText: string;
   creditsErrorReason?: string | null;
@@ -107,6 +119,7 @@ type AdminRechargeOrder = RechargeOrder & {
 type AdminRechargeOrderPageQuery = {
   page: number;
   pageSize: number;
+  userId?: string;
   orderNo?: string;
   status?: string;
 };
@@ -136,6 +149,7 @@ export type {
   RechargeOrderPageQuery,
   RechargeOrderPage,
   CreditPackage,
+  AdminCreditPackageInput,
   AdminRechargeOrder,
   AdminRechargeOrderPageQuery,
   AdminRechargeOrderPage,

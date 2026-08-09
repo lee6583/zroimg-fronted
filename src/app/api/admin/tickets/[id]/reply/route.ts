@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
 import { addTicketMessage } from "@/server/bff/account";
+import { addAuditLog } from "@/server/bff/audit";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
-import { addAuditLog } from "@/server/bff/mock-store";
 import { parseJson } from "@/server/validation";
 
 const replySchema = z.object({

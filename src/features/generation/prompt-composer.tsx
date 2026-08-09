@@ -14,6 +14,7 @@ type PromptComposerProps = {
   hasCostError: boolean;
   notice: Notice;
   isBusy: boolean;
+  isBlocked: boolean;
   isCreating: boolean;
   onPromptChange: (value: string) => void;
   onFiles: (files: FileList | null) => Promise<void>;
@@ -30,6 +31,7 @@ export function PromptComposer(props: PromptComposerProps) {
   const hasCostError = props.hasCostError;
   const notice = props.notice;
   const isBusy = props.isBusy;
+  const isBlocked = props.isBlocked;
   const isCreating = props.isCreating;
   const onPromptChange = props.onPromptChange;
   const onFiles = props.onFiles;
@@ -112,7 +114,7 @@ export function PromptComposer(props: PromptComposerProps) {
             <button
               type="button"
               onClick={() => void onSubmit()}
-              disabled={isBusy || !prompt.trim()}
+              disabled={isBusy || isBlocked || !prompt.trim()}
               className={styles.generateForm__submitButton}
               aria-label="生成图片"
             >

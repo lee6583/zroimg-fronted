@@ -8,14 +8,25 @@ import {
   LayoutDashboard,
   MessageSquareText,
   ReceiptText,
+  Coins,
   Settings,
+  SlidersHorizontal,
   Users,
 } from "lucide-react";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
 type AdminSection =
-  "overview" | "users" | "orders" | "generations" | "tickets" | "docs" | "settings" | "audit";
+  | "overview"
+  | "users"
+  | "orders"
+  | "packages"
+  | "models"
+  | "generations"
+  | "tickets"
+  | "docs"
+  | "settings"
+  | "audit";
 
 type AdminShellProps = {
   active: AdminSection;
@@ -31,6 +42,8 @@ const adminNavItems: Array<{
   { key: "overview", label: "概览", href: "/admin", icon: LayoutDashboard },
   { key: "users", label: "用户管理", href: "/admin/users", icon: Users },
   { key: "orders", label: "订单管理", href: "/admin/orders", icon: ReceiptText },
+  { key: "packages", label: "积分套餐", href: "/admin/packages", icon: Coins },
+  { key: "models", label: "模型配置", href: "/admin/models", icon: SlidersHorizontal },
   { key: "generations", label: "生成任务", href: "/admin/generations", icon: Activity },
   { key: "tickets", label: "意见反馈", href: "/admin/tickets", icon: MessageSquareText },
   { key: "docs", label: "文档管理", href: "/admin/docs", icon: FileText },

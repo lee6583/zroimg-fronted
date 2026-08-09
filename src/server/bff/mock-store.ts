@@ -35,8 +35,11 @@ export type MockCreditPackage = {
   id: string;
   code: string;
   name: string;
+  description?: string;
   credits: number;
   priceCny: number;
+  highlights?: string[];
+  recommended?: boolean;
   sortOrder: number;
   isActive: boolean;
 };
@@ -95,8 +98,8 @@ export type MockGenerationTask = {
   status: MockTaskStatus;
   model: string;
   size: string;
-  quality: "low" | "medium" | "high";
-  outputFormat: "png" | "webp" | "jpeg";
+  quality: string;
+  outputFormat: string;
   imageCount: number;
   costCredits: number;
   error: string | null;
@@ -188,6 +191,14 @@ export type MockSliderToken = {
   used: boolean;
 };
 
+export type MockSliderChallenge = {
+  id: string;
+  email: string;
+  scene: "register";
+  targetRatio: number;
+  expiresAt: number;
+};
+
 export type MockVerificationCode = {
   id: string;
   email: string;
@@ -248,6 +259,7 @@ export type MockStore = {
   feedbackMessages: MockFeedbackMessage[];
   checkInRecords: MockCheckInRecord[];
   adminAuditLogs: MockAdminAuditLog[];
+  sliderChallenges: MockSliderChallenge[];
   sliderTokens: MockSliderToken[];
   verificationCodes: MockVerificationCode[];
   settings: MockSettingsState;
@@ -337,8 +349,11 @@ function createStore(): MockStore {
       id: "package-1",
       code: "STARTER_100",
       name: "轻量试创",
+      description: "把脑海里的第一束光，先变成看得见的画面。",
       credits: 100,
       priceCny: 19.9,
+      highlights: ["100 积分，即买即用", "适合头像、封面与灵感草稿"],
+      recommended: false,
       sortOrder: 1,
       isActive: true,
     },
@@ -346,8 +361,11 @@ function createStore(): MockStore {
       id: "package-2",
       code: "PRO_500",
       name: "创作者",
+      description: "为持续创作留出余量，让好想法不必停在半路。",
       credits: 500,
       priceCny: 79.9,
+      highlights: ["500 积分，适合日常创作", "支持图片生成与编辑"],
+      recommended: true,
       sortOrder: 2,
       isActive: true,
     },
@@ -355,8 +373,11 @@ function createStore(): MockStore {
       id: "package-3",
       code: "MAX_1200",
       name: "灵感工作室",
+      description: "给完整项目一整片画布，从概念到成片都从容推进。",
       credits: 1200,
       priceCny: 169.9,
+      highlights: ["1200 积分，适合项目创作", "适合系列素材生产"],
+      recommended: false,
       sortOrder: 3,
       isActive: true,
     },
@@ -831,6 +852,7 @@ function createStore(): MockStore {
     feedbackMessages,
     checkInRecords,
     adminAuditLogs,
+    sliderChallenges: [],
     sliderTokens: [],
     verificationCodes: [],
     settings: {

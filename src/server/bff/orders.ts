@@ -4,7 +4,9 @@ import { z } from "zod";
 import { isMockPaymentBffEnabled } from "@/server/env";
 import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import { prisma } from "@/server/bff/mock-db";
+import { getStore, nextId } from "@/server/bff/mock-store";
 import type {
+  AdminCreditPackageInput,
   AdminRechargeOrder,
   AdminRechargeOrderPage,
   AdminRechargeOrderPageQuery,
@@ -90,6 +92,8 @@ type PackageInput = {
   sort?: number | null;
 };
 
+type AdminPackageInput = AdminCreditPackageInput;
+
 function buildJavaRechargeOrderPath(orderNo: string) {
   const safeOrderNo = encodeURIComponent(orderNo);
   return `/order/user/recharge-orders/${safeOrderNo}`;
@@ -100,7 +104,7 @@ function buildJavaRechargeOrderPagePath(query: RechargeOrderPageQuery) {
   params.set("pageNo", String(query.page));
   params.set("pageSize", String(query.pageSize));
   params.set("isAsc", "false");
-  params.set("sortBy", "createTime");
+  params.set("sortBy", "create_time");
 
   return `/order/user/recharge-orders?${params.toString()}`;
 }
@@ -199,11 +203,13 @@ async function listMockCreditPackages() {
       id: item.id,
       code: item.code,
       name: item.name,
+      description: item.description,
       amountCent,
       amountText: formatAmountText(amountCent),
       credits: item.credits,
+      highlights: item.highlights,
       enabled: item.isActive,
-      recommended: isRecommendedPackage(item.code),
+      recommended: item.recommended ?? isRecommendedPackage(item.code),
       sort: item.sortOrder,
     };
 
@@ -231,6 +237,240 @@ async function listCreditPackages() {
   }
 
   return listJavaCreditPackages();
+}
+
+function toMockPackageInput(item: ReturnType<typeof getStore>["creditPackages"][number]) {
+  return {
+    id: item.id,
+    code: item.code,
+    name: item.name,
+    description: item.description,
+    amountCent: Math.round(item.priceCny * 100),
+    credits: item.credits,
+    highlights: item.highlights,
+    recommended: item.recommended,
+    enabled: item.isActive,
+    sort: item.sortOrder,
+  } satisfies PackageInput;
+}
+
+function toAdminPackage(input: PackageInput) {
+  return normalizePackage(input);
+}
+
+async function listMockAdminCreditPackages() {
+  const packages = getStore()
+    .creditPackages.map(toMockPackageInput)
+    .sort((itemA, itemB) => itemA.sort - itemB.sort);
+
+  return packages.map(toAdminPackage);
+}
+
+async function listJavaAdminCreditPackages() {
+  const payload = await getJavaApiData<unknown>("/order/admin/packages");
+  const parsed = javaPackagesSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    throw new Error("管理端套餐接口返回格式不正确");
+  }
+
+  return parsed.data
+    .map((item) => normalizePackage(item))
+    .sort((itemA, itemB) => {
+      return itemA.sort - itemB.sort;
+    });
+}
+
+async function listAdminCreditPackages() {
+  if (isMockPaymentBffEnabled()) {
+    return listMockAdminCreditPackages();
+  }
+
+  return listJavaAdminCreditPackages();
+}
+
+async function createMockCreditPackage(input: AdminPackageInput) {
+  const store = getStore();
+  const hasSameCode = store.creditPackages.some((item) => item.code === input.code);
+  if (hasSameCode) {
+    throw new Error("套餐编码已存在");
+  }
+
+  const item = {
+    id: nextId("package"),
+    code: input.code,
+    name: input.name,
+    description: input.description,
+    credits: input.credits,
+    priceCny: input.amountCent / 100,
+    sortOrder: input.sort,
+    isActive: input.enabled,
+    highlights: input.highlights,
+    recommended: input.recommended,
+  };
+
+  if (item.recommended) {
+    for (const packageItem of store.creditPackages) {
+      packageItem.recommended = false;
+    }
+  }
+
+  store.creditPackages.push(item);
+  return toAdminPackage(toMockPackageInput(item));
+}
+
+async function createAdminCreditPackage(input: AdminPackageInput) {
+  if (!isMockPaymentBffEnabled()) {
+    const payload = await requestJavaApiData<unknown>("/order/admin/packages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    return toAdminPackage(javaPackageSchema.parse(payload));
+  }
+
+  return createMockCreditPackage(input);
+}
+
+async function updateAdminCreditPackage(id: string, input: AdminPackageInput) {
+  if (!isMockPaymentBffEnabled()) {
+    const payload = await requestJavaApiData<unknown>(
+      `/order/admin/packages/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      },
+    );
+    return toAdminPackage(javaPackageSchema.parse(payload));
+  }
+
+  const store = getStore();
+  const item = store.creditPackages.find((packageItem) => packageItem.id === id);
+  if (!item) {
+    throw new Error("套餐不存在");
+  }
+
+  const codeUsedByOther = store.creditPackages.some((packageItem) => {
+    return packageItem.id !== id && packageItem.code === input.code;
+  });
+  if (codeUsedByOther) {
+    throw new Error("套餐编码已存在");
+  }
+
+  item.code = input.code;
+  item.name = input.name;
+  item.description = input.description;
+  item.credits = input.credits;
+  item.priceCny = input.amountCent / 100;
+  item.sortOrder = input.sort;
+  item.isActive = input.enabled;
+  item.highlights = input.highlights;
+  item.recommended = input.recommended;
+
+  if (item.recommended) {
+    for (const packageItem of store.creditPackages) {
+      if (packageItem.id !== id) {
+        packageItem.recommended = false;
+      }
+    }
+  }
+
+  return toAdminPackage(toMockPackageInput(item));
+}
+
+async function updateAdminCreditPackageStatus(id: string, enabled: boolean) {
+  if (!isMockPaymentBffEnabled()) {
+    const payload = await requestJavaApiData<unknown>(
+      `/order/admin/packages/${encodeURIComponent(id)}/status`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      },
+    );
+    return toAdminPackage(javaPackageSchema.parse(payload));
+  }
+
+  const store = getStore();
+  const item = store.creditPackages.find((packageItem) => packageItem.id === id);
+  if (!item) {
+    throw new Error("套餐不存在");
+  }
+
+  item.isActive = enabled;
+  return toAdminPackage(toMockPackageInput(item));
+}
+
+async function updateAdminCreditPackageRecommend(id: string, recommended: boolean) {
+  if (!isMockPaymentBffEnabled()) {
+    const payload = await requestJavaApiData<unknown>(
+      `/order/admin/packages/${encodeURIComponent(id)}/recommend`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recommended }),
+      },
+    );
+    return toAdminPackage(javaPackageSchema.parse(payload));
+  }
+
+  const store = getStore();
+  const item = store.creditPackages.find((packageItem) => packageItem.id === id);
+  if (!item) {
+    throw new Error("套餐不存在");
+  }
+
+  item.recommended = recommended;
+  if (recommended) {
+    for (const packageItem of store.creditPackages) {
+      if (packageItem.id !== id) {
+        packageItem.recommended = false;
+      }
+    }
+  }
+
+  return toAdminPackage(toMockPackageInput(item));
+}
+
+async function updateAdminCreditPackageSort(id: string, sort: number) {
+  if (!isMockPaymentBffEnabled()) {
+    const payload = await requestJavaApiData<unknown>(
+      `/order/admin/packages/${encodeURIComponent(id)}/sort`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sort }),
+      },
+    );
+    return toAdminPackage(javaPackageSchema.parse(payload));
+  }
+
+  const store = getStore();
+  const item = store.creditPackages.find((packageItem) => packageItem.id === id);
+  if (!item) {
+    throw new Error("套餐不存在");
+  }
+
+  item.sortOrder = sort;
+  return toAdminPackage(toMockPackageInput(item));
+}
+
+async function deleteAdminCreditPackage(id: string) {
+  if (!isMockPaymentBffEnabled()) {
+    await requestJavaApiData<unknown>(`/order/admin/packages/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    return;
+  }
+
+  const store = getStore();
+  const index = store.creditPackages.findIndex((packageItem) => packageItem.id === id);
+  if (index < 0) {
+    throw new Error("套餐不存在");
+  }
+
+  store.creditPackages.splice(index, 1);
 }
 
 async function getMockRechargeOverview(input: { userProfileId: string; totalPoints: number }) {
@@ -386,10 +626,14 @@ function buildJavaAdminOrderPagePath(query: AdminRechargeOrderPageQuery) {
   params.set("pageNo", String(query.page));
   params.set("pageSize", String(query.pageSize));
   params.set("isAsc", "false");
-  params.set("sortBy", "createTime");
+  params.set("sortBy", "create_time");
 
   if (query.orderNo) {
     params.set("orderNo", query.orderNo);
+  }
+
+  if (query.userId) {
+    params.set("userId", query.userId);
   }
 
   if (query.status) {
@@ -418,6 +662,7 @@ async function listMockAdminOrders(
   // 第一步:按状态和订单号过滤全部订单。
   const orders = await prisma.paymentOrder.findMany({
     where: {
+      ...(query.userId ? { userProfileId: query.userId } : {}),
       ...(readMockOrderStatus(query.status) ? { status: readMockOrderStatus(query.status) } : {}),
       ...(query.orderNo ? { OR: [{ orderNo: { contains: query.orderNo } }] } : {}),
     },
@@ -502,12 +747,19 @@ async function reissueJavaRechargeCredits(orderNo: string) {
 }
 
 export {
+  createAdminCreditPackage,
+  deleteAdminCreditPackage,
   detectJavaRechargeOrder,
   getJavaRechargeOrder,
   getRechargeOverview,
+  listAdminCreditPackages,
   listAdminRechargeOrders,
   listRechargeOrders,
   listCreditPackages,
   reissueJavaRechargeCredits,
+  updateAdminCreditPackage,
+  updateAdminCreditPackageRecommend,
+  updateAdminCreditPackageSort,
+  updateAdminCreditPackageStatus,
   prisma,
 };

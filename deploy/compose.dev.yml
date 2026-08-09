@@ -7,6 +7,7 @@ services:
     environment:
       BFF_MODE: ${BFF_MODE:-java}
       AUTH_BFF_MODE: ${AUTH_BFF_MODE:-java}
+      PAYMENT_BFF_MODE: ${PAYMENT_BFF_MODE:-java}
       ALLOW_MOCK_BFF: ${ALLOW_MOCK_BFF:-false}
       JAVA_API_BASE_URL: ${JAVA_API_BASE_URL:?Set JAVA_API_BASE_URL in .env}
     security_opt:

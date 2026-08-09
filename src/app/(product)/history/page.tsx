@@ -7,7 +7,7 @@ import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
 import { listCollections } from "@/server/bff/account";
-import { listHistoryTasks } from "@/server/bff/generation";
+import { pageHistoryTasks } from "@/server/bff/generation";
 import { getMediaSignedUrl } from "@/server/bff/generation";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
@@ -19,7 +19,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type HistoryPageProps = {
   searchParams: SearchParams;
 };
-type HistoryTask = Awaited<ReturnType<typeof listHistoryTasks>>[number];
+type HistoryTask = Awaited<ReturnType<typeof pageHistoryTasks>>["list"][number];
 type HistoryOutput = HistoryTask["outputs"][number];
 type HistoryItem = {
   id: string;
@@ -100,7 +100,7 @@ function dateFromText(value: string, mode: "start" | "end") {
     return null;
   }
 
-  const date = new Date(value);
+  const date = new Date(`${value}:00+08:00`);
   if (Number.isNaN(date.getTime())) {
     return null;
   }
@@ -213,18 +213,22 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
   const current = await requireUser();
   const tasksPromise = shouldShowImages
-    ? listHistoryTasks(current.profile.id, { ...range, sort: "desc" })
-    : Promise.resolve([]);
-  const [tasks, collections] = await Promise.all([
+    ? pageHistoryTasks(current.profile.id, {
+        ...range,
+        page: rawPage,
+        pageSize: currentPageSize,
+        sort: "desc",
+        modelType: "image",
+      })
+    : Promise.resolve({ total: 0, pages: 0, list: [] });
+  const [taskPage, collections] = await Promise.all([
     tasksPromise,
     listCollections(current.profile.id),
   ]);
-  const historyItems = toHistoryItems(tasks);
-  const total = historyItems.length;
-  const totalPages = Math.max(1, Math.ceil(total / currentPageSize));
-  const currentPage = Math.min(rawPage, totalPages);
-  const pageStart = (currentPage - 1) * currentPageSize;
-  const pageItems = historyItems.slice(pageStart, pageStart + currentPageSize);
+  const historyItems = toHistoryItems(taskPage.list);
+  const total = taskPage.total;
+  const currentPage = rawPage;
+  const pageItems = historyItems;
 
   const assetIds = new Set<string>();
   for (const item of pageItems) {

@@ -26,6 +26,38 @@ type TicketItem = {
   attachments: TicketAttachment[];
 };
 
+type FeedbackMessageRecord = {
+  id: string;
+  body: string;
+  isAdmin: boolean;
+  createdAt: Date;
+  authorProfile: {
+    username: string;
+  };
+};
+
+type FeedbackTicketRecord = {
+  id: string;
+  type: FeedbackType;
+  status: FeedbackStatus;
+  subject: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  messages: FeedbackMessageRecord[];
+  attachments: TicketAttachment[];
+};
+
+type AdminFeedbackTicketRecord = FeedbackTicketRecord & {
+  userProfile: {
+    username: string;
+    user: {
+      email: string;
+      name: string;
+    };
+  };
+};
+
 type TicketStatusFilter = "all" | "open" | "in_progress" | "processed";
 
 type TicketListSummary = {
@@ -92,6 +124,9 @@ export type {
   TicketMessage,
   TicketAttachment,
   TicketItem,
+  FeedbackMessageRecord,
+  FeedbackTicketRecord,
+  AdminFeedbackTicketRecord,
   TicketStatusFilter,
   TicketListSummary,
   ListTicketsRequest,

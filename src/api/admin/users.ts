@@ -2,6 +2,8 @@ import { request } from "@/utils/request";
 import type {
   AdjustUserCreditsRequest,
   AdjustUserCreditsResponse,
+  ResetUserPasswordRequest,
+  ResetUserPasswordResponse,
   UpdateUserStatusRequest,
   UpdateUserStatusResponse,
 } from "@/types/admin";
@@ -22,7 +24,16 @@ function updateStatus(userId: string, data: UpdateUserStatusRequest) {
   });
 }
 
+function resetPassword(userId: string, data: ResetUserPasswordRequest) {
+  return request<ResetUserPasswordResponse>({
+    url: `/api/admin/users/${userId}/password`,
+    method: "POST",
+    data,
+  });
+}
+
 export const adminUsersApi = {
   adjustCredits,
+  resetPassword,
   updateStatus,
 };

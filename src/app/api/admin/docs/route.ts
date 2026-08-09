@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
+import { addAuditLog } from "@/server/bff/audit";
 import { updateDocsConfig } from "@/server/bff/content";
-import { jsonError, jsonOk } from "@/server/http";
-import { addAuditLog } from "@/server/bff/mock-store";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
 const docItemSchema = z.object({
@@ -23,29 +23,30 @@ const docsSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const current = await getCurrentUserProfile();
-  if (!current || current.profile.role !== "admin") {
-    return jsonError("无权限", 403);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current || current.profile.role !== "admin") {
+      return jsonError("无权限", 403);
+    }
 
-  const parsed = await parseJson(request, docsSchema);
-  if (!parsed.ok) return jsonError(parsed.message);
+    const parsed = await parseJson(request, docsSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
 
-  const payload = parsed.data;
+    const payload = parsed.data;
+    const docs = await updateDocsConfig({
+      title: payload.title,
+      description: payload.description,
+      groups: payload.groups,
+    });
 
-  const docs = await updateDocsConfig({
-    title: payload.title,
-    description: payload.description,
-    groups: payload.groups,
+    addAuditLog({
+      adminProfileId: current.profile.id,
+      action: "update_docs",
+      targetType: "docs",
+      targetId: null,
+      detailJson: { title: docs.title },
+    });
+
+    return jsonOk({ docs });
   });
-
-  addAuditLog({
-    adminProfileId: current.profile.id,
-    action: "update_docs",
-    targetType: "docs",
-    targetId: null,
-    detailJson: { title: docs.title },
-  });
-
-  return jsonOk({ docs });
 }

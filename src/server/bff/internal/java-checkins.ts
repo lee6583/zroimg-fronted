@@ -60,7 +60,6 @@ export function toCheckInStatus(card: JavaSignCard): CheckInStatus {
     checkedAt: null,
     streakDays: card.continuousSignDays,
     weekSignDays: card.weekSignDays,
-    totalCheckIns: card.weekSignDays,
     checkedDayKeys: getCheckedDayKeys(card),
   };
 }

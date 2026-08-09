@@ -121,6 +121,24 @@ export async function addImage(profileId: string, collectionId: string, imageId:
   return item;
 }
 
+export async function removeImage(profileId: string, collectionId: string, imageId: string) {
+  const store = getStore();
+  const collection = store.favoriteCollections.find((item) => {
+    return item.id === collectionId && item.userProfileId === profileId;
+  });
+  if (!collection) {
+    throw new Error("合集不存在");
+  }
+  const index = store.favoriteCollectionItems.findIndex((item) => {
+    return item.collectionId === collectionId && item.generatedImageId === imageId;
+  });
+  if (index < 0) {
+    throw new Error("收藏作品不存在");
+  }
+  store.favoriteCollectionItems.splice(index, 1);
+  collection.updatedAt = new Date();
+}
+
 export async function getCollection(profileId: string, collectionId: string) {
   const store = getStore();
   const collection = store.favoriteCollections.find(

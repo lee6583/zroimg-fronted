@@ -11,6 +11,10 @@
   flex-direction: column;
 }
 
+.videoPage__content {
+  flex: 1;
+}
+
 .videoPage__toolbar {
   display: flex;
   height: 3rem;
@@ -66,6 +70,94 @@
   color: var(--muted);
   font-size: 0.86rem;
   line-height: 1.7;
+}
+
+.videoPage__taskList {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.videoPage__task {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+}
+
+.videoPage__player {
+  display: block;
+  width: 100%;
+  max-height: 34rem;
+  background: #000;
+}
+
+.videoPage__taskInfo {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+}
+
+.videoPage__taskHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.videoPage__taskStatus,
+.videoPage__taskPrompt {
+  margin: 0;
+}
+
+.videoPage__taskError {
+  margin: 0;
+  color: var(--danger, #b42318);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.videoPage__download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-decoration: none;
+}
+
+.videoPage__download:hover {
+  color: var(--foreground);
+}
+
+.videoPage__loadMore {
+  display: block;
+  min-width: 7rem;
+  margin: 0 auto 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  padding: 0.55rem 0.8rem;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.videoPage__loadMore:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.videoPage__taskStatus {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.videoPage__taskPrompt {
+  color: var(--foreground);
+  font-size: 0.86rem;
+  line-height: 1.6;
 }
 
 .videoPage__settings {
@@ -172,6 +264,7 @@
 }
 
 .videoPage__uploadBox {
+  position: relative;
   display: grid;
   min-height: 4.75rem;
   place-items: center;
@@ -184,6 +277,39 @@
   font-family: inherit;
   font-size: 0.76rem;
   cursor: pointer;
+}
+
+.videoPage__uploadBoxActive {
+  border-style: solid;
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.videoPage__fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.videoPage__clearUpload {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.videoPage__clearUpload:hover {
+  color: var(--foreground);
 }
 
 .videoPage__uploadBox:hover {
@@ -203,6 +329,10 @@
   padding: 0;
   font-family: inherit;
   cursor: pointer;
+}
+
+.videoPage__audioButton:disabled {
+  cursor: default;
 }
 
 .videoPage__audioCopy {
@@ -259,6 +389,11 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+}
+
+.videoPage__submitButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .videoPage__submitButton:hover {

@@ -10,6 +10,8 @@ import type {
   SaveEasyPaySettingsResponse,
   SaveGenerationSettingsRequest,
   SaveGenerationSettingsResponse,
+  SaveVideoSettingsRequest,
+  SaveVideoSettingsResponse,
   SaveSmtpSettingsRequest,
   SaveSmtpSettingsResponse,
   TestSmtpSettingsRequest,
@@ -27,6 +29,14 @@ function saveGenerationSettings(data: SaveGenerationSettingsRequest) {
 function saveSmtpSettings(data: SaveSmtpSettingsRequest) {
   return request<SaveSmtpSettingsResponse>({
     url: "/api/admin/settings/mail",
+    method: "POST",
+    data,
+  });
+}
+
+function saveVideoSettings(data: SaveVideoSettingsRequest) {
+  return request<SaveVideoSettingsResponse>({
+    url: "/api/admin/settings/video",
     method: "POST",
     data,
   });
@@ -67,6 +77,7 @@ function saveAnnouncementSettings(data: SaveAnnouncementSettingsRequest) {
 export const adminSettingsApi = {
   saveGenerationSettings,
   saveSmtpSettings,
+  saveVideoSettings,
   testSmtpSettings,
   saveEasyPaySettings,
   saveCheckInSettings,

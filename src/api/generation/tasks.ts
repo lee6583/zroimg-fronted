@@ -3,6 +3,8 @@ import type {
   CreateGenerationTaskRequest,
   CreateGenerationTaskResponse,
   FetchGenerationTaskResponse,
+  GenerationPriceRequest,
+  GenerationPriceResponse,
   UploadMediaResponse,
 } from "@/types/generation";
 
@@ -29,8 +31,17 @@ function fetchTask(taskId: string) {
   });
 }
 
+function estimatePrice(data: GenerationPriceRequest) {
+  return request<GenerationPriceResponse>({
+    url: "/api/generations/estimate",
+    method: "POST",
+    data,
+  });
+}
+
 export const generationTasksApi = {
   uploadMedia,
   createTask,
   fetchTask,
+  estimatePrice,
 };

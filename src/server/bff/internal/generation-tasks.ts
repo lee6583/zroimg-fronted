@@ -6,6 +6,11 @@ import {
   resolvePendingGenerations,
 } from "@/server/bff/mock-store";
 import { estimateGenerationCredits } from "@/utils/generation-credits";
+import type {
+  GenerationOutput,
+  GenerationPriceRequest,
+  GenerationPriceResponse,
+} from "@/types/generation";
 
 function findThumbnail(thumbnailId: string | null) {
   if (!thumbnailId) {
@@ -35,7 +40,7 @@ function ownsInput(mediaId: string, profileId: string) {
   return asset.kind === "input";
 }
 
-function outputWithAssets(imageId: string) {
+function outputWithAssets(imageId: string): GenerationOutput {
   const store = getStore();
   const image = store.generatedImages.find((item) => item.id === imageId);
   if (!image) {
@@ -166,6 +171,37 @@ export async function listHistory(
   return tasksWithOutputs;
 }
 
+export async function estimatePrice(
+  profileId: string,
+  input: GenerationPriceRequest,
+): Promise<GenerationPriceResponse> {
+  const store = getStore();
+  const profile = store.profiles.find((item) => item.id === profileId);
+  if (!profile) {
+    throw new Error("用户不存在");
+  }
+
+  const quality = input.quality === "auto" ? "medium" : input.quality;
+  const requiredPoints = estimateGenerationCredits({
+    mode: input.mode,
+    quality,
+    size: input.size,
+    count: input.imageCount,
+  });
+  const shortagePoints = Math.max(requiredPoints - profile.creditBalance, 0);
+
+  return {
+    priceVersion: "mock-v1",
+    unitPoints: requiredPoints / input.imageCount,
+    imageCount: input.imageCount,
+    requiredPoints,
+    currentPoints: profile.creditBalance,
+    shortagePoints,
+    enough: shortagePoints === 0,
+    detail: `${input.resolution}，生成 ${input.imageCount} 张`,
+  };
+}
+
 export async function getForUser(profileId: string, taskId: string) {
   resolvePendingGenerations();
   const task = getStore().generationTasks.find(
@@ -189,8 +225,8 @@ export async function create(input: {
   conversationId: string;
   prompt: string;
   mode: "text" | "edit";
-  quality: "low" | "medium" | "high";
-  outputFormat: "png" | "webp" | "jpeg";
+  quality: string;
+  outputFormat: string;
   size: string;
   imageCount: number;
   inputMediaIds: string[];
@@ -214,9 +250,10 @@ export async function create(input: {
     throw new Error("参考图不存在");
   }
 
+  const quality = input.quality === "auto" ? "medium" : input.quality;
   const costCredits = estimateGenerationCredits({
     mode: input.mode,
-    quality: input.quality,
+    quality,
     size: input.size,
     count: input.imageCount,
   });
@@ -235,7 +272,7 @@ export async function create(input: {
     status: "queued" as const,
     model: store.settings.generation.model,
     size: input.size,
-    quality: input.quality,
+    quality,
     outputFormat: input.outputFormat,
     imageCount: input.imageCount,
     costCredits,

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { UserActions } from "@/features/admin/user-actions";
 import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { listAdminRechargeOrders } from "@/server/bff/orders";
+import { getAdminUser, listAdminFlows, listAdminTasks } from "@/server/bff/users";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,8 @@ type AdminUserDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-function formatDate(value: Date) {
-  return value.toISOString().slice(0, 16).replace("T", " ");
+function formatDate(value: string) {
+  return value.slice(0, 16).replace("T", " ");
 }
 
 export default async function AdminUserDetailPage(props: AdminUserDetailPageProps) {
@@ -20,30 +21,15 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
 
   await requireAdmin();
   const { id } = await params;
-  const profile = await prisma.userProfile.findUnique({
-    where: { id },
-    include: { user: true },
-  });
+  const profile = await getAdminUser(id);
   if (!profile) notFound();
 
-  const [ledger, orders, tasks] = await Promise.all([
-    prisma.creditLedger.findMany({
-      where: { userProfileId: id },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    }),
-    prisma.paymentOrder.findMany({
-      where: { userProfileId: id },
-      include: { creditPackage: true },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
-    prisma.generationTask.findMany({
-      where: { userProfileId: id },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
+  const [flows, orderPage, tasks] = await Promise.all([
+    listAdminFlows(id),
+    listAdminRechargeOrders({ page: 1, pageSize: 20, userId: id }),
+    listAdminTasks(id),
   ]);
+  const orders = orderPage.list;
 
   return (
     <AdminShell active="users">
@@ -59,7 +45,7 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
             <div>
               <h1 className="page-title">{profile.username}</h1>
             </div>
-            <p className="text-2xl font-semibold">{profile.creditBalance} 积分</p>
+            <p className="text-2xl font-semibold">{profile.totalPoints} 积分</p>
           </div>
           <div className="mt-5">
             <UserActions userId={profile.id} status={profile.status} />
@@ -70,20 +56,20 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
           <div className="surface rounded-xl p-5">
             <h2 className="font-serif text-2xl font-medium">积分流水</h2>
             <div className="mt-4 grid gap-2">
-              {ledger.map((item) => (
+              {flows.map((item) => (
                 <div key={item.id} className="rounded-lg border border-line p-3">
                   <div className="flex justify-between gap-3">
                     <p className={item.amount >= 0 ? "text-foreground" : "text-danger"}>
                       {item.amount > 0 ? `+${item.amount}` : item.amount}
                     </p>
-                    <p className="text-sm text-muted">{item.balanceAfter} 余额</p>
+                    <p className="text-sm text-muted">{item.afterPoints} 余额</p>
                   </div>
                   <p className="mt-1 text-xs text-muted">
-                    {item.reason} / {formatDate(item.createdAt)}
+                    {item.remark} / {formatDate(item.createdAt)}
                   </p>
                 </div>
               ))}
-              {ledger.length === 0 ? <p className="text-sm text-muted">暂无流水</p> : null}
+              {flows.length === 0 ? <p className="text-sm text-muted">暂无流水</p> : null}
             </div>
           </div>
 
@@ -91,10 +77,10 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
             <h2 className="font-serif text-2xl font-medium">最近订单</h2>
             <div className="mt-4 grid gap-2">
               {orders.map((order) => (
-                <div key={order.id} className="rounded-lg border border-line p-3">
-                  <p className="font-medium">{order.creditPackage?.name ?? "自定义充值"}</p>
+                <div key={order.orderNo} className="rounded-lg border border-line p-3">
+                  <p className="font-medium">{order.packageName || "自定义充值"}</p>
                   <p className="mt-1 text-sm text-muted">
-                    {order.status} / ¥{order.amountCny.toString()} / {formatDate(order.createdAt)}
+                    {order.displayStatus} / {order.amountText} / {formatDate(order.createTime)}
                   </p>
                 </div>
               ))}
@@ -109,9 +95,11 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                 <div key={task.id} className="rounded-lg border border-line p-3">
                   <p className="truncate font-medium">{task.prompt}</p>
                   <p className="mt-1 text-sm text-muted">
-                    {task.status} / {task.costCredits} 积分 / {formatDate(task.createdAt)}
+                    {task.status} / {task.requiredPoints} 积分 / {formatDate(task.createdAt)}
                   </p>
-                  {task.error ? <p className="mt-1 text-xs text-danger">{task.error}</p> : null}
+                  {task.failReason ? (
+                    <p className="mt-1 text-xs text-danger">{task.failReason}</p>
+                  ) : null}
                 </div>
               ))}
               {tasks.length === 0 ? <p className="text-sm text-muted">暂无生成任务</p> : null}

@@ -6,15 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { getErrorMessage } from "@/utils/error";
-import { isSupportedImageType, maxImageBytes, maxImageFiles } from "@/utils/media";
+import { isSupportedImageType, maxImageBytes } from "@/utils/media";
+import type { GenerationModelOption } from "@/types/generation";
 import { ConversationSidebar } from "./conversation-sidebar";
 import { GenerationSettings } from "./generation-settings";
 import {
-  defaultOptions,
-  estimateOptionsCredits,
-  getGenerationQuality,
   getGenerationSize,
   groupConversations,
+  normalizeOptions,
   normalizeConversation,
   type ConversationItem,
   type GenerationOptions,
@@ -31,24 +30,35 @@ type GenerateFormProps = {
   initialId?: string;
   initialTasks: TaskItem[];
   initialBalance: number;
+  initialOptions: GenerationOptions;
+  initialEstimate: number;
+  modelOptions: GenerationModelOption[];
 };
+
+const maxGenerationInputs = 1;
 
 export function GenerateForm(props: GenerateFormProps) {
   const initialChats = props.initialChats;
   const initialId = props.initialId;
   const initialTasks = props.initialTasks;
   const initialBalance = props.initialBalance;
+  const initialOptions = props.initialOptions;
+  const initialEstimate = props.initialEstimate;
+  const modelOptions = props.modelOptions;
 
   const [chats, setChats] = useState(initialChats);
   const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
   const [tasks, setTasks] = useState(initialTasks);
   const [prompt, setPrompt] = useState("");
-  const [options, setOptions] = useState<GenerationOptions>(defaultOptions);
+  const [options, setOptions] = useState<GenerationOptions>(initialOptions);
+  const [estimate, setEstimate] = useState(initialEstimate);
+  const [hasEstimateError, setEstimateError] = useState(false);
   const [inputs, setInputs] = useState<MediaInput[]>([]);
   const [notice, setNotice] = useState<Notice>(null);
   const [balance, setBalance] = useState(initialBalance);
   const [errorCost, setErrorCost] = useState<number | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isEstimating, setEstimating] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -57,14 +67,63 @@ export function GenerateForm(props: GenerateFormProps) {
   const isCreatingChatRef = useRef(false);
 
   const size = getGenerationSize(options);
-  const estimate = estimateOptionsCredits(options);
-  const isCostError = balance < estimate || errorCost === estimate;
+  const isCostError = !isEstimating && (balance < estimate || errorCost === estimate);
   const groups = groupConversations(chats);
   const pendingKey = tasks
     .filter(isPending)
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
   const summary = `${options.resolution} · ${options.ratio} · 预计 ${estimate} 积分`;
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const price = await generationTasksApi.estimatePrice({
+          model: options.model,
+          mode: options.mode,
+          ratio: options.ratio,
+          resolution: options.resolution,
+          quality: options.quality,
+          outputFormat: options.format,
+          imageCount: options.count,
+          size,
+        });
+        if (!isCurrent) {
+          return;
+        }
+
+        setEstimate(price.requiredPoints);
+        setBalance(price.currentPoints);
+        setErrorCost(null);
+        setEstimateError(false);
+      } catch (error) {
+        if (isCurrent) {
+          setEstimateError(true);
+          setNotice({ text: getErrorMessage(error), tone: "error" });
+        }
+      } finally {
+        if (isCurrent) {
+          setEstimating(false);
+        }
+      }
+    }, 200);
+
+    return () => {
+      isCurrent = false;
+      window.clearTimeout(timer);
+    };
+  }, [
+    options.count,
+    options.format,
+    options.mode,
+    options.model,
+    options.quality,
+    options.ratio,
+    options.resolution,
+    size,
+  ]);
 
   useEffect(() => {
     if (!activeId || !pendingKey) return;
@@ -204,13 +263,25 @@ export function GenerateForm(props: GenerateFormProps) {
     setMenuOpen(false);
   }
 
+  function changeOptions(nextOptions: GenerationOptions) {
+    setEstimating(true);
+    setEstimateError(false);
+    setOptions(nextOptions);
+  }
+
   async function addFiles(files: FileList | null) {
     if (!files) return;
 
-    const slots = maxImageFiles - inputs.length;
+    const supportsEdit = modelOptions.some((model) => model.modes.includes("edit"));
+    if (!supportsEdit) {
+      setNotice({ text: "暂无可用图生图模型", tone: "error" });
+      return;
+    }
+
+    const slots = maxGenerationInputs - inputs.length;
     if (slots <= 0) {
       setNotice({
-        text: `最多上传 ${maxImageFiles} 张参考图`,
+        text: `最多上传 ${maxGenerationInputs} 张参考图`,
         tone: "error",
       });
       return;
@@ -233,8 +304,12 @@ export function GenerateForm(props: GenerateFormProps) {
     setNotice(null);
     try {
       const uploaded = await Promise.all(selected.map(uploadFile));
-      setInputs((current) => [...current, ...uploaded].slice(0, maxImageFiles));
-      setOptions((current) => ({ ...current, mode: "edit" }));
+      setInputs((current) => [...current, ...uploaded].slice(0, maxGenerationInputs));
+      setEstimating(true);
+      setOptions((current) => {
+        const nextOptions = { ...current, mode: "edit" as const };
+        return normalizeOptions(nextOptions, modelOptions);
+      });
     } catch (error) {
       showError(error);
     } finally {
@@ -249,6 +324,7 @@ export function GenerateForm(props: GenerateFormProps) {
   async function submit() {
     const text = prompt.trim();
     if (!text) return;
+    if (isEstimating || hasEstimateError) return;
     if (balance < estimate) {
       setErrorCost(estimate);
       setNotice(null);
@@ -289,10 +365,13 @@ export function GenerateForm(props: GenerateFormProps) {
 
       const data = await generationTasksApi.createTask({
         conversationId,
+        model: options.model,
         prompt: text,
         mode: options.mode,
-        quality: getGenerationQuality(options.quality),
+        quality: options.quality,
         outputFormat: options.format,
+        ratio: options.ratio,
+        resolution: options.resolution,
         size,
         imageCount: options.count,
         inputMediaIds: options.mode === "edit" ? inputs.map((item) => item.id) : [],
@@ -365,7 +444,13 @@ export function GenerateForm(props: GenerateFormProps) {
     />
   );
   const settingsPanel = (
-    <GenerationSettings value={options} estimate={estimate} onChange={setOptions} />
+    <GenerationSettings
+      value={options}
+      estimate={estimate}
+      isEstimating={isEstimating}
+      modelOptions={modelOptions}
+      onChange={changeOptions}
+    />
   );
 
   return (
@@ -444,7 +529,8 @@ export function GenerateForm(props: GenerateFormProps) {
             estimate={estimate}
             hasCostError={isCostError}
             notice={notice}
-            isBusy={isSubmitting || isUploading}
+            isBusy={isSubmitting || isUploading || isEstimating}
+            isBlocked={hasEstimateError}
             isCreating={isCreatingChat}
             onPromptChange={setPrompt}
             onFiles={addFiles}

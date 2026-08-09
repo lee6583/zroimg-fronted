@@ -3,7 +3,7 @@ import { getCurrentUserProfile } from "@/server/auth";
 import { jsonError, jsonOk } from "@/server/http";
 import { addAuditLog } from "@/server/bff/mock-store";
 import { getSmtpAdminConfig, updateSmtpSettings } from "@/server/bff/account";
-import { isMockBffEnabled } from "@/server/env";
+import { isJavaBffEnabled } from "@/server/env";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
@@ -19,7 +19,7 @@ const smtpSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  if (!isMockBffEnabled()) {
+  if (isJavaBffEnabled()) {
     return proxyRequestToJavaApi(request, "/admin/settings/smtp", "GET");
   }
 
@@ -33,8 +33,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!isMockBffEnabled()) {
-    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "PUT");
+  if (isJavaBffEnabled()) {
+    return proxyRequestToJavaApi(request, "/admin/settings/smtp", "POST");
   }
 
   const current = await getCurrentUserProfile();
