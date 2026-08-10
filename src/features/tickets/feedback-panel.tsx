@@ -4,6 +4,7 @@ import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ticketsApi } from "@/api/support/tickets";
 import { AppSelect } from "@/components/ui/app-select";
+import { AppPagination } from "@/components/ui/app-pagination";
 import type { TicketItem, TicketListSummary, TicketStatusFilter } from "@/types/feedback";
 import { type FeedbackType, feedbackTypeLabels } from "@/utils/feedback";
 import styles from "./feedback-panel.module.css";
@@ -81,6 +82,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
   const [tickets, setTickets] = useState(props.initialTickets);
   const [total, setTotal] = useState(props.initialTotal);
   const [page, setPage] = useState(props.initialPage);
+  const [pageSize, setPageSize] = useState(props.initialPageSize);
   const [summary, setSummary] = useState(props.initialSummary);
   const [type, setType] = useState<FeedbackType>("generation");
   const [subject, setSubject] = useState("");
@@ -92,23 +94,27 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
   const [isLoading, setLoading] = useState(false);
   const [isFetching, setFetching] = useState(false);
 
-  const pageSize = props.initialPageSize;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const activeTicket = tickets.find((ticket) => ticket.id === activeId);
   const activeAdminMessage = activeTicket ? readLatestAdminMessage(activeTicket) : undefined;
 
-  async function loadTickets(nextPage: number, nextStatus: TicketStatusFilter) {
+  async function loadTickets(
+    nextPage: number,
+    nextStatus: TicketStatusFilter,
+    nextPageSize = pageSize,
+  ) {
     setFetching(true);
     setMessage("");
     try {
       const data = await ticketsApi.listTickets({
         page: nextPage,
-        pageSize,
+        pageSize: nextPageSize,
         status: nextStatus,
       });
       setTickets(data.tickets);
       setTotal(data.total);
       setPage(data.page);
+      setPageSize(data.pageSize);
       setSummary(data.summary);
       setActiveId((currentId) =>
         data.tickets.some((ticket) => ticket.id === currentId) ? currentId : "",
@@ -125,9 +131,16 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
     void loadTickets(1, nextStatus);
   }
 
-  function changePage(nextPage: number) {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === page || isFetching) return;
-    void loadTickets(nextPage, statusFilter);
+  function changePage(nextPage: number, nextPageSize = pageSize) {
+    if (
+      nextPage < 1 ||
+      nextPage > totalPages ||
+      (nextPage === page && nextPageSize === pageSize) ||
+      isFetching
+    ) {
+      return;
+    }
+    void loadTickets(nextPage, statusFilter, nextPageSize);
   }
 
   function addFiles(fileList: FileList | null) {
@@ -279,29 +292,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
             </div>
           )}
 
-          <div className={styles.feedbackPanel__footer}>
-            <span>
-              共 {total} 条，第 {page} / {totalPages} 页
-            </span>
-            <div className={styles.feedbackPanel__pagination}>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={page <= 1 || isFetching}
-                onClick={() => changePage(page - 1)}
-              >
-                上一页
-              </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={page >= totalPages || isFetching}
-                onClick={() => changePage(page + 1)}
-              >
-                下一页
-              </button>
-            </div>
-          </div>
+          <AppPagination current={page} pageSize={pageSize} total={total} onChange={changePage} />
 
           {message ? <p className="text-sm text-muted">{message}</p> : null}
 

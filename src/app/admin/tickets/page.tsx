@@ -1,10 +1,13 @@
 import clsx from "clsx";
 import Link from "next/link";
+import { AppPagination } from "@/components/ui/app-pagination";
 import { listAdminTickets } from "@/server/bff/account";
 import { feedbackTypeLabels } from "@/utils/feedback";
 import styles from "./tickets.module.css";
 
 export const dynamic = "force-dynamic";
+
+const pageSizeOptions = [10, 20, 50];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminTicketsPageProps = {
@@ -18,13 +21,6 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
 
 function formatDate(value: Date) {
   return value.toISOString().slice(0, 16).replace("T", " ");
-}
-
-function href(input: { q?: string; page: number }) {
-  const params = new URLSearchParams();
-  if (input.q) params.set("q", input.q);
-  params.set("page", String(input.page));
-  return `/admin/tickets?${params.toString()}`;
 }
 
 function readStatusLabel(status: string) {
@@ -49,12 +45,14 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const { tickets, total, pageSize } = await listAdminTickets({
+  const requestedPageSize = Number(readParam(params, "pageSize") || 20);
+  const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
+  const result = await listAdminTickets({
     q,
     page,
-    pageSize: 20,
+    pageSize,
   });
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const { tickets, total } = result;
 
   return (
     <div className={styles.adminTickets}>
@@ -115,26 +113,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
         {tickets.length === 0 ? <p className={styles.adminTickets__empty}>没有匹配的反馈</p> : null}
       </section>
 
-      <nav className={styles.adminTickets__pagination}>
-        <Link
-          className={clsx("btn-secondary", page <= 1 && styles.adminTickets__paginationDisabled)}
-          href={href({ q, page: Math.max(1, page - 1) })}
-        >
-          上一页
-        </Link>
-        <p>
-          第 {page} / {totalPages} 页，当前显示 {tickets.length} 条
-        </p>
-        <Link
-          className={clsx(
-            "btn-secondary",
-            page >= totalPages && styles.adminTickets__paginationDisabled,
-          )}
-          href={href({ q, page: Math.min(totalPages, page + 1) })}
-        >
-          下一页
-        </Link>
-      </nav>
+      <AppPagination current={page} pageSize={result.pageSize} total={total} />
     </div>
   );
 }

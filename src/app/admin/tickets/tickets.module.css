@@ -223,27 +223,6 @@
   text-align: center;
 }
 
-.adminTickets__pagination {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  border-top: 1px solid var(--line);
-  background: color-mix(in oklab, var(--background) 94%, transparent);
-  padding: 0.75rem 0;
-  gap: 1rem;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-.adminTickets__paginationDisabled {
-  pointer-events: none;
-  opacity: 0.45;
-}
-
 .adminTickets__detailHeader {
   display: grid;
   gap: 0.55rem;
@@ -369,7 +348,6 @@
 
 @media (max-width: 860px) {
   .adminTickets__header,
-  .adminTickets__pagination,
   .adminTickets__detailTitleRow {
     align-items: stretch;
     flex-direction: column;

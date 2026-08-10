@@ -10,6 +10,7 @@ type AppPaginationProps = {
   current: number;
   pageSize: number;
   total: number;
+  onChange?: (page: number, pageSize: number) => void;
 };
 
 const defaultPageSize = 10;
@@ -19,12 +20,18 @@ export function AppPagination(props: AppPaginationProps) {
   const current = props.current;
   const pageSize = props.pageSize;
   const total = props.total;
+  const onChange = props.onChange;
 
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   function updatePage(nextPage: number, nextPageSize: number) {
+    if (onChange) {
+      onChange(nextPage, nextPageSize);
+      return;
+    }
+
     const params = new URLSearchParams(searchParams.toString());
 
     if (nextPage > 1) {

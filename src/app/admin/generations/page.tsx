@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { AppPagination } from "@/components/ui/app-pagination";
 import { listAdminGenerations } from "@/server/bff/admin";
 
 export const dynamic = "force-dynamic";
 
 const generationStatuses = ["queued", "running", "succeeded", "failed"] as const;
+const pageSizeOptions = [10, 20, 50];
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminGenerationsPageProps = {
   searchParams: SearchParams;
@@ -18,11 +20,11 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toISOString().slice(0, 16).replace("T", " ") : "-";
 }
 
-function href(input: { q?: string; status?: string; page: number }) {
+function href(input: { q?: string; status?: string; page?: number }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
-  params.set("page", String(input.page));
+  if (input.page && input.page > 1) params.set("page", String(input.page));
   return `/admin/generations?${params.toString()}`;
 }
 
@@ -33,7 +35,8 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const pageSize = 20;
+  const requestedPageSize = Number(readParam(params, "pageSize") || 20);
+  const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
   const taskPage = await listAdminGenerations({
     page,
     pageSize,
@@ -44,7 +47,6 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
   });
   const tasks = taskPage.list;
   const total = taskPage.total;
-  const totalPages = Math.max(1, taskPage.pages);
 
   return (
     <div className="grid gap-6">
@@ -105,20 +107,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
         ) : null}
       </section>
 
-      <nav className="flex items-center justify-between">
-        <Link className="btn-secondary" href={href({ q, status, page: Math.max(1, page - 1) })}>
-          上一页
-        </Link>
-        <p className="text-sm text-muted">
-          第 {page} / {totalPages} 页，共 {total} 个任务
-        </p>
-        <Link
-          className="btn-secondary"
-          href={href({ q, status, page: Math.min(totalPages, page + 1) })}
-        >
-          下一页
-        </Link>
-      </nav>
+      <AppPagination current={page} pageSize={pageSize} total={total} />
     </div>
   );
 }
