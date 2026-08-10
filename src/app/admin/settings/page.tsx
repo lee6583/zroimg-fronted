@@ -12,10 +12,29 @@ import {
   getSmtpAdminConfig,
   getVideoConfig,
 } from "@/server/bff/account";
+import styles from "./settings.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminSettingsPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminSettingsPageProps = {
+  searchParams: SearchParams;
+};
+
+const sectionIds = ["payment", "smtp", "video", "checkin", "announcement"] as const;
+type SettingsSection = (typeof sectionIds)[number];
+
+function readParam(params: Record<string, string | string[] | undefined>, key: string) {
+  const value = params[key];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
+  const params = await props.searchParams;
+  const requestedSection = readParam(params, "section");
+  const section = sectionIds.includes(requestedSection as SettingsSection)
+    ? (requestedSection as SettingsSection)
+    : "payment";
   const [videoSettings, smtpSettings, easyPaySettings, checkInSettings, announcementSettings] =
     await Promise.all([
       getVideoConfig(),
@@ -25,17 +44,90 @@ export default async function AdminSettingsPage() {
       getAnnouncementSettings(),
     ]);
 
-  return (
-    <div className="grid gap-6">
-      <section>
-        <h1 className="page-title">系统设置</h1>
-      </section>
+  const sections = [
+    {
+      id: "payment" as const,
+      label: "支付服务",
+      description: easyPaySettings.enabled ? "当前已启用" : "当前已停用",
+      icon: CreditCard,
+    },
+    {
+      id: "smtp" as const,
+      label: "邮件服务",
+      description: smtpSettings.enabled ? "当前已启用" : "当前已停用",
+      icon: Mail,
+    },
+    {
+      id: "video" as const,
+      label: "视频服务",
+      description: videoSettings.enabled ? "当前已启用" : "当前已停用",
+      icon: Video,
+    },
+    {
+      id: "checkin" as const,
+      label: "签到奖励",
+      description: `每日 +${checkInSettings.dailyCredits} 积分`,
+      icon: Gift,
+    },
+    {
+      id: "announcement" as const,
+      label: "站内公告",
+      description: announcementSettings.enabled ? "当前已启用" : "当前已停用",
+      icon: Megaphone,
+    },
+  ];
 
-      <VideoSettingsForm initialSettings={videoSettings} />
-      <SmtpSettingsForm initialSettings={smtpSettings} />
-      <EasyPaySettingsForm initialSettings={easyPaySettings} />
-      <CheckInSettingsForm initialSettings={checkInSettings} />
-      <AnnouncementSettingsForm initialSettings={announcementSettings} />
+  return (
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
+          <h1 className="page-title">系统设置</h1>
+        </div>
+      </header>
+
+      <div className={styles.layout}>
+        <aside className={styles.nav}>
+          <header className={styles.navHeader}>
+            <h2 className={styles.navTitle}>设置分类</h2>
+            <p className={styles.navHint}>选择需要维护的服务模块</p>
+          </header>
+          <nav className={styles.navList} aria-label="系统设置分类">
+            {sections.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.id}
+                  href={`/admin/settings?section=${item.id}`}
+                  className={clsx(styles.navLink, section === item.id && styles.navLinkActive)}
+                  aria-current={section === item.id ? "page" : undefined}
+                >
+                  <span className={styles.navIcon}>
+                    <Icon size={15} aria-hidden="true" />
+                  </span>
+                  <span className={styles.navCopy}>
+                    <strong>{item.label}</strong>
+                    <span>{item.description}</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+        </aside>
+
+        <section className={styles.content}>
+          {section === "payment" ? <EasyPaySettingsForm initialSettings={easyPaySettings} /> : null}
+          {section === "smtp" ? <SmtpSettingsForm initialSettings={smtpSettings} /> : null}
+          {section === "video" ? <VideoSettingsForm initialSettings={videoSettings} /> : null}
+          {section === "checkin" ? <CheckInSettingsForm initialSettings={checkInSettings} /> : null}
+          {section === "announcement" ? (
+            <AnnouncementSettingsForm initialSettings={announcementSettings} />
+          ) : null}
+        </section>
+      </div>
     </div>
   );
 }
+import clsx from "clsx";
+import { CreditCard, Gift, Mail, Megaphone, Video } from "lucide-react";
+import Link from "next/link";
+import workspace from "@/features/admin/admin-workspace.module.css";

@@ -13,7 +13,7 @@ const latestTicketSchema = z.object({
   id: javaIdSchema,
   subject: z.string(),
   status: z.string(),
-  email: z.string().nullable().optional(),
+  username: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 
@@ -84,7 +84,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       ...overview,
       latestTickets: overview.latestTickets.map((ticket) => ({
         ...ticket,
-        email: ticket.email ?? null,
+        username: ticket.username ?? null,
       })),
     };
   }
@@ -112,7 +112,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       id: ticket.id,
       subject: ticket.subject,
       status: ticket.status,
-      email: ticket.userProfile?.user?.email ?? null,
+      username: ticket.userProfile?.username ?? null,
       createdAt: ticket.createdAt.toISOString(),
     })),
   };

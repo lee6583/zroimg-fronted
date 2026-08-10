@@ -113,6 +113,23 @@ export async function addTicketMessage(input: Parameters<typeof mockFeedback.add
   return mockFeedback.addMessage(input);
 }
 
+export async function replyTicketAsAdmin(
+  input: Parameters<typeof mockFeedback.addMessage>[0] & {
+    status: Parameters<typeof mockFeedback.updateStatus>[1];
+  },
+) {
+  if (isJavaBffEnabled()) {
+    return javaFeedback.reply({
+      ticketId: input.ticketId,
+      body: input.body,
+      status: input.status,
+    });
+  }
+
+  await mockFeedback.addMessage(input);
+  return mockFeedback.updateStatus(input.ticketId, input.status);
+}
+
 export async function createTicket(input: Parameters<typeof mockFeedback.createTicket>[0]) {
   if (isJavaBffEnabled()) {
     return javaFeedback.createTicket(input);

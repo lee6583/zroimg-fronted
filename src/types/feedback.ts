@@ -100,7 +100,9 @@ type ReplyTicketResponse = {
   ok?: boolean;
 };
 
-type AdminReplyTicketRequest = ReplyTicketRequest;
+type AdminReplyTicketRequest = ReplyTicketRequest & {
+  status: FeedbackStatus;
+};
 
 type AdminReplyTicketResponse = ReplyTicketResponse;
 

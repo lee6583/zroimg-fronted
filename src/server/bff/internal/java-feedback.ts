@@ -259,13 +259,13 @@ export async function updateStatus(ticketId: string, status: string) {
   );
 }
 
-export async function reply(input: { ticketId: string; body: string }) {
+export async function reply(input: { ticketId: string; body: string; status: FeedbackStatus }) {
   await requestJavaApiData<unknown>(
     `/feedback/admin/tickets/${encodeURIComponent(input.ticketId)}/reply`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: input.body }),
+      body: JSON.stringify({ body: input.body, status: input.status }),
     },
   );
 }

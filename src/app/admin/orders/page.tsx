@@ -1,5 +1,8 @@
+import clsx from "clsx";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { listAdminRechargeOrders } from "@/server/bff/orders";
 import { ReissueButton } from "./reissue-button";
 
@@ -47,12 +50,22 @@ function readStatusLabel(status: string) {
   return orderStatusLabels[status] ?? status;
 }
 
-function href(input: { q?: string; status?: string; page?: number }) {
+function href(input: { q?: string; status?: string; page?: number; pageSize?: number }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
   if (input.page && input.page > 1) params.set("page", String(input.page));
-  return `/admin/orders?${params.toString()}`;
+  if (input.pageSize && input.pageSize !== 20) params.set("pageSize", String(input.pageSize));
+  const query = params.toString();
+  return query ? `/admin/orders?${query}` : "/admin/orders";
+}
+
+function statusClass(status: string) {
+  if (status === "credited" || status === "fulfilled") return workspace.statusSuccess;
+  if (status === "confirming" || status === "paid") return workspace.statusInfo;
+  if (status === "pending") return workspace.statusWarning;
+  if (status === "failed") return workspace.statusDanger;
+  return undefined;
 }
 
 export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
@@ -77,81 +90,134 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
   const total = orderPage.total;
 
   return (
-    <div className="grid gap-6">
-      <section>
-        <h1 className="page-title">订单管理</h1>
-      </section>
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
+          <h1 className="page-title">订单管理</h1>
+        </div>
+      </header>
 
-      <section className="surface rounded-xl p-5">
-        <form className="grid gap-3 md:grid-cols-[1fr_auto]">
-          <input
-            className="field text-sm"
-            name="q"
-            defaultValue={q || ""}
-            placeholder="搜索订单号"
-          />
-          <button className="btn-primary" type="submit">
-            搜索
-          </button>
-          <div className="flex flex-wrap gap-2 md:col-span-2">
-            <Link className={`btn-secondary ${!status ? "bg-soft" : ""}`} href="/admin/orders">
+      <section className={workspace.panel}>
+        <div className={workspace.toolbar}>
+          <form className={workspace.search}>
+            <Search size={15} aria-hidden="true" />
+            <input name="q" defaultValue={q || ""} placeholder="搜索订单号" />
+            {isKnownStatus ? <input type="hidden" name="status" value={status} /> : null}
+            {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
+            <button type="submit">搜索</button>
+          </form>
+
+          <nav className={workspace.filters} aria-label="订单状态筛选">
+            <Link
+              className={!isKnownStatus ? workspace.filterActive : undefined}
+              href={href({ q, pageSize })}
+            >
               全部
             </Link>
             {orderStatuses.map((item) => (
               <Link
                 key={item}
-                className={`btn-secondary ${status === item ? "bg-soft" : ""}`}
-                href={href({ q, status: item, page: 1 })}
+                className={status === item ? workspace.filterActive : undefined}
+                href={href({ q, status: item, page: 1, pageSize })}
               >
                 {readStatusLabel(item)}
               </Link>
             ))}
+          </nav>
+        </div>
+
+        {orders.length > 0 ? (
+          <div className={workspace.tableWrap}>
+            <table className={clsx(workspace.table, workspace.ordersTable)}>
+              <thead>
+                <tr>
+                  <th>订单号</th>
+                  <th>用户</th>
+                  <th>套餐</th>
+                  <th>支付信息</th>
+                  <th>状态</th>
+                  <th>时间</th>
+                  <th aria-label="操作" />
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.orderNo}>
+                    <td data-label="订单号">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.primaryText}>{order.orderNo}</span>
+                        <span className={workspace.secondaryText}>充值订单</span>
+                      </div>
+                    </td>
+                    <td data-label="用户">{order.userText}</td>
+                    <td data-label="套餐">
+                      <div className={workspace.primaryCell}>
+                        <span>{order.packageName}</span>
+                        <span className={workspace.secondaryText}>
+                          {order.credits.toLocaleString("zh-CN")} 积分
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="支付信息">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.numeric}>{order.amountText}</span>
+                        <span className={workspace.secondaryText}>
+                          {order.payChannelText || order.payChannel || "未选择支付渠道"}
+                        </span>
+                        {order.thirdTradeNo ? (
+                          <span className={workspace.monoText} title={order.thirdTradeNo}>
+                            {order.thirdTradeNo}
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td data-label="状态">
+                      <div className={workspace.primaryCell}>
+                        <span className={clsx(workspace.status, statusClass(order.displayStatus))}>
+                          {readStatusLabel(order.displayStatus)}
+                        </span>
+                        {order.creditsErrorReason ? (
+                          <span
+                            className={workspace.secondaryText}
+                            title={order.creditsErrorReason}
+                          >
+                            积分发放失败
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td data-label="时间">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.dateText}>
+                          创建 {formatDateText(order.createTime)}
+                        </span>
+                        <span className={workspace.secondaryText}>
+                          支付 {formatDateText(order.payTime)}
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="操作">
+                      <div className={workspace.rowActions}>
+                        {order.creditsStatus === "failed" ? (
+                          <ReissueButton orderNo={order.orderNo} />
+                        ) : (
+                          <span className={workspace.secondaryText}>—</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </form>
-      </section>
+        ) : (
+          <div className={workspace.empty}>没有匹配的订单</div>
+        )}
 
-      <section className="grid gap-2">
-        {orders.map((order) => (
-          <article key={order.orderNo} className="surface rounded-xl p-4">
-            <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
-              <div>
-                <p className="font-semibold">{order.orderNo}</p>
-                <p className="mt-1 text-sm text-muted">用户 {order.userText}</p>
-              </div>
-              <div>
-                <p>{order.packageName}</p>
-                <p className="mt-1 text-sm text-muted">
-                  {order.credits} 积分 / {order.amountText}
-                </p>
-              </div>
-              <div>
-                <p>{readStatusLabel(order.displayStatus)}</p>
-                <p className="mt-1 text-sm text-muted">
-                  {order.payChannelText || order.payChannel || "—"} /{" "}
-                  {order.thirdTradeNo || "无交易号"}
-                </p>
-                {order.creditsErrorReason ? (
-                  <p className="mt-1 text-sm text-red-600">发放失败：{order.creditsErrorReason}</p>
-                ) : null}
-              </div>
-              <div className="grid gap-2 text-sm text-muted lg:justify-items-end lg:text-right">
-                <div>
-                  <p>创建 {formatDateText(order.createTime)}</p>
-                  <p>支付 {formatDateText(order.payTime)}</p>
-                </div>
-                {order.creditsStatus === "failed" ? (
-                  <ReissueButton orderNo={order.orderNo} />
-                ) : null}
-              </div>
-            </div>
-          </article>
-        ))}
-        {orders.length === 0 ? (
-          <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配订单</p>
-        ) : null}
+        <footer className={workspace.footer}>
+          <AppPagination current={page} pageSize={pageSize} total={total} />
+        </footer>
       </section>
-
-      <AppPagination current={page} pageSize={pageSize} total={total} />
     </div>
   );
 }

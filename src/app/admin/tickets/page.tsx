@@ -1,13 +1,17 @@
 import clsx from "clsx";
+import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { listAdminTickets } from "@/server/bff/account";
 import { feedbackTypeLabels } from "@/utils/feedback";
-import styles from "./tickets.module.css";
+import { TicketTypeFilter } from "./ticket-type-filter";
 
 export const dynamic = "force-dynamic";
 
 const pageSizeOptions = [10, 20, 50];
+const ticketStatuses = ["open", "in_progress", "resolved"] as const;
+const ticketTypes = Object.keys(feedbackTypeLabels) as Array<keyof typeof feedbackTypeLabels>;
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminTicketsPageProps = {
@@ -32,88 +36,159 @@ function readStatusLabel(status: string) {
 }
 
 function readStatusClassName(status: string) {
-  if (status === "open") return styles.adminTickets__statusOpen;
-  if (status === "in_progress") return styles.adminTickets__statusProgress;
-  if (status === "resolved") return styles.adminTickets__statusDone;
-  if (status === "closed") return styles.adminTickets__statusDone;
-  return styles.adminTickets__statusMuted;
+  if (status === "open") return workspace.statusWarning;
+  if (status === "in_progress") return workspace.statusInfo;
+  if (status === "resolved" || status === "closed") return workspace.statusSuccess;
+  return undefined;
+}
+
+function filterHref(input: { q?: string; status?: string; type?: string; pageSize?: number }) {
+  const params = new URLSearchParams();
+  if (input.q) params.set("q", input.q);
+  if (input.status) params.set("status", input.status);
+  if (input.type) params.set("type", input.type);
+  if (input.pageSize && input.pageSize !== 20) params.set("pageSize", String(input.pageSize));
+  const query = params.toString();
+  return query ? `/admin/tickets?${query}` : "/admin/tickets";
 }
 
 export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
-  const searchParams = props.searchParams;
-
-  const params = await searchParams;
+  const params = await props.searchParams;
   const q = readParam(params, "q")?.trim();
+  const status = readParam(params, "status");
+  const type = readParam(params, "type");
+  const statusFilter = ticketStatuses.includes(status as (typeof ticketStatuses)[number])
+    ? status
+    : undefined;
+  const typeFilter = ticketTypes.includes(type as (typeof ticketTypes)[number]) ? type : undefined;
   const page = Math.max(1, Number(readParam(params, "page") || 1));
   const requestedPageSize = Number(readParam(params, "pageSize") || 20);
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
   const result = await listAdminTickets({
     q,
+    status: statusFilter,
+    type: typeFilter,
     page,
     pageSize,
   });
   const { tickets, total } = result;
 
   return (
-    <div className={styles.adminTickets}>
-      <section className={styles.adminTickets__header}>
-        <div>
-          <p className="label">Support Tickets</p>
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
           <h1 className="page-title">意见反馈</h1>
         </div>
-      </section>
+      </header>
 
-      <section className={styles.adminTickets__filters}>
-        <form className={styles.adminTickets__searchForm}>
-          <input
-            className="field text-sm"
-            name="q"
-            defaultValue={q || ""}
-            placeholder="搜索标题、内容或用户邮箱"
-          />
-          <button className="btn-primary" type="submit">
-            搜索
-          </button>
-        </form>
-      </section>
+      <section className={workspace.panel}>
+        <div className={workspace.toolbar}>
+          <div className={workspace.toolbarGroup}>
+            <form className={workspace.search}>
+              <Search size={15} aria-hidden="true" />
+              <input name="q" defaultValue={q || ""} placeholder="搜索反馈主题或用户名" />
+              {statusFilter ? <input type="hidden" name="status" value={statusFilter} /> : null}
+              {typeFilter ? <input type="hidden" name="type" value={typeFilter} /> : null}
+              {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
+              <button type="submit">搜索</button>
+            </form>
 
-      <section className={styles.adminTickets__list}>
-        {tickets.map((ticket) => {
-          const userEmail = ticket.userProfile?.user?.email || "-";
-          const userName = ticket.userProfile?.username || ticket.userProfile?.user?.name || "-";
-          const statusClassName = readStatusClassName(ticket.status);
+            <TicketTypeFilter value={typeFilter} />
+          </div>
 
-          return (
+          <nav className={workspace.filters} aria-label="反馈状态筛选">
             <Link
-              key={ticket.id}
-              className={clsx(styles.adminTickets__card, styles.adminTickets__cardLink)}
-              href={`/admin/tickets/${ticket.id}`}
+              className={!statusFilter ? workspace.filterActive : undefined}
+              href={filterHref({ q, type: typeFilter, pageSize })}
             >
-              <div className={styles.adminTickets__cardHeader}>
-                <div className={styles.adminTickets__cardMain}>
-                  <p className={styles.adminTickets__metaLine}>
-                    <span>{feedbackTypeLabels[ticket.type]}</span>
-                    <span className={clsx(styles.adminTickets__statusText, statusClassName)}>
-                      <span className={styles.adminTickets__statusDot} aria-hidden="true" />
-                      {readStatusLabel(ticket.status)}
-                    </span>
-                  </p>
-                  <h2 className={styles.adminTickets__title}>{ticket.subject}</h2>
-                  <p className={styles.adminTickets__content}>{ticket.content}</p>
-                </div>
-                <div className={styles.adminTickets__sideMeta}>
-                  <span>{formatDate(ticket.createdAt)}</span>
-                  <strong>{userEmail}</strong>
-                  <span>{userName}</span>
-                </div>
-              </div>
+              全部
             </Link>
-          );
-        })}
-        {tickets.length === 0 ? <p className={styles.adminTickets__empty}>没有匹配的反馈</p> : null}
-      </section>
+            {ticketStatuses.map((item) => (
+              <Link
+                key={item}
+                className={statusFilter === item ? workspace.filterActive : undefined}
+                href={filterHref({ q, status: item, type: typeFilter, pageSize })}
+              >
+                {readStatusLabel(item)}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-      <AppPagination current={page} pageSize={result.pageSize} total={total} />
+        {tickets.length > 0 ? (
+          <div className={workspace.tableWrap}>
+            <table className={clsx(workspace.table, workspace.ticketsTable)}>
+              <thead>
+                <tr>
+                  <th>反馈主题</th>
+                  <th>类型</th>
+                  <th>用户</th>
+                  <th>状态</th>
+                  <th>消息</th>
+                  <th>最近更新</th>
+                  <th aria-label="操作" />
+                </tr>
+              </thead>
+              <tbody>
+                {tickets.map((ticket) => {
+                  const userName =
+                    ticket.userProfile?.username || ticket.userProfile?.user?.name || "-";
+
+                  return (
+                    <tr key={ticket.id}>
+                      <td data-label="反馈主题">
+                        <div className={workspace.primaryCell}>
+                          <Link
+                            className={workspace.primaryText}
+                            href={`/admin/tickets/${ticket.id}`}
+                          >
+                            {ticket.subject}
+                          </Link>
+                        </div>
+                      </td>
+                      <td data-label="类型">{feedbackTypeLabels[ticket.type]}</td>
+                      <td data-label="用户">
+                        <span>{userName}</span>
+                      </td>
+                      <td data-label="状态">
+                        <span
+                          className={clsx(workspace.status, readStatusClassName(ticket.status))}
+                        >
+                          {readStatusLabel(ticket.status)}
+                        </span>
+                      </td>
+                      <td data-label="消息" className={workspace.numeric}>
+                        {ticket.messages.length}
+                      </td>
+                      <td data-label="最近更新" className={workspace.dateText}>
+                        {formatDate(ticket.updatedAt)}
+                      </td>
+                      <td data-label="操作">
+                        <div className={workspace.rowActions}>
+                          <Link
+                            className={workspace.iconAction}
+                            href={`/admin/tickets/${ticket.id}`}
+                            title="处理反馈"
+                            aria-label={`处理反馈 ${ticket.subject}`}
+                          >
+                            <Eye size={14} />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className={workspace.empty}>没有匹配的反馈</div>
+        )}
+
+        <footer className={workspace.footer}>
+          <AppPagination current={page} pageSize={result.pageSize} total={total} />
+        </footer>
+      </section>
     </div>
   );
 }

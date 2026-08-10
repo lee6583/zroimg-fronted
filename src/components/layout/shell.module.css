@@ -95,6 +95,10 @@
   padding: 2rem 1rem;
 }
 
+.shell__mainAdmin {
+  background: color-mix(in oklab, var(--soft) 58%, var(--background));
+}
+
 .shell__mainFlush {
   min-height: 0;
   min-width: 0;

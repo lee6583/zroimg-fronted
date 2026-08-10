@@ -1,14 +1,33 @@
 "use client";
 
+import { Braces, CircleCheck, RotateCcw, Save } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminDocsApi } from "@/api/admin/docs";
 import type { DocsConfig } from "@/types/content";
+import styles from "./docs-settings-form.module.css";
 
 type DocsSettingsFormProps = {
   initialDocs: DocsConfig;
   defaultDocs: DocsConfig;
 };
+
+function readStructureStats(value: string) {
+  try {
+    const groups = JSON.parse(value) as unknown;
+    if (!Array.isArray(groups)) return { valid: false, groups: 0, items: 0 };
+
+    const items = groups.reduce((total, group) => {
+      if (!group || typeof group !== "object" || !("items" in group)) return total;
+      const groupItems = (group as { items?: unknown }).items;
+      return total + (Array.isArray(groupItems) ? groupItems.length : 0);
+    }, 0);
+
+    return { valid: true, groups: groups.length, items };
+  } catch {
+    return { valid: false, groups: 0, items: 0 };
+  }
+}
 
 export function DocsSettingsForm(props: DocsSettingsFormProps) {
   const initialDocs = props.initialDocs;
@@ -19,6 +38,7 @@ export function DocsSettingsForm(props: DocsSettingsFormProps) {
   const [groupsJson, setGroupsJson] = useState(JSON.stringify(initialDocs.groups, null, 2));
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+  const structureStats = readStructureStats(groupsJson);
 
   function useDefaultDocs() {
     setTitle(defaultDocs.title);
@@ -61,63 +81,100 @@ export function DocsSettingsForm(props: DocsSettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveDocs}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.editor} onSubmit={saveDocs}>
+      <header className={styles.toolbar}>
         <div>
-          <p className="label">Docs content</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">编辑公开文档</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            文档页左侧导航来自分组和条目标题，右侧正文支持简单
-            Markdown：标题、列表、数字步骤、引用提示和代码块。
-          </p>
+          <h2 className={styles.toolbarTitle}>公开文档内容</h2>
+          <p className={styles.toolbarHint}>保存后，前台文档页会立即读取最新版本</p>
         </div>
-        <button className="btn-secondary" type="button" onClick={useDefaultDocs}>
+        <button className={styles.secondaryButton} type="button" onClick={useDefaultDocs}>
+          <RotateCcw size={14} aria-hidden="true" />
           使用默认模板
         </button>
-      </div>
+      </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2">
-          <span className="label">页面标题</span>
-          <input
-            className="field"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
+      <div className={styles.body}>
+        <aside className={styles.sidebar}>
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>页面信息</h3>
+            <label className={styles.field}>
+              <span className={styles.label}>页面标题</span>
+              <input
+                className={styles.input}
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.label}>页面简介</span>
+              <textarea
+                className={styles.textarea}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </label>
+          </section>
+
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>结构摘要</h3>
+            <div className={styles.summary}>
+              <div className={styles.summaryItem}>
+                <span>文档分组</span>
+                <strong>{structureStats.groups}</strong>
+              </div>
+              <div className={styles.summaryItem}>
+                <span>文档条目</span>
+                <strong>{structureStats.items}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>结构规则</h3>
+            <div className={styles.rules}>
+              <p className={styles.rule}>
+                <CircleCheck size={13} aria-hidden="true" />
+                <span>每个分组需要 `title` 和 `items`。</span>
+              </p>
+              <p className={styles.rule}>
+                <CircleCheck size={13} aria-hidden="true" />
+                <span>每篇文档需要 `id`、`title` 和 `body`。</span>
+              </p>
+              <p className={styles.rule}>
+                <CircleCheck size={13} aria-hidden="true" />
+                <span>正文支持标题、列表、引用和代码块。</span>
+              </p>
+            </div>
+          </section>
+        </aside>
+
+        <section className={styles.editorPane}>
+          <header className={styles.editorPaneHeader}>
+            <h3 className={styles.editorPaneTitle}>
+              <Braces size={14} aria-hidden="true" />
+              文档结构 JSON
+            </h3>
+            <span className={structureStats.valid ? styles.valid : styles.invalid}>
+              {structureStats.valid ? "JSON 格式有效" : "JSON 格式待修正"}
+            </span>
+          </header>
+          <textarea
+            className={styles.jsonEditor}
+            value={groupsJson}
+            onChange={(event) => setGroupsJson(event.target.value)}
+            spellCheck={false}
+            aria-label="文档结构 JSON"
           />
-        </label>
-        <label className="grid gap-2">
-          <span className="label">页面简介</span>
-          <input
-            className="field"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-        </label>
+        </section>
       </div>
 
-      <label className="grid gap-2">
-        <span className="label">文档结构 JSON</span>
-        <textarea
-          className="field min-h-[520px] resize-y font-mono text-sm leading-6"
-          value={groupsJson}
-          onChange={(event) => setGroupsJson(event.target.value)}
-          spellCheck={false}
-        />
-      </label>
-
-      <div className="rounded-xl border border-line bg-soft p-4 text-sm leading-7 text-muted">
-        <p className="font-medium text-foreground">结构示例</p>
-        <p>
-          每个分组需要 `title` 和 `items`；每个条目需要 `id`、`title`、`body`。`id`
-          会用于页面锚点，只能使用字母、数字和短横线。
-        </p>
-      </div>
-
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-
-      <button className="btn-primary w-full md:w-fit" disabled={isSaving}>
-        {isSaving ? "保存中" : "保存文档"}
-      </button>
+      <footer className={styles.footer}>
+        <p className={styles.message}>{message || "请在保存前确认 JSON 格式和文档锚点。"}</p>
+        <button className={styles.primaryButton} disabled={isSaving || !structureStats.valid}>
+          <Save size={14} aria-hidden="true" />
+          {isSaving ? "保存中" : "保存文档"}
+        </button>
+      </footer>
     </form>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { Send } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -50,8 +51,7 @@ export function FeedbackActions(props: FeedbackActionsProps) {
     setLoading(true);
     setMessage("");
     try {
-      await ticketsApi.updateStatus(ticketId, { status });
-      await ticketsApi.adminReply(ticketId, { body });
+      await ticketsApi.adminReply(ticketId, { body, status });
       setBody("");
       setMessage("状态和回复已同步");
       router.refresh();
@@ -88,7 +88,7 @@ export function FeedbackActions(props: FeedbackActionsProps) {
       <label className={styles.feedbackActions__reply}>
         <span>处理说明</span>
         <textarea
-          className="field min-h-20 resize-y text-sm leading-6"
+          className={clsx("field", styles.feedbackActions__textarea)}
           value={body}
           onChange={(event) => setBody(event.target.value)}
           placeholder="输入给用户看的处理说明，用户侧查看弹窗会展示最新一条管理员回复。"
@@ -96,13 +96,18 @@ export function FeedbackActions(props: FeedbackActionsProps) {
       </label>
 
       <div className={styles.feedbackActions__footer}>
-        {message ? <p className={styles.feedbackActions__message}>{message}</p> : null}
+        {message ? (
+          <p className={styles.feedbackActions__message} aria-live="polite">
+            {message}
+          </p>
+        ) : null}
         <button
           type="button"
-          className="btn-primary"
+          className={clsx("btn-primary", styles.feedbackActions__submit)}
           disabled={isLoading || !body.trim()}
           onClick={reply}
         >
+          <Send size={15} aria-hidden="true" />
           发送回复
         </button>
       </div>

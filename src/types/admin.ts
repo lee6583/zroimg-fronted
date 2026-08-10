@@ -180,7 +180,7 @@ type AdminOverviewTicket = {
   id: string;
   subject: string;
   status: string;
-  email: string | null;
+  username: string | null;
   createdAt: string;
 };
 

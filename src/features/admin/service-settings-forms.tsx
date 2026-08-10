@@ -148,11 +148,11 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
           <p className="label">SMTP</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">SMTP 邮件设置</h2>
+          <h2 className={styles.adminForms__title}>SMTP 邮件设置</h2>
           <p className="mt-2 text-sm text-muted">
             用于发送注册验证码和系统邮件，生产环境建议配置真实邮箱服务。
           </p>
@@ -318,11 +318,11 @@ export function VideoSettingsForm(props: VideoSettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
           <p className="label">Video Provider</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">视频服务设置</h2>
+          <h2 className={styles.adminForms__title}>视频服务设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
           {form.isEnabled ? "已启用" : "已停用"}
@@ -453,11 +453,11 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
           <p className="label">Payment</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">易支付设置</h2>
+          <h2 className={styles.adminForms__title}>易支付设置</h2>
           <p className="mt-2 text-sm text-muted">
             配置第三方易支付服务商，用于积分购买订单创建和异步回调验签。
           </p>
@@ -557,11 +557,11 @@ export function CheckInSettingsForm(props: CheckInSettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
           <p className="label">Check-in</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">每日签到设置</h2>
+          <h2 className={styles.adminForms__title}>每日签到设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
           当前每日 +{dailyCredits || 0} 积分

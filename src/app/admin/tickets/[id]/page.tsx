@@ -1,9 +1,9 @@
 import clsx from "clsx";
+import { ArrowLeft, MessageSquareText, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FeedbackActions } from "@/features/admin/feedback-actions";
 import { getAdminTicket } from "@/server/bff/account";
-import { feedbackTypeLabels } from "@/utils/feedback";
 import styles from "../tickets.module.css";
 
 export const dynamic = "force-dynamic";
@@ -37,96 +37,96 @@ export default async function AdminTicketDetailPage(props: AdminTicketDetailPage
   const ticket = await getAdminTicket(id);
   if (!ticket) notFound();
 
-  const userName = ticket.userProfile.username || ticket.userProfile.user?.name || "-";
   const statusClassName = readStatusClassName(ticket.status);
 
   return (
     <div className={styles.adminTickets}>
       <section className={styles.adminTickets__detailHeader}>
-        <Link
-          href="/admin/tickets"
-          className="text-sm font-medium text-muted transition hover:text-foreground"
-        >
-          返回意见反馈列表
+        <Link href="/admin/tickets" className={styles.adminTickets__detailBack}>
+          <ArrowLeft size={15} aria-hidden="true" />
+          返回意见反馈
         </Link>
-        <div className={styles.adminTickets__detailTitleRow}>
-          <div>
-            <h1 className="page-title">工单处理</h1>
-          </div>
-        </div>
+        <h1 className="page-title">工单处理</h1>
       </section>
 
       <section className={styles.adminTickets__workbench}>
-        <article className={styles.adminTickets__ticketCard}>
-          <div className={styles.adminTickets__ticketQuestion}>
-            <div className={styles.adminTickets__detailPanelHead}>
+        <div className={styles.adminTickets__mainColumn}>
+          <article className={styles.adminTickets__ticketCard}>
+            <header className={styles.adminTickets__detailPanelHead}>
               <h2>{ticket.subject}</h2>
-            </div>
+            </header>
 
-            <div className={styles.adminTickets__detailContent}>
-              <p>{ticket.content}</p>
-            </div>
+            <div className={styles.adminTickets__ticketQuestion}>
+              <div className={styles.adminTickets__detailContent}>
+                <p>{ticket.content}</p>
+              </div>
 
-            <div className={styles.adminTickets__attachments}>
-              <p className={styles.adminTickets__sectionTitle}>提交附件</p>
               {ticket.attachments.length ? (
-                <div className={styles.adminTickets__attachmentList}>
-                  {ticket.attachments.map((attachment) => (
-                    <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer">
-                      {attachment.fileName || `附件 ${attachment.id}`}
-                    </a>
-                  ))}
+                <div className={styles.adminTickets__attachments}>
+                  <div className={styles.adminTickets__attachmentList}>
+                    {ticket.attachments.map((attachment) => (
+                      <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer">
+                        <Paperclip size={14} aria-hidden="true" />
+                        {attachment.fileName || `附件 ${attachment.id}`}
+                      </a>
+                    ))}
+                  </div>
                 </div>
+              ) : null}
+            </div>
+          </article>
+
+          <section className={styles.adminTickets__messagesBlock}>
+            <header className={styles.adminTickets__messagesHeader}>
+              <h2>
+                <MessageSquareText size={17} aria-hidden="true" />
+                沟通记录
+              </h2>
+              <span>{ticket.messages.length} 条</span>
+            </header>
+            <div className={styles.adminTickets__messagesList}>
+              {ticket.messages.length ? (
+                ticket.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={clsx(
+                      styles.adminTickets__message,
+                      message.isAdmin && styles.adminTickets__messageAdmin,
+                    )}
+                  >
+                    <span className={styles.adminTickets__messageAvatar}>
+                      {message.isAdmin ? "管" : message.authorProfile.username.slice(0, 1)}
+                    </span>
+                    <div className={styles.adminTickets__messageContent}>
+                      <p className={styles.adminTickets__messageMeta}>
+                        <span>{message.isAdmin ? "管理员" : message.authorProfile.username}</span>
+                        <time dateTime={message.createdAt.toISOString()}>
+                          {formatDate(message.createdAt)}
+                        </time>
+                      </p>
+                      <p className={styles.adminTickets__messageBody}>{message.body}</p>
+                    </div>
+                  </div>
+                ))
               ) : (
-                <p className={styles.adminTickets__emptyMessage}>暂无附件</p>
+                <p className={styles.adminTickets__emptyMessage}>暂无沟通记录</p>
               )}
             </div>
-          </div>
+          </section>
+        </div>
 
-          <div className={styles.adminTickets__ticketMetaBar}>
-            <span>{feedbackTypeLabels[ticket.type]}</span>
+        <aside className={styles.adminTickets__handlingPanel}>
+          <header className={styles.adminTickets__handlingHeader}>
+            <h2>处理工单</h2>
             <span className={clsx(styles.adminTickets__statusText, statusClassName)}>
               <span className={styles.adminTickets__statusDot} aria-hidden="true" />
               {readStatusLabel(ticket.status)}
             </span>
-            <span>提问人：{userName}</span>
-            <span>提交时间：{formatDate(ticket.createdAt)}</span>
-          </div>
-
-          <div className={styles.adminTickets__ticketActions}>
+          </header>
+          <div className={styles.adminTickets__handlingBody}>
             <FeedbackActions ticketId={ticket.id} currentStatus={ticket.status} />
           </div>
-        </article>
-
-        <div className={styles.adminTickets__messagesBlock}>
-          <p className={styles.adminTickets__sectionTitle}>沟通记录</p>
-          <div className={styles.adminTickets__messagesList}>
-            {ticket.messages.length ? (
-              ticket.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={clsx(
-                    styles.adminTickets__message,
-                    message.isAdmin && styles.adminTickets__messageAdmin,
-                  )}
-                >
-                  <span className={styles.adminTickets__messageAvatar}>
-                    {message.isAdmin ? "管" : message.authorProfile.username.slice(0, 1)}
-                  </span>
-                  <div className={styles.adminTickets__messageContent}>
-                    <p className={styles.adminTickets__messageMeta}>
-                      <span>{message.isAdmin ? "管理员" : message.authorProfile.username}</span>
-                      <span>{formatDate(message.createdAt)}</span>
-                    </p>
-                    <p className={styles.adminTickets__messageBody}>{message.body}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className={styles.adminTickets__emptyMessage}>暂无沟通记录</p>
-            )}
-          </div>
-        </div>
+        </aside>
       </section>
     </div>
   );

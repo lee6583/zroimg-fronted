@@ -1,5 +1,7 @@
 "use client";
 
+import clsx from "clsx";
+import { ArrowLeft, KeyRound, Pencil, Plus, Power, Save, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { AppSelect } from "@/components/ui/app-select";
 import { adminModelsApi } from "@/api/admin/models";
@@ -11,6 +13,7 @@ import type {
   AdminGenerationModelPrice,
   SaveAdminGenerationModelRequest,
 } from "@/types/admin";
+import workspace from "./admin-workspace.module.css";
 
 type ModelManagerProps = {
   initialModels: AdminGenerationModel[];
@@ -34,6 +37,8 @@ type ModelForm = {
   paramsText: string;
   pricesText: string;
 };
+
+type ModelEditorTab = "basic" | "capabilities" | "pricing";
 
 function emptyForm(): ModelForm {
   return {
@@ -207,6 +212,8 @@ export function ModelManager(props: ModelManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+  const [isEditorOpen, setEditorOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ModelEditorTab>("basic");
 
   function updateForm(nextForm: Partial<ModelForm>) {
     setForm((currentForm) => {
@@ -232,12 +239,24 @@ export function ModelManager(props: ModelManagerProps) {
     setEditingId(null);
     setForm(emptyForm());
     setMessage("");
+    setActiveTab("basic");
+    setEditorOpen(true);
+  }
+
+  function closeEditor() {
+    setEditingId(null);
+    setForm(emptyForm());
+    setMessage("");
+    setActiveTab("basic");
+    setEditorOpen(false);
   }
 
   function startEdit(model: AdminGenerationModel) {
     setEditingId(model.id);
     setForm(formFromModel(model));
     setMessage("");
+    setActiveTab("basic");
+    setEditorOpen(true);
   }
 
   async function save() {
@@ -295,189 +314,376 @@ export function ModelManager(props: ModelManagerProps) {
     try {
       await adminModelsApi.remove(model.id);
       setModels((currentModels) => currentModels.filter((item) => item.id !== model.id));
-      if (editingId === model.id) startCreate();
+      if (editingId === model.id) closeEditor();
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
   }
 
   return (
-    <div className="grid gap-6">
-      <section className="surface rounded-xl p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold">{editingId ? "编辑模型" : "新建模型"}</h2>
-          {editingId ? (
-            <button className="btn-secondary" type="button" onClick={startCreate}>
-              新建
-            </button>
-          ) : null}
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <input
-            className="field"
-            placeholder="模型编码"
-            value={form.modelCode}
-            onChange={(event) => updateForm({ modelCode: event.target.value })}
-          />
-          <input
-            className="field"
-            placeholder="模型名称"
-            value={form.modelName}
-            onChange={(event) => updateForm({ modelName: event.target.value })}
-          />
-          <input
-            className="field"
-            placeholder="供应商"
-            value={form.provider}
-            onChange={(event) => updateForm({ provider: event.target.value })}
-          />
-          <input
-            className="field"
-            type="url"
-            placeholder="API Base URL，例如 https://api.openai.com/v1"
-            value={form.apiBaseUrl}
-            onChange={(event) => updateForm({ apiBaseUrl: event.target.value })}
-          />
-          <input
-            className="field"
-            type="password"
-            autoComplete="new-password"
-            placeholder={editingId ? "API Key（留空保留当前密钥）" : "API Key"}
-            value={form.apiKey}
-            disabled={form.clearApiKey}
-            onChange={(event) => updateForm({ apiKey: event.target.value })}
-          />
-          <AppSelect
-            value={form.modelType}
-            onChange={(modelType) => updateForm({ modelType })}
-            options={[
-              { value: "image", label: "图片模型" },
-              { value: "video", label: "视频模型" },
-            ]}
-          />
-          <input
-            className="field"
-            placeholder="排序"
-            inputMode="numeric"
-            value={form.sortOrder}
-            onChange={(event) => updateForm({ sortOrder: event.target.value })}
-          />
-          <input
-            className="field"
-            placeholder="价格版本"
-            value={form.priceVersion}
-            onChange={(event) => updateForm({ priceVersion: event.target.value })}
-          />
-          <input
-            className="field md:col-span-2"
-            placeholder="价格变更说明"
-            value={form.priceChangeReason}
-            onChange={(event) => updateForm({ priceChangeReason: event.target.value })}
-          />
-          <input
-            className="field md:col-span-2"
-            placeholder="模型说明"
-            value={form.remark}
-            onChange={(event) => updateForm({ remark: event.target.value })}
-          />
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
-          {editingId ? (
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={form.clearApiKey}
-                onChange={(event) => updateForm({ clearApiKey: event.target.checked, apiKey: "" })}
-              />
-              清除 API Key
-            </label>
-          ) : null}
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.status === "enabled"}
-              onChange={(event) =>
-                updateForm({ status: event.target.checked ? "enabled" : "disabled" })
-              }
-            />
-            启用模型
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.defaultFlag === 1}
-              onChange={(event) => updateForm({ defaultFlag: event.target.checked ? 1 : 0 })}
-            />
-            设为默认
-          </label>
-          <button className="btn-primary" type="button" disabled={isSaving} onClick={save}>
-            {isSaving ? "保存中" : "保存模型"}
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-3">
-          <textarea
-            className="field min-h-24 font-mono text-xs"
-            value={form.modesText}
-            onChange={(event) => updateForm({ modesText: event.target.value })}
-            placeholder="模式配置"
-          />
-          <textarea
-            className="field min-h-40 font-mono text-xs"
-            value={form.paramsText}
-            onChange={(event) => updateForm({ paramsText: event.target.value })}
-            placeholder="参数配置"
-          />
-          <textarea
-            className="field min-h-24 font-mono text-xs"
-            value={form.pricesText}
-            onChange={(event) => updateForm({ pricesText: event.target.value })}
-            placeholder="价格配置"
-          />
-        </div>
-        {message ? <p className="mt-3 text-sm text-danger">{message}</p> : null}
-      </section>
-
-      <section className="grid gap-3">
-        {models.map((model) => (
-          <article key={model.id} className="surface rounded-xl p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h2 className="font-semibold">{model.modelName}</h2>
-                <p className="mt-1 text-sm text-muted">
-                  {model.modelCode} / {model.provider} / {model.modelType}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {model.apiBaseUrl} /{" "}
-                  {model.hasApiKey ? `密钥 ${model.apiKeyPreview}` : "未配置密钥"}
-                </p>
-              </div>
-              <div className="text-right text-sm text-muted">
-                <p>{model.status === "enabled" ? "已启用" : "已停用"}</p>
-                <p>{model.defaultFlag === 1 ? "默认模型" : "非默认"}</p>
-              </div>
+    <div className={workspace.workspace}>
+      {isEditorOpen ? (
+        <section className={workspace.editor}>
+          <header className={workspace.editorHeader}>
+            <div>
+              <button className={workspace.editorBack} type="button" onClick={closeEditor}>
+                <ArrowLeft size={14} aria-hidden="true" />
+                返回模型列表
+              </button>
+              <h1 className={workspace.editorTitle}>{editingId ? "编辑模型" : "新建模型"}</h1>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button className="btn-secondary" type="button" onClick={() => startEdit(model)}>
-                编辑
+            <div className={workspace.editorActions}>
+              <button className={workspace.secondaryAction} type="button" onClick={closeEditor}>
+                取消
               </button>
-              <button className="btn-secondary" type="button" onClick={() => toggleStatus(model)}>
-                {model.status === "enabled" ? "停用" : "启用"}
-              </button>
-              {model.defaultFlag !== 1 ? (
-                <button className="btn-secondary" type="button" onClick={() => setDefault(model)}>
-                  设为默认
-                </button>
-              ) : null}
-              <button className="btn-secondary" type="button" onClick={() => remove(model)}>
-                删除
+              <button
+                className={workspace.primaryAction}
+                type="button"
+                disabled={isSaving}
+                onClick={save}
+              >
+                <Save size={15} aria-hidden="true" />
+                {isSaving ? "保存中" : "保存模型"}
               </button>
             </div>
-          </article>
-        ))}
-      </section>
+          </header>
+
+          <nav className={workspace.tabs} aria-label="模型配置分区">
+            {[
+              { value: "basic" as const, label: "基本信息" },
+              { value: "capabilities" as const, label: "能力参数" },
+              { value: "pricing" as const, label: "计费规则" },
+            ].map((tab) => (
+              <button
+                key={tab.value}
+                className={clsx(workspace.tab, activeTab === tab.value && workspace.tabActive)}
+                type="button"
+                aria-current={activeTab === tab.value ? "page" : undefined}
+                onClick={() => setActiveTab(tab.value)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          {message ? <p className={workspace.inlineMessage}>{message}</p> : null}
+
+          <div className={workspace.editorBody}>
+            {activeTab === "basic" ? (
+              <div className={workspace.formSection}>
+                <div className={workspace.formGrid}>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>模型编码</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="例如 gpt-image-1"
+                      value={form.modelCode}
+                      onChange={(event) => updateForm({ modelCode: event.target.value })}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>模型名称</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="后台与前台展示名称"
+                      value={form.modelName}
+                      onChange={(event) => updateForm({ modelName: event.target.value })}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>供应商</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="例如 openai"
+                      value={form.provider}
+                      onChange={(event) => updateForm({ provider: event.target.value })}
+                    />
+                  </label>
+                  <div className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>模型类型</span>
+                    <AppSelect
+                      value={form.modelType}
+                      onChange={(modelType) => updateForm({ modelType })}
+                      options={[
+                        { value: "image", label: "图片模型" },
+                        { value: "video", label: "视频模型" },
+                      ]}
+                    />
+                  </div>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>API Base URL</span>
+                    <input
+                      className={workspace.formField}
+                      type="url"
+                      placeholder="https://api.openai.com/v1"
+                      value={form.apiBaseUrl}
+                      onChange={(event) => updateForm({ apiBaseUrl: event.target.value })}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>API Key</span>
+                    <input
+                      className={workspace.formField}
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder={editingId ? "留空保留当前密钥" : "新建模型时必须填写"}
+                      value={form.apiKey}
+                      disabled={form.clearApiKey}
+                      onChange={(event) => updateForm({ apiKey: event.target.value })}
+                    />
+                    <span className={workspace.fieldHint}>
+                      密钥仅提交到服务端，页面不会显示完整内容
+                    </span>
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>排序</span>
+                    <input
+                      className={workspace.formField}
+                      inputMode="numeric"
+                      value={form.sortOrder}
+                      onChange={(event) => updateForm({ sortOrder: event.target.value })}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>模型说明</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="模型用途、版本或注意事项"
+                      value={form.remark}
+                      onChange={(event) => updateForm({ remark: event.target.value })}
+                    />
+                  </label>
+                </div>
+
+                <section className={workspace.formSection}>
+                  <h2 className={workspace.formSectionTitle}>发布设置</h2>
+                  <div className={workspace.switches}>
+                    <label className={workspace.switchRow}>
+                      <span>启用模型</span>
+                      <input
+                        type="checkbox"
+                        checked={form.status === "enabled"}
+                        onChange={(event) =>
+                          updateForm({ status: event.target.checked ? "enabled" : "disabled" })
+                        }
+                      />
+                    </label>
+                    <label className={workspace.switchRow}>
+                      <span>设为该类型默认模型</span>
+                      <input
+                        type="checkbox"
+                        checked={form.defaultFlag === 1}
+                        onChange={(event) =>
+                          updateForm({ defaultFlag: event.target.checked ? 1 : 0 })
+                        }
+                      />
+                    </label>
+                    {editingId ? (
+                      <label className={workspace.switchRow}>
+                        <span>清除已保存的 API Key</span>
+                        <input
+                          type="checkbox"
+                          checked={form.clearApiKey}
+                          onChange={(event) =>
+                            updateForm({ clearApiKey: event.target.checked, apiKey: "" })
+                          }
+                        />
+                      </label>
+                    ) : null}
+                  </div>
+                </section>
+              </div>
+            ) : null}
+
+            {activeTab === "capabilities" ? (
+              <div className={workspace.formSection}>
+                <p className={workspace.configCallout}>
+                  每行一条配置，字段使用竖线分隔。保存时会进行格式和数值校验。
+                </p>
+                <label className={workspace.fieldGroup}>
+                  <span className={workspace.fieldLabel}>生成模式</span>
+                  <textarea
+                    className={clsx(workspace.formTextarea, workspace.codeTextarea)}
+                    value={form.modesText}
+                    onChange={(event) => updateForm({ modesText: event.target.value })}
+                    placeholder="模式编码|模式名称|状态|排序"
+                  />
+                  <span className={workspace.fieldHint}>
+                    格式：模式编码 | 模式名称 | 状态 | 排序
+                  </span>
+                </label>
+                <label className={workspace.fieldGroup}>
+                  <span className={workspace.fieldLabel}>能力参数</span>
+                  <textarea
+                    className={clsx(workspace.formTextarea, workspace.codeTextarea)}
+                    value={form.paramsText}
+                    onChange={(event) => updateForm({ paramsText: event.target.value })}
+                    placeholder="模式编码|参数类型|参数值|展示名|默认标记|排序"
+                  />
+                  <span className={workspace.fieldHint}>
+                    格式：模式编码 | 参数类型 | 参数值 | 展示名 | 默认标记 | 排序
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            {activeTab === "pricing" ? (
+              <div className={workspace.formSection}>
+                <div className={workspace.formGrid}>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>价格版本</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="例如 2026-08"
+                      value={form.priceVersion}
+                      onChange={(event) => updateForm({ priceVersion: event.target.value })}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>价格变更说明</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="记录本次价格调整原因"
+                      value={form.priceChangeReason}
+                      onChange={(event) => updateForm({ priceChangeReason: event.target.value })}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>计费规则</span>
+                    <textarea
+                      className={clsx(workspace.formTextarea, workspace.codeTextarea)}
+                      value={form.pricesText}
+                      onChange={(event) => updateForm({ pricesText: event.target.value })}
+                      placeholder="模式编码|分辨率|质量|积分|状态"
+                    />
+                    <span className={workspace.fieldHint}>
+                      格式：模式编码 | 分辨率 | 质量 | 所需积分 | 状态
+                    </span>
+                  </label>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : (
+        <>
+          <header className={workspace.header}>
+            <div className={workspace.headerCopy}>
+              <h1 className="page-title">模型配置</h1>
+            </div>
+            <div className={workspace.headerActions}>
+              <button className={workspace.primaryAction} type="button" onClick={startCreate}>
+                <Plus size={15} aria-hidden="true" />
+                新建模型
+              </button>
+            </div>
+          </header>
+
+          <section className={workspace.panel}>
+            {message ? <p className={workspace.inlineMessage}>{message}</p> : null}
+            {models.length > 0 ? (
+              <div className={workspace.tableWrap}>
+                <table className={clsx(workspace.table, workspace.modelsTable)}>
+                  <thead>
+                    <tr>
+                      <th>模型</th>
+                      <th>供应商</th>
+                      <th>类型</th>
+                      <th>接口与密钥</th>
+                      <th>价格版本</th>
+                      <th>状态</th>
+                      <th aria-label="操作" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {models.map((model) => (
+                      <tr key={model.id}>
+                        <td data-label="模型">
+                          <div className={workspace.primaryCell}>
+                            <span className={workspace.primaryText}>{model.modelName}</span>
+                            <span className={workspace.monoText}>{model.modelCode}</span>
+                            {model.defaultFlag === 1 ? (
+                              <span className={workspace.badge}>默认模型</span>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td data-label="供应商">{model.provider}</td>
+                        <td data-label="类型">{model.modelType === "image" ? "图片" : "视频"}</td>
+                        <td data-label="接口与密钥">
+                          <div className={workspace.primaryCell}>
+                            <span className={workspace.truncate} title={model.apiBaseUrl}>
+                              {model.apiBaseUrl}
+                            </span>
+                            <span className={workspace.secondaryText}>
+                              <KeyRound size={11} aria-hidden="true" />{" "}
+                              {model.hasApiKey ? model.apiKeyPreview : "未配置密钥"}
+                            </span>
+                          </div>
+                        </td>
+                        <td data-label="价格版本">{model.priceVersion || "—"}</td>
+                        <td data-label="状态">
+                          <span
+                            className={clsx(
+                              workspace.status,
+                              model.status === "enabled" && workspace.statusSuccess,
+                            )}
+                          >
+                            {model.status === "enabled" ? "已启用" : "已停用"}
+                          </span>
+                        </td>
+                        <td data-label="操作">
+                          <div className={workspace.rowActions}>
+                            <button
+                              className={workspace.iconAction}
+                              type="button"
+                              title="编辑模型"
+                              aria-label={`编辑模型 ${model.modelName}`}
+                              onClick={() => startEdit(model)}
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              className={workspace.iconAction}
+                              type="button"
+                              title={model.status === "enabled" ? "停用模型" : "启用模型"}
+                              aria-label={`${model.status === "enabled" ? "停用" : "启用"}模型 ${model.modelName}`}
+                              onClick={() => toggleStatus(model)}
+                            >
+                              <Power size={14} />
+                            </button>
+                            {model.defaultFlag !== 1 ? (
+                              <button
+                                className={workspace.iconAction}
+                                type="button"
+                                title="设为默认模型"
+                                aria-label={`设 ${model.modelName} 为默认模型`}
+                                onClick={() => setDefault(model)}
+                              >
+                                <Star size={14} />
+                              </button>
+                            ) : null}
+                            <button
+                              className={clsx(workspace.iconAction, workspace.textActionDanger)}
+                              type="button"
+                              title="删除模型"
+                              aria-label={`删除模型 ${model.modelName}`}
+                              onClick={() => remove(model)}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className={workspace.empty}>还没有配置生成模型</div>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }

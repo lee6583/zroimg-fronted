@@ -1,23 +1,360 @@
-.adminOverview__emptyFeedback {
-  border: 1px dashed var(--line);
-  border-radius: 0.5rem;
-  background: var(--soft);
-  padding: 1.5rem;
-  color: var(--muted);
-  font-size: 0.875rem;
-  text-align: center;
+.overview {
+  display: flex;
+  width: 100%;
+  max-width: 100rem;
+  margin: 0 auto;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.adminOverview__feedbackItem {
-  display: block;
+.header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.health {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.health::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #16a34a;
+  content: "";
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 0.5rem;
-  padding: 0.75rem;
-  color: var(--foreground);
-  text-decoration: none;
-  transition: background-color 0.15s ease;
+  background: var(--panel);
 }
 
-.adminOverview__feedbackItem:hover {
+.metric {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  color: inherit;
+  padding: 1rem;
+  text-decoration: none;
+}
+
+.metric + .metric {
+  border-left: 1px solid var(--line);
+}
+
+.metric:hover {
+  background: color-mix(in oklab, var(--soft) 65%, var(--panel));
+}
+
+.metricHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.metricIcon {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.375rem;
   background: var(--soft);
+  color: var(--foreground);
+}
+
+.metricValue {
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metricHint {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 0.7fr);
+  gap: 1.25rem;
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.panelHeader {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.8rem 1rem;
+}
+
+.panelTitle {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.panelSubtitle {
+  margin-top: 0.18rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.panelLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.panelLink:hover {
+  color: var(--foreground);
+}
+
+.ticketList,
+.quickLinks,
+.attentionList {
+  display: grid;
+}
+
+.ticketItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  color: inherit;
+  padding: 0.9rem 1rem;
+  text-decoration: none;
+}
+
+.ticketItem + .ticketItem,
+.quickLink + .quickLink,
+.attentionItem + .attentionItem {
+  border-top: 1px solid var(--line);
+}
+
+.ticketItem:hover,
+.quickLink:hover {
+  background: color-mix(in oklab, var(--soft) 60%, var(--panel));
+}
+
+.ticketMain {
+  display: grid;
+  min-width: 0;
+  gap: 0.28rem;
+}
+
+.ticketTitle {
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticketMeta,
+.ticketTime {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.ticketSide {
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: 0.25rem;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.status::before {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.statusOpen {
+  color: #b45309;
+}
+
+.statusProgress {
+  color: #1d4ed8;
+}
+
+.statusDone {
+  color: #15803d;
+}
+
+.sideStack {
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+}
+
+.attentionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.attentionLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.attentionValue {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.attentionDanger {
+  color: var(--danger);
+}
+
+.quickLink {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  gap: 0.7rem;
+  color: inherit;
+  padding: 0.7rem 1rem;
+  text-decoration: none;
+}
+
+.quickIcon {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.375rem;
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.quickCopy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.1rem;
+}
+
+.quickCopy strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.quickCopy span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.empty {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 1180px) {
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .metric:nth-child(4),
+  .metric:nth-child(5) {
+    border-top: 1px solid var(--line);
+  }
+
+  .metric:nth-child(4) {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .contentGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric:nth-child(3),
+  .metric:nth-child(5) {
+    border-left: 0;
+  }
+
+  .metric:nth-child(3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .ticketItem {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ticketSide {
+    justify-items: start;
+  }
+}
+
+:global(:root[data-theme="dark"]) .health::before,
+:global(:root[data-theme="dark"]) .statusDone {
+  color: #4ade80;
+  background: #4ade80;
+}
+
+:global(:root[data-theme="dark"]) .statusOpen {
+  color: #fbbf24;
+}
+
+:global(:root[data-theme="dark"]) .statusProgress {
+  color: #60a5fa;
 }

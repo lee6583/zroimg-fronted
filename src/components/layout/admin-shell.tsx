@@ -20,7 +20,7 @@ export async function AdminShell(props: AdminShellProps) {
               <AdminNav />
             </div>
           </aside>
-          <main className={styles.shell__main}>{children}</main>
+          <main className={`${styles.shell__main} ${styles.shell__mainAdmin}`}>{children}</main>
         </div>
       </div>
     </>

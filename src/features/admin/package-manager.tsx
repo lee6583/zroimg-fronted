@@ -1,9 +1,12 @@
 "use client";
 
+import clsx from "clsx";
+import { Pencil, Plus, Power, Save, Star, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { adminPackagesApi } from "@/api/admin/packages";
 import { getErrorMessage } from "@/utils/error";
 import type { AdminCreditPackageInput, CreditPackage } from "@/types/orders";
+import workspace from "./admin-workspace.module.css";
 
 type PackageManagerProps = {
   initialPackages: CreditPackage[];
@@ -92,18 +95,28 @@ export function PackageManager(props: PackageManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   function updateForm<Key extends keyof PackageForm>(key: Key, value: PackageForm[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function startCreate() {
+    setEditingId(null);
+    setForm(emptyForm());
+    setMessage("");
+    setDrawerOpen(true);
   }
 
   function startEdit(packageItem: CreditPackage) {
     setEditingId(packageItem.id);
     setForm(formFromPackage(packageItem));
     setMessage("");
+    setDrawerOpen(true);
   }
 
-  function cancelEdit() {
+  function closeDrawer() {
+    setDrawerOpen(false);
     setEditingId(null);
     setForm(emptyForm());
     setMessage("");
@@ -132,8 +145,10 @@ export function PackageManager(props: PackageManagerProps) {
         setPackages((current) => [...current, data.package].sort((a, b) => a.sort - b.sort));
       }
 
-      setMessage("保存成功");
-      cancelEdit();
+      setDrawerOpen(false);
+      setEditingId(null);
+      setForm(emptyForm());
+      setMessage(editingId ? "套餐修改已保存" : "新套餐已创建");
     } catch (error) {
       setMessage(getErrorMessage(error));
     } finally {
@@ -197,7 +212,7 @@ export function PackageManager(props: PackageManagerProps) {
       await adminPackagesApi.remove(packageItem.id);
       setPackages((current) => current.filter((item) => item.id !== packageItem.id));
       if (editingId === packageItem.id) {
-        cancelEdit();
+        closeDrawer();
       }
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -205,155 +220,277 @@ export function PackageManager(props: PackageManagerProps) {
   }
 
   return (
-    <div className="grid gap-6">
-      <section className="surface rounded-xl p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold">{editingId ? "编辑积分套餐" : "新建积分套餐"}</h2>
-            <p className="mt-1 text-sm text-muted">套餐金额以元填写，保存时转换为后端要求的分。</p>
-          </div>
-          {editingId ? (
-            <button className="btn-secondary" type="button" onClick={cancelEdit}>
-              取消编辑
-            </button>
-          ) : null}
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
+          <h1 className="page-title">积分套餐</h1>
         </div>
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <input
-            className="field"
-            placeholder="套餐编码"
-            value={form.code}
-            onChange={(event) => updateForm("code", event.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="套餐名称"
-            value={form.name}
-            onChange={(event) => updateForm("name", event.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="金额，例如 79.90"
-            inputMode="decimal"
-            value={form.amount}
-            onChange={(event) => updateForm("amount", event.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="积分数量"
-            type="number"
-            min="1"
-            value={form.credits}
-            onChange={(event) => updateForm("credits", event.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="排序值"
-            type="number"
-            value={form.sort}
-            onChange={(event) => updateForm("sort", event.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="套餐说明"
-            value={form.description}
-            onChange={(event) => updateForm("description", event.target.value)}
-          />
-          <textarea
-            className="field min-h-24 md:col-span-2"
-            placeholder="套餐亮点，每行一条"
-            value={form.highlights}
-            onChange={(event) => updateForm("highlights", event.target.value)}
-          />
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.enabled}
-              onChange={(event) => updateForm("enabled", event.target.checked)}
-            />
-            启用套餐
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.recommended}
-              onChange={(event) => updateForm("recommended", event.target.checked)}
-            />
-            设为推荐
-          </label>
-          <button className="btn-primary" type="button" disabled={isSaving} onClick={savePackage}>
-            {isSaving ? "保存中..." : editingId ? "保存修改" : "创建套餐"}
+        <div className={workspace.headerActions}>
+          <button className={workspace.primaryAction} type="button" onClick={startCreate}>
+            <Plus size={15} aria-hidden="true" />
+            新建套餐
           </button>
         </div>
-        {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
+      </header>
+
+      <section className={workspace.panel}>
+        {message ? <p className={workspace.inlineMessage}>{message}</p> : null}
+        {packages.length > 0 ? (
+          <div className={workspace.tableWrap}>
+            <table className={clsx(workspace.table, workspace.packagesTable)}>
+              <thead>
+                <tr>
+                  <th>套餐</th>
+                  <th>价格</th>
+                  <th>积分</th>
+                  <th>状态</th>
+                  <th>推荐</th>
+                  <th>排序</th>
+                  <th aria-label="操作" />
+                </tr>
+              </thead>
+              <tbody>
+                {packages.map((packageItem) => (
+                  <tr key={packageItem.id}>
+                    <td data-label="套餐">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.primaryText}>{packageItem.name}</span>
+                        <span className={workspace.monoText}>{packageItem.code}</span>
+                        <span className={workspace.secondaryText}>{packageItem.description}</span>
+                      </div>
+                    </td>
+                    <td data-label="价格" className={workspace.numeric}>
+                      {packageItem.amountText}
+                    </td>
+                    <td data-label="积分" className={workspace.numeric}>
+                      {packageItem.credits.toLocaleString("zh-CN")}
+                    </td>
+                    <td data-label="状态">
+                      <span
+                        className={clsx(
+                          workspace.status,
+                          packageItem.enabled && workspace.statusSuccess,
+                        )}
+                      >
+                        {packageItem.enabled ? "已启用" : "已停用"}
+                      </span>
+                    </td>
+                    <td data-label="推荐">
+                      {packageItem.recommended ? (
+                        <span className={workspace.badge}>推荐</span>
+                      ) : (
+                        <span className={workspace.secondaryText}>—</span>
+                      )}
+                    </td>
+                    <td data-label="排序">
+                      <input
+                        className={workspace.sortInput}
+                        aria-label={`${packageItem.name}排序`}
+                        type="number"
+                        defaultValue={packageItem.sort}
+                        onBlur={(event) => updateSort(packageItem, event.target.value)}
+                      />
+                    </td>
+                    <td data-label="操作">
+                      <div className={workspace.rowActions}>
+                        <button
+                          className={workspace.iconAction}
+                          type="button"
+                          title="编辑套餐"
+                          aria-label={`编辑套餐 ${packageItem.name}`}
+                          onClick={() => startEdit(packageItem)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          className={workspace.iconAction}
+                          type="button"
+                          title={packageItem.enabled ? "停用套餐" : "启用套餐"}
+                          aria-label={`${packageItem.enabled ? "停用" : "启用"}套餐 ${packageItem.name}`}
+                          onClick={() => toggleStatus(packageItem)}
+                        >
+                          <Power size={14} />
+                        </button>
+                        <button
+                          className={workspace.iconAction}
+                          type="button"
+                          title={packageItem.recommended ? "取消推荐" : "设为推荐"}
+                          aria-label={`${packageItem.recommended ? "取消推荐" : "设为推荐"} ${packageItem.name}`}
+                          onClick={() => toggleRecommend(packageItem)}
+                        >
+                          <Star
+                            size={14}
+                            fill={packageItem.recommended ? "currentColor" : "none"}
+                          />
+                        </button>
+                        <button
+                          className={clsx(workspace.iconAction, workspace.textActionDanger)}
+                          type="button"
+                          title="删除套餐"
+                          aria-label={`删除套餐 ${packageItem.name}`}
+                          onClick={() => deletePackage(packageItem)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className={workspace.empty}>还没有积分套餐</div>
+        )}
       </section>
 
-      <section className="grid gap-3">
-        {packages.map((packageItem) => (
-          <article key={packageItem.id} className="surface rounded-xl p-4">
-            <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr_1fr_auto] lg:items-center">
+      {isDrawerOpen ? (
+        <>
+          <button
+            type="button"
+            className={workspace.drawerBackdrop}
+            aria-label="关闭套餐编辑"
+            onClick={closeDrawer}
+          />
+          <aside
+            className={workspace.drawer}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="package-editor-title"
+          >
+            <header className={workspace.drawerHeader}>
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-semibold">{packageItem.name}</h2>
-                  <span className="text-xs text-muted">{packageItem.code}</span>
-                  {packageItem.recommended ? (
-                    <span className="text-xs text-muted">推荐</span>
-                  ) : null}
+                <h2 id="package-editor-title" className={workspace.drawerTitle}>
+                  {editingId ? "编辑积分套餐" : "新建积分套餐"}
+                </h2>
+                <p className={workspace.subtitle}>金额以元填写，保存时自动转换为分</p>
+              </div>
+              <button
+                className={workspace.iconAction}
+                type="button"
+                aria-label="关闭"
+                title="关闭"
+                onClick={closeDrawer}
+              >
+                <X size={16} />
+              </button>
+            </header>
+
+            <div className={workspace.drawerBody}>
+              <section className={workspace.formSection}>
+                <h3 className={workspace.formSectionTitle}>基本信息</h3>
+                <div className={workspace.formGrid}>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>套餐编码</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="例如 PRO_500"
+                      value={form.code}
+                      onChange={(event) => updateForm("code", event.target.value)}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>套餐名称</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="例如 创作进阶"
+                      value={form.name}
+                      onChange={(event) => updateForm("name", event.target.value)}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>销售价格（元）</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="79.90"
+                      inputMode="decimal"
+                      value={form.amount}
+                      onChange={(event) => updateForm("amount", event.target.value)}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>积分数量</span>
+                    <input
+                      className={workspace.formField}
+                      type="number"
+                      min="1"
+                      value={form.credits}
+                      onChange={(event) => updateForm("credits", event.target.value)}
+                    />
+                  </label>
+                  <label className={workspace.fieldGroup}>
+                    <span className={workspace.fieldLabel}>排序</span>
+                    <input
+                      className={workspace.formField}
+                      type="number"
+                      value={form.sort}
+                      onChange={(event) => updateForm("sort", event.target.value)}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>套餐说明</span>
+                    <input
+                      className={workspace.formField}
+                      placeholder="面向用户展示的简短说明"
+                      value={form.description}
+                      onChange={(event) => updateForm("description", event.target.value)}
+                    />
+                  </label>
+                  <label className={clsx(workspace.fieldGroup, workspace.fieldGroupFull)}>
+                    <span className={workspace.fieldLabel}>套餐亮点</span>
+                    <textarea
+                      className={workspace.formTextarea}
+                      placeholder="每行填写一条亮点"
+                      value={form.highlights}
+                      onChange={(event) => updateForm("highlights", event.target.value)}
+                    />
+                    <span className={workspace.fieldHint}>每行一条，将展示在前台套餐卡片中</span>
+                  </label>
                 </div>
-                <p className="mt-1 text-sm text-muted">{packageItem.description}</p>
-              </div>
-              <div>
-                <p className="font-medium">{packageItem.amountText}</p>
-                <p className="mt-1 text-sm text-muted">{packageItem.credits} 积分</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted">排序</span>
-                <input
-                  className="field w-20"
-                  type="number"
-                  defaultValue={packageItem.sort}
-                  onBlur={(event) => updateSort(packageItem, event.target.value)}
-                />
-                <span className="text-muted">{packageItem.enabled ? "已启用" : "已停用"}</span>
-              </div>
-              <div className="flex flex-wrap gap-2 lg:justify-end">
-                <button
-                  className="btn-secondary"
-                  type="button"
-                  onClick={() => startEdit(packageItem)}
-                >
-                  编辑
-                </button>
-                <button
-                  className="btn-secondary"
-                  type="button"
-                  onClick={() => toggleStatus(packageItem)}
-                >
-                  {packageItem.enabled ? "停用" : "启用"}
-                </button>
-                <button
-                  className="btn-secondary"
-                  type="button"
-                  onClick={() => toggleRecommend(packageItem)}
-                >
-                  {packageItem.recommended ? "取消推荐" : "设为推荐"}
-                </button>
-                <button
-                  className="btn-secondary"
-                  type="button"
-                  onClick={() => deletePackage(packageItem)}
-                >
-                  删除
-                </button>
-              </div>
+              </section>
+
+              <section className={workspace.formSection}>
+                <h3 className={workspace.formSectionTitle}>发布设置</h3>
+                <div className={workspace.switches}>
+                  <label className={workspace.switchRow}>
+                    <span>启用套餐</span>
+                    <input
+                      type="checkbox"
+                      checked={form.enabled}
+                      onChange={(event) => updateForm("enabled", event.target.checked)}
+                    />
+                  </label>
+                  <label className={workspace.switchRow}>
+                    <span>设为推荐套餐</span>
+                    <input
+                      type="checkbox"
+                      checked={form.recommended}
+                      onChange={(event) => updateForm("recommended", event.target.checked)}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              {message ? <p className={workspace.inlineAlert}>{message}</p> : null}
             </div>
-          </article>
-        ))}
-      </section>
+
+            <footer className={workspace.drawerFooter}>
+              <button className={workspace.secondaryAction} type="button" onClick={closeDrawer}>
+                取消
+              </button>
+              <button
+                className={workspace.primaryAction}
+                type="button"
+                disabled={isSaving}
+                onClick={savePackage}
+              >
+                <Save size={15} aria-hidden="true" />
+                {isSaving ? "保存中..." : editingId ? "保存修改" : "创建套餐"}
+              </button>
+            </footer>
+          </aside>
+        </>
+      ) : null}
     </div>
   );
 }

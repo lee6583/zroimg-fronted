@@ -52,11 +52,11 @@ export function AnnouncementSettingsForm(props: AnnouncementSettingsFormProps) {
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
           <p className="label">Announcement</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">站内公告设置</h2>
+          <h2 className={styles.adminForms__title}>站内公告设置</h2>
           <p className="mt-2 text-sm text-muted">
             设置后，用户可通过顶部铃铛查看公告；启用时登录后会自动弹出公告。
           </p>

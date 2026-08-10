@@ -52,7 +52,6 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
       <header className={styles.usersPage__heading}>
         <div>
           <h1 className="page-title">用户管理</h1>
-          <p>共 {userPage.total.toLocaleString("zh-CN")} 位用户</p>
         </div>
       </header>
 
