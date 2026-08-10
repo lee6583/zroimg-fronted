@@ -408,7 +408,6 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
     apiBase: initialSettings.apiBase ?? "",
     pid: initialSettings.pid ?? "",
     key: "",
-    shouldClearKey: false,
     notifyUrl: initialSettings.notifyUrl,
     returnUrl: initialSettings.returnUrl,
   });
@@ -436,7 +435,7 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
         apiBase: form.apiBase,
         pid: form.pid,
         key: form.key,
-        clearKey: form.shouldClearKey,
+        clearKey: false,
         notifyUrl: form.notifyUrl,
         returnUrl: form.returnUrl,
       });
@@ -444,7 +443,6 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
       setSettings(data.settings);
       updateForm({
         key: "",
-        shouldClearKey: false,
       });
       setMessage("易支付配置已保存，新订单会使用这套配置。");
     } catch (error) {
@@ -478,7 +476,6 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
             onChange={(event) => updateForm({ apiBase: event.target.value })}
             placeholder="https://pay.example.com"
           />
-          <span className="text-xs text-muted">填写易支付服务根地址，不需要带 `submit.php`。</span>
         </label>
         <label className="grid gap-2">
           <span className="label">商户 PID</span>
@@ -498,14 +495,7 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
             value={form.key}
             onChange={(event) => updateForm({ key: event.target.value })}
             placeholder={settings.hasKey ? "留空表示保留当前密钥" : "请输入易支付商户密钥"}
-            disabled={form.shouldClearKey}
           />
-          <span className="text-xs text-muted">
-            当前状态：
-            {settings.hasKey
-              ? `已配置（${settings.keyPreview}，来源：${sourceLabels[settings.keySource]}）`
-              : "未配置"}
-          </span>
         </label>
         <label className="grid gap-2">
           <span className="label">异步回调地址</span>
@@ -524,15 +514,6 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
           />
         </label>
       </div>
-
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input
-          type="checkbox"
-          checked={form.shouldClearKey}
-          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
-        />
-        清空数据库里保存的易支付密钥
-      </label>
 
       <Toggle
         checked={form.isEnabled}
