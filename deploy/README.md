@@ -88,10 +88,6 @@ docker compose version
 
 ```dotenv
 FRONTEND_IMAGE=ghcr.io/lee6583/zroimg-frontend
-BFF_MODE=java
-AUTH_BFF_MODE=java
-PAYMENT_BFF_MODE=java
-ALLOW_MOCK_BFF=false
 JAVA_API_BASE_URL=https://api-dev.zroimg.com
 ```
 
@@ -104,10 +100,7 @@ chmod 600 /opt/zroimg/frontend-image-dev/.env
 说明：
 
 - `FRONTEND_IMAGE`：GHCR 中的镜像名称。
-- `BFF_MODE=java`：业务页面和 Route Handler 使用 Java 后端真实数据。
-- `AUTH_BFF_MODE=java`：认证请求转发到当前开发环境 Java 后端。
-- `PAYMENT_BFF_MODE=java`：积分套餐、充值订单和支付请求转发到 Java 后端。
-- `ALLOW_MOCK_BFF=false`：生产运行模式禁止读取进程内 mock 数据。
+- 所有业务、认证和支付请求固定转发到 `JAVA_API_BASE_URL`，不再提供 Mock 运行模式。
 - `JAVA_API_BASE_URL`：容器能够访问的 Java 后端地址。不能写 `localhost`，因为容器里的 localhost 指前端容器自身。
 
 ## 5. 允许服务器读取 GHCR
