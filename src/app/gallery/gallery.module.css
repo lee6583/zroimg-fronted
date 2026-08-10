@@ -1,4 +1,7 @@
 .gallery {
+  display: flex;
+  min-height: calc(100dvh - 8rem);
+  flex-direction: column;
   width: min(100%, 88rem);
   margin: 0 auto;
   padding: 2.75rem 1rem 4rem;

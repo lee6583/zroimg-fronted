@@ -1,7 +1,15 @@
 .appPagination {
   display: flex;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  align-items: center;
   justify-content: flex-end;
-  margin-top: 1rem;
+  min-height: 4rem;
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  background: color-mix(in oklab, var(--background) 94%, transparent);
+  padding: 0.75rem 0;
 }
 
 .appPagination :global(.ant-pagination) {
@@ -92,5 +100,6 @@
 @media (max-width: 640px) {
   .appPagination {
     justify-content: center;
+    overflow-x: auto;
   }
 }

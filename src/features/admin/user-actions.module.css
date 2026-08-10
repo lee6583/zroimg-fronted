@@ -1,0 +1,218 @@
+.userActions__iconButton {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.userActions__iconButton:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.userActions__iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.userActions__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 46%);
+  padding: 1rem;
+}
+
+.userActions__dialog {
+  width: min(42rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  overflow: hidden auto;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  box-shadow: 0 24px 72px rgb(0 0 0 / 24%);
+}
+
+.userActions__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  padding: 1rem 1.15rem;
+}
+
+.userActions__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.userActions__avatar {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.userActions__identity div {
+  min-width: 0;
+}
+
+.userActions__identity h2 {
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userActions__identity p {
+  overflow: hidden;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userActions__body {
+  padding: 0 1.15rem;
+}
+
+.userActions__section,
+.userActions__statusSection {
+  padding: 1.15rem 0;
+}
+
+.userActions__section + .userActions__section,
+.userActions__statusSection {
+  border-top: 1px solid var(--line);
+}
+
+.userActions__sectionHeading,
+.userActions__statusSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.userActions__section h3,
+.userActions__statusSection h3 {
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.userActions__section p,
+.userActions__statusSection p {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.userActions__fields {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.userActions__fields label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.userActions__fields label > span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.userActions__statusButton {
+  min-height: 2.35rem;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--foreground);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.userActions__statusButton:hover {
+  background: var(--soft);
+}
+
+.userActions__statusButtonDanger {
+  border-color: color-mix(in oklab, var(--danger) 36%, var(--line));
+  color: var(--danger);
+}
+
+.userActions__statusButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.userActions__message {
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  color: #15803d;
+  padding: 0.75rem 1.15rem;
+  font-size: 0.78rem;
+}
+
+.userActions__messageError {
+  color: var(--danger);
+}
+
+:global(:root[data-theme="dark"]) .userActions__message {
+  color: #4ade80;
+}
+
+:global(:root[data-theme="dark"]) .userActions__messageError {
+  color: var(--danger);
+}
+
+@media (max-width: 600px) {
+  .userActions__sectionHeading,
+  .userActions__statusSection {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .userActions__sectionHeading button,
+  .userActions__statusButton {
+    width: 100%;
+  }
+
+  .userActions__fields {
+    grid-template-columns: 1fr;
+  }
+}

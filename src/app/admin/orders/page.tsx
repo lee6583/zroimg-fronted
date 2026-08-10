@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { AdminShell } from "@/components/layout/admin-shell";
-import { requireAdmin } from "@/server/auth";
 import { listAdminRechargeOrders } from "@/server/bff/orders";
 import { ReissueButton } from "./reissue-button";
 
@@ -59,7 +57,6 @@ function href(input: { q?: string; status?: string; page: number }) {
 export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
   const searchParams = props.searchParams;
 
-  await requireAdmin();
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
@@ -78,98 +75,94 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
   const totalPages = Math.max(1, orderPage.pages);
 
   return (
-    <AdminShell active="orders">
-      <div className="grid gap-6">
-        <section>
-          <h1 className="page-title">订单管理</h1>
-        </section>
+    <div className="grid gap-6">
+      <section>
+        <h1 className="page-title">订单管理</h1>
+      </section>
 
-        <section className="surface rounded-xl p-5">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto]">
-            <input
-              className="field text-sm"
-              name="q"
-              defaultValue={q || ""}
-              placeholder="搜索订单号"
-            />
-            <button className="btn-primary" type="submit">
-              搜索
-            </button>
-            <div className="flex flex-wrap gap-2 md:col-span-2">
-              <Link className={`btn-secondary ${!status ? "bg-soft" : ""}`} href="/admin/orders">
-                全部
+      <section className="surface rounded-xl p-5">
+        <form className="grid gap-3 md:grid-cols-[1fr_auto]">
+          <input
+            className="field text-sm"
+            name="q"
+            defaultValue={q || ""}
+            placeholder="搜索订单号"
+          />
+          <button className="btn-primary" type="submit">
+            搜索
+          </button>
+          <div className="flex flex-wrap gap-2 md:col-span-2">
+            <Link className={`btn-secondary ${!status ? "bg-soft" : ""}`} href="/admin/orders">
+              全部
+            </Link>
+            {orderStatuses.map((item) => (
+              <Link
+                key={item}
+                className={`btn-secondary ${status === item ? "bg-soft" : ""}`}
+                href={href({ q, status: item, page: 1 })}
+              >
+                {readStatusLabel(item)}
               </Link>
-              {orderStatuses.map((item) => (
-                <Link
-                  key={item}
-                  className={`btn-secondary ${status === item ? "bg-soft" : ""}`}
-                  href={href({ q, status: item, page: 1 })}
-                >
-                  {readStatusLabel(item)}
-                </Link>
-              ))}
-            </div>
-          </form>
-        </section>
+            ))}
+          </div>
+        </form>
+      </section>
 
-        <section className="grid gap-2">
-          {orders.map((order) => (
-            <article key={order.orderNo} className="surface rounded-xl p-4">
-              <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
-                <div>
-                  <p className="font-semibold">{order.orderNo}</p>
-                  <p className="mt-1 text-sm text-muted">用户 {order.userText}</p>
-                </div>
-                <div>
-                  <p>{order.packageName}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {order.credits} 积分 / {order.amountText}
-                  </p>
-                </div>
-                <div>
-                  <p>{readStatusLabel(order.displayStatus)}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {order.payChannelText || order.payChannel || "—"} /{" "}
-                    {order.thirdTradeNo || "无交易号"}
-                  </p>
-                  {order.creditsErrorReason ? (
-                    <p className="mt-1 text-sm text-red-600">
-                      发放失败：{order.creditsErrorReason}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="grid gap-2 text-sm text-muted lg:justify-items-end lg:text-right">
-                  <div>
-                    <p>创建 {formatDateText(order.createTime)}</p>
-                    <p>支付 {formatDateText(order.payTime)}</p>
-                  </div>
-                  {order.creditsStatus === "failed" ? (
-                    <ReissueButton orderNo={order.orderNo} />
-                  ) : null}
-                </div>
+      <section className="grid gap-2">
+        {orders.map((order) => (
+          <article key={order.orderNo} className="surface rounded-xl p-4">
+            <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
+              <div>
+                <p className="font-semibold">{order.orderNo}</p>
+                <p className="mt-1 text-sm text-muted">用户 {order.userText}</p>
               </div>
-            </article>
-          ))}
-          {orders.length === 0 ? (
-            <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配订单</p>
-          ) : null}
-        </section>
+              <div>
+                <p>{order.packageName}</p>
+                <p className="mt-1 text-sm text-muted">
+                  {order.credits} 积分 / {order.amountText}
+                </p>
+              </div>
+              <div>
+                <p>{readStatusLabel(order.displayStatus)}</p>
+                <p className="mt-1 text-sm text-muted">
+                  {order.payChannelText || order.payChannel || "—"} /{" "}
+                  {order.thirdTradeNo || "无交易号"}
+                </p>
+                {order.creditsErrorReason ? (
+                  <p className="mt-1 text-sm text-red-600">发放失败：{order.creditsErrorReason}</p>
+                ) : null}
+              </div>
+              <div className="grid gap-2 text-sm text-muted lg:justify-items-end lg:text-right">
+                <div>
+                  <p>创建 {formatDateText(order.createTime)}</p>
+                  <p>支付 {formatDateText(order.payTime)}</p>
+                </div>
+                {order.creditsStatus === "failed" ? (
+                  <ReissueButton orderNo={order.orderNo} />
+                ) : null}
+              </div>
+            </div>
+          </article>
+        ))}
+        {orders.length === 0 ? (
+          <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配订单</p>
+        ) : null}
+      </section>
 
-        <nav className="flex items-center justify-between">
-          <Link className="btn-secondary" href={href({ q, status, page: Math.max(1, page - 1) })}>
-            上一页
-          </Link>
-          <p className="text-sm text-muted">
-            第 {page} / {totalPages} 页，共 {total} 个订单
-          </p>
-          <Link
-            className="btn-secondary"
-            href={href({ q, status, page: Math.min(totalPages, page + 1) })}
-          >
-            下一页
-          </Link>
-        </nav>
-      </div>
-    </AdminShell>
+      <nav className="flex items-center justify-between">
+        <Link className="btn-secondary" href={href({ q, status, page: Math.max(1, page - 1) })}>
+          上一页
+        </Link>
+        <p className="text-sm text-muted">
+          第 {page} / {totalPages} 页，共 {total} 个订单
+        </p>
+        <Link
+          className="btn-secondary"
+          href={href({ q, status, page: Math.min(totalPages, page + 1) })}
+        >
+          下一页
+        </Link>
+      </nav>
+    </div>
   );
 }

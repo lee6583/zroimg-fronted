@@ -47,6 +47,12 @@ const javaUserPageSchema = z.object({
   total: z.number(),
   pages: z.number(),
   list: z.array(javaTicketSchema),
+  summary: z.object({
+    all: z.number(),
+    open: z.number(),
+    inProgress: z.number(),
+    processed: z.number(),
+  }),
 });
 
 const javaAdminPageSchema = z.object({
@@ -173,28 +179,16 @@ function toAdminTicket(ticket: z.infer<typeof javaAdminTicketSchema>): AdminFeed
   };
 }
 
-async function countUserTickets(status?: string) {
-  const path = buildUserPath({ page: 1, pageSize: 1, status });
-  const payload = await requestJavaApiData<unknown>(path);
-  return javaUserPageSchema.parse(payload).total;
-}
-
 export async function listForUserPage(input: UserTicketQuery) {
   const payload = await requestJavaApiData<unknown>(buildUserPath(input));
   const page = javaUserPageSchema.parse(payload);
-  const [all, open, inProgress, processed] = await Promise.all([
-    countUserTickets(),
-    countUserTickets("open"),
-    countUserTickets("in_progress"),
-    countUserTickets("processed"),
-  ]);
 
   return {
     tickets: page.list.map(toUserTicket),
     total: page.total,
     page: input.page,
     pageSize: input.pageSize,
-    summary: { all, open, inProgress, processed },
+    summary: page.summary,
   };
 }
 
@@ -217,7 +211,7 @@ export async function createTicket(input: {
       type: input.type,
       subject: input.subject,
       content: input.content,
-      attachmentMediaIds: input.attachmentMediaIds?.map(Number),
+      attachmentMediaIds: input.attachmentMediaIds,
     }),
   });
 

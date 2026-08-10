@@ -1,58 +1,13 @@
 import type { ReactNode } from "react";
-import clsx from "clsx";
-import Link from "next/link";
-import {
-  Activity,
-  FileClock,
-  FileText,
-  LayoutDashboard,
-  MessageSquareText,
-  ReceiptText,
-  Coins,
-  Settings,
-  SlidersHorizontal,
-  Users,
-} from "lucide-react";
+import { AdminNav } from "@/components/layout/admin-nav";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import styles from "./shell.module.css";
 
-type AdminSection =
-  | "overview"
-  | "users"
-  | "orders"
-  | "packages"
-  | "models"
-  | "generations"
-  | "tickets"
-  | "docs"
-  | "settings"
-  | "audit";
-
 type AdminShellProps = {
-  active: AdminSection;
   children: ReactNode;
 };
 
-const adminNavItems: Array<{
-  key: AdminSection;
-  label: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-}> = [
-  { key: "overview", label: "概览", href: "/admin", icon: LayoutDashboard },
-  { key: "users", label: "用户管理", href: "/admin/users", icon: Users },
-  { key: "orders", label: "订单管理", href: "/admin/orders", icon: ReceiptText },
-  { key: "packages", label: "积分套餐", href: "/admin/packages", icon: Coins },
-  { key: "models", label: "模型配置", href: "/admin/models", icon: SlidersHorizontal },
-  { key: "generations", label: "生成任务", href: "/admin/generations", icon: Activity },
-  { key: "tickets", label: "意见反馈", href: "/admin/tickets", icon: MessageSquareText },
-  { key: "docs", label: "文档管理", href: "/admin/docs", icon: FileText },
-  { key: "settings", label: "系统设置", href: "/admin/settings", icon: Settings },
-  { key: "audit", label: "审计日志", href: "/admin/audit-logs", icon: FileClock },
-];
-
 export async function AdminShell(props: AdminShellProps) {
-  const active = props.active;
   const children = props.children;
 
   return (
@@ -62,32 +17,7 @@ export async function AdminShell(props: AdminShellProps) {
         <div className={styles.shell__grid}>
           <aside className={styles.shell__sidebar}>
             <div className={styles.shell__sidebarInner}>
-              <nav className={styles.shell__nav}>
-                {adminNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = active === item.key;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      className={clsx(
-                        styles.shell__navLink,
-                        isActive && styles.shell__navLinkActive,
-                      )}
-                    >
-                      <span
-                        className={clsx(
-                          styles.shell__navIcon,
-                          isActive && styles.shell__navIconActive,
-                        )}
-                      >
-                        <Icon size={16} />
-                      </span>
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
+              <AdminNav />
             </div>
           </aside>
           <main className={styles.shell__main}>{children}</main>

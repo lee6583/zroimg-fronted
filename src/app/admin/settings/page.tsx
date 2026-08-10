@@ -1,4 +1,3 @@
-import { AdminShell } from "@/components/layout/admin-shell";
 import { AnnouncementSettingsForm } from "@/features/admin/announcement-settings-form";
 import {
   CheckInSettingsForm,
@@ -6,7 +5,6 @@ import {
   SmtpSettingsForm,
   VideoSettingsForm,
 } from "@/features/admin/service-settings-forms";
-import { requireAdmin } from "@/server/auth";
 import {
   getAnnouncementSettings,
   getCheckInSettings,
@@ -18,7 +16,6 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  await requireAdmin();
   const [videoSettings, smtpSettings, easyPaySettings, checkInSettings, announcementSettings] =
     await Promise.all([
       getVideoConfig(),
@@ -29,18 +26,16 @@ export default async function AdminSettingsPage() {
     ]);
 
   return (
-    <AdminShell active="settings">
-      <div className="grid gap-6">
-        <section>
-          <h1 className="page-title">系统设置</h1>
-        </section>
+    <div className="grid gap-6">
+      <section>
+        <h1 className="page-title">系统设置</h1>
+      </section>
 
-        <VideoSettingsForm initialSettings={videoSettings} />
-        <SmtpSettingsForm initialSettings={smtpSettings} />
-        <EasyPaySettingsForm initialSettings={easyPaySettings} />
-        <CheckInSettingsForm initialSettings={checkInSettings} />
-        <AnnouncementSettingsForm initialSettings={announcementSettings} />
-      </div>
-    </AdminShell>
+      <VideoSettingsForm initialSettings={videoSettings} />
+      <SmtpSettingsForm initialSettings={smtpSettings} />
+      <EasyPaySettingsForm initialSettings={easyPaySettings} />
+      <CheckInSettingsForm initialSettings={checkInSettings} />
+      <AnnouncementSettingsForm initialSettings={announcementSettings} />
+    </div>
   );
 }

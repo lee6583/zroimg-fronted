@@ -53,8 +53,8 @@ ZroImg 是一个面向创作者的 AI 图片生成产品。
 export async function getDocsConfig(): Promise<DocsConfig> {
   if (isJavaBffEnabled()) {
     const docs = await getJavaApiData<DocsConfig>("/content/public/docs");
-    if (!docs.title) {
-      throw new Error("Java 文档接口返回内容为空");
+    if (!docs?.title || !Array.isArray(docs.groups)) {
+      return defaultDocsConfig;
     }
 
     return docs;

@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { z } from "zod";
 import { findUserBundleByUserId } from "@/server/bff/auth";
 import { createMockUser, findUserByEmail } from "@/server/bff/mock-store";
@@ -110,7 +111,7 @@ async function getJavaUser() {
   };
 }
 
-export async function getCurrentUserProfile() {
+export const getCurrentUserProfile = cache(async function getCurrentUserProfile() {
   if (isJavaAuthEnabled()) {
     return getJavaUser();
   }
@@ -119,7 +120,7 @@ export async function getCurrentUserProfile() {
   const userId = cookieStore.get(MOCK_SESSION_COOKIE)?.value;
   if (!userId) return null;
   return findUserBundleByUserId(userId);
-}
+});
 
 export async function requireUser() {
   const current = await getCurrentUserProfile();

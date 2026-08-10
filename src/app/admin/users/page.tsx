@@ -1,8 +1,9 @@
+import { Eye, Search } from "lucide-react";
 import Link from "next/link";
-import { AdminShell } from "@/components/layout/admin-shell";
+import { AppPagination } from "@/components/ui/app-pagination";
 import { UserActions } from "@/features/admin/user-actions";
-import { requireAdmin } from "@/server/auth";
 import { listAdminUsers } from "@/server/bff/users";
+import styles from "./users-page.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -11,119 +12,158 @@ type AdminUsersPageProps = {
   searchParams: SearchParams;
 };
 
+const pageSizeOptions = [10, 20, 50];
+
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
 }
 
-function pageHref(input: { q?: string; status?: string; page: number }) {
+function filterHref(input: { q?: string; status?: string }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
-  params.set("page", String(input.page));
-  return `/admin/users?${params.toString()}`;
+  return params.size > 0 ? `/admin/users?${params.toString()}` : "/admin/users";
+}
+
+function formatDate(value: string) {
+  return value.slice(0, 16).replace("T", " ");
+}
+
+function roleLabel(role: string) {
+  if (role === "admin") return "管理员";
+  if (role === "user") return "普通用户";
+  return role;
 }
 
 export default async function AdminUsersPage(props: AdminUsersPageProps) {
-  const searchParams = props.searchParams;
-
-  await requireAdmin();
-  const params = await searchParams;
+  const params = await props.searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
   const statusFilter = status === "active" || status === "banned" ? status : undefined;
+  const requestedPageSize = Number(readParam(params, "pageSize") || 10);
+  const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 10;
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const pageSize = 20;
-  const userPage = await listAdminUsers({
-    page,
-    pageSize,
-    q,
-    status: statusFilter,
-  });
+  const userPage = await listAdminUsers({ page, pageSize, q, status: statusFilter });
   const users = userPage.list;
-  const total = userPage.total;
-  const totalPages = Math.max(1, userPage.pages);
 
   return (
-    <AdminShell active="users">
-      <div className="grid gap-6">
-        <section>
+    <div className={styles.usersPage}>
+      <header className={styles.usersPage__heading}>
+        <div>
           <h1 className="page-title">用户管理</h1>
-        </section>
+          <p>共 {userPage.total.toLocaleString("zh-CN")} 位用户</p>
+        </div>
+      </header>
 
-        <section className="surface rounded-xl p-5">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto]">
-            <input
-              className="field text-sm"
-              name="q"
-              defaultValue={q || ""}
-              placeholder="搜索用户名或邮箱"
-            />
-            <Link className={`btn-secondary ${!status ? "bg-soft" : ""}`} href="/admin/users">
+      <section className={styles.usersPage__panel}>
+        <div className={styles.usersPage__toolbar}>
+          <form className={styles.usersPage__search}>
+            <Search size={15} aria-hidden="true" />
+            <input name="q" defaultValue={q || ""} placeholder="搜索用户名或邮箱" />
+            {statusFilter ? <input type="hidden" name="status" value={statusFilter} /> : null}
+            {pageSize !== 10 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
+            <button type="submit">搜索</button>
+          </form>
+
+          <nav className={styles.usersPage__filters} aria-label="用户状态筛选">
+            <Link
+              className={!statusFilter ? styles.usersPage__filterActive : undefined}
+              href={filterHref({ q })}
+            >
               全部
             </Link>
             <Link
-              className={`btn-secondary ${status === "active" ? "bg-soft" : ""}`}
-              href={pageHref({ q, status: "active", page: 1 })}
+              className={statusFilter === "active" ? styles.usersPage__filterActive : undefined}
+              href={filterHref({ q, status: "active" })}
             >
               正常
             </Link>
             <Link
-              className={`btn-secondary ${status === "banned" ? "bg-soft" : ""}`}
-              href={pageHref({ q, status: "banned", page: 1 })}
+              className={statusFilter === "banned" ? styles.usersPage__filterActive : undefined}
+              href={filterHref({ q, status: "banned" })}
             >
-              封禁
+              已封禁
             </Link>
-            {status ? <input type="hidden" name="status" value={status} /> : null}
-            <button className="btn-primary md:col-start-1 md:w-fit" type="submit">
-              搜索
-            </button>
-          </form>
-        </section>
+          </nav>
+        </div>
 
-        <section className="grid gap-3">
-          {users.map((profile) => (
-            <article key={profile.id} className="surface rounded-xl p-4">
-              <div className="mb-3 flex flex-wrap justify-between gap-3">
-                <div>
-                  <Link
-                    href={`/admin/users/${profile.id}`}
-                    className="font-semibold transition hover:text-muted"
-                  >
-                    {profile.username}
-                  </Link>
-                  <p className="mt-1 text-sm text-muted">
-                    {profile.email || "-"} / {profile.role} / {profile.status}
-                  </p>
-                </div>
-                <p className="font-semibold">{profile.totalPoints} 积分</p>
-              </div>
-              <UserActions userId={profile.id} status={profile.status} />
-            </article>
-          ))}
-          {users.length === 0 ? (
-            <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配用户</p>
-          ) : null}
-        </section>
+        {users.length > 0 ? (
+          <div className={styles.usersPage__tableWrap}>
+            <table className={styles.usersPage__table}>
+              <thead>
+                <tr>
+                  <th>用户</th>
+                  <th>用户 ID</th>
+                  <th>角色</th>
+                  <th>积分余额</th>
+                  <th>状态</th>
+                  <th>注册时间</th>
+                  <th aria-label="操作" />
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>
+                      <div className={styles.usersPage__userCell}>
+                        <span className={styles.usersPage__avatar} aria-hidden="true">
+                          {user.username.slice(0, 1).toUpperCase()}
+                        </span>
+                        <div>
+                          <Link href={`/admin/users/${user.id}`}>{user.username}</Link>
+                          <span>{user.email || "未填写邮箱"}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={styles.usersPage__id} title={user.id}>
+                        {user.id}
+                      </span>
+                    </td>
+                    <td>{roleLabel(user.role)}</td>
+                    <td className={styles.usersPage__points}>
+                      {user.totalPoints.toLocaleString("zh-CN")}
+                    </td>
+                    <td>
+                      <span
+                        className={`${styles.usersPage__status} ${
+                          user.status === "active"
+                            ? styles.usersPage__statusActive
+                            : styles.usersPage__statusBanned
+                        }`}
+                      >
+                        <i aria-hidden="true" />
+                        {user.status === "active" ? "正常" : "已封禁"}
+                      </span>
+                    </td>
+                    <td className={styles.usersPage__date}>{formatDate(user.createdAt)}</td>
+                    <td>
+                      <div className={styles.usersPage__actions}>
+                        <Link
+                          className={styles.usersPage__iconButton}
+                          href={`/admin/users/${user.id}`}
+                          aria-label={`查看用户 ${user.username}`}
+                          title="查看详情"
+                        >
+                          <Eye size={15} />
+                        </Link>
+                        <UserActions user={user} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className={styles.usersPage__empty}>没有匹配的用户</div>
+        )}
 
-        <nav className="flex items-center justify-between">
-          <Link
-            className="btn-secondary"
-            href={pageHref({ q, status, page: Math.max(1, page - 1) })}
-          >
-            上一页
-          </Link>
-          <p className="text-sm text-muted">
-            第 {page} / {totalPages} 页，共 {total} 位用户
-          </p>
-          <Link
-            className="btn-secondary"
-            href={pageHref({ q, status, page: Math.min(totalPages, page + 1) })}
-          >
-            下一页
-          </Link>
-        </nav>
-      </div>
-    </AdminShell>
+        <footer className={styles.usersPage__footer}>
+          <AppPagination current={page} pageSize={pageSize} total={userPage.total} />
+        </footer>
+      </section>
+    </div>
   );
 }

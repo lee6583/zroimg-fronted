@@ -9,7 +9,7 @@
   display: grid;
   flex: 1;
   gap: 0.75rem;
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
 }
 
 .feedbackPanel__stats {
@@ -46,6 +46,7 @@
 }
 
 .feedbackPanel__tableWrap {
+  min-height: 0;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 0.5rem;
@@ -149,12 +150,18 @@
 }
 
 .feedbackPanel__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   color: var(--muted);
   font-size: 0.8125rem;
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  background: color-mix(in oklab, var(--background) 94%, transparent);
   padding: 0.75rem 0;
 }
 
