@@ -12,5 +12,5 @@ export default async function ProductLayout(props: ProductLayoutProps) {
 
   await requireUser();
 
-  return <ProductFrame topNav={<ProductTopNav />}>{children}</ProductFrame>;
+  return <ProductFrame topNav={<ProductTopNav autoOpenAnnouncement />}>{children}</ProductFrame>;
 }

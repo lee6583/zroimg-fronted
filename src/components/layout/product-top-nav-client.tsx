@@ -20,6 +20,7 @@ type ProductTopNavClientProps = {
   announcement: PublicAnnouncement;
   avatarLabel: string;
   isLoggedIn: boolean;
+  autoOpenAnnouncement: boolean;
   links: TopNavLink[];
 };
 
@@ -39,6 +40,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
   const announcement = props.announcement;
   const avatarLabel = props.avatarLabel;
   const isLoggedIn = props.isLoggedIn;
+  const autoOpenAnnouncement = props.autoOpenAnnouncement;
   const links = props.links;
   const pathname = usePathname();
   const router = useRouter();
@@ -87,7 +89,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
         </nav>
 
         <div className={styles.productTopNav__actions}>
-          <AnnouncementCenter announcement={announcement} shouldAutoOpen={isLoggedIn} />
+          <AnnouncementCenter announcement={announcement} shouldAutoOpen={autoOpenAnnouncement} />
           <ThemeControls />
           {isLoggedIn ? (
             <AccountMenu label={avatarLabel} />

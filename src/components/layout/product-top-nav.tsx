@@ -16,7 +16,7 @@ function avatarLabel(name?: string | null) {
   return (name || "Z").trim().slice(0, 1).toUpperCase();
 }
 
-export async function ProductTopNav() {
+export async function ProductTopNav(props: { autoOpenAnnouncement?: boolean } = {}) {
   const [current, announcement] = await Promise.all([
     getCurrentUserProfile(),
     getPublicAnnouncement(),
@@ -34,6 +34,7 @@ export async function ProductTopNav() {
       announcement={announcement}
       avatarLabel={avatarLabel(current?.profile.username)}
       isLoggedIn={Boolean(current)}
+      autoOpenAnnouncement={Boolean(props.autoOpenAnnouncement && current)}
       links={centerLinks}
     />
   );
