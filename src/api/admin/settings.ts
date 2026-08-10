@@ -8,8 +8,6 @@ import type {
   SaveCheckInSettingsResponse,
   SaveEasyPaySettingsRequest,
   SaveEasyPaySettingsResponse,
-  SaveGenerationSettingsRequest,
-  SaveGenerationSettingsResponse,
   SaveVideoSettingsRequest,
   SaveVideoSettingsResponse,
   SaveSmtpSettingsRequest,
@@ -17,14 +15,6 @@ import type {
   TestSmtpSettingsRequest,
   TestSmtpSettingsResponse,
 } from "@/types/admin";
-
-function saveGenerationSettings(data: SaveGenerationSettingsRequest) {
-  return request<SaveGenerationSettingsResponse>({
-    url: "/api/admin/settings/generation",
-    method: "POST",
-    data,
-  });
-}
 
 function saveSmtpSettings(data: SaveSmtpSettingsRequest) {
   return request<SaveSmtpSettingsResponse>({
@@ -75,7 +65,6 @@ function saveAnnouncementSettings(data: SaveAnnouncementSettingsRequest) {
 }
 
 export const adminSettingsApi = {
-  saveGenerationSettings,
   saveSmtpSettings,
   saveVideoSettings,
   testSmtpSettings,

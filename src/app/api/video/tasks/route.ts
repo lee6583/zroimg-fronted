@@ -59,9 +59,7 @@ export async function POST(request: Request) {
 
     const task = await createVideoTask({
       ...parsed.data,
-      referenceMediaId: parsed.data.referenceMediaId
-        ? Number(parsed.data.referenceMediaId)
-        : undefined,
+      referenceMediaId: parsed.data.referenceMediaId ? parsed.data.referenceMediaId : undefined,
     });
     return jsonOk({ task });
   });

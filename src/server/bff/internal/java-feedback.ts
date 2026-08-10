@@ -2,11 +2,12 @@ import "server-only";
 
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type { AdminFeedbackTicketRecord, FeedbackTicketRecord } from "@/types/feedback";
 import type { FeedbackStatus, FeedbackType } from "@/utils/feedback";
 
 const javaMessageSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   body: z.string(),
   isAdmin: z.boolean(),
   createdAt: z.string(),
@@ -14,14 +15,14 @@ const javaMessageSchema = z.object({
 });
 
 const javaAttachmentSchema = z.object({
-  id: z.number(),
-  mediaId: z.number(),
+  id: javaIdSchema,
+  mediaId: javaIdSchema,
   fileName: z.string().nullable(),
   url: z.string(),
 });
 
 const javaTicketSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   type: z.string(),
   status: z.string(),
   subject: z.string(),
@@ -33,7 +34,7 @@ const javaTicketSchema = z.object({
 });
 
 const javaUserSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   email: z.string(),
   name: z.string(),
 });

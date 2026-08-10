@@ -4,7 +4,6 @@ import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import type {
   CheckInSettingsConfig,
   EasyPayAdminConfig,
-  GenerationProviderAdminConfig,
   SmtpAdminConfig,
   VideoProviderAdminConfig,
 } from "@/types/admin";
@@ -17,49 +16,6 @@ function defaultAnnouncementSettings() {
     content: "欢迎使用 ZroImg。当前为前端联调环境，部分功能仍使用 mock 数据。",
     updatedAt: new Date(),
   };
-}
-
-export async function getGenerationConfig(): Promise<GenerationProviderAdminConfig> {
-  if (isJavaBffEnabled()) {
-    return getJavaApiData<GenerationProviderAdminConfig>("/admin/settings/generation");
-  }
-
-  const settings = getStore().settings.generation;
-  return {
-    enabled: settings.enabled,
-    baseUrl: settings.baseUrl,
-    model: settings.model,
-    apiKeySource: settings.apiKey ? "database" : "none",
-    hasApiKey: Boolean(settings.apiKey),
-    apiKeyPreview: maskSecret(settings.apiKey),
-  };
-}
-
-export async function updateGenerationConfig(input: {
-  enabled: boolean;
-  baseUrl?: string;
-  model: string;
-  apiKey?: string;
-  clearApiKey?: boolean;
-}) {
-  if (isJavaBffEnabled()) {
-    return requestJavaApiData<GenerationProviderAdminConfig>("/admin/settings/generation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-  }
-
-  const settings = getStore().settings.generation;
-  settings.enabled = input.enabled;
-  settings.baseUrl = input.baseUrl?.trim() || null;
-  settings.model = input.model.trim();
-  if (input.clearApiKey) {
-    settings.apiKey = null;
-  } else if (input.apiKey?.trim()) {
-    settings.apiKey = input.apiKey.trim();
-  }
-  return getGenerationConfig();
 }
 
 export async function getVideoConfig(): Promise<VideoProviderAdminConfig> {

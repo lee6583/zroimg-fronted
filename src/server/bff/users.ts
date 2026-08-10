@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { isJavaBffEnabled } from "@/server/env";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
 import type {
   AdminGenerationTask,
@@ -13,7 +14,7 @@ import type {
 } from "@/types/admin";
 
 const javaUserSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   username: z.string(),
   email: z.string(),
   bio: z.string().nullable().optional(),
@@ -30,7 +31,7 @@ const javaUserPageSchema = z.object({
 });
 
 const javaFlowSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   amount: z.number(),
   afterPoints: z.number(),
   remark: z.string(),
@@ -42,7 +43,7 @@ const javaFlowPageSchema = z.object({
 });
 
 const javaTaskSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   taskNo: z.string().optional(),
   prompt: z.string(),
   status: z.string(),

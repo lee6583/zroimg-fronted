@@ -4,6 +4,7 @@ import { uploadMedia } from "@/server/bff/generation";
 import { isJavaBffEnabled } from "@/server/env";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import { parseForm } from "@/server/validation";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 
@@ -15,7 +16,7 @@ const uploadSchema = z.object({
 });
 
 const javaMediaSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   originalName: z.string(),
 });
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 
       return jsonOk({
         media: {
-          id: String(media.id),
+          id: media.id,
           fileName: media.originalName,
           kind: "input" as const,
         },

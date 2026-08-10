@@ -47,7 +47,7 @@ type CreatePaymentResponse = {
 
 type RechargeOrder = {
   orderNo: string;
-  packageId: number;
+  packageId: string;
   packageCode: string;
   packageName: string;
   packageDescription?: string | null;

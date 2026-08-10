@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { isMockPaymentBffEnabled } from "@/server/env";
 import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
 import { getStore, nextId } from "@/server/bff/mock-store";
 import type {
@@ -18,7 +19,7 @@ import type {
 } from "@/types/orders";
 
 const javaPackageSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   code: z.string(),
   name: z.string(),
   description: z.string().nullable().optional(),
@@ -35,7 +36,7 @@ const javaPackagesSchema = z.array(javaPackageSchema);
 
 const javaRechargeOrderSchema = z.object({
   orderNo: z.string(),
-  packageId: z.number(),
+  packageId: javaIdSchema,
   packageCode: z.string(),
   packageName: z.string(),
   packageDescription: z.string().nullable().optional(),
@@ -67,7 +68,7 @@ const javaRechargeOrderPageSchema = z.object({
 });
 
 const javaAdminRechargeOrderSchema = javaRechargeOrderSchema.extend({
-  userId: z.number(),
+  userId: javaIdSchema,
   creditsErrorReason: z.string().nullable().optional(),
   closeTime: z.string().nullable().optional(),
 });
@@ -534,7 +535,7 @@ function mockOrderToRechargeOrder(
 
   return {
     orderNo: order.orderNo,
-    packageId: Number(order.creditPackageId ?? 0),
+    packageId: order.creditPackageId ?? "0",
     packageCode,
     packageName,
     packageDescription: null,

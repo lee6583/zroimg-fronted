@@ -3,13 +3,14 @@ import "server-only";
 import { z } from "zod";
 import { isJavaBffEnabled } from "@/server/env";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
 import { getStore } from "@/server/bff/mock-store";
 import type { MockTaskStatus } from "@/server/bff/mock-store";
 import type { AdminAuditLogPage, AdminGenerationPage, AdminOverview } from "@/types/admin";
 
 const latestTicketSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   subject: z.string(),
   status: z.string(),
   email: z.string().nullable().optional(),
@@ -26,7 +27,7 @@ const overviewSchema = z.object({
 });
 
 const javaTaskSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   taskNo: z.string(),
   userEmail: z.string().nullable().optional(),
   prompt: z.string(),
@@ -49,8 +50,8 @@ const javaTaskPageSchema = z.object({
 });
 
 const auditSchema = z.object({
-  id: z.number(),
-  adminUserId: z.number(),
+  id: javaIdSchema,
+  adminUserId: javaIdSchema,
   adminEmail: z.string().nullable().optional(),
   action: z.string(),
   targetType: z.string(),
@@ -108,7 +109,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     failedTasks,
     openTickets,
     latestTickets: latestTickets.map((ticket) => ({
-      id: Number(ticket.id),
+      id: ticket.id,
       subject: ticket.subject,
       status: ticket.status,
       email: ticket.userProfile?.user?.email ?? null,
@@ -230,8 +231,8 @@ export async function listAuditLogs(input: {
     total,
     pages: Math.max(1, Math.ceil(total / input.pageSize)),
     list: logs.map((log) => ({
-      id: Number(log.id),
-      adminUserId: Number(log.adminProfileId),
+      id: log.id,
+      adminUserId: log.adminProfileId,
       adminEmail: null,
       action: log.action,
       targetType: log.targetType,

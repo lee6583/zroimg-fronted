@@ -1,14 +1,5 @@
 type SecretSource = "database" | "env" | "none";
 
-type GenerationProviderAdminConfig = {
-  enabled: boolean;
-  baseUrl: string | null;
-  model: string;
-  apiKeySource: SecretSource;
-  hasApiKey: boolean;
-  apiKeyPreview: string | null;
-};
-
 type VideoProviderAdminConfig = {
   enabled: boolean;
   baseUrl: string | null;
@@ -44,18 +35,6 @@ type EasyPayAdminConfig = {
 
 type CheckInSettingsConfig = {
   dailyCredits: number;
-};
-
-type SaveGenerationSettingsRequest = {
-  enabled: boolean;
-  baseUrl: string;
-  model: string;
-  apiKey: string;
-  clearApiKey: boolean;
-};
-
-type SaveGenerationSettingsResponse = {
-  settings: GenerationProviderAdminConfig;
 };
 
 type SaveVideoSettingsRequest = {
@@ -198,7 +177,7 @@ type AdminGenerationPage = {
 };
 
 type AdminOverviewTicket = {
-  id: number;
+  id: string;
   subject: string;
   status: string;
   email: string | null;
@@ -215,8 +194,8 @@ type AdminOverview = {
 };
 
 type AdminAuditLog = {
-  id: number;
-  adminUserId: number;
+  id: string;
+  adminUserId: string;
   adminEmail: string | null;
   action: string;
   targetType: string;
@@ -232,7 +211,7 @@ type AdminAuditLogPage = {
 };
 
 type AdminGenerationModelMode = {
-  id?: number;
+  id?: string;
   modeCode: string;
   modeName: string;
   status: "enabled" | "disabled";
@@ -240,7 +219,7 @@ type AdminGenerationModelMode = {
 };
 
 type AdminGenerationModelParam = {
-  id?: number;
+  id?: string;
   modeCode: string;
   paramType: "ratio" | "resolution" | "quality" | "format" | "count" | "duration" | "audio";
   paramValue: string;
@@ -250,7 +229,7 @@ type AdminGenerationModelParam = {
 };
 
 type AdminGenerationModelPrice = {
-  id?: number;
+  id?: string;
   modeCode: string;
   resolution: string;
   quality: string;
@@ -264,6 +243,9 @@ type AdminGenerationModel = {
   modelCode: string;
   modelName: string;
   provider: string;
+  apiBaseUrl: string;
+  hasApiKey: boolean;
+  apiKeyPreview: string | null;
   modelType: "image" | "video";
   status: "enabled" | "disabled";
   defaultFlag: number;
@@ -281,6 +263,9 @@ type SaveAdminGenerationModelRequest = {
   modelCode: string;
   modelName: string;
   provider: string;
+  apiBaseUrl: string;
+  apiKey: string;
+  clearApiKey: boolean;
   modelType: "image" | "video";
   status: "enabled" | "disabled";
   defaultFlag: number;
@@ -299,13 +284,10 @@ type AdminGenerationModelResponse = {
 
 export type {
   SecretSource,
-  GenerationProviderAdminConfig,
   VideoProviderAdminConfig,
   SmtpAdminConfig,
   EasyPayAdminConfig,
   CheckInSettingsConfig,
-  SaveGenerationSettingsRequest,
-  SaveGenerationSettingsResponse,
   SaveVideoSettingsRequest,
   SaveVideoSettingsResponse,
   SaveSmtpSettingsRequest,

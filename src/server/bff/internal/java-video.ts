@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type {
   CreateVideoTaskRequest,
   VideoModel,
@@ -50,8 +51,8 @@ const priceSchema = z.object({
 });
 
 const resultSchema = z.object({
-  id: z.number(),
-  mediaAssetId: z.number().nullable(),
+  id: javaIdSchema,
+  mediaAssetId: javaIdSchema.nullable(),
   resultType: z.string(),
   resultUrl: z.string(),
 });

@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type {
   GenerationMode,
   GenerationModelOption,
@@ -43,7 +44,7 @@ const javaModelSchema = z.object({
 });
 
 const javaConversationSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   title: z.string(),
   lastTaskAt: z.string().nullable().optional(),
   updatedAt: z.string(),
@@ -53,13 +54,13 @@ const javaConversationSchema = z.object({
 });
 
 const javaResultSchema = z.object({
-  id: z.number(),
-  mediaAssetId: z.number().nullable().optional(),
+  id: javaIdSchema,
+  mediaAssetId: javaIdSchema.nullable().optional(),
   resultUrl: z.string().nullable().optional(),
 });
 
 const javaTaskSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   taskNo: z.string(),
   modelCode: z.string(),
   mode: z.string(),
@@ -421,10 +422,10 @@ export async function createTask(input: TaskInput) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       modelCode: input.model,
-      conversationId: Number(input.conversationId),
+      conversationId: input.conversationId,
       mode,
       prompt: input.prompt,
-      referenceMediaId: input.inputMediaIds[0] ? Number(input.inputMediaIds[0]) : null,
+      referenceMediaId: input.inputMediaIds[0] ?? null,
       ratio: input.ratio,
       resolution: input.resolution,
       quality,

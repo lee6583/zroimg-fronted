@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type {
   MockFavoriteCollection,
   MockFavoriteCollectionItem,
@@ -11,14 +12,14 @@ import type {
 } from "@/server/bff/mock-store";
 
 const javaAssetSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   fileName: z.string().nullable().optional(),
   width: z.number().nullable().optional(),
   height: z.number().nullable().optional(),
 });
 
 const javaImageSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   width: z.number().nullable().optional(),
   height: z.number().nullable().optional(),
   outputAsset: javaAssetSchema,
@@ -27,13 +28,13 @@ const javaImageSchema = z.object({
 });
 
 const javaItemSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   createdAt: z.string(),
   generatedImage: javaImageSchema,
 });
 
 const javaCollectionSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   name: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -176,7 +177,7 @@ export async function addImage(collectionId: string, imageId: string) {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ generatedImageId: Number(imageId) }),
+      body: JSON.stringify({ generatedImageId: imageId }),
     },
   );
 }
@@ -187,7 +188,7 @@ export async function removeImage(collectionId: string, imageId: string) {
     {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ generatedImageId: Number(imageId) }),
+      body: JSON.stringify({ generatedImageId: imageId }),
     },
   );
 }

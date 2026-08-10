@@ -4,6 +4,7 @@ import { getStore, nextId } from "@/server/bff/mock-store";
 import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { getJavaApiErrorStatus, requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import { parseJson } from "@/server/validation";
 import { getErrorMessage } from "@/utils/error";
 import {
@@ -33,7 +34,7 @@ const orderSchema = z.discriminatedUnion("mode", [packageOrderSchema, customOrde
 
 const javaRechargeOrderSchema = z.object({
   orderNo: z.string(),
-  packageId: z.number(),
+  packageId: javaIdSchema,
   packageName: z.string(),
   amountCent: z.number(),
   amountText: z.string(),
@@ -70,13 +71,10 @@ function buildPayUrl(input: {
 }
 
 function normalizePackageId(value: string) {
-  const packageId = Number(value);
-
-  if (!Number.isInteger(packageId) || packageId <= 0) {
+  if (!/^\d+$/.test(value) || value === "0") {
     return null;
   }
-
-  return packageId;
+  return value;
 }
 
 function buildResultUrl(orderNo: string) {
@@ -122,7 +120,7 @@ async function createJavaOrder(payload: z.output<typeof orderSchema>) {
   return jsonOk({
     order: {
       orderNo: order.orderNo,
-      packageId: String(order.packageId),
+      packageId: order.packageId,
       packageName: order.packageName,
       amountCent: order.amountCent,
       amountText: order.amountText,

@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type {
   MockGeneratedImage,
   MockGalleryImage,
@@ -11,23 +12,23 @@ import type {
 } from "@/server/bff/mock-store";
 
 const javaAssetSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   fileName: z.string().nullable().optional(),
   width: z.number().nullable().optional(),
   height: z.number().nullable().optional(),
 });
 
 const javaGallerySchema = z.object({
-  id: z.number(),
-  generatedImageId: z.number(),
-  userId: z.number(),
+  id: javaIdSchema,
+  generatedImageId: javaIdSchema,
+  userId: javaIdSchema,
   prompt: z.string(),
   title: z.string().nullable().optional(),
   category: z.string(),
   isPublic: z.boolean(),
   createdAt: z.string(),
   generatedImage: z.object({
-    id: z.number(),
+    id: javaIdSchema,
     width: z.number().nullable().optional(),
     height: z.number().nullable().optional(),
     outputAsset: javaAssetSchema,
@@ -142,7 +143,7 @@ export async function publishImage(imageId: string) {
   const payload = await requestJavaApiData<unknown>("/gallery/user/publish", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ generatedImageId: Number(imageId) }),
+    body: JSON.stringify({ generatedImageId: imageId }),
   });
   return toGallery(javaGallerySchema.parse(payload));
 }

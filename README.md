@@ -8,7 +8,7 @@ ZroImg 是基于 Next.js App Router 的图片生成 SaaS 前端，覆盖游客�
 - 浏览器交互与同源 API 调用。
 - Next.js Route Handlers 组成的 BFF。
 - Cookie、SSR 鉴权和前端权限入口。
-- Java 后端协议转换、错误归一化和开发期 mock。
+- Java 后端协议转换和错误归一化。
 
 Java 后端负责真实用户、会话、验证码、生成任务、积分、订单、支付、对象存储和运营配置。前端不得成为这些数据的最终权威来源。
 
@@ -50,48 +50,22 @@ pnpm check         # 提交前完整校验
 
 CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推送必须通过同样的质量门禁。
 
-## 3. 环境与 BFF 模式
+## 3. 环境与 BFF
 
 ```dotenv
-BFF_MODE=mock
-AUTH_BFF_MODE=mock
-PAYMENT_BFF_MODE=mock
-ALLOW_MOCK_BFF=false
 JAVA_API_BASE_URL=http://localhost:8080
 ```
 
-### Java 联调与部署
-
-当前认证、账户、积分、订单、支付、生成、收藏、画廊、反馈和管理后台均已提供 Java BFF 适配。完整联调和服务器部署使用：
+认证、账户、积分、订单、支付、生成、收藏、画廊、反馈和管理后台统一使用 Java 后端：
 
 ```dotenv
-BFF_MODE=java
-AUTH_BFF_MODE=java
-PAYMENT_BFF_MODE=java
-ALLOW_MOCK_BFF=false
 JAVA_API_BASE_URL=https://api-dev.zroimg.com
 ```
 
-含义：
-
-- `BFF_MODE=java`：账户、生成、收藏、画廊、反馈、设置和管理后台读取 Java 后端。
-- `AUTH_BFF_MODE=java`：认证接口单独转发到 Java 后端，登录成功后使用 Java 返回的 `zroimg_user_token` Cookie。
-- `PAYMENT_BFF_MODE=java`：积分套餐、充值订单和支付状态转发到 Java 后端。
-- `ALLOW_MOCK_BFF=false`：禁止生产运行模式读取进程内 mock 数据。
-
-### `mock`
-
-- 只用于 `next dev` 下的页面开发和交互联调。
-- 运行数据只存在于 `src/server/bff/`，不再维护第二份 `mock/*.json`。
-- `NODE_ENV=production` 时默认关闭；只有显式设置 `ALLOW_MOCK_BFF=true` 的 dev 部署才允许启用。
-
-### `java`
-
 - Route Handler 将已接入的接口转发到 `JAVA_API_BASE_URL`。
-- Java 请求失败必须返回明确的 502，禁止静默回退到 mock。
+- Java 请求失败必须返回明确的 502，禁止静默回退到本地数据。
 - 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
-- 本地联调 Java 后端时，在 `.env.local` 写入全 Java 配置和实际后端域名。
-- mock 文件保留用于纯前端开发和测试，不会在 Java 模式请求失败时自动回退。
+- 本地联调 Java 后端时，在 `.env.local` 写入实际后端域名。
 - 视频页只有在后端配置真实视频 Provider 并启用 `VIDEO_ENABLED` 后才具备实际生成能力。
 
 ## 4. 目录结构

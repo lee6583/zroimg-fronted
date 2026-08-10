@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const modeSchema = z.object({
-  id: z.number().int().optional(),
+  id: z.string().regex(/^\d+$/).optional(),
   modeCode: z.string().trim().min(1, "模式编码不能为空").max(50),
   modeName: z.string().trim().min(1, "模式名称不能为空").max(50),
   status: z.enum(["enabled", "disabled"]),
@@ -9,9 +9,9 @@ const modeSchema = z.object({
 });
 
 const paramSchema = z.object({
-  id: z.number().int().optional(),
+  id: z.string().regex(/^\d+$/).optional(),
   modeCode: z.string().trim().max(50),
-  paramType: z.enum(["ratio", "resolution", "quality", "format", "count"]),
+  paramType: z.enum(["ratio", "resolution", "quality", "format", "count", "duration", "audio"]),
   paramValue: z.string().trim().min(1, "参数值不能为空").max(100),
   paramLabel: z.string().trim().min(1, "参数名称不能为空").max(100),
   defaultFlag: z.number().int().min(0).max(1),
@@ -19,7 +19,7 @@ const paramSchema = z.object({
 });
 
 const priceSchema = z.object({
-  id: z.number().int().optional(),
+  id: z.string().regex(/^\d+$/).optional(),
   modeCode: z.string().trim().min(1, "价格模式不能为空").max(50),
   resolution: z.string().trim().min(1, "价格分辨率不能为空").max(50),
   quality: z.string().trim().min(1, "价格画质不能为空").max(50),
@@ -32,6 +32,11 @@ const modelSchema = z.object({
   modelCode: z.string().trim().min(1, "模型编码不能为空").max(100),
   modelName: z.string().trim().min(1, "模型名称不能为空").max(100),
   provider: z.string().trim().min(1, "模型供应商不能为空").max(50),
+  apiBaseUrl: z.url("API 地址格式不正确").refine((url) => url.startsWith("https://"), {
+    message: "API 地址必须使用 HTTPS",
+  }),
+  apiKey: z.string().trim().max(2000),
+  clearApiKey: z.boolean(),
   modelType: z.enum(["image", "video"]),
   status: z.enum(["enabled", "disabled"]),
   defaultFlag: z.number().int().min(0).max(1),

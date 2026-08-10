@@ -20,6 +20,9 @@ type ModelForm = {
   modelCode: string;
   modelName: string;
   provider: string;
+  apiBaseUrl: string;
+  apiKey: string;
+  clearApiKey: boolean;
   modelType: "image" | "video";
   status: "enabled" | "disabled";
   defaultFlag: number;
@@ -37,6 +40,9 @@ function emptyForm(): ModelForm {
     modelCode: "",
     modelName: "",
     provider: "openai",
+    apiBaseUrl: "https://api.openai.com/v1",
+    apiKey: "",
+    clearApiKey: false,
     modelType: "image",
     status: "enabled",
     defaultFlag: 0,
@@ -72,6 +78,9 @@ function formFromModel(model: AdminGenerationModel): ModelForm {
     modelCode: model.modelCode,
     modelName: model.modelName,
     provider: model.provider,
+    apiBaseUrl: model.apiBaseUrl,
+    apiKey: "",
+    clearApiKey: false,
     modelType: model.modelType,
     status: model.status,
     defaultFlag: model.defaultFlag,
@@ -176,6 +185,9 @@ function buildInput(form: ModelForm): SaveAdminGenerationModelRequest {
     modelCode: form.modelCode.trim(),
     modelName: form.modelName.trim(),
     provider: form.provider.trim(),
+    apiBaseUrl: form.apiBaseUrl.trim(),
+    apiKey: form.apiKey.trim(),
+    clearApiKey: form.clearApiKey,
     modelType: form.modelType,
     status: form.status,
     defaultFlag: form.defaultFlag,
@@ -231,6 +243,9 @@ export function ModelManager(props: ModelManagerProps) {
   async function save() {
     let input: SaveAdminGenerationModelRequest;
     try {
+      if (!editingId && !form.apiKey.trim()) {
+        throw new Error("新建模型时必须填写 API Key");
+      }
       input = buildInput(form);
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -317,6 +332,22 @@ export function ModelManager(props: ModelManagerProps) {
             value={form.provider}
             onChange={(event) => updateForm({ provider: event.target.value })}
           />
+          <input
+            className="field"
+            type="url"
+            placeholder="API Base URL，例如 https://api.openai.com/v1"
+            value={form.apiBaseUrl}
+            onChange={(event) => updateForm({ apiBaseUrl: event.target.value })}
+          />
+          <input
+            className="field"
+            type="password"
+            autoComplete="new-password"
+            placeholder={editingId ? "API Key（留空保留当前密钥）" : "API Key"}
+            value={form.apiKey}
+            disabled={form.clearApiKey}
+            onChange={(event) => updateForm({ apiKey: event.target.value })}
+          />
           <AppSelect
             value={form.modelType}
             onChange={(modelType) => updateForm({ modelType })}
@@ -353,6 +384,16 @@ export function ModelManager(props: ModelManagerProps) {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          {editingId ? (
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.clearApiKey}
+                onChange={(event) => updateForm({ clearApiKey: event.target.checked, apiKey: "" })}
+              />
+              清除 API Key
+            </label>
+          ) : null}
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -407,6 +448,10 @@ export function ModelManager(props: ModelManagerProps) {
                 <h2 className="font-semibold">{model.modelName}</h2>
                 <p className="mt-1 text-sm text-muted">
                   {model.modelCode} / {model.provider} / {model.modelType}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {model.apiBaseUrl} /{" "}
+                  {model.hasApiKey ? `密钥 ${model.apiKeyPreview}` : "未配置密钥"}
                 </p>
               </div>
               <div className="text-right text-sm text-muted">

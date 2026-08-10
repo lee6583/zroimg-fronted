@@ -38,8 +38,8 @@ type VideoPrice = {
 };
 
 type VideoResult = {
-  id: number;
-  mediaAssetId: number | null;
+  id: string;
+  mediaAssetId: string | null;
   resultType: string;
   resultUrl: string;
 };

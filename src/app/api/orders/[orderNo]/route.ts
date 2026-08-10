@@ -26,7 +26,7 @@ async function getMockOrder(orderNo: string, userProfileId: string) {
 
   return jsonOk({
     orderNo: order.orderNo,
-    packageId: Number(order.creditPackageId ?? 0),
+    packageId: order.creditPackageId ?? "0",
     packageCode: creditPackage?.code ?? "CUSTOM",
     packageName: creditPackage?.name ?? "自定义积分购买",
     packageDescription: null,

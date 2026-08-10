@@ -31,14 +31,12 @@ export {
   getCheckInSettings,
   getAnnouncementSettings,
   getEasyPayAdminConfig,
-  getGenerationConfig,
   getPublicAnnouncement,
   getSmtpAdminConfig,
   getVideoConfig,
   updateCheckInSettings,
   updateAnnouncementSettings,
   updateEasyPaySettings,
-  updateGenerationConfig,
   updateSmtpSettings,
   updateVideoConfig,
 } from "@/server/bff/internal/settings";
@@ -169,9 +167,4 @@ export async function updateTicketStatus(
 }
 
 export type { CheckInDateInfo, CheckInStatus } from "@/types/checkin";
-export type {
-  CheckInSettingsConfig,
-  EasyPayAdminConfig,
-  GenerationProviderAdminConfig,
-  SmtpAdminConfig,
-} from "@/types/admin";
+export type { CheckInSettingsConfig, EasyPayAdminConfig, SmtpAdminConfig } from "@/types/admin";

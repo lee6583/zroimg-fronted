@@ -12,7 +12,6 @@ import {
   FolderHeart,
   ImagePlus,
   LayoutDashboard,
-  ListOrdered,
   PencilLine,
   ReceiptText,
   Settings,
@@ -26,7 +25,6 @@ type AppSection =
   | "history"
   | "favorites"
   | "credits"
-  | "points"
   | "billing"
   | "tickets"
   | "settings";
@@ -84,12 +82,6 @@ const appNavItems: Array<{
     icon: Coins,
   },
   {
-    key: "points",
-    label: "积分明细",
-    href: "/points",
-    icon: ListOrdered,
-  },
-  {
     key: "billing",
     label: "我的订单",
     href: "/billing",
@@ -115,7 +107,6 @@ function getActiveSection(pathname: string): AppSection {
   if (pathname.startsWith("/history")) return "history";
   if (pathname.startsWith("/favorites")) return "favorites";
   if (pathname.startsWith("/credits")) return "credits";
-  if (pathname.startsWith("/points")) return "points";
   if (pathname.startsWith("/billing")) return "billing";
   if (pathname.startsWith("/tickets")) return "tickets";
   if (pathname.startsWith("/settings")) return "settings";

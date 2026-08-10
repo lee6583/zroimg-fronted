@@ -7,13 +7,14 @@ import { findUserBundleByUserId } from "@/server/bff/auth";
 import { createMockUser, findUserByEmail } from "@/server/bff/mock-store";
 import { isJavaAuthEnabled, isMockBffEnabled } from "@/server/env";
 import { getJavaApiData, JavaApiError } from "@/server/java-api";
+import { javaIdSchema } from "@/server/java-id";
 import type { MockRole } from "@/server/bff/mock-store";
 
 export const MOCK_SESSION_COOKIE = "zroimg-mock-session";
 export const JAVA_SESSION_COOKIE = "zroimg_user_token";
 
 const javaUserSchema = z.object({
-  id: z.number(),
+  id: javaIdSchema,
   username: z.string(),
   email: z.string(),
   bio: z.string().nullable().optional(),
@@ -85,7 +86,7 @@ async function getJavaUser() {
     return mockBundle;
   }
 
-  const userId = String(javaUser.id);
+  const userId = javaUser.id;
   const createdAt = new Date(javaUser.createdAt);
 
   return {
