@@ -31,13 +31,15 @@ type GenerationTaskView = {
   status: GenerationTaskStatus;
   model: string;
   size: string;
+  ratio?: string;
+  resolution?: string;
   quality: GenerationQuality;
   outputFormat: GenerationOutputFormat;
   imageCount: number;
   costCredits: number;
+  unitCostCredits?: number;
   createdAt: Date;
   updatedAt: Date;
-  imageUrls?: string[];
   outputs: GenerationOutput[];
   error: string | null;
 };
@@ -86,16 +88,28 @@ type UploadedMediaApiItem = {
   kind: "input" | "output";
 };
 
+type GenerationTaskOutputApiItem = {
+  id: string;
+  imageUrl: string;
+  downloadUrl: string;
+  fileName: string | null;
+  width: number | null;
+  height: number | null;
+};
+
 type GenerationTaskApiItem = {
   id: string;
   prompt: string;
   mode: GenerationMode;
   status: GenerationTaskStatus;
   size: string;
+  ratio: string;
+  quality: GenerationQualityOption;
   imageCount: number;
   costCredits: number;
+  unitCostCredits: number;
   createdAt: string;
-  imageUrls?: string[];
+  outputs: GenerationTaskOutputApiItem[];
 };
 
 type GenerationConversationTaskSummary = {
@@ -210,6 +224,7 @@ export type {
   GenerationPriceRequest,
   GenerationPriceResponse,
   UploadedMediaApiItem,
+  GenerationTaskOutputApiItem,
   GenerationTaskApiItem,
   GenerationConversationTaskSummary,
   GenerationConversationApiItem,

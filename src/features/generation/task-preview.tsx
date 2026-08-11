@@ -2,24 +2,33 @@ import Image from "next/image";
 import { Bot, User } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import { taskStatusLabels, type TaskItem } from "./generation-model";
+import { HistoryImageActions } from "@/features/history/history-image-actions";
+import { getImageResolutionLabel } from "@/utils/generation-quality";
+import { taskStatusLabels, type FavoriteCollectionItem, type TaskItem } from "./generation-model";
 import styles from "./generate-form.module.css";
 
 type TaskPreviewProps = {
   tasks: TaskItem[];
+  collections: FavoriteCollectionItem[];
   onPromptChange: (value: string) => void;
+};
+
+type TaskMessageProps = {
+  task: TaskItem;
+  collections: FavoriteCollectionItem[];
 };
 
 const promptSuggestions = ["一只在星空下弹吉他的猫", "未来城市的日落景色", "水彩风格的樱花园"];
 
 export function TaskPreview(props: TaskPreviewProps) {
   const tasks = props.tasks;
+  const collections = props.collections;
   const onPromptChange = props.onPromptChange;
   const chatTasks = [...tasks].reverse();
   const chatRef = useRef<HTMLDivElement>(null);
   const scrollKey = tasks
     .map((task) => {
-      const imageCount = task.imageUrls?.length ?? 0;
+      const imageCount = task.outputs.length;
       return `${task.id}:${task.status}:${imageCount}`;
     })
     .join("|");
@@ -37,7 +46,7 @@ export function TaskPreview(props: TaskPreviewProps) {
         {chatTasks.length ? (
           <div className={styles.generateForm__messageList}>
             {chatTasks.map((task) => (
-              <TaskMessage key={task.id} task={task} />
+              <TaskMessage key={task.id} task={task} collections={collections} />
             ))}
           </div>
         ) : (
@@ -67,13 +76,12 @@ export function TaskPreview(props: TaskPreviewProps) {
   );
 }
 
-function TaskMessage({ task }: { task: TaskItem }) {
-  const imageUrls = task.imageUrls ?? [];
-  const hasImages = imageUrls.length > 0;
+function TaskMessage(props: TaskMessageProps) {
+  const task = props.task;
+  const collections = props.collections;
+  const hasImages = task.outputs.length > 0;
   const isWaiting = task.status === "queued" || task.status === "running";
-  const metaText = `${taskStatusLabels[task.status]} · ${task.size} · ${task.imageCount} 张 · ${task.costCredits} 积分`;
-  const assistantText =
-    task.status === "failed" ? "生成失败了，请调整描述后再试。" : "图片已生成，可到创作历史查看。";
+  const metaText = `${taskStatusLabels[task.status]} · ${getImageResolutionLabel(task.quality)} · ${task.ratio} · ${task.imageCount} 张 · ${task.costCredits} 积分`;
 
   return (
     <div className={styles.generateForm__taskMessages}>
@@ -96,19 +104,28 @@ function TaskMessage({ task }: { task: TaskItem }) {
 
           {hasImages ? (
             <div className={styles.generateForm__chatImages}>
-              {imageUrls.map((url, index) => (
-                <Image
-                  key={`${task.id}-${index}`}
-                  className={styles.generateForm__chatImage}
-                  src={url}
-                  alt={task.prompt}
-                  width={240}
-                  height={240}
-                  unoptimized
-                />
+              {task.outputs.map((output, index) => (
+                <div key={output.id} className={styles.generateForm__chatImageItem}>
+                  <Image
+                    className={styles.generateForm__chatImage}
+                    src={output.imageUrl}
+                    alt={`${task.prompt}，生成结果 ${index + 1}`}
+                    width={output.width || 768}
+                    height={output.height || 768}
+                    unoptimized
+                  />
+                  <HistoryImageActions
+                    generatedImageId={output.id}
+                    initialPublished={false}
+                    collections={collections}
+                    downloadUrl={output.downloadUrl}
+                    downloadFileName={output.fileName || `zroimg-${task.id}-${index + 1}.png`}
+                    showPublish={false}
+                  />
+                </div>
               ))}
             </div>
-          ) : (
+          ) : isWaiting || task.status === "failed" ? (
             <div className={styles.generateForm__streamingRow}>
               {isWaiting ? (
                 <>
@@ -118,10 +135,10 @@ function TaskMessage({ task }: { task: TaskItem }) {
                 </>
               ) : null}
               <p className={styles.generateForm__assistantText}>
-                {isWaiting ? "正在生成画面" : assistantText}
+                {isWaiting ? "正在生成画面" : "生成失败了，请调整描述后再试。"}
               </p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

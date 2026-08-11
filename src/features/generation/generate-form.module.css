@@ -576,7 +576,8 @@
 }
 
 .generateForm__assistantBubble {
-  max-width: min(100%, 34rem);
+  width: fit-content;
+  max-width: min(100%, 42rem);
   background: var(--panel);
   color: var(--foreground);
 }
@@ -616,16 +617,22 @@
 
 .generateForm__chatImages {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-  gap: 0.625rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: 0.875rem;
   margin-top: 0.75rem;
+}
+
+.generateForm__chatImageItem {
+  display: grid;
+  min-width: 0;
+  gap: 0.5rem;
 }
 
 .generateForm__chatImage {
   width: 100%;
-  height: min(36dvh, 20rem);
+  height: min(48dvh, 30rem);
   border: 1px solid var(--line);
-  border-radius: 0.625rem;
+  border-radius: 0.5rem;
   background: var(--soft);
   object-fit: contain;
 }

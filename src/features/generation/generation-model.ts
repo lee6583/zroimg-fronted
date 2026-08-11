@@ -3,6 +3,7 @@ import type {
   GenerationMode,
   GenerationModelOption,
   GenerationQualityOption,
+  GenerationTaskOutputApiItem,
   GenerationTaskStatus,
   UploadedMediaApiItem,
 } from "@/types/generation";
@@ -47,11 +48,22 @@ export type TaskItem = {
   mode: GenerationMode;
   status: GenerationTaskStatus;
   size: string;
+  ratio: string;
+  quality: GenerationQualityOption;
   imageCount: number;
   costCredits: number;
+  unitCostCredits: number;
   createdAt: string;
-  imageUrls?: string[];
+  outputs: GenerationTaskOutputApiItem[];
 };
+
+export type FavoriteCollectionItem = {
+  id: string;
+  name: string;
+  imageCount: number;
+};
+
+export const activeConversationCookieName = "zroimg-active-generation-conversation";
 
 export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
   queued: "排队中",
@@ -137,6 +149,19 @@ export function normalizeConversation(item: GenerationConversationApiItem): Conv
     updatedAt: item.updatedAt,
     createdAt: item.createdAt,
   };
+}
+
+export function resolveActiveConversationId(
+  items: Array<{ id: string }>,
+  ...preferredIds: Array<string | null | undefined>
+) {
+  for (const preferredId of preferredIds) {
+    if (preferredId && items.some((item) => item.id === preferredId)) {
+      return preferredId;
+    }
+  }
+
+  return items[0]?.id ?? "";
 }
 
 export function groupConversations(items: ConversationItem[]) {

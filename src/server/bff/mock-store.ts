@@ -102,10 +102,12 @@ export type MockGenerationTask = {
   status: MockTaskStatus;
   model: string;
   size: string;
+  ratio?: string;
   quality: string;
   outputFormat: string;
   imageCount: number;
   costCredits: number;
+  unitCostCredits?: number;
   error: string | null;
   createdAt: Date;
   updatedAt: Date;

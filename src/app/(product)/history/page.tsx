@@ -7,8 +7,8 @@ import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
 import { listCollections } from "@/server/bff/account";
-import { pageHistoryTasks } from "@/server/bff/generation";
-import { getMediaSignedUrl } from "@/server/bff/generation";
+import { getMediaDownloadUrl, getMediaSignedUrl, pageHistoryTasks } from "@/server/bff/generation";
+import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
 
@@ -231,6 +231,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
   const pageItems = historyItems;
 
   const assetIds = new Set<string>();
+  const downloadAssetIds = new Set<string>();
   for (const item of pageItems) {
     if (!item.output) {
       continue;
@@ -238,15 +239,24 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
     const previewAsset = item.output.thumbnailAsset || item.output.outputAsset;
     assetIds.add(previewAsset.id);
-    assetIds.add(item.output.outputAsset.id);
+    downloadAssetIds.add(item.output.outputAsset.id);
   }
-  const urlEntries = await Promise.all(
-    Array.from(assetIds).map(async (assetId) => {
-      const url = await getMediaSignedUrl(assetId);
-      return [assetId, url] as const;
-    }),
-  );
+  const [urlEntries, downloadEntries] = await Promise.all([
+    Promise.all(
+      Array.from(assetIds).map(async (assetId) => {
+        const url = await getMediaSignedUrl(assetId);
+        return [assetId, url] as const;
+      }),
+    ),
+    Promise.all(
+      Array.from(downloadAssetIds).map(async (assetId) => {
+        const url = await getMediaDownloadUrl(assetId);
+        return [assetId, url] as const;
+      }),
+    ),
+  ]);
   const urls = new Map(urlEntries);
+  const downloadUrls = new Map(downloadEntries);
 
   const hasDateFilter = Boolean(from || to);
   const hasMediaFilter = media !== "all";
@@ -295,6 +305,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                 <span className={styles.history__centerCell}>提示词</span>
                 <span className={styles.history__centerCell}>模型</span>
                 <span className={styles.history__centerCell}>分辨率</span>
+                <span className={styles.history__centerCell}>比例</span>
                 <span className={styles.history__centerCell}>消耗</span>
                 <span className={styles.history__centerCell}>状态</span>
                 <span className={styles.history__centerCell}>时间</span>
@@ -337,12 +348,15 @@ export default async function HistoryPage(props: HistoryPageProps) {
                         {task.model}
                       </p>
                       <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {task.size}
+                        {getImageResolutionLabel(task.quality)}
                       </p>
-                      <div className={clsx(styles.history__credits, styles.history__centerCell)}>
-                        <span>{task.costCredits}</span>
-                        <span>图片 {task.imageCount}</span>
-                      </div>
+                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
+                        {task.ratio || "-"}
+                      </p>
+                      <p className={clsx(styles.history__credits, styles.history__centerCell)}>
+                        {task.unitCostCredits ??
+                          Math.round(task.costCredits / Math.max(task.imageCount, 1))}
+                      </p>
                       <span
                         className={clsx(
                           styles.history__status,
@@ -363,7 +377,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             generatedImageId={output.id}
                             initialPublished={Boolean(output.galleryImage)}
                             collections={collectionOptions}
-                            downloadUrl={urls.get(output.outputAsset.id) || url}
+                            downloadUrl={downloadUrls.get(output.outputAsset.id) || url}
                             downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
                           />
                         ) : (

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { createTask, requireConversation } from "@/server/bff/generation";
+import { createTask, requireConversation, serializeTask } from "@/server/bff/generation";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
@@ -48,17 +48,6 @@ export async function POST(request: Request) {
       count: payload.count,
     });
 
-    return jsonOk({
-      task: {
-        id: task.id,
-        prompt: task.prompt,
-        mode: task.mode,
-        status: task.status,
-        size: task.size,
-        imageCount: task.imageCount,
-        costCredits: task.costCredits,
-        createdAt: task.createdAt.toISOString(),
-      },
-    });
+    return jsonOk({ task: await serializeTask(task) });
   });
 }

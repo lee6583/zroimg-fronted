@@ -3,11 +3,8 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { AppSelect } from "@/components/ui/app-select";
-import type {
-  GenerationMode,
-  GenerationModelOption,
-  GenerationQualityOption,
-} from "@/types/generation";
+import type { GenerationMode, GenerationModelOption } from "@/types/generation";
+import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { normalizeOptions, type GenerationOptions } from "./generation-model";
 import styles from "./generate-form.module.css";
 
@@ -91,7 +88,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         </div>
       </SettingGroup>
 
-      <SettingGroup title="画质">
+      <SettingGroup title="分辨率">
         <div className={styles.generateForm__optionGridFour}>
           {params.qualities.map((quality) => (
             <Option
@@ -99,7 +96,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
               active={value.quality === quality}
               onClick={() => update("quality", quality)}
             >
-              {qualityLabel(quality)}
+              {getImageResolutionLabel(quality)}
             </Option>
           ))}
         </div>
@@ -138,16 +135,6 @@ function getAvailableModes(models: GenerationModelOption[]) {
   }
 
   return modes;
-}
-
-function qualityLabel(quality: GenerationQualityOption) {
-  const labels: Record<string, string> = {
-    auto: "自动",
-    low: "低",
-    medium: "中",
-    high: "高",
-  };
-  return labels[quality] || quality;
 }
 
 function Option(props: OptionProps) {

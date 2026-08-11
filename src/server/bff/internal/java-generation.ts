@@ -65,6 +65,7 @@ const javaTaskSchema = z.object({
   quality: z.string(),
   format: z.string(),
   count: z.number(),
+  unitPoints: z.number(),
   requiredPoints: z.number(),
   status: z.string(),
   failReason: z.string().nullable().optional(),
@@ -181,7 +182,6 @@ function mapOutputs(task: JavaTask) {
 
 function mapTask(task: JavaTask): GenerationTaskView {
   const outputs = mapOutputs(task);
-  const imageUrls = outputs.map((output) => `/api/media/assets/${output.outputAsset.id}`);
 
   return {
     id: task.taskNo,
@@ -190,13 +190,15 @@ function mapTask(task: JavaTask): GenerationTaskView {
     status: mapStatus(task.status),
     model: task.modelCode,
     size: mapSize(task.resolution, task.ratio),
+    ratio: task.ratio,
+    resolution: task.resolution,
     quality: task.quality as GenerationTaskView["quality"],
     outputFormat: task.format as GenerationTaskView["outputFormat"],
     imageCount: task.count,
     costCredits: task.requiredPoints,
+    unitCostCredits: task.unitPoints,
     createdAt: new Date(task.createTime),
     updatedAt: new Date(task.createTime),
-    imageUrls,
     outputs,
     error: task.failReason || null,
   };

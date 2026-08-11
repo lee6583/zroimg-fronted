@@ -20,6 +20,7 @@ type HistoryImageActionsProps = {
   collections: FavoriteCollection[];
   downloadUrl: string;
   downloadFileName: string;
+  showPublish?: boolean;
 };
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
@@ -28,6 +29,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   const collections = props.collections;
   const downloadUrl = props.downloadUrl;
   const downloadFileName = props.downloadFileName;
+  const showPublish = props.showPublish ?? true;
 
   const [isOpen, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -80,10 +82,12 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   return (
     <div className={styles.historyImageActions}>
       <div className={styles.historyImageActions__row}>
-        <PublishGalleryButton
-          generatedImageId={generatedImageId}
-          initialPublished={initialPublished}
-        />
+        {showPublish ? (
+          <PublishGalleryButton
+            generatedImageId={generatedImageId}
+            initialPublished={initialPublished}
+          />
+        ) : null}
 
         <button
           type="button"
@@ -103,8 +107,6 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           title="下载图片"
           href={downloadUrl}
           download={downloadFileName}
-          target="_blank"
-          rel="noreferrer"
           className={styles.historyImageActions__iconButton}
         >
           <Download size={13} />

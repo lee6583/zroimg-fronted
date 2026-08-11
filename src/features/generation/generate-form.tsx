@@ -11,11 +11,14 @@ import type { GenerationModelOption } from "@/types/generation";
 import { ConversationSidebar } from "./conversation-sidebar";
 import { GenerationSettings } from "./generation-settings";
 import {
+  activeConversationCookieName,
   getGenerationSize,
   groupConversations,
   normalizeOptions,
   normalizeConversation,
+  resolveActiveConversationId,
   type ConversationItem,
+  type FavoriteCollectionItem,
   type GenerationOptions,
   type MediaInput,
   type Notice,
@@ -32,6 +35,7 @@ type GenerateFormProps = {
   initialBalance: number;
   initialOptions: GenerationOptions;
   initialEstimate: number;
+  initialCollections: FavoriteCollectionItem[];
   modelOptions: GenerationModelOption[];
 };
 
@@ -44,6 +48,7 @@ export function GenerateForm(props: GenerateFormProps) {
   const initialBalance = props.initialBalance;
   const initialOptions = props.initialOptions;
   const initialEstimate = props.initialEstimate;
+  const initialCollections = props.initialCollections;
   const modelOptions = props.modelOptions;
 
   const [chats, setChats] = useState(initialChats);
@@ -65,6 +70,7 @@ export function GenerateForm(props: GenerateFormProps) {
   const [isCollapsed, setCollapsed] = useState(false);
   const [isCreatingChat, setCreatingChat] = useState(false);
   const isCreatingChatRef = useRef(false);
+  const selectionVersionRef = useRef(0);
 
   const size = getGenerationSize(options);
   const isCostError = !isEstimating && (balance < estimate || errorCost === estimate);
@@ -74,6 +80,42 @@ export function GenerateForm(props: GenerateFormProps) {
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
   const summary = `${options.ratio} · 预计 ${estimate} 积分`;
+
+  useEffect(() => {
+    let disposed = false;
+    const selectionVersion = selectionVersionRef.current;
+
+    async function restoreConversation() {
+      const rememberedId = readActiveConversationId();
+      let nextChats = initialChats;
+
+      try {
+        if (rememberedId && !nextChats.some((item) => item.id === rememberedId)) {
+          const data = await generationConversationsApi.fetchConversations();
+          nextChats = data.conversations.map(normalizeConversation);
+        }
+
+        const nextId = resolveActiveConversationId(nextChats, rememberedId, initialId);
+        const data = nextId
+          ? await generationConversationsApi.fetchConversationTasks(nextId)
+          : { tasks: [] };
+
+        if (disposed || selectionVersionRef.current !== selectionVersion) return;
+
+        setChats(nextChats);
+        setActiveId(nextId);
+        setTasks(data.tasks);
+        if (nextId) rememberActiveConversation(nextId);
+      } catch {
+        // Keep the server-rendered conversation available when background restoration fails.
+      }
+    }
+
+    void restoreConversation();
+    return () => {
+      disposed = true;
+    };
+  }, [initialChats, initialId]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -157,7 +199,9 @@ export function GenerateForm(props: GenerateFormProps) {
 
     const activeChat = chats.find((item) => item.id === activeId);
     if (activeChat && isReusableDraftChat(activeChat, tasks)) {
+      selectionVersionRef.current += 1;
       setActiveId(activeChat.id);
+      rememberActiveConversation(activeChat.id);
       setTasks([]);
       if (clearPrompt) setPrompt("");
       setMenuOpen(false);
@@ -175,8 +219,10 @@ export function GenerateForm(props: GenerateFormProps) {
       });
       const item = normalizeConversation(data.conversation);
 
+      selectionVersionRef.current += 1;
       setChats((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
       setActiveId(item.id);
+      rememberActiveConversation(item.id);
       setTasks([]);
       if (clearPrompt) setPrompt("");
       setMenuOpen(false);
@@ -191,7 +237,9 @@ export function GenerateForm(props: GenerateFormProps) {
   }
 
   async function selectChat(id: string) {
+    selectionVersionRef.current += 1;
     setActiveId(id);
+    rememberActiveConversation(id);
     setMenuOpen(false);
     setNotice(null);
 
@@ -237,6 +285,7 @@ export function GenerateForm(props: GenerateFormProps) {
     setChats(remaining);
     if (activeId !== id) return;
 
+    selectionVersionRef.current += 1;
     setActiveId("");
     setTasks([]);
     if (remaining[0]) {
@@ -342,10 +391,13 @@ export function GenerateForm(props: GenerateFormProps) {
         mode: options.mode,
         status: "running",
         size,
+        ratio: options.ratio,
+        quality: options.quality,
         imageCount: options.count,
         costCredits: estimate,
+        unitCostCredits: Math.round(estimate / Math.max(options.count, 1)),
         createdAt: new Date().toISOString(),
-        imageUrls: [],
+        outputs: [],
       };
 
       setTasks((current) => [pendingTask, ...current]);
@@ -506,7 +558,7 @@ export function GenerateForm(props: GenerateFormProps) {
             </div>
           ) : null}
 
-          <TaskPreview tasks={tasks} onPromptChange={setPrompt} />
+          <TaskPreview tasks={tasks} collections={initialCollections} onPromptChange={setPrompt} />
           <PromptComposer
             inputs={inputs}
             prompt={prompt}
@@ -574,4 +626,15 @@ async function uploadFile(file: File) {
   const data = new FormData();
   data.set("file", file);
   return (await generationTasksApi.uploadMedia(data)).media;
+}
+
+function readActiveConversationId() {
+  const prefix = `${activeConversationCookieName}=`;
+  const cookie = document.cookie.split(";").find((item) => item.trim().startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.trim().slice(prefix.length)) : "";
+}
+
+function rememberActiveConversation(id: string) {
+  const secure = window.location.protocol === "https:" ? ";secure" : "";
+  document.cookie = `${activeConversationCookieName}=${encodeURIComponent(id)};path=/generate;max-age=31536000;samesite=lax${secure}`;
 }

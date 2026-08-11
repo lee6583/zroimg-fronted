@@ -1,5 +1,10 @@
+import { cookies } from "next/headers";
 import { GenerateForm } from "@/features/generation/generate-form";
-import { getDefaultOptions } from "@/features/generation/generation-model";
+import {
+  activeConversationCookieName,
+  getDefaultOptions,
+  resolveActiveConversationId,
+} from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
 import {
   ensureDefaultConversation,
@@ -7,7 +12,9 @@ import {
   listConversations,
   listModels,
   listTasks,
+  serializeTask,
 } from "@/server/bff/generation";
+import { listCollections } from "@/server/bff/account";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +31,14 @@ export default async function GeneratePage() {
   });
   await ensureDefaultConversation(current.profile.id);
   const conversations = await listConversations(current.profile.id);
-  const activeId = conversations[0]?.id;
-  const tasks = activeId ? await listTasks(current.profile.id, activeId) : [];
+  const cookieStore = await cookies();
+  const rememberedId = cookieStore.get(activeConversationCookieName)?.value;
+  const activeId = resolveActiveConversationId(conversations, rememberedId);
+  const tasksPromise = activeId ? listTasks(current.profile.id, activeId) : Promise.resolve([]);
+  const [tasks, collections] = await Promise.all([
+    tasksPromise,
+    listCollections(current.profile.id),
+  ]);
   const items = conversations.map((conversation) => {
     const latestTask = conversation.tasks[0];
     return {
@@ -39,15 +52,11 @@ export default async function GeneratePage() {
       createdAt: conversation.createdAt.toISOString(),
     };
   });
-  const taskList = tasks.map((task) => ({
-    id: task.id,
-    prompt: task.prompt,
-    mode: task.mode,
-    status: task.status,
-    size: task.size,
-    imageCount: task.imageCount,
-    costCredits: task.costCredits,
-    createdAt: task.createdAt.toISOString(),
+  const taskList = await Promise.all(tasks.map(serializeTask));
+  const collectionItems = collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+    imageCount: collection._count.items,
   }));
 
   return (
@@ -58,6 +67,7 @@ export default async function GeneratePage() {
       initialBalance={initialPrice.currentPoints}
       initialOptions={initialOptions}
       initialEstimate={initialPrice.requiredPoints}
+      initialCollections={collectionItems}
       modelOptions={modelOptions}
     />
   );

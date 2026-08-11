@@ -10,6 +10,8 @@ import type {
   GenerationModelOption,
   GenerationModelParams,
   GenerationPriceRequest,
+  GenerationTaskApiItem,
+  GenerationTaskView,
 } from "@/types/generation";
 
 export type { GalleryCategory } from "@/server/bff/internal/gallery";
@@ -21,7 +23,7 @@ export async function listModels(): Promise<GenerationModelOption[]> {
 
   const params: GenerationModelParams = {
     ratios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
-    qualities: ["low", "medium", "high"],
+    qualities: ["low", "medium", "high", "auto"],
     counts: [1, 2, 4],
     defaults: {
       ratio: "1:1",
@@ -173,6 +175,53 @@ export async function getMediaSignedUrl(assetId: string, isPublic = false) {
   }
 
   return mockStorage.getMediaSignedUrl(assetId);
+}
+
+export async function getMediaDownloadUrl(assetId: string) {
+  if (isJavaBffEnabled()) {
+    return `/api/media/assets/${encodeURIComponent(assetId)}/download`;
+  }
+
+  return mockStorage.getMediaSignedUrl(assetId);
+}
+
+export async function serializeTask(task: GenerationTaskView): Promise<GenerationTaskApiItem> {
+  const outputs = await Promise.all(
+    task.outputs.map(async (output) => {
+      const previewAsset = output.thumbnailAsset || output.outputAsset;
+      const imageUrl = await getMediaSignedUrl(previewAsset.id);
+      const downloadUrl = await getMediaDownloadUrl(output.outputAsset.id);
+
+      return {
+        id: output.id,
+        imageUrl,
+        downloadUrl,
+        fileName: output.outputAsset.fileName,
+        width: output.width || output.outputAsset.width,
+        height: output.height || output.outputAsset.height,
+      };
+    }),
+  );
+
+  return {
+    id: task.id,
+    prompt: task.prompt,
+    mode: task.mode,
+    status: task.status,
+    size: task.size,
+    ratio: task.ratio || inferRatio(task.size),
+    quality: task.quality,
+    imageCount: task.imageCount,
+    costCredits: task.costCredits,
+    unitCostCredits:
+      task.unitCostCredits ?? Math.round(task.costCredits / Math.max(task.imageCount, 1)),
+    createdAt: task.createdAt.toISOString(),
+    outputs,
+  };
+}
+
+function inferRatio(size: string) {
+  return size.includes(":") ? size : "-";
 }
 
 export const uploadMedia = mockStorage.uploadMedia;

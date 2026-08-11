@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit --incremental false",
-    "test": "node --experimental-strip-types --test tests/credits.test.ts tests/media.test.ts tests/order-status.test.ts tests/recharge.test.ts",
+    "test": "node --experimental-strip-types --test tests/credits.test.ts tests/generation.test.ts tests/media.test.ts tests/order-status.test.ts tests/recharge.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit:prod": "pnpm audit --prod --audit-level=high --ignore-registry-errors --registry=https://registry.npmjs.org",

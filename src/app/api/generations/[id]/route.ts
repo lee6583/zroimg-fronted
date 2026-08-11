@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { getTask } from "@/server/bff/generation";
+import { getTask, serializeTask } from "@/server/bff/generation";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
@@ -15,11 +15,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       return jsonError("任务不存在", 404);
     }
 
-    return jsonOk({
-      task: {
-        id: task.id,
-        status: task.status,
-      },
-    });
+    return jsonOk({ task: await serializeTask(task) });
   });
 }

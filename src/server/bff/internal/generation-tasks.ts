@@ -271,10 +271,12 @@ export async function create(input: {
     status: "queued" as const,
     model: input.model,
     size: input.ratio,
+    ratio: input.ratio,
     quality,
     outputFormat: "png",
     imageCount: input.count,
     costCredits,
+    unitCostCredits: costCredits / input.count,
     error: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -287,5 +289,8 @@ export async function create(input: {
     conversation.title = input.prompt.trim().slice(0, 24) || "新对话";
   }
 
-  return task;
+  return {
+    ...task,
+    outputs: [],
+  };
 }
