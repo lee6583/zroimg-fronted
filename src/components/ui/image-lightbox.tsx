@@ -13,6 +13,7 @@ type ImageLightboxProps = {
   alt: string;
   width: number;
   height: number;
+  fit?: "container" | "intrinsic";
   triggerClassName?: string;
   imageClassName?: string;
 };
@@ -23,6 +24,7 @@ export function ImageLightbox(props: ImageLightboxProps) {
   const alt = props.alt;
   const width = props.width;
   const height = props.height;
+  const fit = props.fit ?? "container";
   const triggerClassName = props.triggerClassName;
   const imageClassName = props.imageClassName;
 
@@ -53,7 +55,11 @@ export function ImageLightbox(props: ImageLightboxProps) {
         type="button"
         aria-label="放大查看图片"
         title="放大查看"
-        className={clsx(styles.imageLightbox__trigger, triggerClassName)}
+        className={clsx(
+          styles.imageLightbox__trigger,
+          fit === "intrinsic" && styles.imageLightbox__triggerIntrinsic,
+          triggerClassName,
+        )}
         onClick={() => setOpen(true)}
       >
         <Image

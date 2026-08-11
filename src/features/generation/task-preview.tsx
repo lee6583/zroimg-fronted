@@ -98,7 +98,7 @@ function TaskMessage(props: TaskMessageProps) {
           styles.generateForm__chatMessageAssistant,
         )}
       >
-        {hasImages ? null : <Avatar type="bot" />}
+        <Avatar type="bot" />
         <div
           className={clsx(
             styles.generateForm__assistantBubble,
@@ -115,6 +115,7 @@ function TaskMessage(props: TaskMessageProps) {
                     alt={`${task.prompt}，生成结果 ${index + 1}`}
                     width={output.width || 768}
                     height={output.height || 768}
+                    fit="intrinsic"
                     triggerClassName={styles.generateForm__chatImageTrigger}
                     imageClassName={styles.generateForm__chatImage}
                   />
@@ -125,7 +126,7 @@ function TaskMessage(props: TaskMessageProps) {
                     downloadUrl={output.downloadUrl}
                     downloadFileName={output.fileName || `zroimg-${task.id}-${index + 1}.png`}
                     showPublish={false}
-                    placement="overlay"
+                    placement="result"
                   />
                 </div>
               ))}

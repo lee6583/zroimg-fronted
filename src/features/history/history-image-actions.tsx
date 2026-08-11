@@ -21,7 +21,7 @@ type HistoryImageActionsProps = {
   downloadUrl: string;
   downloadFileName: string;
   showPublish?: boolean;
-  placement?: "default" | "overlay";
+  placement?: "default" | "result";
 };
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
@@ -85,7 +85,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
     <div
       className={clsx(
         styles.historyImageActions,
-        placement === "overlay" && styles.historyImageActionsOverlay,
+        placement === "result" && styles.historyImageActionsResult,
       )}
     >
       <div className={styles.historyImageActions__row}>
@@ -103,7 +103,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           onClick={openPanel}
           className={clsx(
             styles.historyImageActions__iconButton,
-            placement === "overlay" && styles.historyImageActions__iconButtonOverlay,
+            placement === "result" && styles.historyImageActions__iconButtonResult,
             isFavorited && styles.historyImageActions__iconButtonActive,
           )}
         >
@@ -117,7 +117,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           download={downloadFileName}
           className={clsx(
             styles.historyImageActions__iconButton,
-            placement === "overlay" && styles.historyImageActions__iconButtonOverlay,
+            placement === "result" && styles.historyImageActions__iconButtonResult,
           )}
         >
           <Download size={13} />

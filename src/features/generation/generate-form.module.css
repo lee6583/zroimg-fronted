@@ -512,14 +512,14 @@
 
 .generateForm__messageList {
   display: grid;
-  gap: 1.5rem;
+  gap: 2.25rem;
   align-content: start;
   width: 100%;
 }
 
 .generateForm__taskMessages {
   display: grid;
-  gap: 0.875rem;
+  gap: 1.5rem;
 }
 
 .generateForm__chatMessage {
@@ -583,8 +583,8 @@
 }
 
 .generateForm__assistantBubbleResult {
-  width: min(100%, 42rem);
-  max-width: min(100%, 42rem);
+  width: fit-content;
+  max-width: min(100%, 38rem);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -628,24 +628,32 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   gap: 0.875rem;
+  justify-items: start;
 }
 
 .generateForm__chatImageItem {
-  position: relative;
+  display: grid;
+  width: fit-content;
+  max-width: 100%;
   min-width: 0;
+  justify-items: end;
+  gap: 0.5rem;
 }
 
 .generateForm__chatImageTrigger {
-  height: min(48dvh, 30rem);
+  width: fit-content;
+  max-width: 100%;
+  height: auto;
+  max-height: min(44dvh, 26rem);
   border-radius: 0.5rem;
-  background: var(--soft);
 }
 
 .generateForm__chatImage {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 36rem);
+  max-height: min(44dvh, 26rem);
 }
 
 .generateForm__composerBar {
