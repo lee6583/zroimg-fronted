@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Coins, Eye, EyeOff, KeyRound, Pencil, ShieldAlert, Trash2, X } from "lucide-react";
+import { Ban, CircleCheck, Coins, Eye, EyeOff, KeyRound, Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
@@ -22,12 +22,11 @@ export function UserActions(props: UserActionsProps) {
   const variant = props.variant || "icon";
   const router = useRouter();
   const canDelete = variant === "icon" && user.role !== "admin";
+  const canUpdateStatus = variant === "icon" && user.role !== "admin";
 
   const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
   const [amount, setAmount] = useState(100);
-  const [reason, setReason] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [statusOverride, setStatusOverride] = useState<AdminUser["status"] | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -81,10 +80,9 @@ export function UserActions(props: UserActionsProps) {
     setMessage("");
 
     try {
-      await adminUsersApi.adjustCredits(user.id, { amount, reason });
+      await adminUsersApi.adjustCredits(user.id, { amount });
       setError(false);
       setMessage("积分已调整");
-      setReason("");
       router.refresh();
     } catch (error) {
       showError(error);
@@ -99,9 +97,8 @@ export function UserActions(props: UserActionsProps) {
     setMessage("");
 
     try {
-      await adminUsersApi.resetPassword(user.id, { password, confirmPassword });
+      await adminUsersApi.resetPassword(user.id, { password });
       setPassword("");
-      setConfirmPassword("");
       setError(false);
       setMessage("密码已重置");
     } catch (error) {
@@ -113,17 +110,16 @@ export function UserActions(props: UserActionsProps) {
 
   async function toggleStatus() {
     const nextStatus = status === "active" ? "banned" : "active";
+    const action = nextStatus === "banned" ? "封禁" : "解除封禁";
+    if (!window.confirm(`确定${action}用户“${user.username}”吗？`)) return;
     setPendingAction("status");
-    setMessage("");
 
     try {
       await adminUsersApi.updateStatus(user.id, { status: nextStatus });
       setStatusOverride(nextStatus);
-      setError(false);
-      setMessage(nextStatus === "active" ? "用户已解除封禁" : "用户已封禁");
       router.refresh();
     } catch (error) {
-      showError(error);
+      window.alert(getErrorMessage(error));
     } finally {
       setPendingAction(null);
     }
@@ -160,6 +156,21 @@ export function UserActions(props: UserActionsProps) {
           <Pencil size={15} />
           {variant === "button" ? <span>编辑用户</span> : null}
         </button>
+        {canUpdateStatus ? (
+          <button
+            type="button"
+            className={clsx(
+              styles.userActions__iconButton,
+              status === "active" && styles.userActions__banButton,
+            )}
+            aria-label={`${status === "active" ? "封禁" : "解除封禁"}用户 ${user.username}`}
+            title={status === "active" ? "封禁用户" : "解除封禁"}
+            disabled={isLoading}
+            onClick={toggleStatus}
+          >
+            {status === "active" ? <Ban size={15} /> : <CircleCheck size={15} />}
+          </button>
+        ) : null}
         {canDelete ? (
           <button
             type="button"
@@ -222,7 +233,7 @@ export function UserActions(props: UserActionsProps) {
                     </div>
                   </div>
                 </div>
-                <div className={styles.userActions__fields}>
+                <div className={styles.userActions__controls}>
                   <label>
                     <span>调整数量</span>
                     <input
@@ -233,23 +244,7 @@ export function UserActions(props: UserActionsProps) {
                       onChange={(event) => setAmount(Number(event.target.value))}
                     />
                   </label>
-                  <label>
-                    <span>调整原因</span>
-                    <input
-                      className="field"
-                      required
-                      value={reason}
-                      placeholder="填写操作原因"
-                      onChange={(event) => setReason(event.target.value)}
-                    />
-                  </label>
-                </div>
-                <div className={styles.userActions__sectionAction}>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    disabled={isLoading || !reason.trim()}
-                  >
+                  <button className="btn-primary" type="submit" disabled={isLoading}>
                     {pendingAction === "credits" ? "处理中..." : "确认调整"}
                   </button>
                 </div>
@@ -266,77 +261,34 @@ export function UserActions(props: UserActionsProps) {
                     </div>
                   </div>
                 </div>
-                <div className={styles.userActions__fields}>
-                  {["新密码", "确认新密码"].map((label, index) => {
-                    const value = index === 0 ? password : confirmPassword;
-                    const setValue = index === 0 ? setPassword : setConfirmPassword;
-                    return (
-                      <label key={label}>
-                        <span>{label}</span>
-                        <div className={styles.userActions__passwordField}>
-                          <input
-                            className="field"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            autoComplete="new-password"
-                            value={value}
-                            onChange={(event) => setValue(event.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className={styles.userActions__passwordToggle}
-                            aria-label={showPassword ? "隐藏密码" : "显示密码"}
-                            title={showPassword ? "隐藏密码" : "显示密码"}
-                            onClick={() => setShowPassword((current) => !current)}
-                          >
-                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                          </button>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-                <div className={styles.userActions__sectionAction}>
-                  <button
-                    className="btn-secondary"
-                    type="submit"
-                    disabled={isLoading || !password || !confirmPassword}
-                  >
+                <div className={styles.userActions__controls}>
+                  <label>
+                    <span>新密码</span>
+                    <div className={styles.userActions__passwordField}>
+                      <input
+                        className="field"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        autoComplete="new-password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className={styles.userActions__passwordToggle}
+                        aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                        title={showPassword ? "隐藏密码" : "显示密码"}
+                        onClick={() => setShowPassword((current) => !current)}
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </label>
+                  <button className="btn-secondary" type="submit" disabled={isLoading || !password}>
                     {pendingAction === "password" ? "处理中..." : "重置密码"}
                   </button>
                 </div>
               </form>
-
-              <section className={styles.userActions__statusSection}>
-                <div className={styles.userActions__sectionTitle}>
-                  <span className={styles.userActions__sectionIcon} aria-hidden="true">
-                    <ShieldAlert size={16} />
-                  </span>
-                  <div>
-                    <h3>{status === "active" ? "封禁用户" : "解除封禁"}</h3>
-                    <p>
-                      {status === "active"
-                        ? "封禁后用户将无法继续使用账户。"
-                        : "解除后用户可以恢复正常使用。"}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={clsx(
-                    styles.userActions__statusButton,
-                    status === "active" && styles.userActions__statusButtonDanger,
-                  )}
-                  disabled={isLoading}
-                  onClick={toggleStatus}
-                >
-                  {pendingAction === "status"
-                    ? "处理中..."
-                    : status === "active"
-                      ? "封禁用户"
-                      : "解除封禁"}
-                </button>
-              </section>
             </div>
 
             {message ? (

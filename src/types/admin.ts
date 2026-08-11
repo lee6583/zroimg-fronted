@@ -110,7 +110,6 @@ type SaveCheckInSettingsResponse = {
 
 type AdjustUserCreditsRequest = {
   amount: number;
-  reason: string;
 };
 
 type AdjustUserCreditsResponse = {
@@ -127,7 +126,6 @@ type UpdateUserStatusResponse = {
 
 type ResetUserPasswordRequest = {
   password: string;
-  confirmPassword: string;
 };
 
 type ResetUserPasswordResponse = {

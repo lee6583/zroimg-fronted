@@ -6,15 +6,9 @@ import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
-const passwordSchema = z
-  .object({
-    password: z.string().min(8, "密码至少 8 位").max(128, "密码最多 128 位"),
-    confirmPassword: z.string().min(8, "确认密码至少 8 位").max(128, "确认密码最多 128 位"),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "两次输入的密码不一致",
-    path: ["confirmPassword"],
-  });
+const passwordSchema = z.object({
+  password: z.string().min(8, "密码至少 8 位").max(128, "密码最多 128 位"),
+});
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   return handleApi(async () => {

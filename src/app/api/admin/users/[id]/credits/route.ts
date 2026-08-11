@@ -13,8 +13,9 @@ const creditsSchema = z.object({
     .min(-1_000_000)
     .max(1_000_000)
     .refine((value) => value !== 0, "积分变动值不能为 0"),
-  reason: z.string().trim().min(1, "请输入调整原因").max(200, "调整原因最多 200 位"),
 });
+
+const adjustmentReason = "管理员手动调整";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   return handleApi(async () => {
@@ -27,7 +28,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const parsed = await parseJson(request, creditsSchema);
     if (!parsed.ok) return jsonError(parsed.message);
 
-    const { amount, reason } = parsed.data;
+    const { amount } = parsed.data;
 
     if (isJavaAuthEnabled()) {
       const headers = new Headers(request.headers);
@@ -35,7 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const javaRequest = new Request(request.url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ amount, reason }),
+        body: JSON.stringify({ amount }),
       });
       return proxyRequestToJavaApi(
         javaRequest,
@@ -43,13 +44,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       );
     }
 
-    const profile = adjustProfileCredits(id, amount, reason, "adjustment");
+    const profile = adjustProfileCredits(id, amount, adjustmentReason, "adjustment");
     addAuditLog({
       adminProfileId: current.profile.id,
       action: "adjust_credits",
       targetType: "userProfile",
       targetId: id,
-      detailJson: { amount, reason },
+      detailJson: { amount },
     });
     return jsonOk({ balance: profile.creditBalance });
   });

@@ -30,6 +30,12 @@
   color: var(--danger);
 }
 
+.userActions__banButton:hover {
+  border-color: color-mix(in oklab, var(--danger) 42%, var(--line));
+  background: color-mix(in oklab, var(--danger) 8%, var(--panel));
+  color: var(--danger);
+}
+
 .userActions__iconButton:disabled,
 .userActions__closeButton:disabled {
   cursor: not-allowed;
@@ -48,7 +54,7 @@
 }
 
 .userActions__dialog {
-  width: min(45rem, 100%);
+  width: min(38rem, 100%);
   max-height: calc(100dvh - 2rem);
   overflow: hidden auto;
   border: 1px solid var(--line);
@@ -111,22 +117,16 @@
   padding: 0 1.25rem;
 }
 
-.userActions__section,
-.userActions__statusSection {
-  padding: 1.2rem 0;
-}
-
-.userActions__section + .userActions__section,
-.userActions__statusSection {
-  border-top: 1px solid var(--line);
-}
-
-.userActions__sectionHeading,
-.userActions__statusSection {
-  display: flex;
+.userActions__section {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.75fr) minmax(16rem, 1.25fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
+  padding: 1.35rem 0;
+}
+
+.userActions__section + .userActions__section {
+  border-top: 1px solid var(--line);
 }
 
 .userActions__sectionTitle {
@@ -148,36 +148,34 @@
   color: var(--foreground);
 }
 
-.userActions__section h3,
-.userActions__statusSection h3 {
+.userActions__section h3 {
   color: var(--foreground);
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.userActions__section p,
-.userActions__statusSection p {
+.userActions__section p {
   margin-top: 0.15rem;
   color: var(--muted);
   font-size: 0.74rem;
   line-height: 1.5;
 }
 
-.userActions__fields {
+.userActions__controls {
   display: grid;
-  grid-template-columns: minmax(9rem, 0.72fr) minmax(0, 1.28fr);
-  gap: 0.8rem;
-  margin-top: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.7rem;
 }
 
-.userActions__fields label {
+.userActions__controls label {
   display: grid;
   min-width: 0;
   gap: 0.42rem;
 }
 
-.userActions__fields label > span,
+.userActions__controls label > span,
 .userActions__confirmField > span {
   color: var(--muted);
   font-size: 0.74rem;
@@ -185,7 +183,7 @@
   text-align: left;
 }
 
-.userActions__fields input {
+.userActions__controls input {
   height: 2.65rem;
   font-size: 0.85rem;
 }
@@ -219,19 +217,11 @@
   color: var(--foreground);
 }
 
-.userActions__sectionAction {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.85rem;
-}
-
-.userActions__sectionAction button,
-.userActions__statusButton {
+.userActions__controls > button {
   min-width: 6.5rem;
-  min-height: 2.35rem;
+  height: 2.65rem;
 }
 
-.userActions__statusButton,
 .userActions__dangerButton {
   flex: 0 0 auto;
   border: 1px solid var(--line);
@@ -244,16 +234,6 @@
   cursor: pointer;
 }
 
-.userActions__statusButton:hover {
-  background: var(--soft);
-}
-
-.userActions__statusButtonDanger {
-  border-color: color-mix(in oklab, var(--danger) 38%, var(--line));
-  color: var(--danger);
-}
-
-.userActions__statusButton:disabled,
 .userActions__dangerButton:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -362,17 +342,16 @@
     max-width: calc(100vw - 9rem);
   }
 
-  .userActions__fields {
+  .userActions__section {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .userActions__controls {
     grid-template-columns: 1fr;
   }
 
-  .userActions__statusSection {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .userActions__sectionAction button,
-  .userActions__statusButton {
+  .userActions__controls > button {
     width: 100%;
   }
 }
