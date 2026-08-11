@@ -28,6 +28,7 @@ export type MockUserProfile = {
   status: MockUserStatus;
   creditBalance: number;
   bio: string;
+  avatarUrl: string | null;
   createdAt: Date;
 };
 
@@ -330,6 +331,7 @@ function createStore(): MockStore {
       status: "active",
       creditBalance: 9999,
       bio: "站点管理员",
+      avatarUrl: null,
       createdAt: nowMinus(240),
     },
     {
@@ -340,6 +342,7 @@ function createStore(): MockStore {
       status: "active",
       creditBalance: 430,
       bio: "偏爱电影感与产品视觉。",
+      avatarUrl: null,
       createdAt: nowMinus(168),
     },
   ];
@@ -1238,6 +1241,7 @@ export function createMockUser(input: { username: string; email: string; passwor
     status: "active",
     creditBalance: 10,
     bio: "",
+    avatarUrl: null,
     createdAt: new Date(),
   };
   store.users.push(user);

@@ -19,6 +19,7 @@ const javaUserSchema = z.object({
   username: z.string(),
   email: z.string(),
   bio: z.string().nullable().optional(),
+  avatarUrl: z.string().nullable().optional(),
   role: z.enum(["user", "admin"]),
   status: z.number(),
   totalPoints: z.number(),
@@ -54,6 +55,7 @@ function getMockProfile(javaUser: JavaUser) {
   bundle.profile.role = readRole(javaUser.role);
   bundle.profile.status = "active";
   bundle.profile.creditBalance = javaUser.totalPoints;
+  bundle.profile.avatarUrl = javaUser.avatarUrl ?? null;
   return bundle;
 }
 
@@ -106,6 +108,7 @@ async function getJavaUser() {
       status: "active" as const,
       creditBalance: javaUser.totalPoints,
       bio: javaUser.bio ?? "",
+      avatarUrl: javaUser.avatarUrl ?? null,
       createdAt,
     },
   };

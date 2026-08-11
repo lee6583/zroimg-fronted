@@ -7,11 +7,11 @@ import { listAdminGenerations } from "@/server/bff/admin";
 
 export const dynamic = "force-dynamic";
 
-const generationStatuses = ["queued", "running", "succeeded", "failed"] as const;
+const generationStatuses = ["pending", "processing", "succeeded", "failed"] as const;
 const pageSizeOptions = [10, 20, 50];
 const generationStatusLabels: Record<string, string> = {
-  queued: "排队中",
-  running: "生成中",
+  pending: "排队中",
+  processing: "生成中",
   succeeded: "已完成",
   failed: "失败",
 };
@@ -41,8 +41,8 @@ function href(input: { q?: string; status?: string; page?: number; pageSize?: nu
 
 function statusClass(status: string) {
   if (status === "succeeded") return workspace.statusSuccess;
-  if (status === "running") return workspace.statusInfo;
-  if (status === "queued") return workspace.statusWarning;
+  if (status === "processing") return workspace.statusInfo;
+  if (status === "pending") return workspace.statusWarning;
   if (status === "failed") return workspace.statusDanger;
   return undefined;
 }

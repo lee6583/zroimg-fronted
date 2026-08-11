@@ -101,10 +101,7 @@ export default async function AdminPage() {
       <div className={styles.contentGrid}>
         <section className={styles.panel}>
           <header className={styles.panelHeader}>
-            <div>
-              <h2 className={styles.panelTitle}>最近反馈</h2>
-              <p className={styles.panelSubtitle}>按最近提交和沟通时间排序</p>
-            </div>
+            <h2 className={styles.panelTitle}>最近反馈</h2>
             <Link href="/admin/tickets" className={styles.panelLink}>
               查看全部 <ArrowUpRight size={13} />
             </Link>
@@ -139,10 +136,7 @@ export default async function AdminPage() {
         <aside className={styles.sideStack}>
           <section className={styles.panel}>
             <header className={styles.panelHeader}>
-              <div>
-                <h2 className={styles.panelTitle}>需要关注</h2>
-                <p className={styles.panelSubtitle}>当前累计待办</p>
-              </div>
+              <h2 className={styles.panelTitle}>需要关注</h2>
             </header>
             <div className={styles.attentionList}>
               <div className={styles.attentionItem}>
@@ -160,35 +154,28 @@ export default async function AdminPage() {
 
           <section className={styles.panel}>
             <header className={styles.panelHeader}>
-              <div>
-                <h2 className={styles.panelTitle}>常用管理</h2>
-                <p className={styles.panelSubtitle}>配置与内容入口</p>
-              </div>
+              <h2 className={styles.panelTitle}>常用管理</h2>
             </header>
             <div className={styles.quickLinks}>
               {[
                 {
                   href: "/admin/models",
                   label: "模型配置",
-                  description: "服务接入与计费规则",
                   icon: SlidersHorizontal,
                 },
                 {
                   href: "/admin/packages",
                   label: "积分套餐",
-                  description: "价格、积分与推荐状态",
                   icon: Coins,
                 },
                 {
                   href: "/admin/docs",
                   label: "文档管理",
-                  description: "维护公开帮助文档",
                   icon: BookOpen,
                 },
                 {
                   href: "/admin/settings",
                   label: "系统设置",
-                  description: "支付、邮件与运营配置",
                   icon: Settings,
                 },
               ].map((item) => {
@@ -200,7 +187,6 @@ export default async function AdminPage() {
                     </span>
                     <span className={styles.quickCopy}>
                       <strong>{item.label}</strong>
-                      <span>{item.description}</span>
                     </span>
                     <ArrowUpRight size={13} aria-hidden="true" />
                   </Link>

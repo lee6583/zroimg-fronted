@@ -4,7 +4,6 @@ import clsx from "clsx";
 import {
   Activity,
   Coins,
-  FileClock,
   FileText,
   LayoutDashboard,
   MessageSquareText,
@@ -27,7 +26,6 @@ const adminNavItems = [
   { label: "意见反馈", href: "/admin/tickets", icon: MessageSquareText },
   { label: "文档管理", href: "/admin/docs", icon: FileText },
   { label: "系统设置", href: "/admin/settings", icon: Settings },
-  { label: "审计日志", href: "/admin/audit-logs", icon: FileClock },
 ];
 
 function isActivePath(pathname: string, href: string) {

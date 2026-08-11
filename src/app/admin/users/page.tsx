@@ -1,6 +1,7 @@
 import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { UserActions } from "@/features/admin/user-actions";
 import { listAdminUsers } from "@/server/bff/users";
 import styles from "./users-page.module.css";
@@ -106,12 +107,17 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
                   <tr key={user.id}>
                     <td>
                       <div className={styles.usersPage__userCell}>
-                        <span className={styles.usersPage__avatar} aria-hidden="true">
-                          {user.username.slice(0, 1).toUpperCase()}
-                        </span>
+                        <UserAvatar
+                          name={user.username}
+                          src={user.avatarUrl}
+                          size={34}
+                          decorative
+                        />
                         <div>
                           <Link href={`/admin/users/${user.id}`}>{user.username}</Link>
-                          <span>{user.email || "未填写邮箱"}</span>
+                          <span className={styles.usersPage__userMeta}>
+                            {user.email || "未填写邮箱"}
+                          </span>
                         </div>
                       </div>
                     </td>

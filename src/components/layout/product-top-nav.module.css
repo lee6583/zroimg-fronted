@@ -150,6 +150,24 @@
   background: var(--soft);
 }
 
+.productTopNav__avatarButton {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  padding: 0;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.productTopNav__avatarButton:hover {
+  border-color: var(--foreground);
+}
+
 .productTopNav__accountMenu {
   position: absolute;
   top: calc(100% + 0.5rem);

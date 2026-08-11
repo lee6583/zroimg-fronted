@@ -89,7 +89,6 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
         <aside className={styles.nav}>
           <header className={styles.navHeader}>
             <h2 className={styles.navTitle}>设置分类</h2>
-            <p className={styles.navHint}>选择需要维护的服务模块</p>
           </header>
           <nav className={styles.navList} aria-label="系统设置分类">
             {sections.map((item) => {

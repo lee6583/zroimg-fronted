@@ -4,6 +4,7 @@ import { getJavaRechargeOrder, prisma } from "@/server/bff/orders";
 import { isMockPaymentBffEnabled } from "@/server/env";
 import { getJavaApiErrorStatus } from "@/server/java-api";
 import type { RechargeOrder } from "@/types/orders";
+import { normalizeOrderDisplayStatus, orderDisplayStatusLabels } from "@/utils/order-status";
 import { PaymentActions } from "./payment-actions";
 import styles from "./result.module.css";
 
@@ -16,21 +17,6 @@ type BillingResultPageProps = {
 const paymentTypeLabels: Record<string, string> = {
   alipay: "支付宝",
   wxpay: "微信支付",
-};
-
-const statusLabels: Record<string, string> = {
-  pending: "待支付",
-  paid: "已支付",
-  fulfilled: "已到账",
-  expired: "已过期",
-  cancelled: "已取消",
-  closed: "已关闭",
-  failed: "支付失败",
-  credited: "已到账",
-  created: "已创建",
-  paying: "支付中",
-  confirming: "支付确认中",
-  success: "已支付",
 };
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
@@ -79,14 +65,13 @@ function formatDateText(value?: string | null) {
 }
 
 function readStatusLabel(status: string) {
-  return statusLabels[status] ?? status;
+  return orderDisplayStatusLabels[normalizeOrderDisplayStatus(status)];
 }
 
 function OrderNotFoundCard() {
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <p className={styles.result__eyebrow}>Order not found</p>
         <h1 className={styles.result__title}>订单不存在</h1>
         <p className={styles.result__description}>
           没有找到当前账号下的这笔订单，请返回订单列表查看最新记录。
@@ -117,7 +102,6 @@ function OrderLoadErrorCard(props: { status: number }) {
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <p className={styles.result__eyebrow}>Payment service</p>
         <h1 className={styles.result__title}>{title}</h1>
         <p className={styles.result__description}>{description}</p>
         <div className={styles.result__actions}>
@@ -133,17 +117,12 @@ function OrderLoadErrorCard(props: { status: number }) {
 function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
   const order = props.order;
   const paymentLabel = order.payChannelText || order.payChannel || "—";
-  const canPay = order.displayStatus === "pending" || order.displayStatus === "confirming";
-  const isCancellable = order.displayStatus === "pending" || order.displayStatus === "confirming";
-  const canDetect =
-    order.displayStatus === "pending" ||
-    order.displayStatus === "confirming" ||
-    order.displayStatus === "paid";
+  const canPay = order.displayStatus === "pending";
+  const isCancellable = order.displayStatus === "pending";
 
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <p className={styles.result__eyebrow}>Payment order</p>
         <h1 className={styles.result__title}>订单已创建</h1>
 
         <div className={styles.result__details} aria-label="订单信息">
@@ -188,7 +167,6 @@ function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
           payUrl={null}
           canPay={canPay}
           canCancel={isCancellable}
-          canDetect={canDetect}
         />
       </section>
     </main>
@@ -241,12 +219,10 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
   const statusLabel = readStatusLabel(order.status);
   const packageName = order.creditPackage?.name ?? "自定义积分购买";
   const canPay = order.status === "pending";
-  const canDetect = order.status === "pending";
 
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <p className={styles.result__eyebrow}>Payment order</p>
         <h1 className={styles.result__title}>订单已创建</h1>
 
         <div className={styles.result__details} aria-label="订单信息">
@@ -282,12 +258,7 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
           </div>
         </div>
 
-        <PaymentActions
-          orderNo={order.orderNo}
-          payUrl={order.payUrl}
-          canPay={canPay}
-          canDetect={canDetect}
-        />
+        <PaymentActions orderNo={order.orderNo} payUrl={order.payUrl} canPay={canPay} />
       </section>
     </main>
   );

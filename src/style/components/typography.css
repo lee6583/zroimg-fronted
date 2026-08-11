@@ -19,17 +19,6 @@
   line-height: 1.08;
 }
 
-.label + .page-title {
-  margin-top: 0.5rem;
-}
-
-.page-description {
-  margin-top: 0.55rem;
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
 :root {
   --page-title-content-gap: 0.9rem;
 }

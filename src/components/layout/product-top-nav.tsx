@@ -12,10 +12,6 @@ const publicCenterLinks = [
 const appCenterLinks = publicCenterLinks;
 const adminCenterLinks: typeof publicCenterLinks = [];
 
-function avatarLabel(name?: string | null) {
-  return (name || "Z").trim().slice(0, 1).toUpperCase();
-}
-
 export async function ProductTopNav(props: { autoOpenAnnouncement?: boolean } = {}) {
   const [current, announcement] = await Promise.all([
     getCurrentUserProfile(),
@@ -32,7 +28,8 @@ export async function ProductTopNav(props: { autoOpenAnnouncement?: boolean } = 
   return (
     <ProductTopNavClient
       announcement={announcement}
-      avatarLabel={avatarLabel(current?.profile.username)}
+      avatarUrl={current?.profile.avatarUrl ?? null}
+      username={current?.profile.username || "Z"}
       isLoggedIn={Boolean(current)}
       autoOpenAnnouncement={Boolean(props.autoOpenAnnouncement && current)}
       links={centerLinks}

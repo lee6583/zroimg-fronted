@@ -208,7 +208,6 @@ export function UserActions(props: UserActionsProps) {
                 <div className={styles.userActions__sectionHeading}>
                   <div>
                     <h3>重置密码</h3>
-                    <p>为该用户设置新的登录密码</p>
                   </div>
                   <button
                     className="btn-secondary"

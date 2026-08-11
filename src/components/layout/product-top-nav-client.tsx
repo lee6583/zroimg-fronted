@@ -18,7 +18,8 @@ type TopNavLink = {
 
 type ProductTopNavClientProps = {
   announcement: PublicAnnouncement;
-  avatarLabel: string;
+  avatarUrl: string | null;
+  username: string;
   isLoggedIn: boolean;
   autoOpenAnnouncement: boolean;
   links: TopNavLink[];
@@ -38,7 +39,8 @@ function getActiveHref(pathname: string, links: TopNavLink[]) {
 
 export function ProductTopNavClient(props: ProductTopNavClientProps) {
   const announcement = props.announcement;
-  const avatarLabel = props.avatarLabel;
+  const avatarUrl = props.avatarUrl;
+  const username = props.username;
   const isLoggedIn = props.isLoggedIn;
   const autoOpenAnnouncement = props.autoOpenAnnouncement;
   const links = props.links;
@@ -92,7 +94,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
           <AnnouncementCenter announcement={announcement} shouldAutoOpen={autoOpenAnnouncement} />
           <ThemeControls />
           {isLoggedIn ? (
-            <AccountMenu label={avatarLabel} />
+            <AccountMenu name={username} avatarUrl={avatarUrl} />
           ) : (
             <Link href="/login" className={styles.productTopNav__avatar} aria-label="登录">
               登录

@@ -185,19 +185,6 @@
   gap: 0.7rem;
 }
 
-.usersPage__avatar {
-  display: grid;
-  width: 2.15rem;
-  height: 2.15rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--soft);
-  color: var(--foreground);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
 .usersPage__userCell div {
   display: grid;
   min-width: 0;
@@ -217,7 +204,7 @@
   text-decoration: underline;
 }
 
-.usersPage__userCell span:last-child {
+.usersPage__userMeta {
   overflow: hidden;
   color: var(--muted);
   font-size: 0.72rem;

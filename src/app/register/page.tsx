@@ -16,7 +16,6 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center">
             <h1 className="page-title">开启创作之旅</h1>
-            <p className="page-description">注册账号，领取初始积分，把第一句灵感变成图片。</p>
           </div>
           <RegisterForm />
           <p className="mt-6 text-center text-sm text-muted">

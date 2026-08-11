@@ -127,6 +127,7 @@ type AdminUser = {
   username: string;
   email: string;
   bio: string;
+  avatarUrl: string | null;
   role: string;
   status: "active" | "banned";
   totalPoints: number;
@@ -191,23 +192,6 @@ type AdminOverview = {
   failedTasks: number;
   openTickets: number;
   latestTickets: AdminOverviewTicket[];
-};
-
-type AdminAuditLog = {
-  id: string;
-  adminUserId: string;
-  adminEmail: string | null;
-  action: string;
-  targetType: string;
-  targetId: string | null;
-  detailJson: string | null;
-  createdAt: string;
-};
-
-type AdminAuditLogPage = {
-  total: number;
-  pages: number;
-  list: AdminAuditLog[];
 };
 
 type AdminGenerationModelMode = {
@@ -312,8 +296,6 @@ export type {
   AdminGenerationPage,
   AdminOverviewTicket,
   AdminOverview,
-  AdminAuditLog,
-  AdminAuditLogPage,
   AdminGenerationModelMode,
   AdminGenerationModelParam,
   AdminGenerationModelPrice,

@@ -4,6 +4,7 @@ import { getStore } from "@/server/bff/mock-store";
 import { isMockPaymentBffEnabled } from "@/server/env";
 import { jsonError, jsonOk } from "@/server/http";
 import { getErrorMessage } from "@/utils/error";
+import { normalizeOrderDisplayStatus } from "@/utils/order-status";
 
 function formatAmountText(amountCny: number) {
   return `¥${amountCny.toFixed(2).replace(/\.00$/, "")}`;
@@ -37,7 +38,7 @@ async function getMockOrder(orderNo: string, userProfileId: string) {
     payChannelText: order.paymentType,
     payStatus: order.status,
     creditsStatus: order.status === "fulfilled" ? "fulfilled" : "pending",
-    displayStatus: order.status,
+    displayStatus: normalizeOrderDisplayStatus(order.status),
     thirdTradeNo: order.providerTradeNo,
     createTime: order.createdAt.toISOString(),
     payTime: order.paidAt?.toISOString() ?? null,

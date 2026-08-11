@@ -17,6 +17,7 @@ export default async function SettingsPage() {
         username={current.profile.username}
         email={current.user.email}
         bio={current.profile.bio || ""}
+        avatarUrl={current.profile.avatarUrl}
       />
     </div>
   );

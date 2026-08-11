@@ -4,24 +4,13 @@ import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { listAdminRechargeOrders } from "@/server/bff/orders";
+import { orderDisplayStatusLabels } from "@/utils/order-status";
 import { ReissueButton } from "./reissue-button";
 
 export const dynamic = "force-dynamic";
 
-const orderStatuses = ["pending", "confirming", "paid", "credited", "closed", "failed"] as const;
+const orderStatuses = ["pending", "paid", "cancelled"] as const;
 const pageSizeOptions = [10, 20, 50];
-
-const orderStatusLabels: Record<string, string> = {
-  pending: "待支付",
-  confirming: "支付确认中",
-  paid: "已支付",
-  credited: "已到账",
-  closed: "已关闭",
-  failed: "支付失败",
-  fulfilled: "已到账",
-  expired: "已过期",
-  cancelled: "已取消",
-};
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminOrdersPageProps = {
@@ -47,7 +36,7 @@ function formatDateText(value?: string | null) {
 }
 
 function readStatusLabel(status: string) {
-  return orderStatusLabels[status] ?? status;
+  return orderDisplayStatusLabels[status as keyof typeof orderDisplayStatusLabels] ?? status;
 }
 
 function href(input: { q?: string; status?: string; page?: number; pageSize?: number }) {
@@ -61,10 +50,9 @@ function href(input: { q?: string; status?: string; page?: number; pageSize?: nu
 }
 
 function statusClass(status: string) {
-  if (status === "credited" || status === "fulfilled") return workspace.statusSuccess;
-  if (status === "confirming" || status === "paid") return workspace.statusInfo;
+  if (status === "paid") return workspace.statusSuccess;
   if (status === "pending") return workspace.statusWarning;
-  if (status === "failed") return workspace.statusDanger;
+  if (status === "cancelled") return workspace.statusDanger;
   return undefined;
 }
 

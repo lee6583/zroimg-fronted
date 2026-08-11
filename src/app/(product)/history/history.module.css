@@ -391,12 +391,6 @@
   background: color-mix(in oklab, var(--foreground) 86%, var(--background));
 }
 
-@media (min-width: 1024px) {
-  .history__header {
-    margin-bottom: 2.4rem;
-  }
-}
-
 @media (max-width: 640px) {
   .history__dateRangePicker {
     width: 100%;

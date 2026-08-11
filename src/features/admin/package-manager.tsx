@@ -359,12 +359,9 @@ export function PackageManager(props: PackageManagerProps) {
             aria-labelledby="package-editor-title"
           >
             <header className={workspace.drawerHeader}>
-              <div>
-                <h2 id="package-editor-title" className={workspace.drawerTitle}>
-                  {editingId ? "编辑积分套餐" : "新建积分套餐"}
-                </h2>
-                <p className={workspace.subtitle}>金额以元填写，保存时自动转换为分</p>
-              </div>
+              <h2 id="package-editor-title" className={workspace.drawerTitle}>
+                {editingId ? "编辑积分套餐" : "新建积分套餐"}
+              </h2>
               <button
                 className={workspace.iconAction}
                 type="button"
@@ -407,6 +404,7 @@ export function PackageManager(props: PackageManagerProps) {
                       value={form.amount}
                       onChange={(event) => updateForm("amount", event.target.value)}
                     />
+                    <span className={workspace.fieldHint}>保存时自动转换为分</span>
                   </label>
                   <label className={workspace.fieldGroup}>
                     <span className={workspace.fieldLabel}>积分数量</span>

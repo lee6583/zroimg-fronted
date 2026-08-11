@@ -119,12 +119,6 @@
   font-weight: 700;
 }
 
-.panelSubtitle {
-  margin-top: 0.18rem;
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
 .panelLink {
   display: inline-flex;
   align-items: center;
@@ -272,20 +266,13 @@
 }
 
 .quickCopy {
-  display: grid;
   min-width: 0;
   flex: 1;
-  gap: 0.1rem;
 }
 
 .quickCopy strong {
   font-size: 0.77rem;
   font-weight: 650;
-}
-
-.quickCopy span {
-  color: var(--muted);
-  font-size: 0.68rem;
 }
 
 .empty {

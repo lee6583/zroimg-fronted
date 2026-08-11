@@ -28,12 +28,6 @@
   font-weight: 700;
 }
 
-.navHint {
-  margin-top: 0.2rem;
-  color: var(--muted);
-  font-size: 0.68rem;
-}
-
 .navList {
   display: grid;
   padding: 0.35rem;

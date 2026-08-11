@@ -5,14 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, Settings } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import styles from "./product-top-nav.module.css";
 
 type AccountMenuProps = {
-  label: string;
+  name: string;
+  avatarUrl: string | null;
 };
 
 export function AccountMenu(props: AccountMenuProps) {
-  const label = props.label;
+  const name = props.name;
+  const avatarUrl = props.avatarUrl;
 
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -56,13 +59,13 @@ export function AccountMenu(props: AccountMenuProps) {
     <div ref={rootRef} className={styles.productTopNav__account}>
       <button
         type="button"
-        className={styles.productTopNav__avatar}
+        className={styles.productTopNav__avatarButton}
         aria-label="打开账户菜单"
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setOpen((current) => !current)}
       >
-        {label}
+        <UserAvatar name={name} src={avatarUrl} size={34} decorative />
       </button>
 
       {isOpen ? (

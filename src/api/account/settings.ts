@@ -2,6 +2,8 @@ import { request } from "@/utils/request";
 import type {
   UpdateAccountPasswordRequest,
   UpdateAccountPasswordResponse,
+  UpdateAccountAvatarRequest,
+  UpdateAccountAvatarResponse,
   UpdateAccountProfileRequest,
   UpdateAccountProfileResponse,
 } from "@/types/account";
@@ -22,7 +24,16 @@ function updatePassword(data: UpdateAccountPasswordRequest) {
   });
 }
 
+function updateAvatar(data: UpdateAccountAvatarRequest) {
+  return request<UpdateAccountAvatarResponse>({
+    url: "/api/account/avatar",
+    method: "POST",
+    body: data,
+  });
+}
+
 export const accountApi = {
   updateProfile,
   updatePassword,
+  updateAvatar,
 };

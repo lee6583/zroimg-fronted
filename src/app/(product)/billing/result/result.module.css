@@ -13,17 +13,7 @@
   padding: 2.6rem 2rem;
 }
 
-.result__eyebrow {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
 .result__title {
-  margin-top: 0.45rem;
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;

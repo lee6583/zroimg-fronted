@@ -83,10 +83,7 @@ export function DocsSettingsForm(props: DocsSettingsFormProps) {
   return (
     <form className={styles.editor} onSubmit={saveDocs}>
       <header className={styles.toolbar}>
-        <div>
-          <h2 className={styles.toolbarTitle}>公开文档内容</h2>
-          <p className={styles.toolbarHint}>保存后，前台文档页会立即读取最新版本</p>
-        </div>
+        <h2 className={styles.toolbarTitle}>公开文档内容</h2>
         <button className={styles.secondaryButton} type="button" onClick={useDefaultDocs}>
           <RotateCcw size={14} aria-hidden="true" />
           使用默认模板

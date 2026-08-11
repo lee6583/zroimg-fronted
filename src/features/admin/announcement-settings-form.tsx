@@ -55,11 +55,7 @@ export function AnnouncementSettingsForm(props: AnnouncementSettingsFormProps) {
     <form className={styles.adminForms__form} onSubmit={saveSettings}>
       <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Announcement</p>
           <h2 className={styles.adminForms__title}>站内公告设置</h2>
-          <p className="mt-2 text-sm text-muted">
-            设置后，用户可通过顶部铃铛查看公告；启用时登录后会自动弹出公告。
-          </p>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
           {settings.enabled ? "已启用" : "已停用"}

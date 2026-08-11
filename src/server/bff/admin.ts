@@ -5,9 +5,8 @@ import { isJavaBffEnabled } from "@/server/env";
 import { requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
-import { getStore } from "@/server/bff/mock-store";
 import type { MockTaskStatus } from "@/server/bff/mock-store";
-import type { AdminAuditLogPage, AdminGenerationPage, AdminOverview } from "@/types/admin";
+import type { AdminGenerationPage, AdminOverview } from "@/types/admin";
 
 const latestTicketSchema = z.object({
   id: javaIdSchema,
@@ -48,33 +47,6 @@ const javaTaskPageSchema = z.object({
   pages: z.number(),
   list: z.array(javaTaskSchema),
 });
-
-const auditSchema = z.object({
-  id: javaIdSchema,
-  adminUserId: javaIdSchema,
-  adminEmail: z.string().nullable().optional(),
-  action: z.string(),
-  targetType: z.string(),
-  targetId: z.string().nullable().optional(),
-  detailJson: z.string().nullable().optional(),
-  createdAt: z.string(),
-});
-
-const auditPageSchema = z.object({
-  total: z.number(),
-  pages: z.number(),
-  list: z.array(auditSchema),
-});
-
-function buildPagePath(path: string, page: number, pageSize: number) {
-  const params = new URLSearchParams({
-    pageNo: String(page),
-    pageSize: String(pageSize),
-    sortBy: "create_time",
-    isAsc: "false",
-  });
-  return `${path}?${params.toString()}`;
-}
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   if (isJavaBffEnabled()) {
@@ -199,46 +171,6 @@ export async function listAdminGenerations(input: {
       outputCount: task.outputs?.length ?? 0,
       failReason: task.error,
       createdAt: task.createdAt.toISOString(),
-    })),
-  };
-}
-
-export async function listAuditLogs(input: {
-  page: number;
-  pageSize: number;
-}): Promise<AdminAuditLogPage> {
-  if (isJavaBffEnabled()) {
-    const data = await requestJavaApiData<unknown>(
-      buildPagePath("/audit/admin/logs", input.page, input.pageSize),
-    );
-    const page = auditPageSchema.parse(data);
-    return {
-      ...page,
-      list: page.list.map((log) => ({
-        ...log,
-        adminEmail: log.adminEmail ?? null,
-        targetId: log.targetId ?? null,
-        detailJson: log.detailJson ?? null,
-      })),
-    };
-  }
-
-  const store = getStore();
-  const total = store.adminAuditLogs.length;
-  const start = (input.page - 1) * input.pageSize;
-  const logs = store.adminAuditLogs.slice(start, start + input.pageSize);
-  return {
-    total,
-    pages: Math.max(1, Math.ceil(total / input.pageSize)),
-    list: logs.map((log) => ({
-      id: log.id,
-      adminUserId: log.adminProfileId,
-      adminEmail: null,
-      action: log.action,
-      targetType: log.targetType,
-      targetId: log.targetId,
-      detailJson: JSON.stringify(log.detailJson),
-      createdAt: log.createdAt.toISOString(),
     })),
   };
 }

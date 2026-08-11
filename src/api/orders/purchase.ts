@@ -29,13 +29,6 @@ function createPayment(orderNo: string) {
   });
 }
 
-function detectPayment(orderNo: string) {
-  return request<RechargeOrder>({
-    url: `/api/orders/${orderNo}/detect`,
-    method: "POST",
-  });
-}
-
 function getOrder(orderNo: string) {
   return request<RechargeOrder>({
     url: `/api/orders/${orderNo}`,
@@ -46,6 +39,5 @@ export const ordersApi = {
   cancelOrder,
   createOrder,
   createPayment,
-  detectPayment,
   getOrder,
 };

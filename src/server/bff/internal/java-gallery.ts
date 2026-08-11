@@ -101,6 +101,7 @@ function toGallery(input: z.infer<typeof javaGallerySchema>): MockGalleryImage &
       status: "active",
       creditBalance: 0,
       bio: "",
+      avatarUrl: null,
       createdAt,
       user: {
         id: String(input.userId),

@@ -16,7 +16,6 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center">
             <h1 className="page-title">欢迎回来</h1>
-            <p className="page-description">输入你的邮箱和密码，继续你的图像创作。</p>
           </div>
           <LoginForm />
           <p className="mt-5 text-center text-sm text-muted">

@@ -6,6 +6,7 @@ import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
 import { getStore, nextId } from "@/server/bff/mock-store";
+import type { MockOrderStatus } from "@/server/bff/mock-store";
 import type {
   AdminCreditPackageInput,
   AdminRechargeOrder,
@@ -17,6 +18,7 @@ import type {
   RechargeOrderPageQuery,
   RechargeOverview,
 } from "@/types/orders";
+import { normalizeOrderDisplayStatus } from "@/utils/order-status";
 
 const javaPackageSchema = z.object({
   id: javaIdSchema,
@@ -546,7 +548,7 @@ function mockOrderToRechargeOrder(
     payChannelText: order.paymentType,
     payStatus: order.status,
     creditsStatus: isCredited ? "fulfilled" : "pending",
-    displayStatus: order.status,
+    displayStatus: normalizeOrderDisplayStatus(order.status),
     thirdTradeNo: order.providerTradeNo,
     createTime: order.createdAt.toISOString(),
     payTime: order.paidAt?.toISOString() ?? null,
@@ -613,15 +615,6 @@ async function getJavaRechargeOrder(orderNo: string) {
   return parseJavaRechargeOrder(payload, "充值订单详情接口返回格式不正确");
 }
 
-async function detectJavaRechargeOrder(orderNo: string) {
-  const path = `${buildJavaRechargeOrderPath(orderNo)}/detect`;
-  const payload = await requestJavaApiData<unknown>(path, {
-    method: "POST",
-  });
-
-  return parseJavaRechargeOrder(payload, "检测支付状态接口返回格式不正确");
-}
-
 function buildJavaAdminOrderPagePath(query: AdminRechargeOrderPageQuery) {
   const params = new URLSearchParams();
   params.set("pageNo", String(query.page));
@@ -644,27 +637,21 @@ function buildJavaAdminOrderPagePath(query: AdminRechargeOrderPageQuery) {
   return `/order/admin/recharge-orders?${params.toString()}`;
 }
 
-const mockOrderStatuses = [
-  "pending",
-  "paid",
-  "fulfilled",
-  "expired",
-  "cancelled",
-  "failed",
-] as const;
-
-function readMockOrderStatus(status?: string) {
-  return mockOrderStatuses.find((item) => item === status);
+function readMockOrderStatuses(status?: string): MockOrderStatus[] | undefined {
+  if (status === "pending") return ["pending"];
+  if (status === "paid") return ["paid", "fulfilled"];
+  if (status === "cancelled") return ["expired", "cancelled", "failed"];
+  return undefined;
 }
 
 async function listMockAdminOrders(
   query: AdminRechargeOrderPageQuery,
 ): Promise<AdminRechargeOrderPage> {
-  // 第一步:按状态和订单号过滤全部订单。
-  const orders = await prisma.paymentOrder.findMany({
+  // 第一步:按订单号过滤全部订单，再按展示状态合并内部状态。
+  const orderStatuses = readMockOrderStatuses(query.status);
+  const allOrders = await prisma.paymentOrder.findMany({
     where: {
       ...(query.userId ? { userProfileId: query.userId } : {}),
-      ...(readMockOrderStatus(query.status) ? { status: readMockOrderStatus(query.status) } : {}),
       ...(query.orderNo ? { OR: [{ orderNo: { contains: query.orderNo } }] } : {}),
     },
     include: {
@@ -673,6 +660,9 @@ async function listMockAdminOrders(
     },
     orderBy: { createdAt: "desc" },
   });
+  const orders = orderStatuses
+    ? allOrders.filter((order) => orderStatuses.includes(order.status))
+    : allOrders;
 
   // 第二步:计算分页并截取当前页。
   const total = orders.length;
@@ -750,7 +740,6 @@ async function reissueJavaRechargeCredits(orderNo: string) {
 export {
   createAdminCreditPackage,
   deleteAdminCreditPackage,
-  detectJavaRechargeOrder,
   getJavaRechargeOrder,
   getRechargeOverview,
   listAdminCreditPackages,

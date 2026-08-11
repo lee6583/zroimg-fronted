@@ -50,7 +50,6 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
           返回合集
         </Link>
         <h1 className="page-title">{collection.name}</h1>
-        <p className="page-description">{collection._count.items} 张图片</p>
       </section>
 
       {collection.items.length > 0 ? (

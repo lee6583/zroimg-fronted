@@ -4,6 +4,7 @@ import { FileClock } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { requireUser } from "@/server/auth";
 import { listRechargeOrders } from "@/server/bff/orders";
+import { orderDisplayStatusLabels } from "@/utils/order-status";
 import { OrderActions } from "./order-actions";
 import styles from "./billing.module.css";
 
@@ -12,21 +13,6 @@ export const dynamic = "force-dynamic";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type BillingPageProps = {
   searchParams: SearchParams;
-};
-
-const orderStatusLabels: Record<string, string> = {
-  pending: "待支付",
-  paid: "已支付",
-  fulfilled: "已到账",
-  expired: "已过期",
-  cancelled: "已取消",
-  closed: "已关闭",
-  failed: "支付失败",
-  credited: "已到账",
-  created: "已创建",
-  paying: "支付中",
-  confirming: "支付确认中",
-  success: "已支付",
 };
 
 const defaultPageSize = 10;
@@ -93,21 +79,15 @@ function formatCredits(value: number) {
 }
 
 function statusClassName(status: string) {
-  if (status === "fulfilled" || status === "paid" || status === "credited") {
+  if (status === "paid") {
     return styles.billing__statusSuccess;
   }
 
-  if (
-    status === "pending" ||
-    status === "expired" ||
-    status === "created" ||
-    status === "paying" ||
-    status === "confirming"
-  ) {
+  if (status === "pending") {
     return styles.billing__statusWarning;
   }
 
-  if (status === "failed" || status === "cancelled" || status === "closed") {
+  if (status === "cancelled") {
     return styles.billing__statusDanger;
   }
 
@@ -179,15 +159,15 @@ export default async function BillingPage(props: BillingPageProps) {
                         statusClassName(order.displayStatus),
                       )}
                     >
-                      {orderStatusLabels[order.displayStatus] ?? order.displayStatus}
+                      {orderDisplayStatusLabels[
+                        order.displayStatus as keyof typeof orderDisplayStatusLabels
+                      ] ?? order.displayStatus}
                     </span>
                   </span>
                   <span className={styles.billing__muted}>{formatDateText(order.createTime)}</span>
                   <span className={styles.billing__muted}>{formatDateText(order.payTime)}</span>
                   <span className={styles.billing__muted}>
-                    {order.displayStatus === "pending" ||
-                    order.displayStatus === "created" ||
-                    order.displayStatus === "confirming" ? (
+                    {order.displayStatus === "pending" ? (
                       <OrderActions orderNo={order.orderNo} canCancel />
                     ) : (
                       "—"

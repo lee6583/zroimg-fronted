@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserActions } from "@/features/admin/user-actions";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { listAdminRechargeOrders } from "@/server/bff/orders";
 import { getAdminUser, listAdminFlows, listAdminTasks } from "@/server/bff/users";
+import { normalizeOrderDisplayStatus, orderDisplayStatusLabels } from "@/utils/order-status";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,8 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
           返回用户管理
         </Link>
         <div className="mt-4 flex flex-wrap justify-between gap-4">
-          <div>
+          <div className="flex min-w-0 items-center gap-3">
+            <UserAvatar name={profile.username} src={profile.avatarUrl} size={48} decorative />
             <h1 className="page-title">{profile.username}</h1>
           </div>
           <p className="text-2xl font-semibold">{profile.totalPoints} 积分</p>
@@ -76,7 +79,8 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
               <div key={order.orderNo} className="rounded-lg border border-line p-3">
                 <p className="font-medium">{order.packageName || "自定义充值"}</p>
                 <p className="mt-1 text-sm text-muted">
-                  {order.displayStatus} / {order.amountText} / {formatDate(order.createTime)}
+                  {orderDisplayStatusLabels[normalizeOrderDisplayStatus(order.displayStatus)]} /{" "}
+                  {order.amountText} / {formatDate(order.createTime)}
                 </p>
               </div>
             ))}

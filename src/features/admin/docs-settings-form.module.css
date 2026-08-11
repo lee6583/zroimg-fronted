@@ -20,12 +20,6 @@
   font-weight: 700;
 }
 
-.toolbarHint {
-  margin-top: 0.2rem;
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
 .secondaryButton,
 .primaryButton {
   display: inline-flex;

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, Eye, ImagePlus, Plus, Send, Trash2, X } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ticketsApi } from "@/api/support/tickets";
@@ -238,7 +239,8 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                 setActiveId("");
               }}
             >
-              + 提交意见
+              <Plus size={16} aria-hidden="true" />
+              提交意见
             </button>
           </div>
 
@@ -282,6 +284,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                           className="btn-secondary"
                           onClick={() => setActiveId(ticket.id)}
                         >
+                          <Eye size={15} aria-hidden="true" />
                           查看
                         </button>
                       </td>
@@ -310,40 +313,50 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className={styles.feedbackPanel__processHead}>
-                  <div>
-                    <p className="label">Process</p>
-                    <h3 id="feedback-process-title">处理情况</h3>
-                  </div>
-                  <button type="button" className="btn-secondary" onClick={() => setActiveId("")}>
-                    关闭
+                  <h3 id="feedback-process-title">处理情况</h3>
+                  <button
+                    type="button"
+                    className={styles.feedbackPanel__iconButton}
+                    title="关闭"
+                    aria-label="关闭处理情况"
+                    onClick={() => setActiveId("")}
+                  >
+                    <X size={17} aria-hidden="true" />
                   </button>
                 </div>
                 <div className={styles.feedbackPanel__processBody}>
-                  <div>
+                  <header className={styles.feedbackPanel__ticketSummary}>
                     <p className={styles.feedbackPanel__ticketMeta}>
                       {feedbackTypeLabels[activeTicket.type]} / 更新于{" "}
                       {formatDate(activeTicket.updatedAt)}
                     </p>
                     <h4>{activeTicket.subject}</h4>
-                  </div>
+                  </header>
                   <div className={styles.feedbackPanel__processStatus}>
-                    <span>当前状态</span>
-                    <strong
-                      className={`${styles.feedbackPanel__statusBadge} ${readStatusBadgeClassName(activeTicket.status)}`}
-                    >
-                      {readStatusLabel(activeTicket.status)}
-                    </strong>
+                    <div className={styles.feedbackPanel__processStatusRow}>
+                      <span>当前状态</span>
+                      <strong
+                        className={`${styles.feedbackPanel__statusBadge} ${readStatusBadgeClassName(activeTicket.status)}`}
+                      >
+                        {readStatusLabel(activeTicket.status)}
+                      </strong>
+                    </div>
                     <p>{readDefaultProcessText(activeTicket)}</p>
                   </div>
                   <div className={styles.feedbackPanel__adminReply}>
-                    <span>管理员回复</span>
                     {activeAdminMessage ? (
                       <>
+                        <div className={styles.feedbackPanel__replyMeta}>
+                          <span>管理员回复</span>
+                          <time>{formatDate(activeAdminMessage.createdAt)}</time>
+                        </div>
                         <p>{activeAdminMessage.body}</p>
-                        <time>{formatDate(activeAdminMessage.createdAt)}</time>
                       </>
                     ) : (
-                      <p>暂无管理员回复，请留意后续处理结果。</p>
+                      <>
+                        <span>管理员回复</span>
+                        <p>暂无管理员回复，请留意后续处理结果。</p>
+                      </>
                     )}
                   </div>
                 </div>
@@ -355,28 +368,35 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
         <div className={styles.feedbackPanel__submitCard}>
           <div className={styles.feedbackPanel__submitHead}>
             <h3>提交意见</h3>
-            <button type="button" className="btn-secondary" onClick={() => setView("list")}>
+            <button
+              type="button"
+              className={styles.feedbackPanel__backButton}
+              onClick={() => setView("list")}
+            >
+              <ArrowLeft size={15} aria-hidden="true" />
               返回列表
             </button>
           </div>
           <div className={styles.feedbackPanel__form}>
-            <label>
-              <span>类型</span>
-              <AppSelect value={type} onChange={setType} options={typeOptions} />
-            </label>
-            <label>
-              <span>标题</span>
-              <input
-                className="field text-sm"
-                value={subject}
-                onChange={(event) => setSubject(event.target.value)}
-                placeholder="例如：图片生成任务一直显示排队中"
-              />
-            </label>
+            <div className={styles.feedbackPanel__formRow}>
+              <label>
+                <span>类型</span>
+                <AppSelect value={type} onChange={setType} options={typeOptions} />
+              </label>
+              <label>
+                <span>标题</span>
+                <input
+                  className="field text-sm"
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
+                  placeholder="例如：图片生成任务一直显示排队中"
+                />
+              </label>
+            </div>
             <label>
               <span>内容</span>
               <textarea
-                className="field min-h-40 resize-y text-sm leading-6"
+                className={`field ${styles.feedbackPanel__textarea}`}
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 placeholder="请描述问题现象、出现时间、任务编号、订单号或必要截图信息。"
@@ -394,8 +414,11 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                     event.target.value = "";
                   }}
                 />
-                <strong>上传截图</strong>
-                <small>支持 PNG、JPEG、WebP，最多 4 张，单张不超过 10 MB</small>
+                <ImagePlus size={20} aria-hidden="true" />
+                <span className={styles.feedbackPanel__uploadCopy}>
+                  <strong>选择截图</strong>
+                  <small>PNG、JPEG、WebP，最多 4 张，单张不超过 10 MB</small>
+                </span>
               </label>
               {files.length ? (
                 <div className={styles.feedbackPanel__selectedFiles}>
@@ -404,8 +427,13 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                       <span>
                         {file.name} / {formatFileSize(file.size)}
                       </span>
-                      <button type="button" onClick={() => removeFile(index)}>
-                        移除
+                      <button
+                        type="button"
+                        title="移除附件"
+                        aria-label={`移除附件 ${file.name}`}
+                        onClick={() => removeFile(index)}
+                      >
+                        <Trash2 size={15} aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -419,9 +447,11 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                 disabled={isLoading || !subject.trim() || !content.trim()}
                 onClick={submitTicket}
               >
+                <Send size={15} aria-hidden="true" />
                 {isLoading ? "提交中" : "提交意见"}
               </button>
               <button type="button" className="btn-secondary" onClick={() => setView("list")}>
+                <X size={15} aria-hidden="true" />
                 取消
               </button>
             </div>

@@ -151,11 +151,7 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
     <form className={styles.adminForms__form} onSubmit={saveSettings}>
       <div className={styles.adminForms__header}>
         <div>
-          <p className="label">SMTP</p>
           <h2 className={styles.adminForms__title}>SMTP 邮件设置</h2>
-          <p className="mt-2 text-sm text-muted">
-            用于发送注册验证码和系统邮件，生产环境建议配置真实邮箱服务。
-          </p>
         </div>
         <button
           className="btn-secondary"
@@ -321,7 +317,6 @@ export function VideoSettingsForm(props: VideoSettingsFormProps) {
     <form className={styles.adminForms__form} onSubmit={saveSettings}>
       <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Video Provider</p>
           <h2 className={styles.adminForms__title}>视频服务设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
@@ -456,11 +451,7 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
     <form className={styles.adminForms__form} onSubmit={saveSettings}>
       <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Payment</p>
           <h2 className={styles.adminForms__title}>易支付设置</h2>
-          <p className="mt-2 text-sm text-muted">
-            配置第三方易支付服务商，用于积分购买订单创建和异步回调验签。
-          </p>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
           {form.isEnabled ? "已启用" : "已停用"}
@@ -560,7 +551,6 @@ export function CheckInSettingsForm(props: CheckInSettingsFormProps) {
     <form className={styles.adminForms__form} onSubmit={saveSettings}>
       <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Check-in</p>
           <h2 className={styles.adminForms__title}>每日签到设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
