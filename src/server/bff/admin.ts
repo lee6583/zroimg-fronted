@@ -5,6 +5,7 @@ import { isJavaBffEnabled } from "@/server/env";
 import { requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
 import { prisma } from "@/server/bff/mock-db";
+import { listAdminUsers } from "@/server/bff/users";
 import type { MockTaskStatus } from "@/server/bff/mock-store";
 import type { AdminGenerationPage, AdminOverview } from "@/types/admin";
 
@@ -28,9 +29,11 @@ const overviewSchema = z.object({
 const javaTaskSchema = z.object({
   id: javaIdSchema,
   taskNo: z.string(),
+  username: z.string().nullable().optional(),
   userEmail: z.string().nullable().optional(),
   prompt: z.string(),
   status: z.string(),
+  modelType: z.enum(["image", "video"]),
   mode: z.string(),
   modelCode: z.string(),
   resolution: z.string(),
@@ -47,6 +50,26 @@ const javaTaskPageSchema = z.object({
   pages: z.number(),
   list: z.array(javaTaskSchema),
 });
+
+async function resolveTaskUsernames(tasks: z.infer<typeof javaTaskSchema>[]) {
+  const missingEmails = [
+    ...new Set(
+      tasks
+        .filter((task) => !task.username && task.userEmail)
+        .map((task) => task.userEmail!.toLowerCase()),
+    ),
+  ];
+
+  const users = await Promise.all(
+    missingEmails.map(async (email) => {
+      const page = await listAdminUsers({ page: 1, pageSize: 1, q: email });
+      const user = page.list.find((item) => item.email.toLowerCase() === email);
+      return [email, user?.username] as const;
+    }),
+  );
+
+  return new Map(users);
+}
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   if (isJavaBffEnabled()) {
@@ -108,15 +131,20 @@ export async function listAdminGenerations(input: {
 
     const data = await requestJavaApiData<unknown>(`/generation/admin/tasks?${params.toString()}`);
     const page = javaTaskPageSchema.parse(data);
+    const usernamesByEmail = await resolveTaskUsernames(page.list);
     return {
       total: page.total,
       pages: page.pages,
       list: page.list.map((task) => ({
         id: String(task.id),
         taskNo: task.taskNo,
-        userEmail: task.userEmail || "-",
+        username:
+          task.username ||
+          (task.userEmail ? usernamesByEmail.get(task.userEmail.toLowerCase()) : undefined) ||
+          "-",
         prompt: task.prompt,
         status: task.status,
+        modelType: task.modelType,
         mode: task.mode,
         model: task.modelCode,
         size: `${task.resolution} / ${task.ratio}`,
@@ -130,7 +158,14 @@ export async function listAdminGenerations(input: {
   }
 
   const where = {
-    ...(input.status ? { status: input.status as MockTaskStatus } : {}),
+    ...(input.status
+      ? {
+          status:
+            input.status === "processing"
+              ? { in: ["queued", "running"] satisfies MockTaskStatus[] }
+              : (input.status as MockTaskStatus),
+        }
+      : {}),
     ...(input.q
       ? {
           OR: [
@@ -138,6 +173,9 @@ export async function listAdminGenerations(input: {
             { model: { contains: input.q, mode: "insensitive" as const } },
             {
               userProfile: { user: { email: { contains: input.q, mode: "insensitive" as const } } },
+            },
+            {
+              userProfile: { username: { contains: input.q, mode: "insensitive" as const } },
             },
           ],
         }
@@ -160,9 +198,10 @@ export async function listAdminGenerations(input: {
     list: tasks.map((task) => ({
       id: task.id,
       taskNo: task.id,
-      userEmail: task.userProfile?.user?.email || "-",
+      username: task.userProfile?.username || "-",
       prompt: task.prompt,
       status: task.status,
+      modelType: "image",
       mode: task.mode,
       model: task.model,
       size: task.size,

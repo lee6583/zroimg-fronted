@@ -3,55 +3,41 @@ import "server-only";
 import { z } from "zod";
 import { requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
-import type { AdminGenerationModel, SaveAdminGenerationModelRequest } from "@/types/admin";
-
-const modeSchema = z.object({
-  id: javaIdSchema.optional(),
-  modeCode: z.string(),
-  modeName: z.string(),
-  status: z.enum(["enabled", "disabled"]),
-  sortOrder: z.number(),
-});
-
-const paramSchema = z.object({
-  id: javaIdSchema.optional(),
-  modeCode: z.string(),
-  paramType: z.enum(["ratio", "resolution", "quality", "format", "count", "duration", "audio"]),
-  paramValue: z.string(),
-  paramLabel: z.string(),
-  defaultFlag: z.number(),
-  sortOrder: z.number(),
-});
-
-const priceSchema = z.object({
-  id: javaIdSchema.optional(),
-  modeCode: z.string(),
-  resolution: z.string(),
-  quality: z.string(),
-  points: z.number(),
-  priceVersion: z.string().optional(),
-  status: z.enum(["enabled", "disabled"]),
-});
+import type {
+  AdminGenerationModel,
+  ImageModelCatalogItem,
+  SaveAdminGenerationModelRequest,
+} from "@/types/admin";
 
 const modelSchema = z.object({
   id: javaIdSchema,
   modelCode: z.string(),
   modelName: z.string(),
-  provider: z.string(),
+  adapter: z.enum(["openai", "grok"]),
   apiBaseUrl: z.string(),
   hasApiKey: z.boolean(),
-  apiKeyPreview: z.string().nullable().optional(),
-  modelType: z.enum(["image", "video"]),
   status: z.enum(["enabled", "disabled"]),
   defaultFlag: z.number(),
   sortOrder: z.number(),
-  remark: z.string().nullable().optional(),
-  priceVersion: z.string(),
+  imageToImageEnabled: z.boolean(),
+  supportedRatios: z.array(z.string()),
+  supportedQualities: z.array(z.string()),
+  maxCount: z.number(),
+  pointsByQuality: z.record(z.string(), z.number()),
   createdAt: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
-  modes: z.array(modeSchema),
-  params: z.array(paramSchema),
-  prices: z.array(priceSchema),
+});
+
+const catalogSchema = z.object({
+  modelCode: z.string(),
+  modelName: z.string(),
+  adapter: z.enum(["openai", "grok"]),
+  defaultApiBaseUrl: z.string(),
+  imageToImageSupported: z.boolean(),
+  ratios: z.array(z.string()),
+  qualities: z.array(z.string()),
+  maxCount: z.number(),
+  defaultPoints: z.record(z.string(), z.number()),
 });
 
 function mapModel(model: z.infer<typeof modelSchema>): AdminGenerationModel {
@@ -59,27 +45,30 @@ function mapModel(model: z.infer<typeof modelSchema>): AdminGenerationModel {
     id: model.id,
     modelCode: model.modelCode,
     modelName: model.modelName,
-    provider: model.provider,
+    adapter: model.adapter,
     apiBaseUrl: model.apiBaseUrl,
     hasApiKey: model.hasApiKey,
-    apiKeyPreview: model.apiKeyPreview ?? null,
-    modelType: model.modelType,
     status: model.status,
     defaultFlag: model.defaultFlag,
     sortOrder: model.sortOrder,
-    remark: model.remark ?? null,
-    priceVersion: model.priceVersion,
+    imageToImageEnabled: model.imageToImageEnabled,
+    supportedRatios: model.supportedRatios,
+    supportedQualities: model.supportedQualities,
+    maxCount: model.maxCount,
+    pointsByQuality: model.pointsByQuality,
     createdAt: model.createdAt ?? null,
     updatedAt: model.updatedAt ?? null,
-    modes: model.modes,
-    params: model.params,
-    prices: model.prices,
   };
 }
 
 export async function listAdminModels() {
   const payload = await requestJavaApiData<unknown>("/generation/admin/models");
   return z.array(modelSchema).parse(payload).map(mapModel);
+}
+
+export async function listImageModelCatalog(): Promise<ImageModelCatalogItem[]> {
+  const payload = await requestJavaApiData<unknown>("/generation/admin/models/catalog");
+  return z.array(catalogSchema).parse(payload);
 }
 
 export async function saveAdminModel(id: string | null, input: SaveAdminGenerationModelRequest) {

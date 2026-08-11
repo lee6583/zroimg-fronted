@@ -7,11 +7,8 @@ import { getJavaApiErrorStatus, requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
 import { parseJson } from "@/server/validation";
 import { getErrorMessage } from "@/utils/error";
-import {
-  calculateCustomCredits,
-  CUSTOM_MAX_AMOUNT_CNY,
-  CUSTOM_MIN_AMOUNT_CNY,
-} from "@/utils/credits";
+import { calculateCustomCredits } from "@/utils/credits";
+import { calculateRechargeFeeCent, normalizeRechargeAmountBreakdown } from "@/utils/recharge";
 
 const paymentTypeSchema = z.enum(["alipay", "wxpay"]);
 
@@ -23,10 +20,7 @@ const packageOrderSchema = z.object({
 
 const customOrderSchema = z.object({
   mode: z.literal("custom"),
-  amountCny: z
-    .number()
-    .min(CUSTOM_MIN_AMOUNT_CNY, "购买金额过低")
-    .max(CUSTOM_MAX_AMOUNT_CNY, "购买金额过高"),
+  amountCny: z.number().positive("购买金额必须大于 0").max(1_000_000, "购买金额过高"),
   paymentType: paymentTypeSchema,
 });
 
@@ -38,6 +32,8 @@ const javaRechargeOrderSchema = z.object({
   packageName: z.string(),
   amountCent: z.number(),
   amountText: z.string(),
+  rechargeAmountCent: z.number().nullable().optional(),
+  feeAmountCent: z.number().nullable().optional(),
   credits: z.number(),
   payStatus: z.string(),
   creditsStatus: z.string(),
@@ -116,6 +112,7 @@ async function createJavaOrder(payload: z.output<typeof orderSchema>) {
   }
 
   const order = parsed.data;
+  const amountBreakdown = normalizeRechargeAmountBreakdown(order);
 
   return jsonOk({
     order: {
@@ -124,6 +121,8 @@ async function createJavaOrder(payload: z.output<typeof orderSchema>) {
       packageName: order.packageName,
       amountCent: order.amountCent,
       amountText: order.amountText,
+      rechargeAmountCent: amountBreakdown.rechargeAmountCent,
+      feeAmountCent: amountBreakdown.feeAmountCent,
       credits: order.credits,
       payStatus: order.payStatus,
       creditsStatus: order.creditsStatus,
@@ -141,14 +140,16 @@ async function createMockOrder(payload: z.output<typeof orderSchema>, userProfil
     return jsonError("支付能力已关闭");
   }
 
-  const pendingOrder = store.paymentOrders.find((order) => {
+  const now = new Date();
+  const pendingOrderCount = store.paymentOrders.filter((order) => {
     const isOwner = order.userProfileId === userProfileId;
     const isPending = order.status === "pending";
+    const isActive = !order.expiresAt || order.expiresAt > now;
 
-    return isOwner && isPending;
-  });
-  if (pendingOrder) {
-    return jsonError("已有待支付订单，请先完成支付或取消订单", 409);
+    return isOwner && isPending && isActive;
+  }).length;
+  if (pendingOrderCount >= store.settings.easypay.maxPendingOrders) {
+    return jsonError("待支付订单已达上限，请先完成支付或等待订单关闭", 409);
   }
 
   const paymentType = payload.paymentType;
@@ -158,8 +159,17 @@ async function createMockOrder(payload: z.output<typeof orderSchema>, userProfil
   let creditPackageId: string | null = null;
 
   if (payload.mode === "custom") {
-    amountCny = payload.amountCny;
-    credits = calculateCustomCredits(amountCny);
+    const amountCent = Math.round(payload.amountCny * 100);
+    const settings = store.settings.easypay;
+    if (amountCent < settings.minAmountCent || amountCent > settings.maxAmountCent) {
+      return jsonError(
+        `充值金额需在 ¥${(settings.minAmountCent / 100).toFixed(2)} 至 ¥${(
+          settings.maxAmountCent / 100
+        ).toFixed(2)} 之间`,
+      );
+    }
+    amountCny = amountCent / 100;
+    credits = calculateCustomCredits(amountCny, settings.creditsPerYuan);
   } else {
     const creditPackage = store.creditPackages.find((item) => item.id === payload.packageId);
     if (!creditPackage) {
@@ -170,6 +180,19 @@ async function createMockOrder(payload: z.output<typeof orderSchema>, userProfil
     amountCny = creditPackage.priceCny;
     creditPackageId = creditPackage.id;
   }
+
+  const rechargeAmountCent = Math.round(amountCny * 100);
+  const settings = store.settings.easypay;
+  if (rechargeAmountCent < settings.minAmountCent || rechargeAmountCent > settings.maxAmountCent) {
+    return jsonError(
+      `充值金额需在 ¥${(settings.minAmountCent / 100).toFixed(2)} 至 ¥${(
+        settings.maxAmountCent / 100
+      ).toFixed(2)} 之间`,
+    );
+  }
+  const feeAmountCent = calculateRechargeFeeCent(rechargeAmountCent, settings.feeRatePercent);
+  const amountCent = rechargeAmountCent + feeAmountCent;
+  amountCny = amountCent / 100;
 
   const payUrl = buildPayUrl({
     amountCny,
@@ -186,11 +209,14 @@ async function createMockOrder(payload: z.output<typeof orderSchema>, userProfil
     status: "pending" as const,
     credits,
     amountCny,
+    rechargeAmountCny: rechargeAmountCent / 100,
+    feeAmountCny: feeAmountCent / 100,
     creditPackageId,
     providerTradeNo: null,
     payUrl,
     createdAt: new Date(),
     paidAt: null,
+    expiresAt: new Date(now.getTime() + settings.timeoutMinutes * 60_000),
   };
 
   store.paymentOrders.unshift(order);
@@ -198,6 +224,11 @@ async function createMockOrder(payload: z.output<typeof orderSchema>, userProfil
   return jsonOk({
     order: {
       ...order,
+      amountCent,
+      amountText: `¥${amountCny.toFixed(2)}`,
+      rechargeAmountCent,
+      feeAmountCent,
+      expireTime: order.expiresAt.toISOString(),
       resultUrl,
     },
   });

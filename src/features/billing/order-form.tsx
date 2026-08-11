@@ -4,12 +4,9 @@ import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
-import type { CreditPackage, PaymentType } from "@/types/orders";
-import {
-  calculateCustomCredits,
-  CUSTOM_MAX_AMOUNT_CNY,
-  CUSTOM_MIN_AMOUNT_CNY,
-} from "@/utils/credits";
+import type { CreditPackage, PaymentType, RechargeRules } from "@/types/orders";
+import { calculateCustomCredits } from "@/utils/credits";
+import { calculateRechargeFeeCent } from "@/utils/recharge";
 import styles from "./order-form.module.css";
 
 type PackageCopy = {
@@ -25,6 +22,7 @@ type DisplayPackage =
       id: string;
       code: string;
       amountText: string;
+      amountCent: number;
       credits: number;
       copy: PackageCopy;
     }
@@ -33,12 +31,14 @@ type DisplayPackage =
       code: string;
       priceCny: string;
       amountCny: number;
+      amountCent: number;
       credits: number;
       copy: PackageCopy;
     };
 
 type OrderFormProps = {
   packages: CreditPackage[];
+  rules: RechargeRules;
   allowCustomOrder: boolean;
 };
 
@@ -50,16 +50,18 @@ const quickAmounts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 const enterpriseAmount = 400;
 const amountTextPattern = /^\d*(\.\d{0,2})?$/;
 
-const customPackageCopy: PackageCopy = {
-  name: "企业协作",
-  line: "为团队、品牌和长期项目准备更充足的创作额度。",
-  features: [
-    "2000 积分，适合团队协同创作",
-    "覆盖批量物料、活动视觉与品牌素材",
-    "适合多成员长期稳定产出",
-    "适合企业项目预研与正式投放",
-  ],
-};
+function getCustomPackageCopy(credits: number): PackageCopy {
+  return {
+    name: "企业协作",
+    line: "为团队、品牌和长期项目准备更充足的创作额度。",
+    features: [
+      `${credits} 积分，适合团队协同创作`,
+      "覆盖批量物料、活动视觉与品牌素材",
+      "适合多成员长期稳定产出",
+      "适合企业项目预研与正式投放",
+    ],
+  };
+}
 
 function getPackageCopy(item: CreditPackage): PackageCopy {
   return {
@@ -78,20 +80,29 @@ function isValidAmountText(value: string) {
   return amountTextPattern.test(value);
 }
 
-function isOverMaxAmount(value: string) {
+function isOverMaxAmount(value: string, maxAmountCny: number) {
   const amountValue = Number(value);
   if (!Number.isFinite(amountValue)) {
     return false;
   }
 
-  return amountValue > CUSTOM_MAX_AMOUNT_CNY;
+  return amountValue > maxAmountCny;
+}
+
+function formatCny(amountCent: number) {
+  return `¥${(amountCent / 100).toFixed(2)}`;
 }
 
 export function OrderForm(props: OrderFormProps) {
   const packages = props.packages;
+  const rules = props.rules;
   const allowCustomOrder = props.allowCustomOrder;
+  const minAmountCny = rules.minAmountCent / 100;
+  const maxAmountCny = rules.maxAmountCent / 100;
+  const defaultCustomAmount = Math.min(maxAmountCny, Math.max(minAmountCny, 29));
+  const customPackageAmount = Math.min(maxAmountCny, Math.max(minAmountCny, enterpriseAmount));
 
-  const [customAmount, setCustomAmount] = useState("29");
+  const [customAmount, setCustomAmount] = useState(String(defaultCustomAmount));
   const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentType>("alipay");
   const [message, setMessage] = useState("");
@@ -102,6 +113,7 @@ export function OrderForm(props: OrderFormProps) {
     id: item.id,
     code: item.code,
     amountText: item.amountText,
+    amountCent: item.amountCent,
     credits: item.credits,
     copy: getPackageCopy(item),
   }));
@@ -110,16 +122,20 @@ export function OrderForm(props: OrderFormProps) {
     displayPackages.push({
       kind: "custom",
       code: "ENTERPRISE_2000",
-      priceCny: String(enterpriseAmount),
-      amountCny: enterpriseAmount,
-      credits: calculateCustomCredits(enterpriseAmount),
-      copy: customPackageCopy,
+      priceCny: String(customPackageAmount),
+      amountCny: customPackageAmount,
+      amountCent: Math.round(customPackageAmount * 100),
+      credits: calculateCustomCredits(customPackageAmount, rules.creditsPerYuan),
+      copy: getCustomPackageCopy(calculateCustomCredits(customPackageAmount, rules.creditsPerYuan)),
     });
   }
 
   const rawAmount = Number(customAmount);
   const amount = Number.isFinite(rawAmount) ? Math.round(rawAmount * 100) / 100 : 0;
-  const customCredits = calculateCustomCredits(amount);
+  const customAmountCent = Math.round(amount * 100);
+  const customFeeCent = calculateRechargeFeeCent(customAmountCent, rules.feeRatePercent);
+  const customPayableCent = customAmountCent + customFeeCent;
+  const customCredits = calculateCustomCredits(amount, rules.creditsPerYuan);
 
   async function createPackageOrder(packageId: string) {
     setLoading(true);
@@ -144,12 +160,12 @@ export function OrderForm(props: OrderFormProps) {
 
     const orderAmount = amountOverride ?? amount;
     const isInvalidAmount =
-      !Number.isFinite(orderAmount) ||
-      orderAmount < CUSTOM_MIN_AMOUNT_CNY ||
-      orderAmount > CUSTOM_MAX_AMOUNT_CNY;
+      !Number.isFinite(orderAmount) || orderAmount < minAmountCny || orderAmount > maxAmountCny;
 
     if (isInvalidAmount) {
-      setMessage(`请输入 ¥${CUSTOM_MIN_AMOUNT_CNY} - ¥${CUSTOM_MAX_AMOUNT_CNY} 之间的金额`);
+      setMessage(
+        `请输入 ${formatCny(rules.minAmountCent)} - ${formatCny(rules.maxAmountCent)} 之间的金额`,
+      );
       setLoading(false);
       return;
     }
@@ -188,8 +204,8 @@ export function OrderForm(props: OrderFormProps) {
       return;
     }
 
-    if (isOverMaxAmount(value)) {
-      setMessage(`单次购买金额不能超过 ¥${CUSTOM_MAX_AMOUNT_CNY}`);
+    if (isOverMaxAmount(value, maxAmountCny)) {
+      setMessage(`单次购买金额不能超过 ${formatCny(rules.maxAmountCent)}`);
       return;
     }
 
@@ -234,6 +250,11 @@ export function OrderForm(props: OrderFormProps) {
           {displayPackages.map((item) => {
             const copy = item.copy;
             const isPopular = Boolean(copy.badge);
+            const feeAmountCent = calculateRechargeFeeCent(item.amountCent, rules.feeRatePercent);
+            const payableAmountCent = item.amountCent + feeAmountCent;
+            const canPurchase =
+              item.kind === "custom" ||
+              (item.amountCent >= rules.minAmountCent && item.amountCent <= rules.maxAmountCent);
 
             return (
               <article
@@ -251,6 +272,11 @@ export function OrderForm(props: OrderFormProps) {
                   {item.kind === "package" ? item.amountText : `¥${item.priceCny}`}
                 </p>
                 <p className={styles.orderForm__credits}>{item.credits} 积分</p>
+                {feeAmountCent > 0 ? (
+                  <p className={styles.orderForm__fee}>
+                    含手续费，实付 {formatCny(payableAmountCent)}
+                  </p>
+                ) : null}
                 <ul className={styles.orderForm__features}>
                   {copy.features.map((feature) => (
                     <li key={feature} className={styles.orderForm__feature}>
@@ -266,7 +292,7 @@ export function OrderForm(props: OrderFormProps) {
                 </ul>
                 <button
                   type="button"
-                  disabled={isLoading}
+                  disabled={isLoading || !canPurchase}
                   onClick={() => {
                     if (item.kind === "package") {
                       void createPackageOrder(item.id);
@@ -280,7 +306,7 @@ export function OrderForm(props: OrderFormProps) {
                     isPopular && styles.orderForm__packageButtonPopular,
                   )}
                 >
-                  {isLoading ? "创建中" : "立即购买"}
+                  {isLoading ? "创建中" : canPurchase ? "立即购买" : "暂不可购买"}
                 </button>
               </article>
             );
@@ -296,23 +322,25 @@ export function OrderForm(props: OrderFormProps) {
 
           <div className={styles.orderForm__custom}>
             <div className={styles.orderForm__quickAmounts}>
-              {quickAmounts.map((item) => {
-                const isActive = selectedQuickAmount === item;
+              {quickAmounts
+                .filter((item) => item >= minAmountCny && item <= maxAmountCny)
+                .map((item) => {
+                  const isActive = selectedQuickAmount === item;
 
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => handleQuickAmountClick(item)}
-                    className={clsx(
-                      styles.orderForm__quickAmount,
-                      isActive && styles.orderForm__quickAmountActive,
-                    )}
-                  >
-                    {item}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleQuickAmountClick(item)}
+                      className={clsx(
+                        styles.orderForm__quickAmount,
+                        isActive && styles.orderForm__quickAmountActive,
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
             </div>
 
             <label className={styles.orderForm__field}>
@@ -322,8 +350,8 @@ export function OrderForm(props: OrderFormProps) {
                 <input
                   className={clsx("field", styles.orderForm__input)}
                   inputMode="decimal"
-                  min={CUSTOM_MIN_AMOUNT_CNY}
-                  max={CUSTOM_MAX_AMOUNT_CNY}
+                  min={minAmountCny}
+                  max={maxAmountCny}
                   pattern="^\d*(\.\d{0,2})?$"
                   value={customAmount}
                   onChange={(event) => handleCustomAmountChange(event.target.value)}
@@ -332,9 +360,12 @@ export function OrderForm(props: OrderFormProps) {
               </span>
             </label>
             <div className={styles.orderForm__hint}>
-              <p>
-                到账 <span className="font-medium text-foreground">{customCredits}</span> 积分
-              </p>
+              <span>到账积分</span>
+              <strong>{customCredits}</strong>
+              <span>手续费</span>
+              <strong>{formatCny(customFeeCent)}</strong>
+              <span>实付金额</span>
+              <strong>{formatCny(customPayableCent)}</strong>
             </div>
 
             <button
@@ -342,7 +373,7 @@ export function OrderForm(props: OrderFormProps) {
               onClick={() => createCustomOrder()}
               disabled={isLoading}
             >
-              {isLoading ? "创建中" : `确认支付 ¥${amount.toFixed(2)}`}
+              {isLoading ? "创建中" : `确认支付 ${formatCny(customPayableCent)}`}
             </button>
           </div>
         </section>

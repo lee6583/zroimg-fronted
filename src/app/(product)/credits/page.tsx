@@ -73,7 +73,7 @@ export default async function CreditsPage() {
         </section>
 
         <section>
-          <OrderForm packages={packages} allowCustomOrder />
+          <OrderForm packages={packages} rules={overview.rechargeRules} allowCustomOrder />
         </section>
       </div>
     </div>

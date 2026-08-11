@@ -185,20 +185,20 @@ export async function estimatePrice(
   const requiredPoints = estimateGenerationCredits({
     mode: input.mode,
     quality,
-    size: input.size,
-    count: input.imageCount,
+    size: "1024x1024",
+    count: input.count,
   });
   const shortagePoints = Math.max(requiredPoints - profile.creditBalance, 0);
 
   return {
     priceVersion: "mock-v1",
-    unitPoints: requiredPoints / input.imageCount,
-    imageCount: input.imageCount,
+    unitPoints: requiredPoints / input.count,
+    imageCount: input.count,
     requiredPoints,
     currentPoints: profile.creditBalance,
     shortagePoints,
     enough: shortagePoints === 0,
-    detail: `${input.resolution}，生成 ${input.imageCount} 张`,
+    detail: `${quality} 画质，生成 ${input.count} 张`,
   };
 }
 
@@ -223,13 +223,13 @@ export async function getForUser(profileId: string, taskId: string) {
 export async function create(input: {
   userProfileId: string;
   conversationId: string;
+  model: string;
   prompt: string;
   mode: "text" | "edit";
+  referenceMediaId?: string;
   quality: string;
-  outputFormat: string;
-  size: string;
-  imageCount: number;
-  inputMediaIds: string[];
+  ratio: string;
+  count: number;
 }) {
   const store = getStore();
   const profile = store.profiles.find((item) => item.id === input.userProfileId);
@@ -242,11 +242,10 @@ export async function create(input: {
   if (!conversation) {
     throw new Error("对话不存在");
   }
-  if (input.mode === "edit" && input.inputMediaIds.length === 0) {
+  if (input.mode === "edit" && !input.referenceMediaId) {
     throw new Error("图生图需要参考图");
   }
-  const ownsAllInputs = input.inputMediaIds.every((id) => ownsInput(id, input.userProfileId));
-  if (!ownsAllInputs) {
+  if (input.referenceMediaId && !ownsInput(input.referenceMediaId, input.userProfileId)) {
     throw new Error("参考图不存在");
   }
 
@@ -254,8 +253,8 @@ export async function create(input: {
   const costCredits = estimateGenerationCredits({
     mode: input.mode,
     quality,
-    size: input.size,
-    count: input.imageCount,
+    size: "1024x1024",
+    count: input.count,
   });
   if (profile.creditBalance < costCredits) {
     throw new Error("积分不足");
@@ -270,11 +269,11 @@ export async function create(input: {
     prompt: input.prompt.trim(),
     mode: input.mode,
     status: "queued" as const,
-    model: store.settings.generation.model,
-    size: input.size,
+    model: input.model,
+    size: input.ratio,
     quality,
-    outputFormat: input.outputFormat,
-    imageCount: input.imageCount,
+    outputFormat: "png",
+    imageCount: input.count,
     costCredits,
     error: null,
     createdAt: new Date(),

@@ -21,6 +21,8 @@ type CreateOrderResponse = {
     packageName?: string;
     amountCent?: number;
     amountText?: string;
+    rechargeAmountCent?: number;
+    feeAmountCent?: number;
     credits?: number;
     payStatus?: string;
     creditsStatus?: string;
@@ -53,6 +55,8 @@ type RechargeOrder = {
   packageDescription?: string | null;
   amountCent: number;
   amountText: string;
+  rechargeAmountCent: number;
+  feeAmountCent: number;
   credits: number;
   payChannel?: string | null;
   payChannelText?: string | null;
@@ -65,11 +69,21 @@ type RechargeOrder = {
   expireTime?: string | null;
 };
 
+type RechargeRules = {
+  feeRatePercent: number;
+  timeoutMinutes: number;
+  creditsPerYuan: number;
+  maxPendingOrders: number;
+  minAmountCent: number;
+  maxAmountCent: number;
+};
+
 type RechargeOverview = {
   pendingOrderCount: number;
   completedOrderCount: number;
   enabledPackageCount: number;
   totalPoints: number;
+  rechargeRules: RechargeRules;
 };
 
 type RechargeOrderPageQuery = {
@@ -111,7 +125,7 @@ type AdminCreditPackageInput = {
 };
 
 type AdminRechargeOrder = RechargeOrder & {
-  userText: string;
+  username?: string | null;
   creditsErrorReason?: string | null;
   closeTime?: string | null;
 };
@@ -146,6 +160,7 @@ export type {
   CreatePaymentResponse,
   RechargeOrder,
   RechargeOverview,
+  RechargeRules,
   RechargeOrderPageQuery,
   RechargeOrderPage,
   CreditPackage,

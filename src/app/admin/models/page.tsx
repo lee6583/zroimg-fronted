@@ -1,10 +1,10 @@
 import { ModelManager } from "@/features/admin/model-manager";
-import { listAdminModels } from "@/server/bff/admin-models";
+import { listAdminModels, listImageModelCatalog } from "@/server/bff/admin-models";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminModelsPage() {
-  const models = await listAdminModels();
+  const [models, catalog] = await Promise.all([listAdminModels(), listImageModelCatalog()]);
 
-  return <ModelManager initialModels={models} />;
+  return <ModelManager initialModels={models} catalog={catalog} />;
 }

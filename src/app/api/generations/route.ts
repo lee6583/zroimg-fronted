@@ -14,13 +14,10 @@ const generationSchema = z.object({
   model: z.string().trim().min(1, "请选择模型").max(100),
   prompt: z.string().trim().min(1, "请输入提示词").max(4000),
   mode: z.enum(["text", "edit"]),
+  referenceMediaId: mediaIdSchema.optional(),
   quality: z.string().trim().min(1, "请选择画质").max(50),
-  outputFormat: z.string().trim().min(1, "请选择图片格式").max(50),
   ratio: z.string().regex(/^\d+:\d+$/, "图片比例格式不正确"),
-  resolution: z.string().trim().min(1, "请选择分辨率").max(20),
-  size: z.string().trim().min(1, "图片尺寸不能为空").max(50),
-  imageCount: z.number().int().min(1).max(20),
-  inputMediaIds: z.array(mediaIdSchema).max(1, "图生图当前只支持 1 张参考图"),
+  count: z.number().int().min(1).max(20),
 });
 
 export async function POST(request: Request) {
@@ -34,6 +31,9 @@ export async function POST(request: Request) {
     if (!parsed.ok) return jsonError(parsed.message);
 
     const payload = parsed.data;
+    if (payload.mode === "edit" && !payload.referenceMediaId) {
+      return jsonError("图生图需要 1 张参考图");
+    }
 
     await requireConversation(current.profile.id, payload.conversationId);
     const task = await createTask({
@@ -42,13 +42,10 @@ export async function POST(request: Request) {
       model: payload.model,
       prompt: payload.prompt,
       mode: payload.mode,
+      referenceMediaId: payload.referenceMediaId,
       quality: payload.quality,
-      outputFormat: payload.outputFormat,
       ratio: payload.ratio,
-      resolution: payload.resolution,
-      size: payload.size,
-      imageCount: payload.imageCount,
-      inputMediaIds: payload.inputMediaIds,
+      count: payload.count,
     });
 
     return jsonOk({

@@ -7,11 +7,13 @@ import { listAdminGenerations } from "@/server/bff/admin";
 
 export const dynamic = "force-dynamic";
 
-const generationStatuses = ["pending", "processing", "succeeded", "failed"] as const;
+const generationStatuses = ["processing", "succeeded", "failed"] as const;
 const pageSizeOptions = [10, 20, 50];
 const generationStatusLabels: Record<string, string> = {
-  pending: "排队中",
+  pending: "生成中",
   processing: "生成中",
+  queued: "生成中",
+  running: "生成中",
   succeeded: "已完成",
   failed: "失败",
 };
@@ -41,10 +43,17 @@ function href(input: { q?: string; status?: string; page?: number; pageSize?: nu
 
 function statusClass(status: string) {
   if (status === "succeeded") return workspace.statusSuccess;
-  if (status === "processing") return workspace.statusInfo;
-  if (status === "pending") return workspace.statusWarning;
+  if (["pending", "processing", "queued", "running"].includes(status)) {
+    return workspace.statusInfo;
+  }
   if (status === "failed") return workspace.statusDanger;
   return undefined;
+}
+
+function generationType(modelType: "image" | "video", mode: string) {
+  if (modelType === "video" || mode.includes("video")) return "视频";
+  if (mode === "image_to_image" || mode === "edit") return "图生图";
+  return "文生图";
 }
 
 export default async function AdminGenerationsPage(props: AdminGenerationsPageProps) {
@@ -78,7 +87,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
         <div className={workspace.toolbar}>
           <form className={workspace.search}>
             <Search size={15} aria-hidden="true" />
-            <input name="q" defaultValue={q || ""} placeholder="搜索提示词、模型或用户邮箱" />
+            <input name="q" defaultValue={q || ""} placeholder="搜索提示词、模型或用户名" />
             {isKnownStatus ? <input type="hidden" name="status" value={status} /> : null}
             {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
             <button type="submit">搜索</button>
@@ -108,8 +117,9 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
             <table className={clsx(workspace.table, workspace.tasksTable)}>
               <thead>
                 <tr>
-                  <th>用户 / 任务</th>
+                  <th>用户</th>
                   <th>提示词</th>
+                  <th>类型</th>
                   <th>模型配置</th>
                   <th>消耗 / 输出</th>
                   <th>状态</th>
@@ -119,17 +129,17 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
               <tbody>
                 {tasks.map((task) => (
                   <tr key={task.id}>
-                    <td data-label="用户 / 任务">
+                    <td data-label="用户">
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>{task.userEmail}</span>
-                        <span className={workspace.monoText} title={task.id}>
-                          {task.id}
-                        </span>
+                        <span className={workspace.primaryText}>{task.username}</span>
                       </div>
                     </td>
                     <td data-label="提示词">
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.truncate} title={task.prompt}>
+                        <span
+                          className={clsx(workspace.truncate, workspace.taskPrompt)}
+                          title={task.prompt}
+                        >
                           {task.prompt}
                         </span>
                         {task.failReason ? (
@@ -139,11 +149,12 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                         ) : null}
                       </div>
                     </td>
+                    <td data-label="类型">{generationType(task.modelType, task.mode)}</td>
                     <td data-label="模型配置">
                       <div className={workspace.primaryCell}>
                         <span>{task.model}</span>
                         <span className={workspace.secondaryText}>
-                          {task.mode} · {task.size} · {task.quality}
+                          {task.size} · {task.quality}
                         </span>
                       </div>
                     </td>

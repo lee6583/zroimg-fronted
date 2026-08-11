@@ -21,15 +21,11 @@ export async function listModels(): Promise<GenerationModelOption[]> {
 
   const params: GenerationModelParams = {
     ratios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
-    resolutions: ["1K", "2K", "4K"],
-    qualities: ["auto", "low", "medium", "high"],
-    formats: ["png", "jpeg", "webp"],
+    qualities: ["low", "medium", "high"],
     counts: [1, 2, 4],
     defaults: {
       ratio: "1:1",
-      resolution: "1K",
-      quality: "auto" as const,
-      format: "png" as const,
+      quality: "medium" as const,
       count: 1,
     },
   };
@@ -153,20 +149,19 @@ export async function getTask(profileId: string, taskId: string) {
   return mockTask.getForUser(profileId, taskId);
 }
 
-export async function createTask(
-  input: Parameters<typeof mockTask.create>[0] & {
-    model?: string;
-    ratio?: string;
-    resolution?: string;
-  },
-) {
+export async function createTask(input: {
+  userProfileId: string;
+  conversationId: string;
+  model: string;
+  prompt: string;
+  mode: "text" | "edit";
+  referenceMediaId?: string;
+  quality: string;
+  ratio: string;
+  count: number;
+}) {
   if (isJavaBffEnabled()) {
-    return javaGeneration.createTask({
-      ...input,
-      model: input.model || "gpt-image-2",
-      ratio: input.ratio || "1:1",
-      resolution: input.resolution || "1K",
-    });
+    return javaGeneration.createTask(input);
   }
 
   return mockTask.create(input);

@@ -1,5 +1,5 @@
 import { GenerateForm } from "@/features/generation/generate-form";
-import { getDefaultOptions, getGenerationSize } from "@/features/generation/generation-model";
+import { getDefaultOptions } from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
 import {
   ensureDefaultConversation,
@@ -19,11 +19,8 @@ export default async function GeneratePage() {
     model: initialOptions.model,
     mode: initialOptions.mode,
     ratio: initialOptions.ratio,
-    resolution: initialOptions.resolution,
     quality: initialOptions.quality,
-    outputFormat: initialOptions.format,
-    imageCount: initialOptions.count,
-    size: getGenerationSize(initialOptions),
+    count: initialOptions.count,
   });
   await ensureDefaultConversation(current.profile.id);
   const conversations = await listConversations(current.profile.id);

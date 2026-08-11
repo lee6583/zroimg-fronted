@@ -31,6 +31,12 @@ type EasyPayAdminConfig = {
   keyPreview: string | null;
   notifyUrl: string;
   returnUrl: string;
+  feeRatePercent: number;
+  timeoutMinutes: number;
+  creditsPerYuan: number;
+  maxPendingOrders: number;
+  minAmountCent: number;
+  maxAmountCent: number;
 };
 
 type CheckInSettingsConfig = {
@@ -82,6 +88,12 @@ type SaveEasyPaySettingsRequest = {
   clearKey: boolean;
   notifyUrl: string;
   returnUrl: string;
+  feeRatePercent: number;
+  timeoutMinutes: number;
+  creditsPerYuan: number;
+  maxPendingOrders: number;
+  minAmountCent: number;
+  maxAmountCent: number;
 };
 
 type SaveEasyPaySettingsResponse = {
@@ -122,6 +134,10 @@ type ResetUserPasswordResponse = {
   ok?: boolean;
 };
 
+type DeleteUserResponse = {
+  ok?: boolean;
+};
+
 type AdminUser = {
   id: string;
   username: string;
@@ -158,9 +174,10 @@ type AdminPointsFlow = {
 type AdminGenerationTask = {
   id: string;
   taskNo: string;
-  userEmail: string;
+  username: string;
   prompt: string;
   status: string;
+  modelType: "image" | "video";
   mode: string;
   model: string;
   size: string;
@@ -194,72 +211,58 @@ type AdminOverview = {
   latestTickets: AdminOverviewTicket[];
 };
 
-type AdminGenerationModelMode = {
-  id?: string;
-  modeCode: string;
-  modeName: string;
-  status: "enabled" | "disabled";
-  sortOrder: number;
-};
+type ImageModelAdapter = "openai" | "grok";
 
-type AdminGenerationModelParam = {
-  id?: string;
-  modeCode: string;
-  paramType: "ratio" | "resolution" | "quality" | "format" | "count" | "duration" | "audio";
-  paramValue: string;
-  paramLabel: string;
-  defaultFlag: number;
-  sortOrder: number;
-};
-
-type AdminGenerationModelPrice = {
-  id?: string;
-  modeCode: string;
-  resolution: string;
-  quality: string;
-  points: number;
-  priceVersion?: string;
-  status: "enabled" | "disabled";
+type ImageModelCatalogItem = {
+  modelCode: string;
+  modelName: string;
+  adapter: ImageModelAdapter;
+  defaultApiBaseUrl: string;
+  imageToImageSupported: boolean;
+  ratios: string[];
+  qualities: string[];
+  maxCount: number;
+  defaultPoints: Record<string, number>;
 };
 
 type AdminGenerationModel = {
   id: string;
   modelCode: string;
   modelName: string;
-  provider: string;
+  adapter: ImageModelAdapter;
   apiBaseUrl: string;
   hasApiKey: boolean;
-  apiKeyPreview: string | null;
-  modelType: "image" | "video";
   status: "enabled" | "disabled";
   defaultFlag: number;
   sortOrder: number;
-  remark: string | null;
-  priceVersion: string;
+  imageToImageEnabled: boolean;
+  supportedRatios: string[];
+  supportedQualities: string[];
+  maxCount: number;
+  pointsByQuality: Record<string, number>;
   createdAt: string | null;
   updatedAt: string | null;
-  modes: AdminGenerationModelMode[];
-  params: AdminGenerationModelParam[];
-  prices: AdminGenerationModelPrice[];
 };
 
 type SaveAdminGenerationModelRequest = {
   modelCode: string;
-  modelName: string;
-  provider: string;
+  adapter: ImageModelAdapter;
   apiBaseUrl: string;
   apiKey: string;
   clearApiKey: boolean;
-  modelType: "image" | "video";
   status: "enabled" | "disabled";
   defaultFlag: number;
   sortOrder: number;
-  remark: string;
-  priceVersion: string;
-  priceChangeReason: string;
-  modes: AdminGenerationModelMode[];
-  params: AdminGenerationModelParam[];
-  prices: AdminGenerationModelPrice[];
+  imageToImageEnabled: boolean;
+  ratios: string[];
+  qualities: string[];
+  maxCount: number;
+  qualityPrices: Array<{ quality: string; points: number }>;
+};
+
+type AdminGenerationModelsResponse = {
+  models: AdminGenerationModel[];
+  catalog: ImageModelCatalogItem[];
 };
 
 type AdminGenerationModelResponse = {
@@ -288,6 +291,7 @@ export type {
   UpdateUserStatusResponse,
   ResetUserPasswordRequest,
   ResetUserPasswordResponse,
+  DeleteUserResponse,
   AdminUser,
   AdminUserPageQuery,
   AdminUserPage,
@@ -296,10 +300,10 @@ export type {
   AdminGenerationPage,
   AdminOverviewTicket,
   AdminOverview,
-  AdminGenerationModelMode,
-  AdminGenerationModelParam,
-  AdminGenerationModelPrice,
+  ImageModelAdapter,
+  ImageModelCatalogItem,
   AdminGenerationModel,
   SaveAdminGenerationModelRequest,
+  AdminGenerationModelsResponse,
   AdminGenerationModelResponse,
 };

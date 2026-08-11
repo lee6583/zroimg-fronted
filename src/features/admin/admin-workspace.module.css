@@ -283,17 +283,13 @@
 }
 
 .tasksTable th:nth-child(1) {
-  width: 15rem;
+  width: 12rem;
 }
 
 .tasksTable th:nth-child(2) {
-  width: 26rem;
+  width: 23rem;
 }
 
-.tasksTable th:nth-child(2),
-.tasksTable td:nth-child(2),
-.tasksTable th:nth-child(3),
-.tasksTable td:nth-child(3),
 .modelsTable th:nth-child(4),
 .modelsTable td:nth-child(4),
 .ticketsTable th:nth-child(3),
@@ -302,11 +298,11 @@
 }
 
 .tasksTable th:nth-child(3) {
-  width: 14rem;
+  width: 7rem;
 }
 
 .tasksTable th:nth-child(4) {
-  width: 8rem;
+  width: 14rem;
 }
 
 .tasksTable th:nth-child(5) {
@@ -314,7 +310,26 @@
 }
 
 .tasksTable th:nth-child(6) {
+  width: 8rem;
+}
+
+.tasksTable th:nth-child(7) {
   width: 11rem;
+}
+
+@media (min-width: 721px) {
+  .ordersTable td:nth-child(5) .primaryCell {
+    justify-items: center;
+  }
+
+  .table.tasksTable th,
+  .table.tasksTable td {
+    text-align: center;
+  }
+
+  .tasksTable .primaryCell {
+    justify-items: center;
+  }
 }
 
 .packagesTable th:nth-child(1) {
@@ -406,6 +421,12 @@
 .primaryText {
   color: var(--foreground);
   font-weight: 650;
+}
+
+.taskPrompt {
+  display: block;
+  margin-inline: auto;
+  max-width: 18rem;
 }
 
 .secondaryText {
@@ -776,6 +797,79 @@
   line-height: 1.55;
 }
 
+.optionFieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+
+.optionFieldset legend {
+  margin-bottom: 0.55rem;
+}
+
+.optionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.optionCheck {
+  display: flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--background);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.optionCheck:has(input:checked) {
+  border-color: var(--foreground);
+  background: color-mix(in oklab, var(--soft) 70%, var(--panel));
+}
+
+.optionCheck input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--foreground);
+}
+
+.pricingList {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+.pricingRow {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(15rem, 20rem);
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.pricingRow:last-child {
+  border-bottom: 0;
+}
+
+.priceInput {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .drawer {
     animation: drawer-in 0.18s ease-out;
@@ -815,6 +909,16 @@
 
   .filters {
     align-self: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .optionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pricingRow {
+    grid-template-columns: 1fr;
   }
 }
 

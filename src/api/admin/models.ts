@@ -1,9 +1,12 @@
 import { request } from "@/utils/request";
-import type { AdminGenerationModelResponse, SaveAdminGenerationModelRequest } from "@/types/admin";
-import type { AdminGenerationModel } from "@/types/admin";
+import type {
+  AdminGenerationModelsResponse,
+  AdminGenerationModelResponse,
+  SaveAdminGenerationModelRequest,
+} from "@/types/admin";
 
 function list() {
-  return request<{ models: AdminGenerationModel[] }>({
+  return request<AdminGenerationModelsResponse>({
     url: "/api/admin/models",
   });
 }

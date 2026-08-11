@@ -140,6 +140,22 @@ function JavaRechargeOrderCard(props: { order: RechargeOrder }) {
             <span>支付金额</span>
             <span className={styles.result__value}>{order.amountText}</span>
           </div>
+          {order.feeAmountCent > 0 ? (
+            <>
+              <div className={styles.result__row}>
+                <span>充值本金</span>
+                <span className={styles.result__value}>
+                  {formatAmount(order.rechargeAmountCent / 100)}
+                </span>
+              </div>
+              <div className={styles.result__row}>
+                <span>充值手续费</span>
+                <span className={styles.result__value}>
+                  {formatAmount(order.feeAmountCent / 100)}
+                </span>
+              </div>
+            </>
+          ) : null}
           <div className={styles.result__row}>
             <span>到账积分</span>
             <span className={styles.result__value}>{order.credits} 积分</span>

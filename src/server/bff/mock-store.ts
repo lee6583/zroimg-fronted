@@ -63,11 +63,14 @@ export type MockPaymentOrder = {
   status: MockOrderStatus;
   credits: number;
   amountCny: number;
+  rechargeAmountCny?: number;
+  feeAmountCny?: number;
   creditPackageId: string | null;
   providerTradeNo: string | null;
   payUrl: string | null;
   createdAt: Date;
   paidAt: Date | null;
+  expiresAt?: Date;
 };
 
 export type MockMediaAsset = {
@@ -230,6 +233,12 @@ export type MockSettingsState = {
     key: string | null;
     notifyUrl: string;
     returnUrl: string;
+    feeRatePercent: number;
+    timeoutMinutes: number;
+    creditsPerYuan: number;
+    maxPendingOrders: number;
+    minAmountCent: number;
+    maxAmountCent: number;
   };
   checkin: {
     dailyCredits: number;
@@ -881,6 +890,12 @@ function createStore(): MockStore {
         key: "mock-easypay-key",
         notifyUrl: "http://localhost:3000/api/pay/easypay/notify",
         returnUrl: "http://localhost:3000/billing/result",
+        feeRatePercent: 0,
+        timeoutMinutes: 15,
+        creditsPerYuan: 5,
+        maxPendingOrders: 1,
+        minAmountCent: 100,
+        maxAmountCent: 500_000,
       },
       checkin: {
         dailyCredits: 5,
@@ -1071,6 +1086,64 @@ export function findProfileById(profileId: string) {
   }
 
   return profile;
+}
+
+function removeWhere<T>(items: T[], predicate: (item: T) => boolean) {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      items.splice(index, 1);
+    }
+  }
+}
+
+export function deleteMockUser(profileId: string, adminProfileId: string) {
+  const store = getStore();
+  const profile = store.profiles.find((item) => item.id === profileId);
+  if (!profile) {
+    return false;
+  }
+  if (profile.id === adminProfileId || profile.role === "admin") {
+    throw new Error("管理员账户不能删除");
+  }
+
+  const taskIds = new Set(
+    store.generationTasks.filter((item) => item.userProfileId === profileId).map((item) => item.id),
+  );
+  const generatedIds = new Set(
+    store.generatedImages
+      .filter((item) => item.userProfileId === profileId || taskIds.has(item.taskId))
+      .map((item) => item.id),
+  );
+  const collectionIds = new Set(
+    store.favoriteCollections
+      .filter((item) => item.userProfileId === profileId)
+      .map((item) => item.id),
+  );
+  const ticketIds = new Set(
+    store.feedbackTickets.filter((item) => item.userProfileId === profileId).map((item) => item.id),
+  );
+
+  removeWhere(store.favoriteCollectionItems, (item) => {
+    return collectionIds.has(item.collectionId) || generatedIds.has(item.generatedImageId);
+  });
+  removeWhere(store.favoriteCollections, (item) => item.userProfileId === profileId);
+  removeWhere(store.galleryImages, (item) => {
+    return item.userProfileId === profileId || generatedIds.has(item.generatedImageId);
+  });
+  removeWhere(store.feedbackMessages, (item) => {
+    return ticketIds.has(item.ticketId) || item.authorProfileId === profileId;
+  });
+  removeWhere(store.feedbackTickets, (item) => item.userProfileId === profileId);
+  removeWhere(store.generatedImages, (item) => generatedIds.has(item.id));
+  removeWhere(store.generationTasks, (item) => item.userProfileId === profileId);
+  removeWhere(store.generationConversations, (item) => item.userProfileId === profileId);
+  removeWhere(store.mediaAssets, (item) => item.ownerUserProfileId === profileId);
+  removeWhere(store.creditLedger, (item) => item.userProfileId === profileId);
+  removeWhere(store.checkInRecords, (item) => item.userProfileId === profileId);
+  removeWhere(store.paymentOrders, (item) => item.userProfileId === profileId);
+  removeWhere(store.profiles, (item) => item.id === profileId);
+  removeWhere(store.users, (item) => item.id === profile.userId);
+  return true;
 }
 
 export function findUserBundleByProfileId(profileId: string) {

@@ -121,6 +121,12 @@ export async function getEasyPayAdminConfig(): Promise<EasyPayAdminConfig> {
     keyPreview: maskSecret(settings.key),
     notifyUrl: settings.notifyUrl,
     returnUrl: settings.returnUrl,
+    feeRatePercent: settings.feeRatePercent,
+    timeoutMinutes: settings.timeoutMinutes,
+    creditsPerYuan: settings.creditsPerYuan,
+    maxPendingOrders: settings.maxPendingOrders,
+    minAmountCent: settings.minAmountCent,
+    maxAmountCent: settings.maxAmountCent,
   };
 }
 
@@ -132,6 +138,12 @@ export async function updateEasyPaySettings(input: {
   clearKey?: boolean;
   notifyUrl?: string;
   returnUrl?: string;
+  feeRatePercent: number;
+  timeoutMinutes: number;
+  creditsPerYuan: number;
+  maxPendingOrders: number;
+  minAmountCent: number;
+  maxAmountCent: number;
 }) {
   if (isJavaBffEnabled()) {
     return requestJavaApiData<EasyPayAdminConfig>("/admin/settings/easypay", {
@@ -147,6 +159,12 @@ export async function updateEasyPaySettings(input: {
   settings.pid = input.pid?.trim() || null;
   settings.notifyUrl = input.notifyUrl?.trim() || settings.notifyUrl;
   settings.returnUrl = input.returnUrl?.trim() || settings.returnUrl;
+  settings.feeRatePercent = input.feeRatePercent;
+  settings.timeoutMinutes = input.timeoutMinutes;
+  settings.creditsPerYuan = input.creditsPerYuan;
+  settings.maxPendingOrders = input.maxPendingOrders;
+  settings.minAmountCent = input.minAmountCent;
+  settings.maxAmountCent = input.maxAmountCent;
   if (input.clearKey) {
     settings.key = null;
   } else if (input.key?.trim()) {

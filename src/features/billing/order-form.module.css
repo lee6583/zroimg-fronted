@@ -96,6 +96,12 @@
   font-size: 0.76rem;
 }
 
+.orderForm__fee {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
 .orderForm__features {
   display: grid;
   gap: 0.5rem;
@@ -217,12 +223,21 @@
 }
 
 .orderForm__hint {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3rem 1rem;
   border-radius: 0.75rem;
   background: var(--soft);
   padding: 0.75rem;
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.7;
+}
+
+.orderForm__hint strong {
+  color: var(--foreground);
+  font-weight: 600;
+  text-align: right;
 }
 
 .orderForm__message {

@@ -14,22 +14,17 @@ import type {
 } from "@/types/generation";
 
 const qualitySchema = z.string().trim().min(1);
-const formatSchema = z.string().trim().min(1);
 
 const javaModelDefaultsSchema = z.object({
   mode: z.string(),
   ratio: z.string(),
-  resolution: z.string(),
   quality: qualitySchema,
-  format: formatSchema,
   count: z.number(),
 });
 
 const javaModelParamsSchema = z.object({
   ratios: z.array(z.string()),
-  resolutions: z.array(z.string()),
   qualities: z.array(qualitySchema),
-  formats: z.array(formatSchema),
   counts: z.array(z.number()),
   defaults: javaModelDefaultsSchema,
 });
@@ -103,12 +98,9 @@ type TaskInput = {
   prompt: string;
   mode: "text" | "edit";
   quality: string;
-  outputFormat: string;
   ratio: string;
-  resolution: string;
-  size: string;
-  imageCount: number;
-  inputMediaIds: string[];
+  count: number;
+  referenceMediaId?: string;
 };
 
 function parseDate(value: string | null | undefined) {
@@ -131,6 +123,7 @@ function toJavaMode(mode: GenerationMode) {
 }
 
 function mapSize(resolution: string, ratio: string) {
+  if (resolution === "adaptive") return ratio;
   const sizes: Record<string, string> = {
     "1K:1:1": "1024x1024",
     "1K:16:9": "1360x768",
@@ -237,50 +230,22 @@ export async function listConversations() {
 }
 
 export async function listModels() {
-  const textModelsPromise = listModelsByMode("text");
-  const editModelsPromise = listModelsByMode("edit");
-  const [textModels, editModels] = await Promise.all([textModelsPromise, editModelsPromise]);
-  const modelsByCode = new Map<string, GenerationModelOption>();
-
-  addModeModels(modelsByCode, textModels, "text");
-  addModeModels(modelsByCode, editModels, "edit");
-
-  return Array.from(modelsByCode.values());
-}
-
-async function listModelsByMode(mode: GenerationMode) {
   const params = new URLSearchParams({
     modelType: "image",
-    mode: toJavaMode(mode),
   });
   const payload = await requestJavaApiData<unknown>(`/generation/user/models?${params.toString()}`);
-  return z.array(javaModelSchema).parse(payload);
-}
-
-function addModeModels(
-  modelsByCode: Map<string, GenerationModelOption>,
-  javaModels: z.infer<typeof javaModelSchema>[],
-  mode: GenerationMode,
-) {
-  for (const javaModel of javaModels) {
+  const javaModels = z.array(javaModelSchema).parse(payload);
+  return javaModels.map((javaModel): GenerationModelOption => {
     const params: GenerationModelParams = javaModel.supportParams;
-    const current = modelsByCode.get(javaModel.modelCode);
-
-    if (current) {
-      current.modes.push(mode);
-      current.params[mode] = params;
-      continue;
-    }
-
-    const model: GenerationModelOption = {
+    const modes = javaModel.supportModes.map((mode) => mapMode(mode));
+    return {
       value: javaModel.modelCode,
       label: javaModel.modelName,
-      modes: [mode],
-      defaultMode: mode,
-      params: { [mode]: params },
+      modes,
+      defaultMode: modes[0] ?? "text",
+      params: Object.fromEntries(modes.map((mode) => [mode, params])),
     };
-    modelsByCode.set(javaModel.modelCode, model);
-  }
+  });
 }
 
 export async function createConversation(title: string) {
@@ -401,20 +366,16 @@ export async function getTask(taskNo: string) {
 export async function createTask(input: TaskInput) {
   const mode = input.mode === "edit" ? "image_to_image" : "text_to_image";
   const quality = input.quality;
-  const format = input.outputFormat;
-  const price = await estimatePrice({
+  await estimatePrice({
     model: input.model,
     mode: input.mode,
     ratio: input.ratio,
-    resolution: input.resolution,
     quality,
-    outputFormat: format,
-    imageCount: input.imageCount,
-    size: input.size,
+    count: input.count,
   });
 
-  if (mode === "image_to_image" && input.inputMediaIds.length !== 1) {
-    throw new Error("图生图当前只支持 1 张参考图");
+  if (mode === "image_to_image" && !input.referenceMediaId) {
+    throw new Error("图生图需要 1 张参考图");
   }
 
   const payload = await requestJavaApiData<unknown>("/generation/user/tasks", {
@@ -425,13 +386,10 @@ export async function createTask(input: TaskInput) {
       conversationId: input.conversationId,
       mode,
       prompt: input.prompt,
-      referenceMediaId: input.inputMediaIds[0] ?? null,
+      referenceMediaId: input.referenceMediaId ?? null,
       ratio: input.ratio,
-      resolution: input.resolution,
       quality,
-      format,
-      count: input.imageCount,
-      priceVersion: price.priceVersion,
+      count: input.count,
     }),
   });
 
@@ -448,10 +406,8 @@ export async function estimatePrice(
       modelCode: input.model,
       mode: toJavaMode(input.mode),
       ratio: input.ratio,
-      resolution: input.resolution,
       quality: input.quality,
-      format: input.outputFormat,
-      count: input.imageCount,
+      count: input.count,
     }),
   });
   const price = javaPriceSchema.parse(payload);

@@ -2,6 +2,7 @@ import { request } from "@/utils/request";
 import type {
   AdjustUserCreditsRequest,
   AdjustUserCreditsResponse,
+  DeleteUserResponse,
   ResetUserPasswordRequest,
   ResetUserPasswordResponse,
   UpdateUserStatusRequest,
@@ -32,8 +33,16 @@ function resetPassword(userId: string, data: ResetUserPasswordRequest) {
   });
 }
 
+function deleteUser(userId: string) {
+  return request<DeleteUserResponse>({
+    url: `/api/admin/users/${userId}`,
+    method: "DELETE",
+  });
+}
+
 export const adminUsersApi = {
   adjustCredits,
+  deleteUser,
   resetPassword,
   updateStatus,
 };

@@ -1,5 +1,5 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { listAdminModels, saveAdminModel } from "@/server/bff/admin-models";
+import { listAdminModels, listImageModelCatalog, saveAdminModel } from "@/server/bff/admin-models";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 import { modelSchema } from "./schema";
@@ -18,8 +18,8 @@ export async function GET() {
       return jsonError("无权限", 403);
     }
 
-    const models = await listAdminModels();
-    return jsonOk({ models });
+    const [models, catalog] = await Promise.all([listAdminModels(), listImageModelCatalog()]);
+    return jsonOk({ models, catalog });
   });
 }
 

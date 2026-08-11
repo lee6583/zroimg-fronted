@@ -73,7 +73,7 @@ export function GenerateForm(props: GenerateFormProps) {
     .filter(isPending)
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
-  const summary = `${options.resolution} · ${options.ratio} · 预计 ${estimate} 积分`;
+  const summary = `${options.ratio} · 预计 ${estimate} 积分`;
 
   useEffect(() => {
     let isCurrent = true;
@@ -84,11 +84,8 @@ export function GenerateForm(props: GenerateFormProps) {
           model: options.model,
           mode: options.mode,
           ratio: options.ratio,
-          resolution: options.resolution,
           quality: options.quality,
-          outputFormat: options.format,
-          imageCount: options.count,
-          size,
+          count: options.count,
         });
         if (!isCurrent) {
           return;
@@ -114,16 +111,7 @@ export function GenerateForm(props: GenerateFormProps) {
       isCurrent = false;
       window.clearTimeout(timer);
     };
-  }, [
-    options.count,
-    options.format,
-    options.mode,
-    options.model,
-    options.quality,
-    options.ratio,
-    options.resolution,
-    size,
-  ]);
+  }, [options.count, options.mode, options.model, options.quality, options.ratio, size]);
 
   useEffect(() => {
     if (!activeId || !pendingKey) return;
@@ -368,13 +356,10 @@ export function GenerateForm(props: GenerateFormProps) {
         model: options.model,
         prompt: text,
         mode: options.mode,
+        referenceMediaId: options.mode === "edit" ? inputs[0]?.id : undefined,
         quality: options.quality,
-        outputFormat: options.format,
         ratio: options.ratio,
-        resolution: options.resolution,
-        size,
-        imageCount: options.count,
-        inputMediaIds: options.mode === "edit" ? inputs.map((item) => item.id) : [],
+        count: options.count,
       });
       const task = data.task;
 

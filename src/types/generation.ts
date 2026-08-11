@@ -44,15 +44,11 @@ type GenerationTaskView = {
 
 type GenerationModelParams = {
   ratios: string[];
-  resolutions: string[];
   qualities: GenerationQualityOption[];
-  formats: GenerationOutputFormat[];
   counts: number[];
   defaults: {
     ratio: string;
-    resolution: string;
     quality: GenerationQualityOption;
-    format: GenerationOutputFormat;
     count: number;
   };
 };
@@ -69,11 +65,8 @@ type GenerationPriceRequest = {
   model: string;
   mode: GenerationMode;
   ratio: string;
-  resolution: string;
   quality: GenerationQualityOption;
-  outputFormat: GenerationOutputFormat;
-  imageCount: number;
-  size: string;
+  count: number;
 };
 
 type GenerationPriceResponse = {
@@ -157,13 +150,10 @@ type CreateGenerationTaskRequest = {
   model: string;
   prompt: string;
   mode: GenerationMode;
+  referenceMediaId?: string;
   quality: GenerationQualityOption;
-  outputFormat: GenerationOutputFormat;
   ratio: string;
-  resolution: string;
-  size: string;
-  imageCount: number;
-  inputMediaIds: string[];
+  count: number;
 };
 
 type CreateGenerationTaskResponse = {

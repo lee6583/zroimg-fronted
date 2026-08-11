@@ -19,6 +19,7 @@ import type {
   RechargeOverview,
 } from "@/types/orders";
 import { normalizeOrderDisplayStatus } from "@/utils/order-status";
+import { normalizeRechargeAmountBreakdown } from "@/utils/recharge";
 
 const javaPackageSchema = z.object({
   id: javaIdSchema,
@@ -44,6 +45,8 @@ const javaRechargeOrderSchema = z.object({
   packageDescription: z.string().nullable().optional(),
   amountCent: z.number(),
   amountText: z.string(),
+  rechargeAmountCent: z.number().nullable().optional(),
+  feeAmountCent: z.number().nullable().optional(),
   credits: z.number(),
   payChannel: z.string().nullable().optional(),
   payChannelText: z.string().nullable().optional(),
@@ -61,6 +64,14 @@ const javaRechargeOverviewSchema = z.object({
   completedOrderCount: z.number(),
   enabledPackageCount: z.number(),
   totalPoints: z.number(),
+  rechargeRules: z.object({
+    feeRatePercent: z.number(),
+    timeoutMinutes: z.number(),
+    creditsPerYuan: z.number(),
+    maxPendingOrders: z.number(),
+    minAmountCent: z.number(),
+    maxAmountCent: z.number(),
+  }),
 });
 
 const javaRechargeOrderPageSchema = z.object({
@@ -71,6 +82,7 @@ const javaRechargeOrderPageSchema = z.object({
 
 const javaAdminRechargeOrderSchema = javaRechargeOrderSchema.extend({
   userId: javaIdSchema,
+  username: z.string().nullable().optional(),
   creditsErrorReason: z.string().nullable().optional(),
   closeTime: z.string().nullable().optional(),
 });
@@ -502,6 +514,14 @@ async function getMockRechargeOverview(input: { userProfileId: string; totalPoin
     completedOrderCount,
     enabledPackageCount: packages.length,
     totalPoints: input.totalPoints,
+    rechargeRules: {
+      feeRatePercent: getStore().settings.easypay.feeRatePercent,
+      timeoutMinutes: getStore().settings.easypay.timeoutMinutes,
+      creditsPerYuan: getStore().settings.easypay.creditsPerYuan,
+      maxPendingOrders: getStore().settings.easypay.maxPendingOrders,
+      minAmountCent: getStore().settings.easypay.minAmountCent,
+      maxAmountCent: getStore().settings.easypay.maxAmountCent,
+    },
   };
 }
 
@@ -543,6 +563,8 @@ function mockOrderToRechargeOrder(
     packageDescription: null,
     amountCent,
     amountText: formatAmountText(amountCent),
+    rechargeAmountCent: amountCent,
+    feeAmountCent: 0,
     credits: order.credits,
     payChannel: order.paymentType,
     payChannelText: order.paymentType,
@@ -589,7 +611,10 @@ async function listJavaRechargeOrders(query: RechargeOrderPageQuery) {
     throw new Error("充值订单分页接口返回格式不正确");
   }
 
-  return parsed.data;
+  return {
+    ...parsed.data,
+    list: parsed.data.list.map(normalizeJavaRechargeOrder),
+  };
 }
 
 async function listRechargeOrders(query: RechargeOrderPageQuery): Promise<RechargeOrderPage> {
@@ -607,7 +632,16 @@ function parseJavaRechargeOrder(payload: unknown, errorMessage: string): Recharg
     throw new Error(errorMessage);
   }
 
-  return parsed.data;
+  return normalizeJavaRechargeOrder(parsed.data);
+}
+
+function normalizeJavaRechargeOrder(
+  order: z.output<typeof javaRechargeOrderSchema>,
+): RechargeOrder {
+  return {
+    ...order,
+    ...normalizeRechargeAmountBreakdown(order),
+  };
 }
 
 async function getJavaRechargeOrder(orderNo: string) {
@@ -677,7 +711,7 @@ async function listMockAdminOrders(
 
     return {
       ...baseOrder,
-      userText: order.userProfile?.user?.email || order.userProfileId,
+      username: order.userProfile?.username ?? null,
       creditsErrorReason: null,
       closeTime: null,
     };
@@ -697,11 +731,11 @@ async function listJavaAdminOrders(
   }
 
   const list: AdminRechargeOrder[] = parsed.data.list.map((item) => {
-    const { userId, ...order } = item;
-
     return {
-      ...order,
-      userText: String(userId),
+      ...normalizeJavaRechargeOrder(item),
+      username: item.username ?? null,
+      creditsErrorReason: item.creditsErrorReason ?? null,
+      closeTime: item.closeTime ?? null,
     };
   });
 
@@ -734,7 +768,10 @@ async function reissueJavaRechargeCredits(orderNo: string) {
     throw new Error("补发积分接口返回格式不正确");
   }
 
-  return parsed.data;
+  return {
+    ...parsed.data,
+    ...normalizeRechargeAmountBreakdown(parsed.data),
+  };
 }
 
 export {

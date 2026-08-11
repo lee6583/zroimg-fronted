@@ -349,11 +349,14 @@ export const prisma = {
   generationTask: {
     async count(args?: {
       where?: {
-        status?: MockTaskStatus;
+        status?: MockTaskStatus | { in: MockTaskStatus[] };
         OR?: Array<{
           prompt?: { contains?: string };
           model?: { contains?: string };
-          userProfile?: { user?: { email?: { contains?: string } } };
+          userProfile?: {
+            username?: { contains?: string };
+            user?: { email?: { contains?: string } };
+          };
         }>;
       };
     }) {
@@ -364,11 +367,14 @@ export const prisma = {
       where?: {
         userProfileId?: string;
         conversationId?: string;
-        status?: MockTaskStatus;
+        status?: MockTaskStatus | { in: MockTaskStatus[] };
         OR?: Array<{
           prompt?: { contains?: string };
           model?: { contains?: string };
-          userProfile?: { user?: { email?: { contains?: string } } };
+          userProfile?: {
+            username?: { contains?: string };
+            user?: { email?: { contains?: string } };
+          };
         }>;
       };
       include?: { userProfile?: { include?: { user?: true } }; outputs?: true };
@@ -382,11 +388,12 @@ export const prisma = {
       const query =
         where?.OR?.[0]?.prompt?.contains ||
         where?.OR?.[1]?.model?.contains ||
-        where?.OR?.[2]?.userProfile?.user?.email?.contains;
+        where?.OR?.[2]?.userProfile?.user?.email?.contains ||
+        where?.OR?.[3]?.userProfile?.username?.contains;
 
       // 第一步：按用户、对话、状态和关键词过滤任务。
       const items = store.generationTasks.filter((task) => {
-        const { user } = userByProfileId(task.userProfileId);
+        const { profile, user } = userByProfileId(task.userProfileId);
 
         if (where?.userProfileId && task.userProfileId !== where.userProfileId) {
           return false;
@@ -396,15 +403,20 @@ export const prisma = {
           return false;
         }
 
-        if (where?.status && task.status !== where.status) {
-          return false;
+        if (where?.status) {
+          const matchesStatus =
+            typeof where.status === "string"
+              ? task.status === where.status
+              : where.status.in.includes(task.status);
+          if (!matchesStatus) return false;
         }
 
         const promptMatched = includesText(task.prompt, query);
         const modelMatched = includesText(task.model, query);
         const emailMatched = includesText(user.email, query);
+        const usernameMatched = includesText(profile.username, query);
 
-        if (query && !promptMatched && !modelMatched && !emailMatched) {
+        if (query && !promptMatched && !modelMatched && !emailMatched && !usernameMatched) {
           return false;
         }
 

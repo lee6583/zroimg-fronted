@@ -6,7 +6,6 @@ import { AppSelect } from "@/components/ui/app-select";
 import type {
   GenerationMode,
   GenerationModelOption,
-  GenerationOutputFormat,
   GenerationQualityOption,
 } from "@/types/generation";
 import { normalizeOptions, type GenerationOptions } from "./generation-model";
@@ -92,20 +91,6 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         </div>
       </SettingGroup>
 
-      <SettingGroup title="分辨率">
-        <div className={styles.generateForm__optionGridThree}>
-          {params.resolutions.map((resolution) => (
-            <Option
-              key={resolution}
-              active={value.resolution === resolution}
-              onClick={() => update("resolution", resolution)}
-            >
-              {resolution}
-            </Option>
-          ))}
-        </div>
-      </SettingGroup>
-
       <SettingGroup title="画质">
         <div className={styles.generateForm__optionGridFour}>
           {params.qualities.map((quality) => (
@@ -115,20 +100,6 @@ export function GenerationSettings(props: GenerationSettingsProps) {
               onClick={() => update("quality", quality)}
             >
               {qualityLabel(quality)}
-            </Option>
-          ))}
-        </div>
-      </SettingGroup>
-
-      <SettingGroup title="图片格式">
-        <div className={styles.generateForm__optionGridThree}>
-          {params.formats.map((format) => (
-            <Option
-              key={format}
-              active={value.format === format}
-              onClick={() => update("format", format)}
-            >
-              {formatLabel(format)}
             </Option>
           ))}
         </div>
@@ -177,15 +148,6 @@ function qualityLabel(quality: GenerationQualityOption) {
     high: "高",
   };
   return labels[quality] || quality;
-}
-
-function formatLabel(format: GenerationOutputFormat) {
-  const labels: Record<string, string> = {
-    png: "PNG",
-    webp: "WebP",
-    jpeg: "JPG",
-  };
-  return labels[format] || format;
 }
 
 function Option(props: OptionProps) {

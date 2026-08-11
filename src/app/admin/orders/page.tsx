@@ -137,7 +137,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                         <span className={workspace.secondaryText}>充值订单</span>
                       </div>
                     </td>
-                    <td data-label="用户">{order.userText}</td>
+                    <td data-label="用户">{order.username || "未知用户"}</td>
                     <td data-label="套餐">
                       <div className={workspace.primaryCell}>
                         <span>{order.packageName}</span>
@@ -175,22 +175,13 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                       </div>
                     </td>
                     <td data-label="时间">
-                      <div className={workspace.primaryCell}>
-                        <span className={workspace.dateText}>
-                          创建 {formatDateText(order.createTime)}
-                        </span>
-                        <span className={workspace.secondaryText}>
-                          支付 {formatDateText(order.payTime)}
-                        </span>
-                      </div>
+                      <span className={workspace.dateText}>{formatDateText(order.createTime)}</span>
                     </td>
                     <td data-label="操作">
                       <div className={workspace.rowActions}>
                         {order.creditsStatus === "failed" ? (
                           <ReissueButton orderNo={order.orderNo} />
-                        ) : (
-                          <span className={workspace.secondaryText}>—</span>
-                        )}
+                        ) : null}
                       </div>
                     </td>
                   </tr>

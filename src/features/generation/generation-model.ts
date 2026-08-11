@@ -1,7 +1,6 @@
 import type {
   GenerationConversationApiItem,
   GenerationMode,
-  GenerationOutputFormat,
   GenerationModelOption,
   GenerationQualityOption,
   GenerationTaskStatus,
@@ -14,9 +13,7 @@ export type GenerationOptions = {
   mode: GenerationMode;
   model: string;
   ratio: string;
-  resolution: string;
   quality: QualityOption;
-  format: GenerationOutputFormat;
   count: number;
 };
 
@@ -63,37 +60,8 @@ export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
   failed: "失败",
 };
 
-const sizes: Record<string, Record<string, string>> = {
-  "1K": {
-    "1:1": "1024x1024",
-    "16:9": "1360x768",
-    "9:16": "768x1360",
-    "4:3": "1152x864",
-    "3:4": "864x1152",
-  },
-  "2K": {
-    "1:1": "1536x1536",
-    "16:9": "2048x1152",
-    "9:16": "1152x2048",
-    "4:3": "1792x1344",
-    "3:4": "1344x1792",
-  },
-  "4K": {
-    "1:1": "2048x2048",
-    "16:9": "3840x2160",
-    "9:16": "1216x2160",
-    "4:3": "2816x2112",
-    "3:4": "1584x2112",
-  },
-};
-
 export function getGenerationSize(options: GenerationOptions) {
-  const resolutionSizes = sizes[options.resolution];
-  if (!resolutionSizes) {
-    return `${options.resolution} · ${options.ratio}`;
-  }
-
-  return resolutionSizes[options.ratio] || `${options.resolution} · ${options.ratio}`;
+  return options.ratio;
 }
 
 export function getDefaultOptions(models: GenerationModelOption[]): GenerationOptions {
@@ -112,9 +80,7 @@ export function getDefaultOptions(models: GenerationModelOption[]): GenerationOp
     mode,
     model: model.value,
     ratio: params.defaults.ratio,
-    resolution: params.defaults.resolution,
     quality: params.defaults.quality,
-    format: params.defaults.format,
     count: params.defaults.count,
   };
 }
@@ -145,9 +111,7 @@ export function normalizeOptions(
     mode: options.mode,
     model: model.value,
     ratio: pickValue(options.ratio, params.ratios, params.defaults.ratio),
-    resolution: pickValue(options.resolution, params.resolutions, params.defaults.resolution),
     quality: pickValue(options.quality, params.qualities, params.defaults.quality),
-    format: pickValue(options.format, params.formats, params.defaults.format),
     count: pickValue(options.count, params.counts, params.defaults.count),
   };
 }
