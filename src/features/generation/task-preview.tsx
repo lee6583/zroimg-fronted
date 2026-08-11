@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { Bot, User } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { taskStatusLabels, type FavoriteCollectionItem, type TaskItem } from "./generation-model";
@@ -98,21 +98,25 @@ function TaskMessage(props: TaskMessageProps) {
           styles.generateForm__chatMessageAssistant,
         )}
       >
-        <Avatar type="bot" />
-        <div className={styles.generateForm__assistantBubble}>
-          <p className={styles.generateForm__assistantMeta}>{metaText}</p>
-
+        {hasImages ? null : <Avatar type="bot" />}
+        <div
+          className={clsx(
+            styles.generateForm__assistantBubble,
+            hasImages && styles.generateForm__assistantBubbleResult,
+          )}
+        >
           {hasImages ? (
             <div className={styles.generateForm__chatImages}>
               {task.outputs.map((output, index) => (
                 <div key={output.id} className={styles.generateForm__chatImageItem}>
-                  <Image
-                    className={styles.generateForm__chatImage}
-                    src={output.imageUrl}
+                  <ImageLightbox
+                    src={output.fullImageUrl}
+                    previewSrc={output.imageUrl}
                     alt={`${task.prompt}，生成结果 ${index + 1}`}
                     width={output.width || 768}
                     height={output.height || 768}
-                    unoptimized
+                    triggerClassName={styles.generateForm__chatImageTrigger}
+                    imageClassName={styles.generateForm__chatImage}
                   />
                   <HistoryImageActions
                     generatedImageId={output.id}
@@ -121,24 +125,30 @@ function TaskMessage(props: TaskMessageProps) {
                     downloadUrl={output.downloadUrl}
                     downloadFileName={output.fileName || `zroimg-${task.id}-${index + 1}.png`}
                     showPublish={false}
+                    placement="overlay"
                   />
                 </div>
               ))}
             </div>
-          ) : isWaiting || task.status === "failed" ? (
-            <div className={styles.generateForm__streamingRow}>
-              {isWaiting ? (
-                <>
-                  <span className={styles.generateForm__streamingDot} />
-                  <span className={styles.generateForm__streamingDot} />
-                  <span className={styles.generateForm__streamingDot} />
-                </>
+          ) : (
+            <>
+              <p className={styles.generateForm__assistantMeta}>{metaText}</p>
+              {isWaiting || task.status === "failed" ? (
+                <div className={styles.generateForm__streamingRow}>
+                  {isWaiting ? (
+                    <>
+                      <span className={styles.generateForm__streamingDot} />
+                      <span className={styles.generateForm__streamingDot} />
+                      <span className={styles.generateForm__streamingDot} />
+                    </>
+                  ) : null}
+                  <p className={styles.generateForm__assistantText}>
+                    {isWaiting ? "正在生成画面" : "生成失败了，请调整描述后再试。"}
+                  </p>
+                </div>
               ) : null}
-              <p className={styles.generateForm__assistantText}>
-                {isWaiting ? "正在生成画面" : "生成失败了，请调整描述后再试。"}
-              </p>
-            </div>
-          ) : null}
+            </>
+          )}
         </div>
       </div>
     </div>

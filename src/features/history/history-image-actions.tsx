@@ -21,6 +21,7 @@ type HistoryImageActionsProps = {
   downloadUrl: string;
   downloadFileName: string;
   showPublish?: boolean;
+  placement?: "default" | "overlay";
 };
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
@@ -30,6 +31,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   const downloadUrl = props.downloadUrl;
   const downloadFileName = props.downloadFileName;
   const showPublish = props.showPublish ?? true;
+  const placement = props.placement ?? "default";
 
   const [isOpen, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -80,7 +82,12 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   }
 
   return (
-    <div className={styles.historyImageActions}>
+    <div
+      className={clsx(
+        styles.historyImageActions,
+        placement === "overlay" && styles.historyImageActionsOverlay,
+      )}
+    >
       <div className={styles.historyImageActions__row}>
         {showPublish ? (
           <PublishGalleryButton
@@ -96,6 +103,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           onClick={openPanel}
           className={clsx(
             styles.historyImageActions__iconButton,
+            placement === "overlay" && styles.historyImageActions__iconButtonOverlay,
             isFavorited && styles.historyImageActions__iconButtonActive,
           )}
         >
@@ -107,7 +115,10 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           title="下载图片"
           href={downloadUrl}
           download={downloadFileName}
-          className={styles.historyImageActions__iconButton}
+          className={clsx(
+            styles.historyImageActions__iconButton,
+            placement === "overlay" && styles.historyImageActions__iconButtonOverlay,
+          )}
         >
           <Download size={13} />
         </a>

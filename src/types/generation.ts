@@ -91,6 +91,7 @@ type UploadedMediaApiItem = {
 type GenerationTaskOutputApiItem = {
   id: string;
   imageUrl: string;
+  fullImageUrl: string;
   downloadUrl: string;
   fileName: string | null;
   width: number | null;

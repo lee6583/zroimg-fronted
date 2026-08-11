@@ -246,6 +246,10 @@
   background: var(--soft);
 }
 
+.history__preview button {
+  border-radius: inherit;
+}
+
 .history__promptCell {
   min-width: 0;
   text-align: center;
@@ -256,6 +260,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.18s ease;
+}
+
+.history__preview:hover .history__image {
+  transform: scale(1.04);
 }
 
 .history__placeholder {

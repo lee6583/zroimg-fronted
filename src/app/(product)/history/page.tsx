@@ -1,8 +1,8 @@
 import clsx from "clsx";
-import Image from "next/image";
 import Link from "next/link";
 import { Clock3, ImageOff } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
@@ -324,13 +324,13 @@ export default async function HistoryPage(props: HistoryPageProps) {
                     <article key={item.id} className={styles.history__tableRow}>
                       <div className={styles.history__preview}>
                         {url && output && asset ? (
-                          <Image
-                            className={styles.history__image}
-                            src={url}
+                          <ImageLightbox
+                            src={urls.get(output.outputAsset.id) || url}
+                            previewSrc={url}
                             alt={task.prompt}
                             width={output.width || asset.width || 768}
                             height={output.height || asset.height || 768}
-                            unoptimized
+                            imageClassName={styles.history__image}
                           />
                         ) : (
                           <div className={styles.history__placeholder}>

@@ -3,12 +3,24 @@
   gap: 0.45rem;
 }
 
+.historyImageActionsOverlay {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  z-index: 3;
+}
+
 .historyImageActions__row {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
+}
+
+.historyImageActionsOverlay .historyImageActions__row {
+  justify-content: flex-end;
+  gap: 0.35rem;
 }
 
 .historyImageActions__iconButton {
@@ -27,6 +39,26 @@
 
 .historyImageActions__iconButton:hover {
   background: var(--soft);
+}
+
+.historyImageActions__iconButtonOverlay {
+  width: 2rem;
+  height: 2rem;
+  border-color: rgb(255 255 255 / 55%);
+  background: rgb(255 255 255 / 92%);
+  color: #111;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 24%);
+  backdrop-filter: blur(6px);
+}
+
+.historyImageActions__iconButtonOverlay:hover {
+  background: white;
+}
+
+.historyImageActions__iconButtonOverlay.historyImageActions__iconButtonActive {
+  border-color: #111;
+  background: #111;
+  color: white;
 }
 
 .historyImageActions__iconButtonActive {

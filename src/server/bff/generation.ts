@@ -190,11 +190,16 @@ export async function serializeTask(task: GenerationTaskView): Promise<Generatio
     task.outputs.map(async (output) => {
       const previewAsset = output.thumbnailAsset || output.outputAsset;
       const imageUrl = await getMediaSignedUrl(previewAsset.id);
+      const isOriginalPreview = previewAsset.id === output.outputAsset.id;
+      const fullImageUrl = isOriginalPreview
+        ? imageUrl
+        : await getMediaSignedUrl(output.outputAsset.id);
       const downloadUrl = await getMediaDownloadUrl(output.outputAsset.id);
 
       return {
         id: output.id,
         imageUrl,
+        fullImageUrl,
         downloadUrl,
         fileName: output.outputAsset.fileName,
         width: output.width || output.outputAsset.width,
