@@ -5,6 +5,7 @@ import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
+import { uploadMediaFile } from "@/api/media/uploads";
 import { getErrorMessage } from "@/utils/error";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import type { GenerationModelOption } from "@/types/generation";
@@ -623,9 +624,7 @@ function isReusableDraftChat(chat: ConversationItem, tasks: TaskItem[]) {
 }
 
 async function uploadFile(file: File) {
-  const data = new FormData();
-  data.set("file", file);
-  return (await generationTasksApi.uploadMedia(data)).media;
+  return (await uploadMediaFile(file)).media;
 }
 
 function readActiveConversationId() {

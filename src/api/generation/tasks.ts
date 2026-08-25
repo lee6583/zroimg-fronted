@@ -5,16 +5,7 @@ import type {
   FetchGenerationTaskResponse,
   GenerationPriceRequest,
   GenerationPriceResponse,
-  UploadMediaResponse,
 } from "@/types/generation";
-
-function uploadMedia(data: FormData) {
-  return request<UploadMediaResponse>({
-    url: "/api/media/upload",
-    method: "POST",
-    body: data,
-  });
-}
 
 function createTask(data: CreateGenerationTaskRequest) {
   return request<CreateGenerationTaskResponse>({
@@ -40,7 +31,6 @@ function estimatePrice(data: GenerationPriceRequest) {
 }
 
 export const generationTasksApi = {
-  uploadMedia,
   createTask,
   fetchTask,
   estimatePrice,

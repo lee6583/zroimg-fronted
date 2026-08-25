@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { ImagePlus, Mic2, Sparkles, X } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useState } from "react";
-import { generationTasksApi } from "@/api/generation/tasks";
+import { uploadMediaFile } from "@/api/media/uploads";
 import { videoApi } from "@/api/video";
 import { AppSelect } from "@/components/ui/app-select";
 import { getErrorMessage } from "@/utils/error";
@@ -143,13 +143,10 @@ export function VideoSettings(props: VideoSettingsProps) {
       return;
     }
 
-    const data = new FormData();
-    data.set("file", file);
-
     try {
       setUploading(true);
       setMessage("");
-      const result = await generationTasksApi.uploadMedia(data);
+      const result = await uploadMediaFile(file);
       updateForm({
         referenceMediaId: result.media.id,
         referenceFileName: result.media.fileName || file.name,
