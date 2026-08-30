@@ -410,6 +410,24 @@
   gap: 0.2rem;
 }
 
+.modelIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modelIdentity .primaryText {
+  min-width: 0;
+}
+
+.modelBadges {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .primaryText,
 .monoText,
 .truncate {
@@ -868,6 +886,11 @@
   color: var(--muted);
   font-size: 0.72rem;
   font-weight: 500;
+}
+
+.videoPriceInputs {
+  display: grid;
+  gap: 0.55rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {

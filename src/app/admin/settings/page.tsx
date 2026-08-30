@@ -3,14 +3,12 @@ import {
   CheckInSettingsForm,
   EasyPaySettingsForm,
   SmtpSettingsForm,
-  VideoSettingsForm,
 } from "@/features/admin/service-settings-forms";
 import {
   getAnnouncementSettings,
   getCheckInSettings,
   getEasyPayAdminConfig,
   getSmtpAdminConfig,
-  getVideoConfig,
 } from "@/server/bff/account";
 import styles from "./settings.module.css";
 
@@ -21,7 +19,7 @@ type AdminSettingsPageProps = {
   searchParams: SearchParams;
 };
 
-const sectionIds = ["payment", "smtp", "video", "checkin", "announcement"] as const;
+const sectionIds = ["payment", "smtp", "checkin", "announcement"] as const;
 type SettingsSection = (typeof sectionIds)[number];
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
@@ -35,14 +33,12 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
   const section = sectionIds.includes(requestedSection as SettingsSection)
     ? (requestedSection as SettingsSection)
     : "payment";
-  const [videoSettings, smtpSettings, easyPaySettings, checkInSettings, announcementSettings] =
-    await Promise.all([
-      getVideoConfig(),
-      getSmtpAdminConfig(),
-      getEasyPayAdminConfig(),
-      getCheckInSettings(),
-      getAnnouncementSettings(),
-    ]);
+  const [smtpSettings, easyPaySettings, checkInSettings, announcementSettings] = await Promise.all([
+    getSmtpAdminConfig(),
+    getEasyPayAdminConfig(),
+    getCheckInSettings(),
+    getAnnouncementSettings(),
+  ]);
 
   const sections = [
     {
@@ -56,12 +52,6 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
       label: "邮件服务",
       description: smtpSettings.enabled ? "当前已启用" : "当前已停用",
       icon: Mail,
-    },
-    {
-      id: "video" as const,
-      label: "视频服务",
-      description: videoSettings.enabled ? "当前已启用" : "当前已停用",
-      icon: Video,
     },
     {
       id: "checkin" as const,
@@ -116,7 +106,6 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
         <section className={styles.content}>
           {section === "payment" ? <EasyPaySettingsForm initialSettings={easyPaySettings} /> : null}
           {section === "smtp" ? <SmtpSettingsForm initialSettings={smtpSettings} /> : null}
-          {section === "video" ? <VideoSettingsForm initialSettings={videoSettings} /> : null}
           {section === "checkin" ? <CheckInSettingsForm initialSettings={checkInSettings} /> : null}
           {section === "announcement" ? (
             <AnnouncementSettingsForm initialSettings={announcementSettings} />
@@ -127,6 +116,6 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
   );
 }
 import clsx from "clsx";
-import { CreditCard, Gift, Mail, Megaphone, Video } from "lucide-react";
+import { CreditCard, Gift, Mail, Megaphone } from "lucide-react";
 import Link from "next/link";
 import workspace from "@/features/admin/admin-workspace.module.css";

@@ -195,11 +195,6 @@ export function SliderVerification(props: SliderVerificationProps) {
         )}
         style={{ width: `${progress}%` }}
       />
-      <div
-        className="pointer-events-none absolute inset-y-1 w-px bg-foreground/20"
-        style={{ left: `${targetRatio * 100}%` }}
-        aria-hidden="true"
-      />
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <span className={clsx("text-xs font-medium", verified ? "text-emerald-600" : "text-muted")}>
           {statusText}

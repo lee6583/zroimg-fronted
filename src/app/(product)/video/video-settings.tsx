@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ImagePlus, Mic2, Sparkles, X } from "lucide-react";
+import { ImagePlus, Sparkles, X } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
@@ -18,8 +18,6 @@ type VideoForm = {
   duration: number | null;
   ratio: string;
   resolution: string;
-  quality: string;
-  audio: boolean;
   referenceMediaId: string;
   referenceFileName: string;
 };
@@ -68,15 +66,17 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
       duration: null,
       ratio: "",
       resolution: "",
-      quality: "",
-      audio: false,
       referenceMediaId: "",
       referenceFileName: "",
     };
   }
 
   const params = model.params;
-  const mode = model.modes[0]?.value || "";
+  const defaultMode = params.defaults.mode;
+  const mode = model.modes.some((item) => item.value === defaultMode)
+    ? (defaultMode ?? "")
+    : (model.modes[0]?.value ?? "");
+  const resolutions = params.resolutionsByMode[mode] ?? params.resolutions;
 
   return {
     model: model.value,
@@ -84,9 +84,7 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
     mode,
     duration: firstNumber(params.durations, params.defaults.duration),
     ratio: firstText(params.ratios, params.defaults.ratio),
-    resolution: firstText(params.resolutions, params.defaults.resolution),
-    quality: firstText(params.qualities, params.defaults.quality),
-    audio: params.defaults.audio ?? params.audios[0] ?? false,
+    resolution: firstText(resolutions, params.defaults.resolution),
     referenceMediaId: "",
     referenceFileName: "",
   };
@@ -112,7 +110,7 @@ export function VideoSettings(props: VideoSettingsProps) {
   const model = getModel(props.models, form.model);
   const params = model?.params || null;
   const canUseReferenceImage = form.mode === "image_to_video";
-  const hasAudioOptions = Boolean(params && params.audios.length > 0);
+  const resolutions = params?.resolutionsByMode[form.mode] ?? params?.resolutions ?? [];
 
   function updateForm(nextForm: Partial<VideoForm>) {
     setForm((currentForm) => ({
@@ -129,8 +127,10 @@ export function VideoSettings(props: VideoSettingsProps) {
 
   function selectMode(mode: string) {
     const shouldClearReference = mode !== "image_to_video";
+    const nextResolutions = params?.resolutionsByMode[mode] ?? params?.resolutions ?? [];
     updateForm({
       mode,
+      resolution: firstText(nextResolutions, form.resolution),
       referenceMediaId: shouldClearReference ? "" : form.referenceMediaId,
       referenceFileName: shouldClearReference ? "" : form.referenceFileName,
     });
@@ -167,7 +167,7 @@ export function VideoSettings(props: VideoSettingsProps) {
       setMessage("请输入视频提示词");
       return;
     }
-    if (!form.mode || !form.ratio || !form.resolution || !form.quality || form.duration === null) {
+    if (!form.mode || !form.ratio || !form.resolution || form.duration === null) {
       setMessage("视频参数尚未配置完整");
       return;
     }
@@ -181,13 +181,11 @@ export function VideoSettings(props: VideoSettingsProps) {
 
     try {
       const priceData = await videoApi.estimate({
-        modelCode: form.model,
+        model: form.model,
         mode: form.mode as "text_to_video" | "image_to_video",
         ratio: form.ratio,
         resolution: form.resolution,
-        quality: form.quality,
-        durationSeconds: form.duration,
-        audio: form.audio,
+        duration: form.duration,
       });
 
       if (!priceData.price.enough) {
@@ -196,14 +194,12 @@ export function VideoSettings(props: VideoSettingsProps) {
       }
 
       await videoApi.createTask({
-        modelCode: form.model,
+        model: form.model,
         mode: form.mode as "text_to_video" | "image_to_video",
         prompt: form.prompt.trim(),
         ratio: form.ratio,
         resolution: form.resolution,
-        quality: form.quality,
-        durationSeconds: form.duration,
-        audio: form.audio,
+        duration: form.duration,
         priceVersion: priceData.price.priceVersion,
         referenceMediaId: canUseReferenceImage ? form.referenceMediaId : undefined,
       });
@@ -251,16 +247,17 @@ export function VideoSettings(props: VideoSettingsProps) {
       </SettingGroup>
 
       <SettingGroup title="时长">
-        <div className={styles.videoPage__optionGridThree}>
-          {params?.durations.map((duration) => (
-            <Option
-              key={duration}
-              active={form.duration === duration}
-              onClick={() => updateForm({ duration })}
-            >
-              {duration}s
-            </Option>
-          ))}
+        <div className={styles.videoPage__durationControl}>
+          <input
+            type="range"
+            min={params?.durationMin ?? 1}
+            max={params?.durationMax ?? 15}
+            step={1}
+            value={form.duration ?? params?.durationMin ?? 1}
+            onChange={(event) => updateForm({ duration: Number(event.target.value) })}
+            aria-label="视频时长"
+          />
+          <output>{form.duration ?? params?.durationMin ?? 1} 秒</output>
         </div>
       </SettingGroup>
 
@@ -309,7 +306,7 @@ export function VideoSettings(props: VideoSettingsProps) {
 
       <SettingGroup title="分辨率">
         <div className={styles.videoPage__optionGridTwo}>
-          {params?.resolutions.map((resolution) => (
+          {resolutions.map((resolution) => (
             <Option
               key={resolution}
               active={form.resolution === resolution}
@@ -320,46 +317,6 @@ export function VideoSettings(props: VideoSettingsProps) {
           ))}
         </div>
       </SettingGroup>
-
-      <SettingGroup title="画质">
-        <div className={styles.videoPage__optionGridThree}>
-          {params?.qualities.map((quality) => (
-            <Option
-              key={quality}
-              active={form.quality === quality}
-              onClick={() => updateForm({ quality })}
-            >
-              {quality}
-            </Option>
-          ))}
-        </div>
-      </SettingGroup>
-
-      {hasAudioOptions ? (
-        <SettingGroup title="音频">
-          <button
-            type="button"
-            aria-pressed={form.audio}
-            onClick={() => updateForm({ audio: !form.audio })}
-            className={styles.videoPage__audioButton}
-            disabled={params?.audios.length === 1}
-          >
-            <span className={styles.videoPage__audioCopy}>
-              <Mic2 size={16} />
-              {form.audio ? "生成音频" : "关闭音频"}
-            </span>
-            <span
-              className={clsx(
-                styles.videoPage__switch,
-                form.audio && styles.videoPage__switchActive,
-              )}
-              aria-hidden="true"
-            >
-              <span className={styles.videoPage__switchThumb} />
-            </span>
-          </button>
-        </SettingGroup>
-      ) : null}
 
       <section className={styles.videoPage__submitBlock}>
         <button
@@ -386,9 +343,9 @@ function SettingGroup(props: SettingGroupProps) {
     <section className={styles.videoPage__settingBlock}>
       <div className={styles.videoPage__settingHeader}>
         <h2 className={styles.videoPage__settingTitle}>{title}</h2>
-        {hint ? <span className={styles.videoPage__settingHint}>{hint}</span> : null}
       </div>
       <div className={styles.videoPage__settingContent}>{children}</div>
+      {hint ? <p className={styles.videoPage__settingHint}>{hint}</p> : null}
     </section>
   );
 }

@@ -18,19 +18,20 @@ const modelDefaultsSchema = z.object({
   mode: z.string().nullable(),
   ratio: z.string().nullable(),
   resolution: z.string().nullable(),
-  quality: z.string().nullable(),
+  quality: z.string().nullable().optional(),
   duration: z.number().nullable(),
-  audio: z.boolean().nullable(),
+  audio: z.boolean().nullable().optional(),
 });
 
 const modelParamsSchema = z.object({
   ratios: z.array(z.string()),
   resolutions: z.array(z.string()),
-  qualities: z.array(z.string()),
-  formats: z.array(z.string()),
-  counts: z.array(z.number()),
+  resolutionsByMode: z.record(z.string(), z.array(z.string())).nullish(),
+  qualities: z.array(z.string()).optional(),
   durations: z.array(z.number()),
-  audios: z.array(z.boolean()),
+  durationMin: z.number().nullish(),
+  durationMax: z.number().nullish(),
+  audios: z.array(z.boolean()).optional(),
   defaults: modelDefaultsSchema,
 });
 
@@ -43,6 +44,10 @@ const modelSchema = z.object({
 
 const priceSchema = z.object({
   priceVersion: z.string(),
+  unitPoints: z.number(),
+  billingUnit: z.literal("second").nullish(),
+  referencePoints: z.number().nullish(),
+  durationSeconds: z.number().nullish(),
   requiredPoints: z.number(),
   currentPoints: z.number(),
   shortagePoints: z.number(),
@@ -65,8 +70,9 @@ const taskSchema = z.object({
   durationSeconds: z.number(),
   ratio: z.string(),
   resolution: z.string(),
-  quality: z.string(),
-  audio: z.boolean(),
+  unitPoints: z.number(),
+  billingUnit: z.string().nullish(),
+  referencePoints: z.number().nullish(),
   requiredPoints: z.number(),
   failReason: z.string().nullable(),
   results: z.array(resultSchema),
@@ -96,19 +102,46 @@ function mapModel(model: z.infer<typeof modelSchema>): VideoModel {
       label: modeLabel(mode),
     };
   });
+  const params = model.supportParams;
+  const resolutionsByMode = { ...(params.resolutionsByMode ?? {}) };
+  for (const mode of model.supportModes) {
+    if (!resolutionsByMode[mode]?.length) {
+      resolutionsByMode[mode] = [...params.resolutions];
+    }
+  }
+
+  const fallbackDuration = params.defaults.duration ?? 1;
+  const durationMin = params.durationMin ?? Math.min(...params.durations, fallbackDuration);
+  const durationMax = params.durationMax ?? Math.max(...params.durations, fallbackDuration);
 
   return {
     value: model.modelCode,
     label: model.modelName,
     modes,
     params: {
-      ratios: model.supportParams.ratios,
-      resolutions: model.supportParams.resolutions,
-      qualities: model.supportParams.qualities,
-      durations: model.supportParams.durations,
-      audios: model.supportParams.audios,
-      defaults: model.supportParams.defaults,
+      ratios: params.ratios,
+      resolutions: params.resolutions,
+      resolutionsByMode,
+      durations: params.durations,
+      durationMin,
+      durationMax,
+      defaults: params.defaults,
     },
+  };
+}
+
+function mapPrice(price: z.infer<typeof priceSchema>, input: VideoPriceRequest): VideoPrice {
+  return {
+    priceVersion: price.priceVersion,
+    unitPoints: price.unitPoints,
+    billingUnit: price.billingUnit ?? "legacy_5_seconds",
+    referencePoints: price.referencePoints ?? 0,
+    durationSeconds: price.durationSeconds ?? input.duration,
+    requiredPoints: price.requiredPoints,
+    currentPoints: price.currentPoints,
+    shortagePoints: price.shortagePoints,
+    enough: price.enough,
+    detail: price.detail,
   };
 }
 
@@ -137,8 +170,9 @@ function mapTask(task: z.infer<typeof taskSchema>): VideoTask {
     durationSeconds: task.durationSeconds,
     ratio: task.ratio,
     resolution: task.resolution,
-    quality: task.quality,
-    audio: task.audio,
+    unitPoints: task.unitPoints,
+    billingUnit: task.billingUnit ?? "legacy_5_seconds",
+    referencePoints: task.referencePoints ?? 0,
     requiredPoints: task.requiredPoints,
     failReason: task.failReason,
     results,
@@ -146,26 +180,49 @@ function mapTask(task: z.infer<typeof taskSchema>): VideoTask {
   };
 }
 
-export async function listVideoModels(): Promise<VideoModel[]> {
+async function readModelRecords() {
   const payload = await requestJavaApiData<unknown>("/generation/user/video/models");
-  const models = z.array(modelSchema).parse(payload);
+  return z.array(modelSchema).parse(payload);
+}
+
+async function buildCompatibleRequest(input: VideoPriceRequest | CreateVideoTaskRequest) {
+  const models = await readModelRecords();
+  const model = models.find((item) => item.modelCode === input.model);
+  const params = model?.supportParams;
+  const quality = params?.defaults.quality ?? params?.qualities?.[0] ?? "standard";
+  const audio = params?.defaults.audio ?? params?.audios?.[0] ?? false;
+
+  return {
+    ...input,
+    modelCode: input.model,
+    durationSeconds: input.duration,
+    quality,
+    audio,
+  };
+}
+
+export async function listVideoModels(): Promise<VideoModel[]> {
+  const models = await readModelRecords();
   return models.map(mapModel);
 }
 
 export async function estimateVideoPrice(input: VideoPriceRequest): Promise<VideoPrice> {
+  const requestBody = await buildCompatibleRequest(input);
   const payload = await requestJavaApiData<unknown>("/generation/user/video/price/estimate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(requestBody),
   });
-  return priceSchema.parse(payload);
+  const price = priceSchema.parse(payload);
+  return mapPrice(price, input);
 }
 
 export async function createVideoTask(input: CreateVideoTaskRequest): Promise<VideoTask> {
+  const requestBody = await buildCompatibleRequest(input);
   const payload = await requestJavaApiData<unknown>("/generation/user/video/tasks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(requestBody),
   });
   const task = taskSchema.parse(payload);
   return mapTask(task);

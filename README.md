@@ -66,7 +66,7 @@ JAVA_API_BASE_URL=https://api-dev.zroimg.com
 - Java 请求失败必须返回明确的 502，禁止静默回退到本地数据。
 - 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
 - 本地联调 Java 后端时，在 `.env.local` 写入实际后端域名。
-- 视频页只有在后端配置真实视频 Provider 并启用 `VIDEO_ENABLED` 后才具备实际生成能力。
+- 视频页只有在后台“模型配置”中配置并启用视频模型后才具备实际生成能力；`VIDEO_*` 仅保留给历史视频任务兼容使用。
 
 ## 4. 目录结构
 

@@ -19,38 +19,6 @@ function taskSummary(conversationId: string) {
   return tasks;
 }
 
-export async function ensureDefault(profileId: string) {
-  const store = getStore();
-
-  // 第一步：找出当前用户已有的生图对话。
-  const conversations = store.generationConversations.filter((conversation) => {
-    return conversation.userProfileId === profileId;
-  });
-
-  // 第二步：把最近有任务或最近更新的对话排到最前面。
-  conversations.sort((conversationA, conversationB) => {
-    const timeA = conversationA.lastTaskAt?.getTime() || conversationA.updatedAt.getTime();
-    const timeB = conversationB.lastTaskAt?.getTime() || conversationB.updatedAt.getTime();
-
-    return timeB - timeA;
-  });
-
-  const existing = conversations[0];
-
-  if (existing) return existing;
-
-  const conversation = {
-    id: nextId("conversation"),
-    userProfileId: profileId,
-    title: "新对话",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastTaskAt: null,
-  };
-  store.generationConversations.unshift(conversation);
-  return conversation;
-}
-
 export async function list(profileId: string) {
   const store = getStore();
 

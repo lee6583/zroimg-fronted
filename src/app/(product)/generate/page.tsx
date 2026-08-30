@@ -7,7 +7,6 @@ import {
 } from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
 import {
-  ensureDefaultConversation,
   estimatePrice,
   listConversations,
   listModels,
@@ -29,7 +28,6 @@ export default async function GeneratePage() {
     quality: initialOptions.quality,
     count: initialOptions.count,
   });
-  await ensureDefaultConversation(current.profile.id);
   const conversations = await listConversations(current.profile.id);
   const cookieStore = await cookies();
   const rememberedId = cookieStore.get(activeConversationCookieName)?.value;

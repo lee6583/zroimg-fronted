@@ -7,17 +7,16 @@ type VideoModelDefaults = {
   mode: string | null;
   ratio: string | null;
   resolution: string | null;
-  quality: string | null;
   duration: number | null;
-  audio: boolean | null;
 };
 
 type VideoModelParams = {
   ratios: string[];
   resolutions: string[];
-  qualities: string[];
+  resolutionsByMode: Record<string, string[]>;
   durations: number[];
-  audios: boolean[];
+  durationMin: number;
+  durationMax: number;
   defaults: VideoModelDefaults;
 };
 
@@ -30,6 +29,10 @@ type VideoModel = {
 
 type VideoPrice = {
   priceVersion: string;
+  unitPoints: number;
+  billingUnit: "second" | "legacy_5_seconds";
+  referencePoints: number;
+  durationSeconds: number;
   requiredPoints: number;
   currentPoints: number;
   shortagePoints: number;
@@ -52,8 +55,9 @@ type VideoTask = {
   durationSeconds: number;
   ratio: string;
   resolution: string;
-  quality: string;
-  audio: boolean;
+  unitPoints: number;
+  billingUnit: string;
+  referencePoints: number;
   requiredPoints: number;
   failReason: string | null;
   results: VideoResult[];
@@ -71,13 +75,11 @@ type VideoModelResponse = {
 };
 
 type VideoPriceRequest = {
-  modelCode: string;
+  model: string;
   mode: "text_to_video" | "image_to_video";
   ratio: string;
   resolution: string;
-  quality: string;
-  durationSeconds: number;
-  audio: boolean;
+  duration: number;
 };
 
 type VideoPriceResponse = {
@@ -87,7 +89,7 @@ type VideoPriceResponse = {
 type CreateVideoTaskRequest = VideoPriceRequest & {
   prompt: string;
   priceVersion: string;
-  referenceMediaId?: string | number;
+  referenceMediaId?: string;
 };
 
 type CreateVideoTaskResponse = {

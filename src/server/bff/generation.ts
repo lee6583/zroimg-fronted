@@ -43,14 +43,6 @@ export async function listModels(): Promise<GenerationModelOption[]> {
   ];
 }
 
-export async function ensureDefaultConversation(profileId: string) {
-  if (isJavaBffEnabled()) {
-    return javaGeneration.ensureDefault();
-  }
-
-  return mockConversation.ensureDefault(profileId);
-}
-
 export async function listConversations(profileId: string) {
   if (isJavaBffEnabled()) {
     return javaGeneration.listConversations();

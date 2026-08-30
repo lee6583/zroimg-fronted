@@ -7,8 +7,8 @@ import { adminModelsApi } from "@/api/admin/models";
 import { AppSelect } from "@/components/ui/app-select";
 import type {
   AdminGenerationModel,
-  ImageModelAdapter,
-  ImageModelCatalogItem,
+  GenerationModelAdapter,
+  GenerationModelCatalogItem,
   SaveAdminGenerationModelRequest,
 } from "@/types/admin";
 import { getErrorMessage } from "@/utils/error";
@@ -16,40 +16,58 @@ import workspace from "./admin-workspace.module.css";
 
 type ModelManagerProps = {
   initialModels: AdminGenerationModel[];
-  catalog: ImageModelCatalogItem[];
+  catalog: GenerationModelCatalogItem[];
 };
 
 type FormState = {
   modelCode: string;
-  adapter: ImageModelAdapter;
+  modelType: "image" | "video";
+  adapter: GenerationModelAdapter;
   apiBaseUrl: string;
   apiKey: string;
   status: "enabled" | "disabled";
   defaultFlag: 0 | 1;
   sortOrder: string;
   imageToImageEnabled: boolean;
+  imageToVideoEnabled: boolean;
   ratios: string[];
   qualities: string[];
+  resolutions: string[];
+  minDuration: string;
+  maxDuration: string;
   maxCount: string;
   pointsByQuality: Record<string, string>;
+  pointsPerSecond: Record<string, string>;
+  referencePoints: Record<string, string>;
 };
 
 type EditorTab = "basic" | "capabilities" | "pricing";
+type ListField = "ratios" | "qualities" | "resolutions";
 
-const adapterLabels: Record<ImageModelAdapter, string> = {
+const adapterLabels: Record<GenerationModelAdapter, string> = {
   openai: "OpenAI",
   grok: "Grok",
 };
 
+const modelTypeLabels = {
+  image: "图片",
+  video: "视频",
+} as const;
+
 const qualityLabels: Record<string, string> = {
-  low: "低",
-  medium: "中",
-  high: "高",
+  low: "1K",
+  medium: "2K",
+  high: "4K",
 };
 
-function createForm(item: ImageModelCatalogItem | undefined): FormState {
+function stringRecord(values: Record<string, number>) {
+  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, String(value)]));
+}
+
+function createForm(item: GenerationModelCatalogItem | undefined): FormState {
   return {
     modelCode: item?.modelCode ?? "",
+    modelType: item?.modelType ?? "image",
     adapter: item?.adapter ?? "openai",
     apiBaseUrl: item?.defaultApiBaseUrl ?? "",
     apiKey: "",
@@ -57,21 +75,23 @@ function createForm(item: ImageModelCatalogItem | undefined): FormState {
     defaultFlag: 0,
     sortOrder: "10",
     imageToImageEnabled: item?.imageToImageSupported ?? false,
-    ratios: item?.ratios ?? [],
-    qualities: item?.qualities ?? [],
+    imageToVideoEnabled: item?.imageToVideoSupported ?? false,
+    ratios: [...(item?.ratios ?? [])],
+    qualities: [...(item?.qualities ?? [])],
+    resolutions: [...(item?.resolutions ?? [])],
+    minDuration: String(item?.minDuration ?? 1),
+    maxDuration: String(item?.maxDuration ?? 15),
     maxCount: String(item?.maxCount ?? 1),
-    pointsByQuality: Object.fromEntries(
-      Object.entries(item?.defaultPoints ?? {}).map(([quality, points]) => [
-        quality,
-        String(points),
-      ]),
-    ),
+    pointsByQuality: stringRecord(item?.defaultPoints ?? {}),
+    pointsPerSecond: stringRecord(item?.defaultPointsPerSecond ?? {}),
+    referencePoints: stringRecord(item?.defaultReferencePoints ?? {}),
   };
 }
 
 function formFromModel(model: AdminGenerationModel): FormState {
   return {
     modelCode: model.modelCode,
+    modelType: model.modelType,
     adapter: model.adapter,
     apiBaseUrl: model.apiBaseUrl,
     apiKey: "",
@@ -79,19 +99,47 @@ function formFromModel(model: AdminGenerationModel): FormState {
     defaultFlag: model.defaultFlag === 1 ? 1 : 0,
     sortOrder: String(model.sortOrder),
     imageToImageEnabled: model.imageToImageEnabled,
-    ratios: model.supportedRatios,
-    qualities: model.supportedQualities,
+    imageToVideoEnabled: model.imageToVideoEnabled,
+    ratios: [...model.supportedRatios],
+    qualities: [...model.supportedQualities],
+    resolutions: [...model.supportedResolutions],
+    minDuration: String(model.minDuration ?? 1),
+    maxDuration: String(model.maxDuration ?? 15),
     maxCount: String(model.maxCount),
-    pointsByQuality: Object.fromEntries(
-      Object.entries(model.pointsByQuality).map(([quality, points]) => [quality, String(points)]),
-    ),
+    pointsByQuality: stringRecord(model.pointsByQuality),
+    pointsPerSecond: stringRecord(model.pointsPerSecondByResolution),
+    referencePoints: stringRecord(model.referencePointsByResolution),
   };
 }
 
 function readInteger(value: string, label: string) {
   const parsed = Number(value);
-  if (!Number.isInteger(parsed)) throw new Error(`${label}必须是整数`);
+  if (!Number.isInteger(parsed)) {
+    throw new Error(`${label}必须是整数`);
+  }
   return parsed;
+}
+
+function capabilitiesText(model: AdminGenerationModel) {
+  if (model.modelType === "video") {
+    return model.imageToVideoEnabled ? "文生视频 / 图生视频" : "文生视频";
+  }
+  return model.imageToImageEnabled ? "文生图 / 图生图" : "文生图";
+}
+
+function pricingText(model: AdminGenerationModel) {
+  if (model.modelType === "video") {
+    return model.supportedResolutions
+      .map(
+        (resolution) => `${resolution} ${model.pointsPerSecondByResolution[resolution] ?? "-"}/秒`,
+      )
+      .join(" / ");
+  }
+  return model.supportedQualities
+    .map(
+      (quality) => `${qualityLabels[quality] ?? quality} ${model.pointsByQuality[quality] ?? "-"}`,
+    )
+    .join(" / ");
 }
 
 export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
@@ -108,6 +156,7 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
     [catalog, form.modelCode],
   );
   const configuredCodes = useMemo(() => new Set(models.map((model) => model.modelCode)), [models]);
+  const isVideo = form.modelType === "video";
 
   function updateForm(patch: Partial<FormState>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -139,10 +188,12 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
 
   function selectModel(modelCode: string) {
     const item = catalog.find((entry) => entry.modelCode === modelCode);
-    if (item) setForm(createForm(item));
+    if (item) {
+      setForm(createForm(item));
+    }
   }
 
-  function toggleListValue(field: "ratios" | "qualities", value: string) {
+  function toggleListValue(field: ListField, value: string) {
     setForm((current) => {
       const values = current[field];
       const next = values.includes(value)
@@ -153,17 +204,10 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
   }
 
   function buildPayload(): SaveAdminGenerationModelRequest {
-    if (!selectedCatalog) throw new Error("请选择预置模型");
-    const qualityPrices = form.qualities.map((quality) => ({
-      quality,
-      points: readInteger(
-        form.pointsByQuality[quality] ?? "",
-        `${qualityLabels[quality] ?? quality}画质积分`,
-      ),
-    }));
-    if (qualityPrices.some((item) => item.points < 0)) throw new Error("积分不能小于 0");
-
-    return {
+    if (!selectedCatalog) {
+      throw new Error("请选择预置模型");
+    }
+    const base = {
       modelCode: form.modelCode,
       adapter: form.adapter,
       apiBaseUrl: form.apiBaseUrl.trim(),
@@ -172,11 +216,49 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
       status: form.status,
       defaultFlag: form.defaultFlag,
       sortOrder: readInteger(form.sortOrder, "排序"),
-      imageToImageEnabled: form.imageToImageEnabled,
       ratios: form.ratios,
-      qualities: form.qualities,
-      maxCount: readInteger(form.maxCount, "最大生成数量"),
-      qualityPrices,
+    };
+
+    if (form.modelType === "image") {
+      const qualityPrices = form.qualities.map((quality) => ({
+        quality,
+        points: readInteger(
+          form.pointsByQuality[quality] ?? "",
+          `${qualityLabels[quality] ?? quality}积分`,
+        ),
+      }));
+      if (qualityPrices.some((item) => item.points < 0)) {
+        throw new Error("积分不能小于 0");
+      }
+      return {
+        ...base,
+        modelType: "image",
+        imageToImageEnabled: form.imageToImageEnabled,
+        qualities: form.qualities,
+        maxCount: readInteger(form.maxCount, "最大生成数量"),
+        qualityPrices,
+      };
+    }
+
+    const videoPrices = form.resolutions.map((resolution) => ({
+      resolution,
+      pointsPerSecond: readInteger(form.pointsPerSecond[resolution] ?? "", `${resolution}每秒积分`),
+      referencePoints: readInteger(
+        form.referencePoints[resolution] ?? "",
+        `${resolution}参考图积分`,
+      ),
+    }));
+    if (videoPrices.some((item) => item.pointsPerSecond < 0 || item.referencePoints < 0)) {
+      throw new Error("积分不能小于 0");
+    }
+    return {
+      ...base,
+      modelType: "video",
+      imageToVideoEnabled: form.imageToVideoEnabled,
+      resolutions: form.resolutions,
+      minDuration: readInteger(form.minDuration, "最短时长"),
+      maxDuration: readInteger(form.maxDuration, "最长时长"),
+      videoPrices,
     };
   }
 
@@ -187,7 +269,9 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
         ? current.map((item) => (item.id === model.id ? model : item))
         : [...current, model];
       return next.map((item) =>
-        model.defaultFlag === 1 && item.id !== model.id ? { ...item, defaultFlag: 0 } : item,
+        model.defaultFlag === 1 && item.id !== model.id && item.modelType === model.modelType
+          ? { ...item, defaultFlag: 0 }
+          : item,
       );
     });
   }
@@ -196,9 +280,18 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
     setSaving(true);
     setMessage("");
     try {
-      if (!editingId && !form.apiKey.trim()) throw new Error("新建模型时必须填写 API Key");
-      if (form.ratios.length === 0) throw new Error("至少选择一个图片比例");
-      if (form.qualities.length === 0) throw new Error("至少选择一个画质档位");
+      if (!editingId && !form.apiKey.trim()) {
+        throw new Error("新建模型时必须填写 API Key");
+      }
+      if (form.ratios.length === 0) {
+        throw new Error("至少选择一个比例");
+      }
+      if (!isVideo && form.qualities.length === 0) {
+        throw new Error("至少选择一个画质档位");
+      }
+      if (isVideo && form.resolutions.length === 0) {
+        throw new Error("至少选择一个视频分辨率");
+      }
       const result = editingId
         ? await adminModelsApi.update(editingId, buildPayload())
         : await adminModelsApi.create(buildPayload());
@@ -231,11 +324,15 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
   }
 
   async function remove(model: AdminGenerationModel) {
-    if (!window.confirm(`确定删除模型“${model.modelName}”吗？`)) return;
+    if (!window.confirm(`确定删除模型“${model.modelName}”吗？`)) {
+      return;
+    }
     try {
       await adminModelsApi.remove(model.id);
       setModels((current) => current.filter((item) => item.id !== model.id));
-      if (editingId === model.id) closeEditor();
+      if (editingId === model.id) {
+        closeEditor();
+      }
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
@@ -301,7 +398,7 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
                       onChange={selectModel}
                       options={catalog.map((item) => ({
                         value: item.modelCode,
-                        label: item.modelName,
+                        label: `${item.modelName} · ${modelTypeLabels[item.modelType]}`,
                         disabled: !editingId && configuredCodes.has(item.modelCode),
                       }))}
                     />
@@ -342,7 +439,7 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
                     <span className={workspace.fieldLabel}>排序</span>
                     <input
                       className={workspace.formField}
-                      inputMode="numeric"
+                      type="number"
                       value={form.sortOrder}
                       onChange={(event) => updateForm({ sortOrder: event.target.value })}
                     />
@@ -376,83 +473,152 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
             {activeTab === "capabilities" ? (
               <div className={workspace.formSection}>
                 <label className={workspace.switchRow}>
-                  <span>图生图</span>
+                  <span>{isVideo ? "图生视频" : "图生图"}</span>
                   <input
                     type="checkbox"
-                    disabled={!selectedCatalog?.imageToImageSupported}
-                    checked={form.imageToImageEnabled}
-                    onChange={(event) => updateForm({ imageToImageEnabled: event.target.checked })}
+                    disabled={
+                      isVideo
+                        ? !selectedCatalog?.imageToVideoSupported
+                        : !selectedCatalog?.imageToImageSupported
+                    }
+                    checked={isVideo ? form.imageToVideoEnabled : form.imageToImageEnabled}
+                    onChange={(event) =>
+                      isVideo
+                        ? updateForm({ imageToVideoEnabled: event.target.checked })
+                        : updateForm({ imageToImageEnabled: event.target.checked })
+                    }
                   />
                 </label>
-                <fieldset className={workspace.optionFieldset}>
-                  <legend className={workspace.fieldLabel}>支持比例</legend>
-                  <div className={workspace.optionGrid}>
-                    {selectedCatalog?.ratios.map((ratio) => (
-                      <label key={ratio} className={workspace.optionCheck}>
+                <OptionFieldset
+                  label="支持比例"
+                  values={selectedCatalog?.ratios ?? []}
+                  selected={form.ratios}
+                  onToggle={(value) => toggleListValue("ratios", value)}
+                />
+                {isVideo ? (
+                  <>
+                    <OptionFieldset
+                      label="支持分辨率"
+                      values={selectedCatalog?.resolutions ?? []}
+                      selected={form.resolutions}
+                      onToggle={(value) => toggleListValue("resolutions", value)}
+                    />
+                    <div className={workspace.formGrid}>
+                      <label className={workspace.fieldGroup}>
+                        <span className={workspace.fieldLabel}>最短时长（秒）</span>
                         <input
-                          type="checkbox"
-                          checked={form.ratios.includes(ratio)}
-                          onChange={() => toggleListValue("ratios", ratio)}
+                          className={workspace.formField}
+                          type="number"
+                          min={selectedCatalog?.minDuration ?? 1}
+                          max={selectedCatalog?.maxDuration ?? 15}
+                          value={form.minDuration}
+                          onChange={(event) => updateForm({ minDuration: event.target.value })}
                         />
-                        <span>{ratio}</span>
                       </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset className={workspace.optionFieldset}>
-                  <legend className={workspace.fieldLabel}>质量档位</legend>
-                  <div className={workspace.optionGrid}>
-                    {selectedCatalog?.qualities.map((quality) => (
-                      <label key={quality} className={workspace.optionCheck}>
+                      <label className={workspace.fieldGroup}>
+                        <span className={workspace.fieldLabel}>最长时长（秒）</span>
                         <input
-                          type="checkbox"
-                          checked={form.qualities.includes(quality)}
-                          onChange={() => toggleListValue("qualities", quality)}
+                          className={workspace.formField}
+                          type="number"
+                          min={selectedCatalog?.minDuration ?? 1}
+                          max={selectedCatalog?.maxDuration ?? 15}
+                          value={form.maxDuration}
+                          onChange={(event) => updateForm({ maxDuration: event.target.value })}
                         />
-                        <span>{qualityLabels[quality] ?? quality}</span>
                       </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <label className={workspace.fieldGroup}>
-                  <span className={workspace.fieldLabel}>最大生成数量</span>
-                  <input
-                    className={workspace.formField}
-                    type="number"
-                    min={1}
-                    max={selectedCatalog?.maxCount ?? 1}
-                    value={form.maxCount}
-                    onChange={(event) => updateForm({ maxCount: event.target.value })}
-                  />
-                </label>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <OptionFieldset
+                      label="质量档位"
+                      values={selectedCatalog?.qualities ?? []}
+                      selected={form.qualities}
+                      onToggle={(value) => toggleListValue("qualities", value)}
+                      labels={qualityLabels}
+                    />
+                    <label className={workspace.fieldGroup}>
+                      <span className={workspace.fieldLabel}>最大生成数量</span>
+                      <input
+                        className={workspace.formField}
+                        type="number"
+                        min={1}
+                        max={selectedCatalog?.maxCount ?? 1}
+                        value={form.maxCount}
+                        onChange={(event) => updateForm({ maxCount: event.target.value })}
+                      />
+                    </label>
+                  </>
+                )}
               </div>
             ) : null}
 
             {activeTab === "pricing" ? (
               <div className={workspace.pricingList}>
-                {form.qualities.map((quality) => (
-                  <label key={quality} className={workspace.pricingRow}>
-                    <span>{qualityLabels[quality] ?? quality}</span>
-                    <span className={workspace.priceInput}>
-                      <input
-                        className={workspace.formField}
-                        type="number"
-                        min={0}
-                        inputMode="numeric"
-                        value={form.pointsByQuality[quality] ?? ""}
-                        onChange={(event) =>
-                          updateForm({
-                            pointsByQuality: {
-                              ...form.pointsByQuality,
-                              [quality]: event.target.value,
-                            },
-                          })
-                        }
-                      />
-                      <span>积分 / 张</span>
-                    </span>
-                  </label>
-                ))}
+                {isVideo
+                  ? form.resolutions.map((resolution) => (
+                      <div key={resolution} className={workspace.pricingRow}>
+                        <span>{resolution}</span>
+                        <div className={workspace.videoPriceInputs}>
+                          <label className={workspace.priceInput}>
+                            <input
+                              className={workspace.formField}
+                              type="number"
+                              min={0}
+                              value={form.pointsPerSecond[resolution] ?? ""}
+                              onChange={(event) =>
+                                updateForm({
+                                  pointsPerSecond: {
+                                    ...form.pointsPerSecond,
+                                    [resolution]: event.target.value,
+                                  },
+                                })
+                              }
+                            />
+                            <span>积分 / 秒</span>
+                          </label>
+                          <label className={workspace.priceInput}>
+                            <input
+                              className={workspace.formField}
+                              type="number"
+                              min={0}
+                              value={form.referencePoints[resolution] ?? ""}
+                              onChange={(event) =>
+                                updateForm({
+                                  referencePoints: {
+                                    ...form.referencePoints,
+                                    [resolution]: event.target.value,
+                                  },
+                                })
+                              }
+                            />
+                            <span>参考图积分</span>
+                          </label>
+                        </div>
+                      </div>
+                    ))
+                  : form.qualities.map((quality) => (
+                      <label key={quality} className={workspace.pricingRow}>
+                        <span>{qualityLabels[quality] ?? quality}</span>
+                        <span className={workspace.priceInput}>
+                          <input
+                            className={workspace.formField}
+                            type="number"
+                            min={0}
+                            value={form.pointsByQuality[quality] ?? ""}
+                            onChange={(event) =>
+                              updateForm({
+                                pointsByQuality: {
+                                  ...form.pointsByQuality,
+                                  [quality]: event.target.value,
+                                },
+                              })
+                            }
+                          />
+                          <span>积分 / 张</span>
+                        </span>
+                      </label>
+                    ))}
               </div>
             ) : null}
           </div>
@@ -469,7 +635,7 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
           className={workspace.primaryAction}
           type="button"
           onClick={openCreate}
-          disabled={catalog.length === 0}
+          disabled={catalog.length === 0 || configuredCodes.size >= catalog.length}
         >
           <Plus size={15} aria-hidden="true" />
           新建模型
@@ -496,25 +662,22 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
                   <tr key={model.id}>
                     <td data-label="模型">
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>{model.modelName}</span>
-                        <span className={workspace.monoText}>{model.modelCode}</span>
-                        {model.defaultFlag === 1 ? (
-                          <span className={workspace.badge}>默认</span>
-                        ) : null}
+                        <div className={workspace.modelIdentity}>
+                          <span className={workspace.primaryText}>{model.modelName}</span>
+                          <span className={workspace.modelBadges}>
+                            <span className={workspace.badge}>
+                              {modelTypeLabels[model.modelType]}
+                            </span>
+                            {model.defaultFlag === 1 ? (
+                              <span className={workspace.badge}>默认</span>
+                            ) : null}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td data-label="适配器">{adapterLabels[model.adapter]}</td>
-                    <td data-label="能力">
-                      {model.imageToImageEnabled ? "文生图 / 图生图" : "文生图"}
-                    </td>
-                    <td data-label="积分价格">
-                      {model.supportedQualities
-                        .map(
-                          (quality) =>
-                            `${qualityLabels[quality] ?? quality} ${model.pointsByQuality[quality] ?? "-"}`,
-                        )
-                        .join(" / ")}
-                    </td>
+                    <td data-label="能力">{capabilitiesText(model)}</td>
+                    <td data-label="积分价格">{pricingText(model)}</td>
                     <td data-label="状态">
                       <span
                         className={clsx(
@@ -574,9 +737,35 @@ export function ModelManager({ initialModels, catalog }: ModelManagerProps) {
             </table>
           </div>
         ) : (
-          <div className={workspace.empty}>还没有配置图片模型</div>
+          <div className={workspace.empty}>还没有配置模型</div>
         )}
       </section>
     </div>
+  );
+}
+
+function OptionFieldset(props: {
+  label: string;
+  values: string[];
+  selected: string[];
+  labels?: Record<string, string>;
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <fieldset className={workspace.optionFieldset}>
+      <legend className={workspace.fieldLabel}>{props.label}</legend>
+      <div className={workspace.optionGrid}>
+        {props.values.map((value) => (
+          <label key={value} className={workspace.optionCheck}>
+            <input
+              type="checkbox"
+              checked={props.selected.includes(value)}
+              onChange={() => props.onToggle(value)}
+            />
+            <span>{props.labels?.[value] ?? value}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

@@ -5,7 +5,7 @@ import { requestJavaApiData } from "@/server/java-api";
 import { javaIdSchema } from "@/server/java-id";
 import type {
   AdminGenerationModel,
-  ImageModelCatalogItem,
+  GenerationModelCatalogItem,
   SaveAdminGenerationModelRequest,
 } from "@/types/admin";
 
@@ -13,17 +13,25 @@ const modelSchema = z.object({
   id: javaIdSchema,
   modelCode: z.string(),
   modelName: z.string(),
+  modelType: z.enum(["image", "video"]),
   adapter: z.enum(["openai", "grok"]),
   apiBaseUrl: z.string(),
   hasApiKey: z.boolean(),
+  apiKeyPreview: z.string().nullable(),
   status: z.enum(["enabled", "disabled"]),
   defaultFlag: z.number(),
   sortOrder: z.number(),
   imageToImageEnabled: z.boolean(),
+  imageToVideoEnabled: z.boolean(),
   supportedRatios: z.array(z.string()),
   supportedQualities: z.array(z.string()),
+  supportedResolutions: z.array(z.string()),
+  minDuration: z.number().nullable(),
+  maxDuration: z.number().nullable(),
   maxCount: z.number(),
   pointsByQuality: z.record(z.string(), z.number()),
+  pointsPerSecondByResolution: z.record(z.string(), z.number()),
+  referencePointsByResolution: z.record(z.string(), z.number()),
   createdAt: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
 });
@@ -31,13 +39,20 @@ const modelSchema = z.object({
 const catalogSchema = z.object({
   modelCode: z.string(),
   modelName: z.string(),
+  modelType: z.enum(["image", "video"]),
   adapter: z.enum(["openai", "grok"]),
   defaultApiBaseUrl: z.string(),
   imageToImageSupported: z.boolean(),
+  imageToVideoSupported: z.boolean(),
   ratios: z.array(z.string()),
   qualities: z.array(z.string()),
+  resolutions: z.array(z.string()),
+  minDuration: z.number().nullable(),
+  maxDuration: z.number().nullable(),
   maxCount: z.number(),
   defaultPoints: z.record(z.string(), z.number()),
+  defaultPointsPerSecond: z.record(z.string(), z.number()),
+  defaultReferencePoints: z.record(z.string(), z.number()),
 });
 
 function mapModel(model: z.infer<typeof modelSchema>): AdminGenerationModel {
@@ -45,17 +60,25 @@ function mapModel(model: z.infer<typeof modelSchema>): AdminGenerationModel {
     id: model.id,
     modelCode: model.modelCode,
     modelName: model.modelName,
+    modelType: model.modelType,
     adapter: model.adapter,
     apiBaseUrl: model.apiBaseUrl,
     hasApiKey: model.hasApiKey,
+    apiKeyPreview: model.apiKeyPreview,
     status: model.status,
     defaultFlag: model.defaultFlag,
     sortOrder: model.sortOrder,
     imageToImageEnabled: model.imageToImageEnabled,
+    imageToVideoEnabled: model.imageToVideoEnabled,
     supportedRatios: model.supportedRatios,
     supportedQualities: model.supportedQualities,
+    supportedResolutions: model.supportedResolutions,
+    minDuration: model.minDuration,
+    maxDuration: model.maxDuration,
     maxCount: model.maxCount,
     pointsByQuality: model.pointsByQuality,
+    pointsPerSecondByResolution: model.pointsPerSecondByResolution,
+    referencePointsByResolution: model.referencePointsByResolution,
     createdAt: model.createdAt ?? null,
     updatedAt: model.updatedAt ?? null,
   };
@@ -66,7 +89,7 @@ export async function listAdminModels() {
   return z.array(modelSchema).parse(payload).map(mapModel);
 }
 
-export async function listImageModelCatalog(): Promise<ImageModelCatalogItem[]> {
+export async function listGenerationModelCatalog(): Promise<GenerationModelCatalogItem[]> {
   const payload = await requestJavaApiData<unknown>("/generation/admin/models/catalog");
   return z.array(catalogSchema).parse(payload);
 }

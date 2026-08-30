@@ -42,6 +42,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
   const [editId, setEditId] = useState("");
   const [title, setTitle] = useState("");
   const [pendingId, setPendingId] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState<ConversationItem | null>(null);
 
   function startEdit(item: ConversationItem) {
     setEditId(item.id);
@@ -72,6 +73,14 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
     } finally {
       setPendingId("");
     }
+  }
+
+  function confirmDelete() {
+    const candidate = deleteCandidate;
+    if (!candidate) return;
+
+    setDeleteCandidate(null);
+    void remove(candidate.id);
   }
 
   function onEditKeyDown(event: KeyboardEvent<HTMLInputElement>, id: string) {
@@ -190,7 +199,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            void remove(item.id);
+                            setDeleteCandidate(item);
                           }}
                           className={clsx(
                             styles.generateForm__iconButton,
@@ -211,6 +220,46 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
           <div className={styles.generateForm__emptyConversations}>还没有对话</div>
         )}
       </div>
+      {deleteCandidate ? (
+        <div
+          className={styles.generateForm__dialogOverlay}
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !pendingId) {
+              setDeleteCandidate(null);
+            }
+          }}
+        >
+          <div
+            className={styles.generateForm__confirmDialog}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-conversation-title"
+            aria-describedby="delete-conversation-description"
+          >
+            <h2 id="delete-conversation-title">删除对话</h2>
+            <p id="delete-conversation-description">
+              确定删除“{deleteCandidate.title}”吗？删除后无法恢复。
+            </p>
+            <div className={styles.generateForm__dialogActions}>
+              <button
+                type="button"
+                className={styles.generateForm__dialogCancel}
+                onClick={() => setDeleteCandidate(null)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className={styles.generateForm__dialogConfirm}
+                onClick={confirmDelete}
+              >
+                确定删除
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </aside>
   );
 }

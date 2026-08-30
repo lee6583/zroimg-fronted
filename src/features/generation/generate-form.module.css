@@ -300,6 +300,79 @@
   text-align: center;
 }
 
+.generateForm__dialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgb(15 23 42 / 0.28);
+  padding: 1rem;
+}
+
+.generateForm__confirmDialog {
+  width: min(100%, 24rem);
+  border: 1px solid var(--line);
+  border-radius: 0.625rem;
+  background: var(--panel);
+  padding: 1.25rem;
+  box-shadow: 0 1.25rem 3rem rgb(15 23 42 / 0.18);
+}
+
+.generateForm__confirmDialog h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.generateForm__confirmDialog p {
+  margin: 0.625rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.generateForm__dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.generateForm__dialogCancel,
+.generateForm__dialogConfirm {
+  min-width: 4.5rem;
+  height: 2.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  padding: 0 0.75rem;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.generateForm__dialogCancel {
+  background: var(--panel);
+  color: var(--foreground);
+}
+
+.generateForm__dialogCancel:hover {
+  background: var(--soft);
+}
+
+.generateForm__dialogConfirm {
+  border-color: var(--danger, #b42318);
+  background: var(--danger, #b42318);
+  color: #fff;
+}
+
+.generateForm__dialogConfirm:hover {
+  background: color-mix(in oklab, var(--danger, #b42318) 88%, #000);
+}
+
 .generateForm__settingsPanel {
   height: 100%;
   overflow-y: auto;

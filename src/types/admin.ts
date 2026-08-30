@@ -209,58 +209,94 @@ type AdminOverview = {
   latestTickets: AdminOverviewTicket[];
 };
 
-type ImageModelAdapter = "openai" | "grok";
+type GenerationModelAdapter = "openai" | "grok";
 
-type ImageModelCatalogItem = {
+type GenerationModelType = "image" | "video";
+
+type GenerationModelCatalogItem = {
   modelCode: string;
   modelName: string;
-  adapter: ImageModelAdapter;
+  modelType: GenerationModelType;
+  adapter: GenerationModelAdapter;
   defaultApiBaseUrl: string;
   imageToImageSupported: boolean;
+  imageToVideoSupported: boolean;
   ratios: string[];
   qualities: string[];
+  resolutions: string[];
+  minDuration: number | null;
+  maxDuration: number | null;
   maxCount: number;
   defaultPoints: Record<string, number>;
+  defaultPointsPerSecond: Record<string, number>;
+  defaultReferencePoints: Record<string, number>;
 };
 
 type AdminGenerationModel = {
   id: string;
   modelCode: string;
   modelName: string;
-  adapter: ImageModelAdapter;
+  modelType: GenerationModelType;
+  adapter: GenerationModelAdapter;
   apiBaseUrl: string;
   hasApiKey: boolean;
+  apiKeyPreview: string | null;
   status: "enabled" | "disabled";
   defaultFlag: number;
   sortOrder: number;
   imageToImageEnabled: boolean;
+  imageToVideoEnabled: boolean;
   supportedRatios: string[];
   supportedQualities: string[];
+  supportedResolutions: string[];
+  minDuration: number | null;
+  maxDuration: number | null;
   maxCount: number;
   pointsByQuality: Record<string, number>;
+  pointsPerSecondByResolution: Record<string, number>;
+  referencePointsByResolution: Record<string, number>;
   createdAt: string | null;
   updatedAt: string | null;
 };
 
-type SaveAdminGenerationModelRequest = {
+type SaveAdminGenerationModelBase = {
   modelCode: string;
-  adapter: ImageModelAdapter;
+  adapter: GenerationModelAdapter;
   apiBaseUrl: string;
   apiKey: string;
   clearApiKey: boolean;
   status: "enabled" | "disabled";
   defaultFlag: number;
   sortOrder: number;
-  imageToImageEnabled: boolean;
   ratios: string[];
+};
+
+type SaveAdminImageModelRequest = SaveAdminGenerationModelBase & {
+  modelType: "image";
+  imageToImageEnabled: boolean;
   qualities: string[];
   maxCount: number;
   qualityPrices: Array<{ quality: string; points: number }>;
 };
 
+type SaveAdminVideoModelRequest = SaveAdminGenerationModelBase & {
+  modelType: "video";
+  imageToVideoEnabled: boolean;
+  resolutions: string[];
+  minDuration: number;
+  maxDuration: number;
+  videoPrices: Array<{
+    resolution: string;
+    pointsPerSecond: number;
+    referencePoints: number;
+  }>;
+};
+
+type SaveAdminGenerationModelRequest = SaveAdminImageModelRequest | SaveAdminVideoModelRequest;
+
 type AdminGenerationModelsResponse = {
   models: AdminGenerationModel[];
-  catalog: ImageModelCatalogItem[];
+  catalog: GenerationModelCatalogItem[];
 };
 
 type AdminGenerationModelResponse = {
@@ -298,8 +334,9 @@ export type {
   AdminGenerationPage,
   AdminOverviewTicket,
   AdminOverview,
-  ImageModelAdapter,
-  ImageModelCatalogItem,
+  GenerationModelAdapter,
+  GenerationModelType,
+  GenerationModelCatalogItem,
   AdminGenerationModel,
   SaveAdminGenerationModelRequest,
   AdminGenerationModelsResponse,

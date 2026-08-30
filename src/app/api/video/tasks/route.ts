@@ -5,14 +5,12 @@ import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
 const createSchema = z.object({
-  modelCode: z.string().trim().min(1),
+  model: z.string().trim().min(1),
   mode: z.enum(["text_to_video", "image_to_video"]),
   prompt: z.string().trim().min(1, "请输入视频提示词").max(4000),
   ratio: z.string().trim().min(1).max(32),
   resolution: z.string().trim().min(1).max(32),
-  quality: z.string().trim().min(1).max(32),
-  durationSeconds: z.number().int().min(1).max(60),
-  audio: z.boolean(),
+  duration: z.number().int().min(1).max(15),
   priceVersion: z.string().trim().min(1),
   referenceMediaId: z.string().trim().min(1).optional(),
 });

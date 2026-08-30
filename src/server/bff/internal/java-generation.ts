@@ -288,15 +288,6 @@ export async function requireOwned(conversationId: string) {
   return conversation;
 }
 
-export async function ensureDefault() {
-  const conversations = await listConversations();
-  if (conversations[0]) {
-    return conversations[0];
-  }
-
-  return createConversation("新对话");
-}
-
 export async function listTasks(conversationId: string) {
   const payload = await requestJavaApiData<unknown>(
     `/generation/user/conversations/${encodeURIComponent(conversationId)}/tasks`,

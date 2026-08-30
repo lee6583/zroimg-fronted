@@ -291,8 +291,6 @@ export function GenerateForm(props: GenerateFormProps) {
     setTasks([]);
     if (remaining[0]) {
       await selectChat(remaining[0].id);
-    } else {
-      await createChat();
     }
   }
 
