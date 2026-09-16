@@ -8,4 +8,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Project rules
 
 Before writing or refactoring code in this repository, read `README.md` and follow it.
+
+## UI copy
+
+- Page, section, card, drawer, and modal titles must stand on their own. Do not add decorative subtitles, eyebrow labels, helper copy, or AI-style explanatory prose above or below headings.
+- Keep only copy required to communicate live business data, validation, errors, empty states, irreversible consequences, input constraints, or user-authored/business-authored content.
+- Place necessary guidance beside the control or state it explains, never under a heading as decoration.
 <!-- END:zroimg-project-rules -->

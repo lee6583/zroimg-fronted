@@ -1,67 +1,38 @@
-import Link from "next/link";
-import { AccountMenu } from "@/components/layout/account-menu";
-import { ThemeControls } from "@/components/layout/theme-controls";
 import { getCurrentUserProfile } from "@/server/auth";
-import styles from "./product-top-nav.module.css";
+import { getPublicAnnouncement } from "@/server/bff/account";
+import { ProductTopNavClient } from "./product-top-nav-client";
 
 const publicCenterLinks = [
-  { label: "开始创作", href: "/generate" },
+  { label: "首页", href: "/" },
   { label: "作品画廊", href: "/gallery" },
   { label: "定价", href: "/pricing" },
   { label: "文档", href: "/docs" },
 ];
 
 const appCenterLinks = publicCenterLinks;
-const adminCenterLink = { label: "管理", href: "/admin" };
+const adminCenterLinks: typeof publicCenterLinks = [];
 
-function avatarLabel(name?: string | null) {
-  return (name || "Z").trim().slice(0, 1).toUpperCase();
-}
-
-export async function ProductTopNav() {
-  const current = await getCurrentUserProfile();
+export async function ProductTopNav(props: { autoOpenAnnouncement?: boolean } = {}) {
+  const [current, announcement] = await Promise.all([
+    getCurrentUserProfile(),
+    getPublicAnnouncement(),
+  ]);
   let centerLinks = publicCenterLinks;
   if (current) {
     centerLinks = appCenterLinks;
   }
   if (current?.profile.role === "admin") {
-    centerLinks = [...appCenterLinks, adminCenterLink];
+    centerLinks = adminCenterLinks;
   }
 
   return (
-    <header className={styles.productTopNav}>
-      <div className={styles.productTopNav__inner}>
-        <Link href="/" className={styles.productTopNav__brand}>
-          <span className={styles.productTopNav__brandText}>ZroImg</span>
-        </Link>
-
-        <nav className={styles.productTopNav__center}>
-          {centerLinks.map((item) => (
-            <Link key={item.href} href={item.href} className={styles.productTopNav__link}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className={styles.productTopNav__actions}>
-          <ThemeControls />
-          {current ? (
-            <AccountMenu label={avatarLabel(current.profile.username)} />
-          ) : (
-            <Link href="/login" className={styles.productTopNav__avatar} aria-label="登录">
-              登录
-            </Link>
-          )}
-        </div>
-      </div>
-
-      <nav className={styles.productTopNav__mobileNav}>
-        {centerLinks.map((item) => (
-          <Link key={item.href} href={item.href} className={styles.productTopNav__mobileLink}>
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-    </header>
+    <ProductTopNavClient
+      announcement={announcement}
+      avatarUrl={current?.profile.avatarUrl ?? null}
+      username={current?.profile.username || "Z"}
+      isLoggedIn={Boolean(current)}
+      autoOpenAnnouncement={Boolean(props.autoOpenAnnouncement && current)}
+      links={centerLinks}
+    />
   );
 }

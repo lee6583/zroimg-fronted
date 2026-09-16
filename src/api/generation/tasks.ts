@@ -3,16 +3,9 @@ import type {
   CreateGenerationTaskRequest,
   CreateGenerationTaskResponse,
   FetchGenerationTaskResponse,
-  UploadMediaResponse,
+  GenerationPriceRequest,
+  GenerationPriceResponse,
 } from "@/types/generation";
-
-function uploadMedia(data: FormData) {
-  return request<UploadMediaResponse>({
-    url: "/api/media/upload",
-    method: "POST",
-    body: data,
-  });
-}
 
 function createTask(data: CreateGenerationTaskRequest) {
   return request<CreateGenerationTaskResponse>({
@@ -29,8 +22,16 @@ function fetchTask(taskId: string) {
   });
 }
 
+function estimatePrice(data: GenerationPriceRequest) {
+  return request<GenerationPriceResponse>({
+    url: "/api/generations/estimate",
+    method: "POST",
+    data,
+  });
+}
+
 export const generationTasksApi = {
-  uploadMedia,
   createTask,
   fetchTask,
+  estimatePrice,
 };

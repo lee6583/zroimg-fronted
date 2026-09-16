@@ -1,0 +1,263 @@
+.editor {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.toolbar {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.8rem 1rem;
+}
+
+.toolbarTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.secondaryButton,
+.primaryButton {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.76rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--foreground);
+}
+
+.secondaryButton:hover {
+  background: var(--soft);
+}
+
+.primaryButton {
+  border: 1px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.65fr) minmax(0, 1.6fr);
+  min-height: 38rem;
+}
+
+.sidebar {
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+  border-right: 1px solid var(--line);
+  padding: 1.25rem;
+}
+
+.section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.section + .section {
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+
+.sectionTitle {
+  font-size: 0.77rem;
+  font-weight: 700;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.label {
+  color: var(--foreground);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  outline: 0;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.65rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--foreground);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+}
+
+.summaryItem {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+}
+
+.summaryItem + .summaryItem {
+  border-left: 1px solid var(--line);
+}
+
+.summaryItem span {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.summaryItem strong {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rules {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: 0.35rem;
+}
+
+.editorPane {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.editorPaneHeader {
+  display: flex;
+  min-height: 3.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 1rem;
+}
+
+.editorPaneTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.valid,
+.invalid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.valid {
+  color: #15803d;
+}
+
+.invalid {
+  color: var(--danger);
+}
+
+.valid::before,
+.invalid::before {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.jsonEditor {
+  min-height: 34.5rem;
+  flex: 1;
+  resize: vertical;
+  border: 0;
+  outline: 0;
+  background: color-mix(in oklab, var(--soft) 34%, var(--panel));
+  color: var(--foreground);
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.footer {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--line);
+  padding: 0.8rem 1rem;
+}
+
+.message {
+  color: var(--muted);
+  font-size: 0.73rem;
+}
+
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar,
+  .footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar .secondaryButton,
+  .footer .primaryButton {
+    width: 100%;
+  }
+}
+
+:global(:root[data-theme="dark"]) .valid {
+  color: #4ade80;
+}

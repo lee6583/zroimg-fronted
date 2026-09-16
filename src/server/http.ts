@@ -34,7 +34,15 @@ export async function handleApi(fn: ApiHandler) {
     }
 
     if (error instanceof Error) {
-      return jsonError(error.message);
+      const errorWithStatus = error as Error & { status?: unknown };
+      const hasHttpStatus = typeof errorWithStatus.status === "number";
+      if (hasHttpStatus) {
+        const status = errorWithStatus.status as number;
+        return jsonError(error.message, status);
+      }
+
+      console.error("Unhandled API error", error);
+      return jsonError("服务器内部错误", 500);
     }
 
     console.error("Unhandled API error", error);
@@ -47,6 +55,7 @@ function errorCode(status: number): ApiErrorCode {
   if (status === 403) return "FORBIDDEN";
   if (status === 404) return "NOT_FOUND";
   if (status === 409) return "CONFLICT";
+  if (status === 429) return "RATE_LIMITED";
   if (status === 422) return "VALIDATION_ERROR";
   if (status >= 500) return "SERVER_ERROR";
   return "BAD_REQUEST";

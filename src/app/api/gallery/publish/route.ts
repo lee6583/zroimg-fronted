@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { publishImage } from "@/server/bff/generation";
+import { publishImage, unpublishImage } from "@/server/bff/generation";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
@@ -20,5 +20,20 @@ export async function POST(request: Request) {
 
     const galleryImage = await publishImage(parsed.data.generatedImageId, current.profile.id);
     return jsonOk({ galleryImage });
+  });
+}
+
+export async function DELETE(request: Request) {
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
+
+    const parsed = await parseJson(request, publishSchema);
+    if (!parsed.ok) return jsonError(parsed.message);
+
+    await unpublishImage(parsed.data.generatedImageId, current.profile.id);
+    return jsonOk({ ok: true });
   });
 }

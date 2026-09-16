@@ -1,150 +1,190 @@
+import clsx from "clsx";
+import { Search } from "lucide-react";
 import Link from "next/link";
-import { AdminShell } from "@/components/layout/admin-shell";
-import { requireAdmin } from "@/server/auth";
-import { prisma } from "@/server/bff/orders";
+import { AppPagination } from "@/components/ui/app-pagination";
+import workspace from "@/features/admin/admin-workspace.module.css";
+import { listAdminGenerations } from "@/server/bff/admin";
 
 export const dynamic = "force-dynamic";
 
-const generationStatuses = ["queued", "running", "succeeded", "failed"] as const;
+const generationStatuses = ["processing", "succeeded", "failed"] as const;
+const pageSizeOptions = [10, 20, 50];
+const generationStatusLabels: Record<string, string> = {
+  pending: "生成中",
+  processing: "生成中",
+  queued: "生成中",
+  running: "生成中",
+  succeeded: "已完成",
+  failed: "失败",
+};
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminGenerationsPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDate(value: Date | null) {
-  return value ? value.toISOString().slice(0, 16).replace("T", " ") : "-";
+function formatDate(value: string | null) {
+  return value ? new Date(value).toISOString().slice(0, 16).replace("T", " ") : "-";
 }
 
-function href(input: { q?: string; status?: string; page: number }) {
+function href(input: { q?: string; status?: string; page?: number; pageSize?: number }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
-  params.set("page", String(input.page));
-  return `/admin/generations?${params.toString()}`;
+  if (input.page && input.page > 1) params.set("page", String(input.page));
+  if (input.pageSize && input.pageSize !== 20) params.set("pageSize", String(input.pageSize));
+  const query = params.toString();
+  return query ? `/admin/generations?${query}` : "/admin/generations";
 }
 
-export default async function AdminGenerationsPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  await requireAdmin();
+function statusClass(status: string) {
+  if (status === "succeeded") return workspace.statusSuccess;
+  if (["pending", "processing", "queued", "running"].includes(status)) {
+    return workspace.statusInfo;
+  }
+  if (status === "failed") return workspace.statusDanger;
+  return undefined;
+}
+
+function generationType(modelType: "image" | "video", mode: string) {
+  if (modelType === "video" || mode.includes("video")) return "视频";
+  if (mode === "image_to_image" || mode === "edit") return "图生图";
+  return "文生图";
+}
+
+export default async function AdminGenerationsPage(props: AdminGenerationsPageProps) {
+  const searchParams = props.searchParams;
+
   const params = await searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const pageSize = 20;
-  const where = {
-    ...(generationStatuses.includes(status as (typeof generationStatuses)[number])
-      ? { status: status as (typeof generationStatuses)[number] }
-      : {}),
-    ...(q
-      ? {
-          OR: [
-            { prompt: { contains: q, mode: "insensitive" as const } },
-            { model: { contains: q, mode: "insensitive" as const } },
-            { userProfile: { user: { email: { contains: q, mode: "insensitive" as const } } } },
-          ],
-        }
-      : {}),
-  };
-  const [tasks, total] = await Promise.all([
-    prisma.generationTask.findMany({
-      where,
-      include: { userProfile: { include: { user: true } }, outputs: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.generationTask.count({ where }),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const requestedPageSize = Number(readParam(params, "pageSize") || 20);
+  const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
+  const isKnownStatus = generationStatuses.includes(status as (typeof generationStatuses)[number]);
+  const taskPage = await listAdminGenerations({
+    page,
+    pageSize,
+    q,
+    status: isKnownStatus ? status : undefined,
+  });
+  const tasks = taskPage.list;
+  const total = taskPage.total;
 
   return (
-    <AdminShell active="generations">
-      <div className="grid gap-6">
-        <section>
-          <p className="label">Generation tasks</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            生成任务
-          </h1>
-          <p className="mt-3 text-sm text-muted">排查失败任务、查看用户消耗积分和模型参数。</p>
-        </section>
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
+          <h1 className="page-title">生成任务</h1>
+        </div>
+      </header>
 
-        <section className="surface rounded-xl p-5">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto]">
-            <input
-              className="field text-sm"
-              name="q"
-              defaultValue={q || ""}
-              placeholder="搜索提示词、模型或用户邮箱"
-            />
-            <button className="btn-primary" type="submit">
-              搜索
-            </button>
-            <div className="flex flex-wrap gap-2 md:col-span-2">
-              <Link
-                className={`btn-secondary ${!status ? "bg-soft" : ""}`}
-                href="/admin/generations"
-              >
-                全部
-              </Link>
-              {generationStatuses.map((item) => (
-                <Link
-                  key={item}
-                  className={`btn-secondary ${status === item ? "bg-soft" : ""}`}
-                  href={href({ q, status: item, page: 1 })}
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
+      <section className={workspace.panel}>
+        <div className={workspace.toolbar}>
+          <form className={workspace.search}>
+            <Search size={15} aria-hidden="true" />
+            <input name="q" defaultValue={q || ""} placeholder="搜索提示词、模型或用户名" />
+            {isKnownStatus ? <input type="hidden" name="status" value={status} /> : null}
+            {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
+            <button type="submit">搜索</button>
           </form>
-        </section>
 
-        <section className="grid gap-2">
-          {tasks.map((task) => (
-            <article key={task.id} className="surface rounded-xl p-4">
-              <div className="flex flex-wrap justify-between gap-3">
-                <div>
-                  <p className="font-semibold">{task.userProfile?.user?.email || "-"}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {task.status} / {task.mode} / {task.model} / {task.size} / {task.quality}
-                  </p>
-                </div>
-                <p className="text-sm text-muted">
-                  {task.costCredits} 积分 / {task.outputs?.length || 0} 张 /{" "}
-                  {formatDate(task.createdAt)}
-                </p>
-              </div>
-              <p className="mt-3 text-sm leading-6">{task.prompt}</p>
-              {task.error ? (
-                <p className="mt-2 rounded-lg bg-soft p-3 text-sm text-danger">{task.error}</p>
-              ) : null}
-            </article>
-          ))}
-          {tasks.length === 0 ? (
-            <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配任务</p>
-          ) : null}
-        </section>
+          <nav className={workspace.filters} aria-label="任务状态筛选">
+            <Link
+              className={!isKnownStatus ? workspace.filterActive : undefined}
+              href={href({ q, pageSize })}
+            >
+              全部
+            </Link>
+            {generationStatuses.map((item) => (
+              <Link
+                key={item}
+                className={status === item ? workspace.filterActive : undefined}
+                href={href({ q, status: item, page: 1, pageSize })}
+              >
+                {generationStatusLabels[item]}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-        <nav className="flex items-center justify-between">
-          <Link className="btn-secondary" href={href({ q, status, page: Math.max(1, page - 1) })}>
-            上一页
-          </Link>
-          <p className="text-sm text-muted">
-            第 {page} / {totalPages} 页，共 {total} 个任务
-          </p>
-          <Link
-            className="btn-secondary"
-            href={href({ q, status, page: Math.min(totalPages, page + 1) })}
-          >
-            下一页
-          </Link>
-        </nav>
-      </div>
-    </AdminShell>
+        {tasks.length > 0 ? (
+          <div className={workspace.tableWrap}>
+            <table className={clsx(workspace.table, workspace.tasksTable)}>
+              <thead>
+                <tr>
+                  <th>用户</th>
+                  <th>提示词</th>
+                  <th>类型</th>
+                  <th>模型配置</th>
+                  <th>消耗 / 输出</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => (
+                  <tr key={task.id}>
+                    <td data-label="用户">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.primaryText}>{task.username}</span>
+                      </div>
+                    </td>
+                    <td data-label="提示词">
+                      <div className={workspace.primaryCell}>
+                        <span
+                          className={clsx(workspace.truncate, workspace.taskPrompt)}
+                          title={task.prompt}
+                        >
+                          {task.prompt}
+                        </span>
+                        {task.failReason ? (
+                          <span className={workspace.secondaryText} title={task.failReason}>
+                            失败原因：{task.failReason}
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td data-label="类型">{generationType(task.modelType, task.mode)}</td>
+                    <td data-label="模型配置">
+                      <div className={workspace.primaryCell}>
+                        <span>{task.model}</span>
+                        <span className={workspace.secondaryText}>
+                          {task.size} · {task.quality}
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="消耗 / 输出">
+                      <div className={workspace.primaryCell}>
+                        <span className={workspace.numeric}>{task.requiredPoints} 积分</span>
+                        <span className={workspace.secondaryText}>{task.outputCount} 张图片</span>
+                      </div>
+                    </td>
+                    <td data-label="状态">
+                      <span className={clsx(workspace.status, statusClass(task.status))}>
+                        {generationStatusLabels[task.status] ?? task.status}
+                      </span>
+                    </td>
+                    <td data-label="创建时间" className={workspace.dateText}>
+                      {formatDate(task.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className={workspace.empty}>没有匹配的任务</div>
+        )}
+
+        <footer className={workspace.footer}>
+          <AppPagination current={page} pageSize={pageSize} total={total} />
+        </footer>
+      </section>
+    </div>
   );
 }

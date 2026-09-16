@@ -15,7 +15,7 @@ const sendCodeSchema = z.object({
 
 export async function POST(request: Request) {
   if (isJavaAuthEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/user/password-reset/send-code");
+    return proxyRequestToJavaApi(request, "/auth/user/reset-password/send-code");
   }
 
   return handleApi(async () => {

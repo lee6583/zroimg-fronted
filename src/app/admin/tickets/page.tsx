@@ -1,13 +1,22 @@
+import clsx from "clsx";
+import { Eye, Search } from "lucide-react";
 import Link from "next/link";
-import { AdminShell } from "@/components/layout/admin-shell";
-import { FeedbackActions } from "@/features/admin/feedback-actions";
-import { requireAdmin } from "@/server/auth";
+import { AppPagination } from "@/components/ui/app-pagination";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { listAdminTickets } from "@/server/bff/account";
-import { feedbackStatusLabels, feedbackTypeLabels } from "@/utils/feedback";
+import { feedbackTypeLabels } from "@/utils/feedback";
+import { TicketTypeFilter } from "./ticket-type-filter";
 
 export const dynamic = "force-dynamic";
 
+const pageSizeOptions = [10, 20, 50];
+const ticketStatuses = ["open", "in_progress", "resolved"] as const;
+const ticketTypes = Object.keys(feedbackTypeLabels) as Array<keyof typeof feedbackTypeLabels>;
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type AdminTicketsPageProps = {
+  searchParams: SearchParams;
+};
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -18,152 +27,168 @@ function formatDate(value: Date) {
   return value.toISOString().slice(0, 16).replace("T", " ");
 }
 
-function href(input: { q?: string; status?: string; type?: string; page: number }) {
+function readStatusLabel(status: string) {
+  if (status === "open") return "待处理";
+  if (status === "in_progress") return "处理中";
+  if (status === "resolved") return "已处理";
+  if (status === "closed") return "已处理";
+  return status;
+}
+
+function readStatusClassName(status: string) {
+  if (status === "open") return workspace.statusWarning;
+  if (status === "in_progress") return workspace.statusInfo;
+  if (status === "resolved" || status === "closed") return workspace.statusSuccess;
+  return undefined;
+}
+
+function filterHref(input: { q?: string; status?: string; type?: string; pageSize?: number }) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
   if (input.type) params.set("type", input.type);
-  params.set("page", String(input.page));
-  return `/admin/tickets?${params.toString()}`;
+  if (input.pageSize && input.pageSize !== 20) params.set("pageSize", String(input.pageSize));
+  const query = params.toString();
+  return query ? `/admin/tickets?${query}` : "/admin/tickets";
 }
 
-export default async function AdminTicketsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
-  const params = await searchParams;
+export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
+  const params = await props.searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");
   const type = readParam(params, "type");
+  const statusFilter = ticketStatuses.includes(status as (typeof ticketStatuses)[number])
+    ? status
+    : undefined;
+  const typeFilter = ticketTypes.includes(type as (typeof ticketTypes)[number]) ? type : undefined;
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const { tickets, total, pageSize } = await listAdminTickets({
+  const requestedPageSize = Number(readParam(params, "pageSize") || 20);
+  const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
+  const result = await listAdminTickets({
     q,
-    status,
-    type,
+    status: statusFilter,
+    type: typeFilter,
     page,
-    pageSize: 20,
+    pageSize,
   });
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const { tickets, total } = result;
 
   return (
-    <AdminShell active="tickets">
-      <div className="grid gap-6">
-        <section>
-          <p className="label">Feedback</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight md:text-5xl">
-            意见反馈
-          </h1>
-          <p className="mt-3 text-sm text-muted">查看用户反馈、回复用户，并更新处理状态。</p>
-        </section>
+    <div className={workspace.workspace}>
+      <header className={workspace.header}>
+        <div className={workspace.headerCopy}>
+          <h1 className="page-title">意见反馈</h1>
+        </div>
+      </header>
 
-        <section className="surface rounded-xl p-5">
-          <form className="grid gap-3 md:grid-cols-[1fr_auto]">
-            <input
-              className="field text-sm"
-              name="q"
-              defaultValue={q || ""}
-              placeholder="搜索标题、内容或用户邮箱"
-            />
-            <button className="btn-primary" type="submit">
-              搜索
-            </button>
-            {type ? <input type="hidden" name="type" value={type} /> : null}
-            {status ? <input type="hidden" name="status" value={status} /> : null}
-          </form>
-          <div className="mt-4 flex flex-wrap gap-2">
+      <section className={workspace.panel}>
+        <div className={workspace.toolbar}>
+          <div className={workspace.toolbarGroup}>
+            <form className={workspace.search}>
+              <Search size={15} aria-hidden="true" />
+              <input name="q" defaultValue={q || ""} placeholder="搜索反馈主题或用户名" />
+              {statusFilter ? <input type="hidden" name="status" value={statusFilter} /> : null}
+              {typeFilter ? <input type="hidden" name="type" value={typeFilter} /> : null}
+              {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
+              <button type="submit">搜索</button>
+            </form>
+
+            <TicketTypeFilter value={typeFilter} />
+          </div>
+
+          <nav className={workspace.filters} aria-label="反馈状态筛选">
             <Link
-              className={`btn-secondary ${!status ? "bg-soft" : ""}`}
-              href={href({ q, type, page: 1 })}
+              className={!statusFilter ? workspace.filterActive : undefined}
+              href={filterHref({ q, type: typeFilter, pageSize })}
             >
-              全部状态
+              全部
             </Link>
-            {Object.entries(feedbackStatusLabels).map(([key, label]) => (
+            {ticketStatuses.map((item) => (
               <Link
-                key={key}
-                className={`btn-secondary ${status === key ? "bg-soft" : ""}`}
-                href={href({ q, type, status: key, page: 1 })}
+                key={item}
+                className={statusFilter === item ? workspace.filterActive : undefined}
+                href={filterHref({ q, status: item, type: typeFilter, pageSize })}
               >
-                {label}
+                {readStatusLabel(item)}
               </Link>
             ))}
+          </nav>
+        </div>
+
+        {tickets.length > 0 ? (
+          <div className={workspace.tableWrap}>
+            <table className={clsx(workspace.table, workspace.ticketsTable)}>
+              <thead>
+                <tr>
+                  <th>反馈主题</th>
+                  <th>类型</th>
+                  <th>用户</th>
+                  <th>状态</th>
+                  <th>消息</th>
+                  <th>最近更新</th>
+                  <th aria-label="操作" />
+                </tr>
+              </thead>
+              <tbody>
+                {tickets.map((ticket) => {
+                  const userName =
+                    ticket.userProfile?.username || ticket.userProfile?.user?.name || "-";
+
+                  return (
+                    <tr key={ticket.id}>
+                      <td data-label="反馈主题">
+                        <div className={workspace.primaryCell}>
+                          <Link
+                            className={workspace.primaryText}
+                            href={`/admin/tickets/${ticket.id}`}
+                          >
+                            {ticket.subject}
+                          </Link>
+                        </div>
+                      </td>
+                      <td data-label="类型">{feedbackTypeLabels[ticket.type]}</td>
+                      <td data-label="用户">
+                        <span>{userName}</span>
+                      </td>
+                      <td data-label="状态">
+                        <span
+                          className={clsx(workspace.status, readStatusClassName(ticket.status))}
+                        >
+                          {readStatusLabel(ticket.status)}
+                        </span>
+                      </td>
+                      <td data-label="消息" className={workspace.numeric}>
+                        {ticket.messages.length}
+                      </td>
+                      <td data-label="最近更新" className={workspace.dateText}>
+                        {formatDate(ticket.updatedAt)}
+                      </td>
+                      <td data-label="操作">
+                        <div className={workspace.rowActions}>
+                          <Link
+                            className={workspace.iconAction}
+                            href={`/admin/tickets/${ticket.id}`}
+                            title="处理反馈"
+                            aria-label={`处理反馈 ${ticket.subject}`}
+                          >
+                            <Eye size={14} />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              className={`btn-secondary ${!type ? "bg-soft" : ""}`}
-              href={href({ q, status, page: 1 })}
-            >
-              全部类型
-            </Link>
-            {Object.entries(feedbackTypeLabels).map(([key, label]) => (
-              <Link
-                key={key}
-                className={`btn-secondary ${type === key ? "bg-soft" : ""}`}
-                href={href({ q, status, type: key, page: 1 })}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </section>
+        ) : (
+          <div className={workspace.empty}>没有匹配的反馈</div>
+        )}
 
-        <section className="grid gap-4">
-          {tickets.map((ticket) => (
-            <article key={ticket.id} className="surface rounded-xl p-5">
-              <div className="flex flex-wrap justify-between gap-4">
-                <div>
-                  <p className="text-xs font-medium text-muted">
-                    {feedbackTypeLabels[ticket.type]} / {feedbackStatusLabels[ticket.status]} /{" "}
-                    {ticket.userProfile?.user?.email || "-"}
-                  </p>
-                  <h2 className="mt-1 text-xl font-semibold">{ticket.subject}</h2>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">
-                    {ticket.content}
-                  </p>
-                </div>
-                <p className="text-xs text-muted">{formatDate(ticket.createdAt)}</p>
-              </div>
-
-              <div className="mt-4 grid gap-2">
-                {ticket.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`rounded-lg border border-line p-3 ${message.isAdmin ? "bg-soft" : "bg-panel"}`}
-                  >
-                    <p className="text-xs font-medium text-muted">
-                      {message.isAdmin ? "管理员" : message.authorProfile.username} /{" "}
-                      {formatDate(message.createdAt)}
-                    </p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.body}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-xl border border-line p-3">
-                <FeedbackActions ticketId={ticket.id} currentStatus={ticket.status} />
-              </div>
-            </article>
-          ))}
-          {tickets.length === 0 ? (
-            <p className="surface rounded-xl p-8 text-center text-sm text-muted">没有匹配反馈</p>
-          ) : null}
-        </section>
-
-        <nav className="flex items-center justify-between">
-          <Link
-            className="btn-secondary"
-            href={href({ q, status, type, page: Math.max(1, page - 1) })}
-          >
-            上一页
-          </Link>
-          <p className="text-sm text-muted">
-            第 {page} / {totalPages} 页，共 {total} 条反馈
-          </p>
-          <Link
-            className="btn-secondary"
-            href={href({ q, status, type, page: Math.min(totalPages, page + 1) })}
-          >
-            下一页
-          </Link>
-        </nav>
-      </div>
-    </AdminShell>
+        <footer className={workspace.footer}>
+          <AppPagination current={page} pageSize={result.pageSize} total={total} />
+        </footer>
+      </section>
+    </div>
   );
 }

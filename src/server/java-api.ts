@@ -12,11 +12,18 @@ const FORWARDED_REQUEST_HEADERS = [
   "cookie",
   "user-agent",
   "x-forwarded-for",
+  "x-forwarded-proto",
   "x-real-ip",
   "x-request-id",
 ] as const;
 
-const FORWARDED_RESPONSE_HEADERS = ["cache-control", "content-type", "location"] as const;
+const FORWARDED_RESPONSE_HEADERS = [
+  "cache-control",
+  "content-disposition",
+  "content-length",
+  "content-type",
+  "location",
+] as const;
 
 type HeaderSource = {
   get(name: string): string | null;
@@ -30,6 +37,30 @@ type JavaEnvelope<T> = {
   error?: string;
   message?: string;
 };
+
+type JavaApiDataOptions = {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  headers?: HeadersInit;
+  body?: BodyInit | null;
+};
+
+export class JavaApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "JavaApiError";
+    this.status = status;
+  }
+}
+
+export function getJavaApiErrorStatus(error: unknown) {
+  if (error instanceof JavaApiError) {
+    return error.status;
+  }
+
+  return 502;
+}
 
 function normalizeJavaApiBaseUrl() {
   const value = serverEnv.javaApiBaseUrl;
@@ -107,7 +138,11 @@ function readJavaErrorMessage(payload: unknown, fallback: string) {
 }
 
 function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
-  return typeof payload.code === "number" && payload.code !== 200;
+  if (typeof payload.code !== "number") {
+    return false;
+  }
+
+  return payload.code !== 200;
 }
 
 export async function proxyRequestToJavaApi(
@@ -116,8 +151,7 @@ export async function proxyRequestToJavaApi(
   method = request.method,
 ) {
   try {
-    const body =
-      method === "GET" || method === "HEAD" ? undefined : (await request.text()) || undefined;
+    const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
     const response = await fetch(buildJavaApiUrl(path), {
       method,
@@ -152,19 +186,42 @@ export async function proxyRequestToJavaApi(
   }
 }
 
-export async function getJavaApiData<T>(path: string) {
+export async function requestJavaApiData<T>(path: string, options: JavaApiDataOptions = {}) {
   try {
+    const method = options.method || "GET";
     const headerStore = await headers();
+    const nextHeaders = buildForwardHeaders(headerStore);
+
+    if (options.headers) {
+      const customHeaders = new Headers(options.headers);
+      customHeaders.forEach((value, key) => {
+        nextHeaders.set(key, value);
+      });
+    }
+
+    if (options.body instanceof FormData) {
+      nextHeaders.delete("content-type");
+    }
+
     const response = await fetch(buildJavaApiUrl(path), {
-      method: "GET",
-      headers: buildForwardHeaders(headerStore),
+      method,
+      headers: nextHeaders,
+      body: options.body,
       cache: "no-store",
     });
     const payload = (await response.json()) as JavaEnvelope<T>;
     const failedByJavaCode = isFailedJavaEnvelope(payload);
 
     if (!response.ok || failedByJavaCode) {
-      throw new Error(readJavaErrorMessage(payload, "读取 Java 后端数据失败"));
+      let status = response.status;
+      if (failedByJavaCode && payload.code && payload.code >= 400) {
+        status = payload.code;
+      }
+
+      throw new JavaApiError(
+        readJavaErrorMessage(payload, "读取 Java 后端数据失败"),
+        status || 502,
+      );
     }
 
     if (payload.data !== undefined) {
@@ -177,6 +234,14 @@ export async function getJavaApiData<T>(path: string) {
 
     return payload as T;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
+    if (error instanceof JavaApiError) {
+      throw error;
+    }
+
+    throw new JavaApiError(getErrorMessage(error), 502);
   }
+}
+
+export async function getJavaApiData<T>(path: string) {
+  return requestJavaApiData<T>(path);
 }

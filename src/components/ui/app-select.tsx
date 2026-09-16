@@ -12,15 +12,7 @@ export type AppSelectOption<T extends string> = {
   disabled?: boolean;
 };
 
-export function AppSelect<T extends string>({
-  value,
-  options,
-  onChange,
-  placeholder = "请选择",
-  disabled = false,
-  className,
-  triggerClassName,
-}: {
+type AppSelectProps<T extends string> = {
   value: T;
   options: Array<AppSelectOption<T>>;
   onChange: (value: T) => void;
@@ -28,7 +20,21 @@ export function AppSelect<T extends string>({
   disabled?: boolean;
   className?: string;
   triggerClassName?: string;
-}) {
+  menuClassName?: string;
+  optionClassName?: string;
+};
+
+export function AppSelect<T extends string>(props: AppSelectProps<T>) {
+  const value = props.value;
+  const options = props.options;
+  const onChange = props.onChange;
+  const placeholder = props.placeholder ?? "请选择";
+  const disabled = props.disabled ?? false;
+  const className = props.className;
+  const triggerClassName = props.triggerClassName;
+  const menuClassName = props.menuClassName;
+  const optionClassName = props.optionClassName;
+
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
@@ -97,7 +103,7 @@ export function AppSelect<T extends string>({
       </button>
 
       {isOpen ? (
-        <div role="listbox" className={styles.appSelect__menu}>
+        <div role="listbox" className={clsx(styles.appSelect__menu, menuClassName)}>
           {options.map((option) => {
             const selected = option.value === value;
             return (
@@ -111,6 +117,7 @@ export function AppSelect<T extends string>({
                 className={clsx(
                   styles.appSelect__option,
                   selected && styles.appSelect__optionSelected,
+                  optionClassName,
                 )}
               >
                 <span className={styles.appSelect__optionLabel}>{option.label}</span>

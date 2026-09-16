@@ -11,8 +11,11 @@ type PromptComposerProps = {
   prompt: string;
   mode: GenerationMode;
   estimate: number;
+  hasCostError: boolean;
   notice: Notice;
   isBusy: boolean;
+  isBlocked: boolean;
+  isCreating: boolean;
   onPromptChange: (value: string) => void;
   onFiles: (files: FileList | null) => Promise<void>;
   onRemove: (id: string) => void;
@@ -20,19 +23,26 @@ type PromptComposerProps = {
   onSubmit: () => Promise<void>;
 };
 
-export function PromptComposer({
-  inputs,
-  prompt,
-  mode,
-  estimate,
-  notice,
-  isBusy,
-  onPromptChange,
-  onFiles,
-  onRemove,
-  onNew,
-  onSubmit,
-}: PromptComposerProps) {
+export function PromptComposer(props: PromptComposerProps) {
+  const inputs = props.inputs;
+  const prompt = props.prompt;
+  const mode = props.mode;
+  const estimate = props.estimate;
+  const hasCostError = props.hasCostError;
+  const notice = props.notice;
+  const isBusy = props.isBusy;
+  const isBlocked = props.isBlocked;
+  const isCreating = props.isCreating;
+  const onPromptChange = props.onPromptChange;
+  const onFiles = props.onFiles;
+  const onRemove = props.onRemove;
+  const onNew = props.onNew;
+  const onSubmit = props.onSubmit;
+  let costText = `预计 ${estimate} 积分`;
+  if (hasCostError) {
+    costText = "积分不足";
+  }
+
   return (
     <div className={styles.generateForm__composerBar}>
       <div className={styles.generateForm__composer}>
@@ -68,6 +78,7 @@ export function PromptComposer({
             <button
               type="button"
               onClick={() => void onNew()}
+              disabled={isCreating || isBusy}
               className={clsx(
                 styles.generateForm__composerButton,
                 styles.generateForm__newChatComposerButton,
@@ -92,11 +103,18 @@ export function PromptComposer({
           </div>
 
           <div className={styles.generateForm__submitArea}>
-            <span className={styles.generateForm__costLabel}>预计 {estimate} 积分</span>
+            <span
+              className={clsx(
+                styles.generateForm__costLabel,
+                hasCostError && styles.generateForm__costLabelError,
+              )}
+            >
+              {costText}
+            </span>
             <button
               type="button"
               onClick={() => void onSubmit()}
-              disabled={isBusy || !prompt.trim()}
+              disabled={isBusy || isBlocked || !prompt.trim()}
               className={styles.generateForm__submitButton}
               aria-label="生成图片"
             >

@@ -11,7 +11,15 @@ const statusLabels: Record<string, string> = {
   failed: "失败",
 };
 
-export function TaskPoller({ taskId, initialStatus }: { taskId: string; initialStatus: string }) {
+type TaskPollerProps = {
+  taskId: string;
+  initialStatus: string;
+};
+
+export function TaskPoller(props: TaskPollerProps) {
+  const taskId = props.taskId;
+  const initialStatus = props.initialStatus;
+
   const [status, setStatus] = useState(initialStatus);
 
   useEffect(() => {

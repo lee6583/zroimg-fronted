@@ -28,6 +28,7 @@ export type MockUserProfile = {
   status: MockUserStatus;
   creditBalance: number;
   bio: string;
+  avatarUrl: string | null;
   createdAt: Date;
 };
 
@@ -35,8 +36,11 @@ export type MockCreditPackage = {
   id: string;
   code: string;
   name: string;
+  description?: string;
   credits: number;
   priceCny: number;
+  highlights?: string[];
+  recommended?: boolean;
   sortOrder: number;
   isActive: boolean;
 };
@@ -59,11 +63,14 @@ export type MockPaymentOrder = {
   status: MockOrderStatus;
   credits: number;
   amountCny: number;
+  rechargeAmountCny?: number;
+  feeAmountCny?: number;
   creditPackageId: string | null;
   providerTradeNo: string | null;
   payUrl: string | null;
   createdAt: Date;
   paidAt: Date | null;
+  expiresAt?: Date;
 };
 
 export type MockMediaAsset = {
@@ -95,10 +102,12 @@ export type MockGenerationTask = {
   status: MockTaskStatus;
   model: string;
   size: string;
-  quality: "low" | "medium" | "high";
-  outputFormat: "png" | "webp" | "jpeg";
+  ratio?: string;
+  quality: string;
+  outputFormat: string;
   imageCount: number;
   costCredits: number;
+  unitCostCredits?: number;
   error: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -148,6 +157,7 @@ export type MockFeedbackTicket = {
   status: MockFeedbackStatus;
   subject: string;
   content: string;
+  attachmentMediaIds: string[];
   createdAt: Date;
   updatedAt: Date;
   lastMessageAt: Date;
@@ -187,6 +197,14 @@ export type MockSliderToken = {
   used: boolean;
 };
 
+export type MockSliderChallenge = {
+  id: string;
+  email: string;
+  scene: "register";
+  targetRatio: number;
+  expiresAt: number;
+};
+
 export type MockVerificationCode = {
   id: string;
   email: string;
@@ -217,9 +235,21 @@ export type MockSettingsState = {
     key: string | null;
     notifyUrl: string;
     returnUrl: string;
+    feeRatePercent: number;
+    timeoutMinutes: number;
+    creditsPerYuan: number;
+    maxPendingOrders: number;
+    minAmountCent: number;
+    maxAmountCent: number;
   };
   checkin: {
     dailyCredits: number;
+  };
+  announcement: {
+    enabled: boolean;
+    title: string;
+    content: string;
+    updatedAt: Date;
   };
   docs: unknown;
 };
@@ -241,6 +271,7 @@ export type MockStore = {
   feedbackMessages: MockFeedbackMessage[];
   checkInRecords: MockCheckInRecord[];
   adminAuditLogs: MockAdminAuditLog[];
+  sliderChallenges: MockSliderChallenge[];
   sliderTokens: MockSliderToken[];
   verificationCodes: MockVerificationCode[];
   settings: MockSettingsState;
@@ -253,13 +284,19 @@ function base64(input: string) {
 
 function svgDataUrl(title: string, accent = "#111111", soft = "#f5f5f5") {
   const safeTitle = title.replace(/[<&>"]/g, "");
+  const displayTitle = safeTitle.length > 9 ? `${safeTitle.slice(0, 9)}...` : safeTitle;
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="768" height="768" viewBox="0 0 768 768" overflow="hidden">
+      <defs>
+        <clipPath id="mock-title-clip">
+          <rect x="96" y="520" width="576" height="70" />
+        </clipPath>
+      </defs>
       <rect width="768" height="768" fill="${soft}" />
       <rect x="32" y="32" width="704" height="704" rx="28" fill="white" stroke="#e5e5e5" />
       <rect x="96" y="112" width="576" height="320" rx="28" fill="${accent}" opacity="0.14" />
       <text x="96" y="510" font-size="28" fill="#737373" font-family="Inter, sans-serif">ZroImg Mock Output</text>
-      <text x="96" y="566" font-size="54" fill="#111111" font-family="Georgia, serif">${safeTitle.slice(0, 26)}</text>
+      <text x="96" y="566" font-size="46" fill="#111111" font-family="Georgia, serif" clip-path="url(#mock-title-clip)">${displayTitle}</text>
       <text x="96" y="622" font-size="24" fill="#525252" font-family="Inter, sans-serif">Frontend preview</text>
       <text x="96" y="658" font-size="24" fill="#525252" font-family="Inter, sans-serif">Before Java backend integration</text>
     </svg>
@@ -305,6 +342,7 @@ function createStore(): MockStore {
       status: "active",
       creditBalance: 9999,
       bio: "站点管理员",
+      avatarUrl: null,
       createdAt: nowMinus(240),
     },
     {
@@ -315,6 +353,7 @@ function createStore(): MockStore {
       status: "active",
       creditBalance: 430,
       bio: "偏爱电影感与产品视觉。",
+      avatarUrl: null,
       createdAt: nowMinus(168),
     },
   ];
@@ -324,8 +363,11 @@ function createStore(): MockStore {
       id: "package-1",
       code: "STARTER_100",
       name: "轻量试创",
+      description: "把脑海里的第一束光，先变成看得见的画面。",
       credits: 100,
       priceCny: 19.9,
+      highlights: ["100 积分，即买即用", "适合头像、封面与灵感草稿"],
+      recommended: false,
       sortOrder: 1,
       isActive: true,
     },
@@ -333,8 +375,11 @@ function createStore(): MockStore {
       id: "package-2",
       code: "PRO_500",
       name: "创作者",
+      description: "为持续创作留出余量，让好想法不必停在半路。",
       credits: 500,
       priceCny: 79.9,
+      highlights: ["500 积分，适合日常创作", "支持图片生成与编辑"],
+      recommended: true,
       sortOrder: 2,
       isActive: true,
     },
@@ -342,8 +387,11 @@ function createStore(): MockStore {
       id: "package-3",
       code: "MAX_1200",
       name: "灵感工作室",
+      description: "给完整项目一整片画布，从概念到成片都从容推进。",
       credits: 1200,
       priceCny: 169.9,
+      highlights: ["1200 积分，适合项目创作", "适合系列素材生产"],
+      recommended: false,
       sortOrder: 3,
       isActive: true,
     },
@@ -538,6 +586,7 @@ function createStore(): MockStore {
       status: "open",
       subject: "生成结果比预期更暗",
       content: "同样的提示词在第二次生成时整体偏暗，希望有更稳定的亮度控制。",
+      attachmentMediaIds: ["asset-output-2"],
       createdAt: nowMinus(36),
       updatedAt: nowMinus(8),
       lastMessageAt: nowMinus(8),
@@ -549,6 +598,7 @@ function createStore(): MockStore {
       status: "resolved",
       subject: "订单到账时间咨询",
       content: "上一次订单到账很快，想确认是否都是实时到账。",
+      attachmentMediaIds: [],
       createdAt: nowMinus(96),
       updatedAt: nowMinus(90),
       lastMessageAt: nowMinus(90),
@@ -610,6 +660,76 @@ function createStore(): MockStore {
       payUrl: "/billing/result?order=MOCK202607060002",
       createdAt: nowMinus(20),
       paidAt: nowMinus(19.9),
+    },
+    {
+      id: "order-3",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070003",
+      paymentType: "alipay",
+      status: "pending",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070003",
+      createdAt: nowMinus(10),
+      paidAt: null,
+    },
+    {
+      id: "order-4",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070004",
+      paymentType: "wxpay",
+      status: "paid",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: "TRADE-10004",
+      payUrl: "/billing/result?order=MOCK202607070004",
+      createdAt: nowMinus(9),
+      paidAt: nowMinus(8.95),
+    },
+    {
+      id: "order-5",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070005",
+      paymentType: "alipay",
+      status: "expired",
+      credits: 100,
+      amountCny: 19.9,
+      creditPackageId: "package-1",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070005",
+      createdAt: nowMinus(7),
+      paidAt: null,
+    },
+    {
+      id: "order-6",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070006",
+      paymentType: "wxpay",
+      status: "cancelled",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070006",
+      createdAt: nowMinus(6),
+      paidAt: null,
+    },
+    {
+      id: "order-7",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070007",
+      paymentType: "alipay",
+      status: "failed",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: "TRADE-FAILED-10007",
+      payUrl: "/billing/result?order=MOCK202607070007",
+      createdAt: nowMinus(5),
+      paidAt: null,
     },
   ];
 
@@ -677,6 +797,24 @@ function createStore(): MockStore {
       type: "adjustment",
       createdAt: nowMinus(0.01),
     },
+    {
+      id: "ledger-8",
+      userProfileId: "profile-creator",
+      amount: 500,
+      balanceAfter: 930,
+      reason: "MOCK202607070004 已支付，等待到账确认",
+      type: "purchase",
+      createdAt: nowMinus(8.95),
+    },
+    {
+      id: "ledger-9",
+      userProfileId: "profile-creator",
+      amount: 100,
+      balanceAfter: 530,
+      reason: "支付异常退款返还",
+      type: "refund",
+      createdAt: nowMinus(4.8),
+    },
   ];
 
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -728,6 +866,7 @@ function createStore(): MockStore {
     feedbackMessages,
     checkInRecords,
     adminAuditLogs,
+    sliderChallenges: [],
     sliderTokens: [],
     verificationCodes: [],
     settings: {
@@ -753,9 +892,21 @@ function createStore(): MockStore {
         key: "mock-easypay-key",
         notifyUrl: "http://localhost:3000/api/pay/easypay/notify",
         returnUrl: "http://localhost:3000/billing/result",
+        feeRatePercent: 0,
+        timeoutMinutes: 15,
+        creditsPerYuan: 5,
+        maxPendingOrders: 1,
+        minAmountCent: 100,
+        maxAmountCent: 500_000,
       },
       checkin: {
         dailyCredits: 5,
+      },
+      announcement: {
+        enabled: true,
+        title: "系统公告",
+        content: "欢迎使用 ZroImg。当前为前端联调环境，部分功能仍使用 mock 数据。",
+        updatedAt: nowMinus(1),
       },
       docs: null,
     },
@@ -767,8 +918,8 @@ function createStore(): MockStore {
       gallery: 3,
       favoriteCollection: 2,
       favoriteCollectionItem: 2,
-      order: 3,
-      ledger: 8,
+      order: 8,
+      ledger: 10,
       ticket: 3,
       message: 4,
       slider: 1,
@@ -781,6 +932,119 @@ function createStore(): MockStore {
   };
 }
 
+function ensureBillingScenarioData(store: MockStore) {
+  const billingScenarios: MockPaymentOrder[] = [
+    {
+      id: "order-3",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070003",
+      paymentType: "alipay",
+      status: "pending",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070003",
+      createdAt: nowMinus(10),
+      paidAt: null,
+    },
+    {
+      id: "order-4",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070004",
+      paymentType: "wxpay",
+      status: "paid",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: "TRADE-10004",
+      payUrl: "/billing/result?order=MOCK202607070004",
+      createdAt: nowMinus(9),
+      paidAt: nowMinus(8.95),
+    },
+    {
+      id: "order-5",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070005",
+      paymentType: "alipay",
+      status: "expired",
+      credits: 100,
+      amountCny: 19.9,
+      creditPackageId: "package-1",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070005",
+      createdAt: nowMinus(7),
+      paidAt: null,
+    },
+    {
+      id: "order-6",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070006",
+      paymentType: "wxpay",
+      status: "cancelled",
+      credits: 500,
+      amountCny: 79.9,
+      creditPackageId: "package-2",
+      providerTradeNo: null,
+      payUrl: "/billing/result?order=MOCK202607070006",
+      createdAt: nowMinus(6),
+      paidAt: null,
+    },
+    {
+      id: "order-7",
+      userProfileId: "profile-creator",
+      orderNo: "MOCK202607070007",
+      paymentType: "alipay",
+      status: "failed",
+      credits: 1200,
+      amountCny: 169.9,
+      creditPackageId: "package-3",
+      providerTradeNo: "TRADE-FAILED-10007",
+      payUrl: "/billing/result?order=MOCK202607070007",
+      createdAt: nowMinus(5),
+      paidAt: null,
+    },
+  ];
+
+  for (const order of billingScenarios) {
+    if (
+      !store.paymentOrders.some((item) => item.id === order.id || item.orderNo === order.orderNo)
+    ) {
+      store.paymentOrders.push(order);
+    }
+  }
+
+  const ledgerScenarios: MockCreditLedger[] = [
+    {
+      id: "ledger-8",
+      userProfileId: "profile-creator",
+      amount: 500,
+      balanceAfter: 930,
+      reason: "MOCK202607070004 已支付，等待到账确认",
+      type: "purchase",
+      createdAt: nowMinus(8.95),
+    },
+    {
+      id: "ledger-9",
+      userProfileId: "profile-creator",
+      amount: 100,
+      balanceAfter: 530,
+      reason: "支付异常退款返还",
+      type: "refund",
+      createdAt: nowMinus(4.8),
+    },
+  ];
+
+  for (const ledger of ledgerScenarios) {
+    if (!store.creditLedger.some((item) => item.id === ledger.id)) {
+      store.creditLedger.push(ledger);
+    }
+  }
+
+  store.counters.order = Math.max(store.counters.order || 0, 8);
+  store.counters.ledger = Math.max(store.counters.ledger || 0, 10);
+}
+
 declare global {
   var __zroimgMockStore: MockStore | undefined;
 }
@@ -791,6 +1055,7 @@ export function getStore() {
   if (!globalThis.__zroimgMockStore) {
     globalThis.__zroimgMockStore = createStore();
   }
+  ensureBillingScenarioData(globalThis.__zroimgMockStore);
   return globalThis.__zroimgMockStore;
 }
 
@@ -823,6 +1088,64 @@ export function findProfileById(profileId: string) {
   }
 
   return profile;
+}
+
+function removeWhere<T>(items: T[], predicate: (item: T) => boolean) {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      items.splice(index, 1);
+    }
+  }
+}
+
+export function deleteMockUser(profileId: string, adminProfileId: string) {
+  const store = getStore();
+  const profile = store.profiles.find((item) => item.id === profileId);
+  if (!profile) {
+    return false;
+  }
+  if (profile.id === adminProfileId || profile.role === "admin") {
+    throw new Error("管理员账户不能删除");
+  }
+
+  const taskIds = new Set(
+    store.generationTasks.filter((item) => item.userProfileId === profileId).map((item) => item.id),
+  );
+  const generatedIds = new Set(
+    store.generatedImages
+      .filter((item) => item.userProfileId === profileId || taskIds.has(item.taskId))
+      .map((item) => item.id),
+  );
+  const collectionIds = new Set(
+    store.favoriteCollections
+      .filter((item) => item.userProfileId === profileId)
+      .map((item) => item.id),
+  );
+  const ticketIds = new Set(
+    store.feedbackTickets.filter((item) => item.userProfileId === profileId).map((item) => item.id),
+  );
+
+  removeWhere(store.favoriteCollectionItems, (item) => {
+    return collectionIds.has(item.collectionId) || generatedIds.has(item.generatedImageId);
+  });
+  removeWhere(store.favoriteCollections, (item) => item.userProfileId === profileId);
+  removeWhere(store.galleryImages, (item) => {
+    return item.userProfileId === profileId || generatedIds.has(item.generatedImageId);
+  });
+  removeWhere(store.feedbackMessages, (item) => {
+    return ticketIds.has(item.ticketId) || item.authorProfileId === profileId;
+  });
+  removeWhere(store.feedbackTickets, (item) => item.userProfileId === profileId);
+  removeWhere(store.generatedImages, (item) => generatedIds.has(item.id));
+  removeWhere(store.generationTasks, (item) => item.userProfileId === profileId);
+  removeWhere(store.generationConversations, (item) => item.userProfileId === profileId);
+  removeWhere(store.mediaAssets, (item) => item.ownerUserProfileId === profileId);
+  removeWhere(store.creditLedger, (item) => item.userProfileId === profileId);
+  removeWhere(store.checkInRecords, (item) => item.userProfileId === profileId);
+  removeWhere(store.paymentOrders, (item) => item.userProfileId === profileId);
+  removeWhere(store.profiles, (item) => item.id === profileId);
+  removeWhere(store.users, (item) => item.id === profile.userId);
+  return true;
 }
 
 export function findUserBundleByProfileId(profileId: string) {
@@ -993,6 +1316,7 @@ export function createMockUser(input: { username: string; email: string; passwor
     status: "active",
     creditBalance: 10,
     bio: "",
+    avatarUrl: null,
     createdAt: new Date(),
   };
   store.users.push(user);

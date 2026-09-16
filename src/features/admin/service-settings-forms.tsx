@@ -8,6 +8,7 @@ import type {
   EasyPayAdminConfig,
   SecretSource,
   SmtpAdminConfig,
+  VideoProviderAdminConfig,
 } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
@@ -17,22 +18,42 @@ const sourceLabels: Record<SecretSource, string> = {
   none: "未配置",
 };
 
-function Toggle({
-  checked,
-  onChange,
-  label,
-  description,
-}: {
+type ToggleProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
-  description: string;
-}) {
+  description?: string;
+};
+
+type SmtpSettingsFormProps = {
+  initialSettings: SmtpAdminConfig;
+};
+
+type EasyPaySettingsFormProps = {
+  initialSettings: EasyPayAdminConfig;
+};
+
+type CheckInSettingsFormProps = {
+  initialSettings: CheckInSettingsConfig;
+};
+
+type VideoSettingsFormProps = {
+  initialSettings: VideoProviderAdminConfig;
+};
+
+function Toggle(props: ToggleProps) {
+  const checked = props.checked;
+  const onChange = props.onChange;
+  const label = props.label;
+  const description = props.description;
+
   return (
     <button type="button" onClick={() => onChange(!checked)} className={styles.adminForms__toggle}>
       <span>
         <span className={styles.adminForms__toggleLabel}>{label}</span>
-        <span className={styles.adminForms__toggleDescription}>{description}</span>
+        {description ? (
+          <span className={styles.adminForms__toggleDescription}>{description}</span>
+        ) : null}
       </span>
       <span
         className={
@@ -53,20 +74,35 @@ function Toggle({
   );
 }
 
-export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdminConfig }) {
+export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [settings, setSettings] = useState(initialSettings);
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
-  const [host, setHost] = useState(initialSettings.host ?? "");
-  const [port, setPort] = useState(String(initialSettings.port));
-  const [isSecure, setSecure] = useState(initialSettings.secure);
-  const [user, setUser] = useState(initialSettings.user ?? "");
-  const [password, setPassword] = useState("");
-  const [shouldClearPassword, setClearPassword] = useState(false);
-  const [from, setFrom] = useState(initialSettings.from);
-  const [testEmail, setTestEmail] = useState("");
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    host: initialSettings.host ?? "",
+    port: String(initialSettings.port),
+    isSecure: initialSettings.secure,
+    user: initialSettings.user ?? "",
+    password: "",
+    shouldClearPassword: false,
+    from: initialSettings.from,
+    testEmail: "",
+  });
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
   const [isTesting, setTesting] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      const newForm = {
+        ...currentForm,
+        ...nextForm,
+      };
+
+      return newForm;
+    });
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,19 +110,21 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
     setMessage("");
     try {
       const data = await adminSettingsApi.saveSmtpSettings({
-        enabled: isEnabled,
-        host,
-        port: Number(port),
-        secure: isSecure,
-        user,
-        password,
-        clearPassword: shouldClearPassword,
-        from,
+        enabled: form.isEnabled,
+        host: form.host,
+        port: Number(form.port),
+        secure: form.isSecure,
+        user: form.user,
+        password: form.password,
+        clearPassword: form.shouldClearPassword,
+        from: form.from,
       });
       setSaving(false);
       setSettings(data.settings);
-      setPassword("");
-      setClearPassword(false);
+      updateForm({
+        password: "",
+        shouldClearPassword: false,
+      });
       setMessage("SMTP 配置已保存。");
     } catch (error) {
       setSaving(false);
@@ -100,7 +138,7 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
     setMessage("");
     try {
       await adminSettingsApi.testSmtpSettings(
-        mode === "connection" ? { mode } : { mode, email: testEmail },
+        mode === "connection" ? { mode } : { mode, email: form.testEmail },
       );
       setTesting(false);
       setMessage(mode === "connection" ? "SMTP 连接测试通过。" : "测试邮件已发送。");
@@ -112,14 +150,10 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
-          <p className="label">SMTP</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">SMTP 邮件设置</h2>
-          <p className="mt-2 text-sm text-muted">
-            用于发送注册验证码和系统邮件，生产环境建议配置真实邮箱服务。
-          </p>
+          <h2 className={styles.adminForms__title}>SMTP 邮件设置</h2>
         </div>
         <button
           className="btn-secondary"
@@ -136,8 +170,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">SMTP 主机</span>
           <input
             className="field"
-            value={host}
-            onChange={(event) => setHost(event.target.value)}
+            value={form.host}
+            onChange={(event) => updateForm({ host: event.target.value })}
             placeholder="smtp.qq.com"
           />
         </label>
@@ -146,8 +180,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <input
             className="field"
             inputMode="numeric"
-            value={port}
-            onChange={(event) => setPort(event.target.value)}
+            value={form.port}
+            onChange={(event) => updateForm({ port: event.target.value })}
             placeholder="465"
           />
         </label>
@@ -155,8 +189,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">SMTP 用户名</span>
           <input
             className="field"
-            value={user}
-            onChange={(event) => setUser(event.target.value)}
+            value={form.user}
+            onChange={(event) => updateForm({ user: event.target.value })}
             placeholder="name@example.com"
           />
         </label>
@@ -166,10 +200,10 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
             className="field"
             type="password"
             autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            value={form.password}
+            onChange={(event) => updateForm({ password: event.target.value })}
             placeholder={settings.hasPassword ? "留空表示保留当前密码" : "请输入 SMTP 授权码或密码"}
-            disabled={shouldClearPassword}
+            disabled={form.shouldClearPassword}
           />
           <span className="text-xs text-muted">
             当前状态：
@@ -182,8 +216,8 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
           <span className="label">发件人邮箱/名称</span>
           <input
             className="field"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
+            value={form.from}
+            onChange={(event) => updateForm({ from: event.target.value })}
             placeholder="ZroImg <noreply@example.com>"
           />
         </label>
@@ -192,21 +226,21 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
-          checked={shouldClearPassword}
-          onChange={(event) => setClearPassword(event.target.checked)}
+          checked={form.shouldClearPassword}
+          onChange={(event) => updateForm({ shouldClearPassword: event.target.checked })}
         />
         清空数据库里保存的 SMTP 密码
       </label>
 
       <Toggle
-        checked={isSecure}
-        onChange={setSecure}
+        checked={form.isSecure}
+        onChange={(nextValue) => updateForm({ isSecure: nextValue })}
         label="使用 TLS"
         description="465 端口通常开启 TLS，587 端口通常使用 STARTTLS。"
       />
       <Toggle
-        checked={isEnabled}
-        onChange={setEnabled}
+        checked={form.isEnabled}
+        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
         label="启用 SMTP"
         description="关闭后生产环境将无法发送注册验证码。"
       />
@@ -215,14 +249,14 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
         <input
           className="field"
           type="email"
-          value={testEmail}
-          onChange={(event) => setTestEmail(event.target.value)}
+          value={form.testEmail}
+          onChange={(event) => updateForm({ testEmail: event.target.value })}
           placeholder="test@example.com"
         />
         <button
           className="btn-secondary"
           type="button"
-          disabled={isTesting || !testEmail.trim()}
+          disabled={isTesting || !form.testEmail.trim()}
           onClick={() => testSmtp("email")}
         >
           发送测试邮件
@@ -238,17 +272,161 @@ export function SmtpSettingsForm({ initialSettings }: { initialSettings: SmtpAdm
   );
 }
 
-export function EasyPaySettingsForm({ initialSettings }: { initialSettings: EasyPayAdminConfig }) {
+export function VideoSettingsForm(props: VideoSettingsFormProps) {
+  const initialSettings = props.initialSettings;
   const [settings, setSettings] = useState(initialSettings);
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
-  const [apiBase, setApiBase] = useState(initialSettings.apiBase ?? "");
-  const [pid, setPid] = useState(initialSettings.pid ?? "");
-  const [key, setKey] = useState("");
-  const [shouldClearKey, setClearKey] = useState(false);
-  const [notifyUrl, setNotifyUrl] = useState(initialSettings.notifyUrl);
-  const [returnUrl, setReturnUrl] = useState(initialSettings.returnUrl);
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    baseUrl: initialSettings.baseUrl ?? "",
+    model: initialSettings.model,
+    publicBaseUrl: initialSettings.publicBaseUrl ?? "",
+    apiKey: "",
+    shouldClearKey: false,
+  });
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      return { ...currentForm, ...nextForm };
+    });
+  }
+
+  async function saveSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    try {
+      const data = await adminSettingsApi.saveVideoSettings({
+        enabled: form.isEnabled,
+        baseUrl: form.baseUrl,
+        model: form.model,
+        publicBaseUrl: form.publicBaseUrl,
+        apiKey: form.apiKey,
+        clearApiKey: form.shouldClearKey,
+      });
+      setSettings(data.settings);
+      updateForm({ apiKey: "", shouldClearKey: false });
+      setMessage("视频 Provider 配置已保存。");
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
+        <div>
+          <h2 className={styles.adminForms__title}>视频服务设置</h2>
+        </div>
+        <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
+          {form.isEnabled ? "已启用" : "已停用"}
+        </span>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="grid gap-2">
+          <span className="label">Provider 地址</span>
+          <input
+            className="field"
+            value={form.baseUrl}
+            onChange={(event) => updateForm({ baseUrl: event.target.value })}
+            placeholder="https://video.example.com"
+          />
+        </label>
+        <label className="grid gap-2">
+          <span className="label">模型名</span>
+          <input
+            className="field"
+            value={form.model}
+            onChange={(event) => updateForm({ model: event.target.value })}
+            placeholder="video-generic"
+          />
+        </label>
+        <label className="grid gap-2 md:col-span-2">
+          <span className="label">视频公开地址前缀</span>
+          <input
+            className="field"
+            value={form.publicBaseUrl}
+            onChange={(event) => updateForm({ publicBaseUrl: event.target.value })}
+            placeholder="https://dev.zroimg.com"
+          />
+        </label>
+        <label className="grid gap-2 md:col-span-2">
+          <span className="label">API Key</span>
+          <input
+            className="field"
+            type="password"
+            autoComplete="new-password"
+            value={form.apiKey}
+            onChange={(event) => updateForm({ apiKey: event.target.value })}
+            placeholder={settings.hasApiKey ? "留空表示保留当前密钥" : "请输入视频 Provider 密钥"}
+            disabled={form.shouldClearKey}
+          />
+          <span className="text-xs text-muted">
+            {settings.hasApiKey
+              ? `已配置（${settings.apiKeyPreview}，来源：${sourceLabels[settings.apiKeySource]}）`
+              : "未配置"}
+          </span>
+        </label>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-muted">
+        <input
+          type="checkbox"
+          checked={form.shouldClearKey}
+          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
+        />
+        清空数据库里的视频密钥
+      </label>
+      <Toggle
+        checked={form.isEnabled}
+        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
+        label="启用视频生成"
+        description="启用后，用户可以创建视频任务并消耗积分。"
+      />
+
+      {message ? <p className="text-sm text-muted">{message}</p> : null}
+      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !form.model.trim()}>
+        {isSaving ? "保存中" : "保存视频设置"}
+      </button>
+    </form>
+  );
+}
+
+export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
+  const [settings, setSettings] = useState(initialSettings);
+  const [form, setForm] = useState({
+    isEnabled: initialSettings.enabled,
+    apiBase: initialSettings.apiBase ?? "",
+    pid: initialSettings.pid ?? "",
+    key: "",
+    notifyUrl: initialSettings.notifyUrl,
+    returnUrl: initialSettings.returnUrl,
+    feeRatePercent: String(initialSettings.feeRatePercent),
+    timeoutMinutes: String(initialSettings.timeoutMinutes),
+    creditsPerYuan: String(initialSettings.creditsPerYuan),
+    maxPendingOrders: String(initialSettings.maxPendingOrders),
+    minAmount: String(initialSettings.minAmountCent / 100),
+    maxAmount: String(initialSettings.maxAmountCent / 100),
+  });
+  const [message, setMessage] = useState("");
+  const [isSaving, setSaving] = useState(false);
+
+  function updateForm(nextForm: Partial<typeof form>) {
+    setForm((currentForm) => {
+      const newForm = {
+        ...currentForm,
+        ...nextForm,
+      };
+
+      return newForm;
+    });
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -256,19 +434,25 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
     setMessage("");
     try {
       const data = await adminSettingsApi.saveEasyPaySettings({
-        enabled: isEnabled,
-        apiBase,
-        pid,
-        key,
-        clearKey: shouldClearKey,
-        notifyUrl,
-        returnUrl,
+        enabled: form.isEnabled,
+        apiBase: form.apiBase,
+        pid: form.pid,
+        key: form.key,
+        clearKey: false,
+        notifyUrl: form.notifyUrl,
+        returnUrl: form.returnUrl,
+        feeRatePercent: Number(form.feeRatePercent),
+        timeoutMinutes: Number(form.timeoutMinutes),
+        creditsPerYuan: Number(form.creditsPerYuan),
+        maxPendingOrders: Number(form.maxPendingOrders),
+        minAmountCent: Math.round(Number(form.minAmount) * 100),
+        maxAmountCent: Math.round(Number(form.maxAmount) * 100),
       });
       setSaving(false);
       setSettings(data.settings);
-      setKey("");
-      setClearKey(false);
-      setMessage("易支付配置已保存，新订单会使用这套配置。");
+      updateForm({
+        key: "",
+      });
     } catch (error) {
       setSaving(false);
       setMessage(getErrorMessage(error));
@@ -277,91 +461,186 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Payment</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">易支付设置</h2>
-          <p className="mt-2 text-sm text-muted">
-            配置第三方易支付服务商，用于积分购买订单创建和异步回调验签。
-          </p>
+          <h2 className={styles.adminForms__title}>易支付设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
-          {isEnabled ? "已启用" : "已停用"}
+          {form.isEnabled ? "已启用" : "已停用"}
         </span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2">
-          <span className="label">API 地址</span>
-          <input
-            className="field"
-            value={apiBase}
-            onChange={(event) => setApiBase(event.target.value)}
-            placeholder="https://pay.example.com"
-          />
-          <span className="text-xs text-muted">填写易支付服务根地址，不需要带 `submit.php`。</span>
-        </label>
-        <label className="grid gap-2">
-          <span className="label">商户 PID</span>
-          <input
-            className="field"
-            value={pid}
-            onChange={(event) => setPid(event.target.value)}
-            placeholder="1000"
-          />
-        </label>
-        <label className="grid gap-2 md:col-span-2">
-          <span className="label">商户密钥</span>
-          <input
-            className="field"
-            type="password"
-            autoComplete="new-password"
-            value={key}
-            onChange={(event) => setKey(event.target.value)}
-            placeholder={settings.hasKey ? "留空表示保留当前密钥" : "请输入易支付商户密钥"}
-            disabled={shouldClearKey}
-          />
-          <span className="text-xs text-muted">
-            当前状态：
-            {settings.hasKey
-              ? `已配置（${settings.keyPreview}，来源：${sourceLabels[settings.keySource]}）`
-              : "未配置"}
-          </span>
-        </label>
-        <label className="grid gap-2">
-          <span className="label">异步回调地址</span>
-          <input
-            className="field"
-            value={notifyUrl}
-            onChange={(event) => setNotifyUrl(event.target.value)}
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="label">支付返回地址</span>
-          <input
-            className="field"
-            value={returnUrl}
-            onChange={(event) => setReturnUrl(event.target.value)}
-          />
-        </label>
-      </div>
+      <section className={styles.adminForms__section}>
+        <h3 className={styles.adminForms__sectionTitle}>支付网关</h3>
+        <div className={styles.adminForms__fieldGrid}>
+          <label className="grid gap-2">
+            <span className="label">API 地址</span>
+            <input
+              className="field"
+              value={form.apiBase}
+              onChange={(event) => updateForm({ apiBase: event.target.value })}
+              placeholder="https://pay.example.com"
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="label">商户 PID</span>
+            <input
+              className="field"
+              value={form.pid}
+              onChange={(event) => updateForm({ pid: event.target.value })}
+              placeholder="1000"
+            />
+          </label>
+          <label className="grid gap-2 md:col-span-2">
+            <span className="label">商户密钥</span>
+            <input
+              className="field"
+              type="password"
+              autoComplete="new-password"
+              value={form.key}
+              onChange={(event) => updateForm({ key: event.target.value })}
+              placeholder={settings.hasKey ? "留空表示保留当前密钥" : "请输入易支付商户密钥"}
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="label">异步回调地址</span>
+            <input
+              className="field"
+              value={form.notifyUrl}
+              onChange={(event) => updateForm({ notifyUrl: event.target.value })}
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="label">支付返回地址</span>
+            <input
+              className="field"
+              value={form.returnUrl}
+              onChange={(event) => updateForm({ returnUrl: event.target.value })}
+            />
+          </label>
+        </div>
+      </section>
 
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input
-          type="checkbox"
-          checked={shouldClearKey}
-          onChange={(event) => setClearKey(event.target.checked)}
+      <section className={styles.adminForms__section}>
+        <h3 className={styles.adminForms__sectionTitle}>充值规则</h3>
+        <div className={styles.adminForms__fieldGrid}>
+          <label className="grid gap-2">
+            <span className="label">充值比例</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <span className={styles.adminForms__unitPrefix}>1 元 =</span>
+              <input
+                className="field"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={10000}
+                required
+                value={form.creditsPerYuan}
+                onChange={(event) => updateForm({ creditsPerYuan: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>积分</span>
+            </span>
+          </label>
+          <label className="grid gap-2">
+            <span className="label">订单充值手续费</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <input
+                className="field"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={30}
+                step="0.01"
+                required
+                value={form.feeRatePercent}
+                onChange={(event) => updateForm({ feeRatePercent: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>%</span>
+            </span>
+          </label>
+          <label className="grid gap-2">
+            <span className="label">最低充值金额</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <input
+                className="field"
+                type="number"
+                inputMode="decimal"
+                min={0.01}
+                max={1000000}
+                step="0.01"
+                required
+                value={form.minAmount}
+                onChange={(event) => updateForm({ minAmount: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>元</span>
+            </span>
+          </label>
+          <label className="grid gap-2">
+            <span className="label">最高充值金额</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <input
+                className="field"
+                type="number"
+                inputMode="decimal"
+                min={0.01}
+                max={1000000}
+                step="0.01"
+                required
+                value={form.maxAmount}
+                onChange={(event) => updateForm({ maxAmount: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>元</span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section className={styles.adminForms__section}>
+        <h3 className={styles.adminForms__sectionTitle}>订单规则</h3>
+        <div className={styles.adminForms__fieldGrid}>
+          <label className="grid gap-2">
+            <span className="label">订单超时时间</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <input
+                className="field"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={1440}
+                required
+                value={form.timeoutMinutes}
+                onChange={(event) => updateForm({ timeoutMinutes: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>分钟</span>
+            </span>
+          </label>
+          <label className="grid gap-2">
+            <span className="label">最大待支付订单数</span>
+            <span className={styles.adminForms__inputWithUnit}>
+              <input
+                className="field"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={20}
+                required
+                value={form.maxPendingOrders}
+                onChange={(event) => updateForm({ maxPendingOrders: event.target.value })}
+              />
+              <span className={styles.adminForms__unit}>笔 / 用户</span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <div className={styles.adminForms__section}>
+        <Toggle
+          checked={form.isEnabled}
+          onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
+          label="启用易支付"
         />
-        清空数据库里保存的易支付密钥
-      </label>
-
-      <Toggle
-        checked={isEnabled}
-        onChange={setEnabled}
-        label="启用易支付"
-        description="关闭后用户将无法创建新的积分购买订单。"
-      />
+      </div>
 
       {message ? <p className="text-sm text-muted">{message}</p> : null}
 
@@ -372,11 +651,9 @@ export function EasyPaySettingsForm({ initialSettings }: { initialSettings: Easy
   );
 }
 
-export function CheckInSettingsForm({
-  initialSettings,
-}: {
-  initialSettings: CheckInSettingsConfig;
-}) {
+export function CheckInSettingsForm(props: CheckInSettingsFormProps) {
+  const initialSettings = props.initialSettings;
+
   const [dailyCredits, setDailyCredits] = useState(String(initialSettings.dailyCredits));
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
@@ -400,11 +677,10 @@ export function CheckInSettingsForm({
   }
 
   return (
-    <form className="surface grid gap-5 rounded-xl p-5" onSubmit={saveSettings}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
+    <form className={styles.adminForms__form} onSubmit={saveSettings}>
+      <div className={styles.adminForms__header}>
         <div>
-          <p className="label">Check-in</p>
-          <h2 className="mt-1 font-serif text-2xl font-medium tracking-tight">每日签到设置</h2>
+          <h2 className={styles.adminForms__title}>每日签到设置</h2>
         </div>
         <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
           当前每日 +{dailyCredits || 0} 积分

@@ -1,23 +1,20 @@
 import { getCurrentUserProfile } from "@/server/auth";
-import { getTask } from "@/server/bff/generation";
-import { jsonError, jsonOk } from "@/server/http";
+import { getTask, serializeTask } from "@/server/bff/generation";
+import { handleApi, jsonError, jsonOk } from "@/server/http";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const current = await getCurrentUserProfile();
-  if (!current) {
-    return jsonError("请先登录", 401);
-  }
+  return handleApi(async () => {
+    const current = await getCurrentUserProfile();
+    if (!current) {
+      return jsonError("请先登录", 401);
+    }
 
-  const { id } = await context.params;
-  const task = await getTask(current.profile.id, id);
-  if (!task) {
-    return jsonError("任务不存在", 404);
-  }
+    const { id } = await context.params;
+    const task = await getTask(current.profile.id, id);
+    if (!task) {
+      return jsonError("任务不存在", 404);
+    }
 
-  return jsonOk({
-    task: {
-      id: task.id,
-      status: task.status,
-    },
+    return jsonOk({ task: await serializeTask(task) });
   });
 }

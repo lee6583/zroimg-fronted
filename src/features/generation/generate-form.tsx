@@ -1,22 +1,25 @@
 "use client";
 
 import clsx from "clsx";
-import { Menu, PanelLeftClose } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
+import { uploadMediaFile } from "@/api/media/uploads";
 import { getErrorMessage } from "@/utils/error";
-import { isSupportedImageType, maxImageBytes, maxImageFiles } from "@/utils/media";
+import { isSupportedImageType, maxImageBytes } from "@/utils/media";
+import type { GenerationModelOption } from "@/types/generation";
 import { ConversationSidebar } from "./conversation-sidebar";
 import { GenerationSettings } from "./generation-settings";
 import {
-  defaultOptions,
-  estimateOptionsCredits,
-  getGenerationQuality,
+  activeConversationCookieName,
   getGenerationSize,
   groupConversations,
+  normalizeOptions,
   normalizeConversation,
+  resolveActiveConversationId,
   type ConversationItem,
+  type FavoriteCollectionItem,
   type GenerationOptions,
   type MediaInput,
   type Notice,
@@ -27,39 +30,131 @@ import { TaskPreview } from "./task-preview";
 import styles from "./generate-form.module.css";
 
 type GenerateFormProps = {
-  initialConversations: ConversationItem[];
-  initialConversationId?: string;
+  initialChats: ConversationItem[];
+  initialId?: string;
   initialTasks: TaskItem[];
+  initialBalance: number;
+  initialOptions: GenerationOptions;
+  initialEstimate: number;
+  initialCollections: FavoriteCollectionItem[];
+  modelOptions: GenerationModelOption[];
 };
 
-export function GenerateForm({
-  initialConversations,
-  initialConversationId,
-  initialTasks,
-}: GenerateFormProps) {
-  const [conversations, setConversations] = useState(initialConversations);
-  const [activeId, setActiveId] = useState(
-    initialConversationId || initialConversations[0]?.id || "",
-  );
+const maxGenerationInputs = 1;
+
+export function GenerateForm(props: GenerateFormProps) {
+  const initialChats = props.initialChats;
+  const initialId = props.initialId;
+  const initialTasks = props.initialTasks;
+  const initialBalance = props.initialBalance;
+  const initialOptions = props.initialOptions;
+  const initialEstimate = props.initialEstimate;
+  const initialCollections = props.initialCollections;
+  const modelOptions = props.modelOptions;
+
+  const [chats, setChats] = useState(initialChats);
+  const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
   const [tasks, setTasks] = useState(initialTasks);
   const [prompt, setPrompt] = useState("");
-  const [options, setOptions] = useState<GenerationOptions>(defaultOptions);
+  const [options, setOptions] = useState<GenerationOptions>(initialOptions);
+  const [estimate, setEstimate] = useState(initialEstimate);
+  const [hasEstimateError, setEstimateError] = useState(false);
   const [inputs, setInputs] = useState<MediaInput[]>([]);
   const [notice, setNotice] = useState<Notice>(null);
+  const [balance, setBalance] = useState(initialBalance);
+  const [errorCost, setErrorCost] = useState<number | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isEstimating, setEstimating] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isCollapsed, setCollapsed] = useState(false);
+  const [isCreatingChat, setCreatingChat] = useState(false);
+  const isCreatingChatRef = useRef(false);
+  const selectionVersionRef = useRef(0);
 
   const size = getGenerationSize(options);
-  const estimate = estimateOptionsCredits(options);
-  const groups = groupConversations(conversations);
+  const isCostError = !isEstimating && (balance < estimate || errorCost === estimate);
+  const groups = groupConversations(chats);
   const pendingKey = tasks
     .filter(isPending)
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
-  const summary = `${options.resolution} · ${options.ratio} · 预计 ${estimate} 积分`;
+  const summary = `${options.ratio} · 预计 ${estimate} 积分`;
+
+  useEffect(() => {
+    let disposed = false;
+    const selectionVersion = selectionVersionRef.current;
+
+    async function restoreConversation() {
+      const rememberedId = readActiveConversationId();
+      let nextChats = initialChats;
+
+      try {
+        if (rememberedId && !nextChats.some((item) => item.id === rememberedId)) {
+          const data = await generationConversationsApi.fetchConversations();
+          nextChats = data.conversations.map(normalizeConversation);
+        }
+
+        const nextId = resolveActiveConversationId(nextChats, rememberedId, initialId);
+        const data = nextId
+          ? await generationConversationsApi.fetchConversationTasks(nextId)
+          : { tasks: [] };
+
+        if (disposed || selectionVersionRef.current !== selectionVersion) return;
+
+        setChats(nextChats);
+        setActiveId(nextId);
+        setTasks(data.tasks);
+        if (nextId) rememberActiveConversation(nextId);
+      } catch {
+        // Keep the server-rendered conversation available when background restoration fails.
+      }
+    }
+
+    void restoreConversation();
+    return () => {
+      disposed = true;
+    };
+  }, [initialChats, initialId]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const price = await generationTasksApi.estimatePrice({
+          model: options.model,
+          mode: options.mode,
+          ratio: options.ratio,
+          quality: options.quality,
+          count: options.count,
+        });
+        if (!isCurrent) {
+          return;
+        }
+
+        setEstimate(price.requiredPoints);
+        setBalance(price.currentPoints);
+        setErrorCost(null);
+        setEstimateError(false);
+      } catch (error) {
+        if (isCurrent) {
+          setEstimateError(true);
+          setNotice({ text: getErrorMessage(error), tone: "error" });
+        }
+      } finally {
+        if (isCurrent) {
+          setEstimating(false);
+        }
+      }
+    }, 200);
+
+    return () => {
+      isCurrent = false;
+      window.clearTimeout(timer);
+    };
+  }, [options.count, options.mode, options.model, options.quality, options.ratio, size]);
 
   useEffect(() => {
     if (!activeId || !pendingKey) return;
@@ -74,7 +169,7 @@ export function GenerateForm({
 
         setTasks(data.tasks);
         if (!data.tasks.some(isPending)) {
-          await refreshConversations();
+          await refreshList();
           return;
         }
       } catch {
@@ -91,16 +186,32 @@ export function GenerateForm({
     };
   }, [activeId, pendingKey]);
 
-  async function refreshConversations() {
+  async function refreshList() {
     try {
       const data = await generationConversationsApi.fetchConversations();
-      setConversations(data.conversations.map(normalizeConversation));
+      setChats(data.conversations.map(normalizeConversation));
     } catch {
       // The task list is still usable when this background refresh fails.
     }
   }
 
-  async function createConversation(clearPrompt = true) {
+  async function createChat(clearPrompt = true) {
+    if (isCreatingChatRef.current) return null;
+
+    const activeChat = chats.find((item) => item.id === activeId);
+    if (activeChat && isReusableDraftChat(activeChat, tasks)) {
+      selectionVersionRef.current += 1;
+      setActiveId(activeChat.id);
+      rememberActiveConversation(activeChat.id);
+      setTasks([]);
+      if (clearPrompt) setPrompt("");
+      setMenuOpen(false);
+      setNotice(null);
+      return activeChat;
+    }
+
+    isCreatingChatRef.current = true;
+    setCreatingChat(true);
     setNotice(null);
 
     try {
@@ -109,8 +220,10 @@ export function GenerateForm({
       });
       const item = normalizeConversation(data.conversation);
 
-      setConversations((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
+      selectionVersionRef.current += 1;
+      setChats((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
       setActiveId(item.id);
+      rememberActiveConversation(item.id);
       setTasks([]);
       if (clearPrompt) setPrompt("");
       setMenuOpen(false);
@@ -118,11 +231,16 @@ export function GenerateForm({
     } catch (error) {
       showError(error);
       return null;
+    } finally {
+      isCreatingChatRef.current = false;
+      setCreatingChat(false);
     }
   }
 
-  async function selectConversation(id: string) {
+  async function selectChat(id: string) {
+    selectionVersionRef.current += 1;
     setActiveId(id);
+    rememberActiveConversation(id);
     setMenuOpen(false);
     setNotice(null);
 
@@ -134,7 +252,7 @@ export function GenerateForm({
     }
   }
 
-  async function renameConversation(id: string, title: string) {
+  async function renameChat(id: string, title: string) {
     if (!title) {
       setNotice({ text: "对话名称不能为空", tone: "error" });
       return false;
@@ -146,7 +264,7 @@ export function GenerateForm({
         title,
       });
       const updated = normalizeConversation(data.conversation);
-      setConversations((current) => current.map((item) => (item.id === id ? updated : item)));
+      setChats((current) => current.map((item) => (item.id === id ? updated : item)));
       return true;
     } catch (error) {
       showError(error);
@@ -154,7 +272,7 @@ export function GenerateForm({
     }
   }
 
-  async function deleteConversation(id: string) {
+  async function deleteChat(id: string) {
     setNotice(null);
 
     try {
@@ -164,31 +282,42 @@ export function GenerateForm({
       return;
     }
 
-    const remaining = conversations.filter((item) => item.id !== id);
-    setConversations(remaining);
+    const remaining = chats.filter((item) => item.id !== id);
+    setChats(remaining);
     if (activeId !== id) return;
 
+    selectionVersionRef.current += 1;
     setActiveId("");
     setTasks([]);
     if (remaining[0]) {
-      await selectConversation(remaining[0].id);
-    } else {
-      await createConversation();
+      await selectChat(remaining[0].id);
     }
   }
 
-  function openSettings() {
-    setSettingsOpen(true);
+  function toggleSettings() {
+    setSettingsOpen((isOpen) => !isOpen);
     setMenuOpen(false);
+  }
+
+  function changeOptions(nextOptions: GenerationOptions) {
+    setEstimating(true);
+    setEstimateError(false);
+    setOptions(nextOptions);
   }
 
   async function addFiles(files: FileList | null) {
     if (!files) return;
 
-    const slots = maxImageFiles - inputs.length;
+    const supportsEdit = modelOptions.some((model) => model.modes.includes("edit"));
+    if (!supportsEdit) {
+      setNotice({ text: "暂无可用图生图模型", tone: "error" });
+      return;
+    }
+
+    const slots = maxGenerationInputs - inputs.length;
     if (slots <= 0) {
       setNotice({
-        text: `最多上传 ${maxImageFiles} 张参考图`,
+        text: `最多上传 ${maxGenerationInputs} 张参考图`,
         tone: "error",
       });
       return;
@@ -211,8 +340,12 @@ export function GenerateForm({
     setNotice(null);
     try {
       const uploaded = await Promise.all(selected.map(uploadFile));
-      setInputs((current) => [...current, ...uploaded].slice(0, maxImageFiles));
-      setOptions((current) => ({ ...current, mode: "edit" }));
+      setInputs((current) => [...current, ...uploaded].slice(0, maxGenerationInputs));
+      setEstimating(true);
+      setOptions((current) => {
+        const nextOptions = { ...current, mode: "edit" as const };
+        return normalizeOptions(nextOptions, modelOptions);
+      });
     } catch (error) {
       showError(error);
     } finally {
@@ -227,6 +360,12 @@ export function GenerateForm({
   async function submit() {
     const text = prompt.trim();
     if (!text) return;
+    if (isEstimating || hasEstimateError) return;
+    if (balance < estimate) {
+      setErrorCost(estimate);
+      setNotice(null);
+      return;
+    }
     if (options.mode === "edit" && !inputs.length) {
       setNotice({
         text: "图生图需要先上传至少 1 张参考图",
@@ -238,24 +377,52 @@ export function GenerateForm({
     setSubmitting(true);
     setNotice(null);
 
+    let pendingId = "";
+
     try {
-      const conversationId = activeId || (await createConversation(false))?.id;
+      const conversationId = activeId || (await createChat(false))?.id;
       if (!conversationId) return;
+
+      pendingId = `pending-${Date.now()}`;
+      const pendingTask: TaskItem = {
+        id: pendingId,
+        prompt: text,
+        mode: options.mode,
+        status: "running",
+        size,
+        ratio: options.ratio,
+        quality: options.quality,
+        imageCount: options.count,
+        costCredits: estimate,
+        unitCostCredits: Math.round(estimate / Math.max(options.count, 1)),
+        createdAt: new Date().toISOString(),
+        outputs: [],
+      };
+
+      setTasks((current) => [pendingTask, ...current]);
+      setPrompt("");
 
       const data = await generationTasksApi.createTask({
         conversationId,
+        model: options.model,
         prompt: text,
         mode: options.mode,
-        quality: getGenerationQuality(options.quality),
-        outputFormat: options.format,
-        size,
-        imageCount: options.count,
-        inputMediaIds: options.mode === "edit" ? inputs.map((item) => item.id) : [],
+        referenceMediaId: options.mode === "edit" ? inputs[0]?.id : undefined,
+        quality: options.quality,
+        ratio: options.ratio,
+        count: options.count,
       });
       const task = data.task;
 
-      setTasks((current) => [task, ...current]);
-      setConversations((current) =>
+      setErrorCost(null);
+      setTasks((current) => current.map((item) => (item.id === pendingId ? task : item)));
+      setBalance((current) => {
+        const next = current - task.costCredits;
+        if (next < 0) return 0;
+
+        return next;
+      });
+      setChats((current) =>
         current.map((item) =>
           item.id === conversationId
             ? {
@@ -269,21 +436,34 @@ export function GenerateForm({
             : item,
         ),
       );
-      setPrompt("");
-      setNotice({
-        text: `任务已提交，将消耗 ${task.costCredits} 积分`,
-        tone: "info",
-      });
-      await refreshConversations();
+      await refreshList();
     } catch (error) {
       showError(error);
+      setTasks((current) =>
+        current.map((item) => {
+          const isPendingTask = item.id === pendingId;
+          if (!isPendingTask) return item;
+
+          return {
+            ...item,
+            status: "failed",
+          };
+        }),
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   function showError(error: unknown) {
-    setNotice({ text: getErrorMessage(error), tone: "error" });
+    const message = getErrorMessage(error);
+    if (message === "积分不足") {
+      setErrorCost(estimate);
+      setNotice(null);
+      return;
+    }
+
+    setNotice({ text: message, tone: "error" });
   }
 
   const sidebar = (
@@ -291,15 +471,22 @@ export function GenerateForm({
       groups={groups}
       activeId={activeId}
       summary={summary}
-      onOpenSettings={openSettings}
-      onCreate={createConversation}
-      onSelect={selectConversation}
-      onRename={renameConversation}
-      onDelete={deleteConversation}
+      isCreating={isCreatingChat}
+      onOpenSettings={toggleSettings}
+      onCreate={createChat}
+      onSelect={selectChat}
+      onRename={renameChat}
+      onDelete={deleteChat}
     />
   );
   const settingsPanel = (
-    <GenerationSettings value={options} estimate={estimate} onChange={setOptions} />
+    <GenerationSettings
+      value={options}
+      estimate={estimate}
+      isEstimating={isEstimating}
+      modelOptions={modelOptions}
+      onChange={changeOptions}
+    />
   );
 
   return (
@@ -330,7 +517,7 @@ export function GenerateForm({
                 className={styles.generateForm__collapseButton}
                 aria-label={isCollapsed ? "展开对话侧栏" : "收起对话侧栏"}
               >
-                <PanelLeftClose size={16} />
+                {isCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
               </button>
             ) : null}
           </div>
@@ -370,18 +557,21 @@ export function GenerateForm({
             </div>
           ) : null}
 
-          <TaskPreview tasks={tasks} onPromptChange={setPrompt} />
+          <TaskPreview tasks={tasks} collections={initialCollections} onPromptChange={setPrompt} />
           <PromptComposer
             inputs={inputs}
             prompt={prompt}
             mode={options.mode}
             estimate={estimate}
+            hasCostError={isCostError}
             notice={notice}
-            isBusy={isSubmitting || isUploading}
+            isBusy={isSubmitting || isUploading || isEstimating}
+            isBlocked={hasEstimateError}
+            isCreating={isCreatingChat}
             onPromptChange={setPrompt}
             onFiles={addFiles}
             onRemove={removeInput}
-            onNew={createConversation}
+            onNew={createChat}
             onSubmit={submit}
           />
         </section>
@@ -427,8 +617,21 @@ function getTitle(prompt: string) {
   return text.length > 24 ? `${text.slice(0, 24)}...` : text || "新对话";
 }
 
+function isReusableDraftChat(chat: ConversationItem, tasks: TaskItem[]) {
+  return chat.taskCount === 0 && !chat.lastTaskAt && tasks.length === 0;
+}
+
 async function uploadFile(file: File) {
-  const data = new FormData();
-  data.set("file", file);
-  return (await generationTasksApi.uploadMedia(data)).media;
+  return (await uploadMediaFile(file)).media;
+}
+
+function readActiveConversationId() {
+  const prefix = `${activeConversationCookieName}=`;
+  const cookie = document.cookie.split(";").find((item) => item.trim().startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.trim().slice(prefix.length)) : "";
+}
+
+function rememberActiveConversation(id: string) {
+  const secure = window.location.protocol === "https:" ? ";secure" : "";
+  document.cookie = `${activeConversationCookieName}=${encodeURIComponent(id)};path=/generate;max-age=31536000;samesite=lax${secure}`;
 }

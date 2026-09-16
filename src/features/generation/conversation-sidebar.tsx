@@ -7,10 +7,13 @@ import { useState } from "react";
 import type { ConversationGroup, ConversationItem } from "./generation-model";
 import styles from "./generate-form.module.css";
 
+const titlePreviewLength = 9;
+
 type ConversationSidebarProps = {
   groups: ConversationGroup[];
   activeId: string;
   summary: string;
+  isCreating: boolean;
   onOpenSettings: () => void;
   onCreate: () => Promise<unknown>;
   onSelect: (id: string) => Promise<void>;
@@ -18,19 +21,28 @@ type ConversationSidebarProps = {
   onDelete: (id: string) => Promise<void>;
 };
 
-export function ConversationSidebar({
-  groups,
-  activeId,
-  summary,
-  onOpenSettings,
-  onCreate,
-  onSelect,
-  onRename,
-  onDelete,
-}: ConversationSidebarProps) {
+function getDisplayTitle(value: string) {
+  const normalized = value.trim();
+  const chars = [...normalized];
+  if (chars.length <= titlePreviewLength) return normalized;
+  return `${chars.slice(0, titlePreviewLength).join("")}...`;
+}
+
+export function ConversationSidebar(props: ConversationSidebarProps) {
+  const groups = props.groups;
+  const activeId = props.activeId;
+  const summary = props.summary;
+  const isCreating = props.isCreating;
+  const onOpenSettings = props.onOpenSettings;
+  const onCreate = props.onCreate;
+  const onSelect = props.onSelect;
+  const onRename = props.onRename;
+  const onDelete = props.onDelete;
+
   const [editId, setEditId] = useState("");
   const [title, setTitle] = useState("");
   const [pendingId, setPendingId] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState<ConversationItem | null>(null);
 
   function startEdit(item: ConversationItem) {
     setEditId(item.id);
@@ -63,6 +75,14 @@ export function ConversationSidebar({
     }
   }
 
+  function confirmDelete() {
+    const candidate = deleteCandidate;
+    if (!candidate) return;
+
+    setDeleteCandidate(null);
+    void remove(candidate.id);
+  }
+
   function onEditKeyDown(event: KeyboardEvent<HTMLInputElement>, id: string) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -90,6 +110,7 @@ export function ConversationSidebar({
         <button
           type="button"
           onClick={() => void onCreate()}
+          disabled={isCreating}
           className={styles.generateForm__newConversationButton}
         >
           <Plus size={15} />
@@ -107,6 +128,8 @@ export function ConversationSidebar({
                   const isActive = item.id === activeId;
                   const isEditing = item.id === editId;
                   const isPending = item.id === pendingId;
+                  const displayTitle = getDisplayTitle(item.title);
+                  const isTitleTruncated = displayTitle !== item.title.trim();
 
                   return (
                     <div
@@ -141,9 +164,19 @@ export function ConversationSidebar({
                             aria-label="编辑对话名称"
                           />
                         ) : (
-                          <span className={styles.generateForm__conversationTitle}>
-                            {item.title}
-                          </span>
+                          <>
+                            <span className={styles.generateForm__conversationTitle}>
+                              {displayTitle}
+                            </span>
+                            {isTitleTruncated ? (
+                              <span
+                                className={styles.generateForm__conversationTooltip}
+                                role="tooltip"
+                              >
+                                {item.title}
+                              </span>
+                            ) : null}
+                          </>
                         )}
                       </div>
                       <div className={styles.generateForm__conversationActions}>
@@ -166,7 +199,7 @@ export function ConversationSidebar({
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            void remove(item.id);
+                            setDeleteCandidate(item);
                           }}
                           className={clsx(
                             styles.generateForm__iconButton,
@@ -187,6 +220,46 @@ export function ConversationSidebar({
           <div className={styles.generateForm__emptyConversations}>还没有对话</div>
         )}
       </div>
+      {deleteCandidate ? (
+        <div
+          className={styles.generateForm__dialogOverlay}
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !pendingId) {
+              setDeleteCandidate(null);
+            }
+          }}
+        >
+          <div
+            className={styles.generateForm__confirmDialog}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-conversation-title"
+            aria-describedby="delete-conversation-description"
+          >
+            <h2 id="delete-conversation-title">删除对话</h2>
+            <p id="delete-conversation-description">
+              确定删除“{deleteCandidate.title}”吗？删除后无法恢复。
+            </p>
+            <div className={styles.generateForm__dialogActions}>
+              <button
+                type="button"
+                className={styles.generateForm__dialogCancel}
+                onClick={() => setDeleteCandidate(null)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className={styles.generateForm__dialogConfirm}
+                onClick={confirmDelete}
+              >
+                确定删除
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </aside>
   );
 }

@@ -1,28 +1,32 @@
 import { request } from "@/utils/request";
 import type {
+  SaveAnnouncementSettingsRequest,
+  SaveAnnouncementSettingsResponse,
+} from "@/types/announcement";
+import type {
   SaveCheckInSettingsRequest,
   SaveCheckInSettingsResponse,
   SaveEasyPaySettingsRequest,
   SaveEasyPaySettingsResponse,
-  SaveGenerationSettingsRequest,
-  SaveGenerationSettingsResponse,
+  SaveVideoSettingsRequest,
+  SaveVideoSettingsResponse,
   SaveSmtpSettingsRequest,
   SaveSmtpSettingsResponse,
   TestSmtpSettingsRequest,
   TestSmtpSettingsResponse,
 } from "@/types/admin";
 
-function saveGenerationSettings(data: SaveGenerationSettingsRequest) {
-  return request<SaveGenerationSettingsResponse>({
-    url: "/api/admin/settings/generation",
+function saveSmtpSettings(data: SaveSmtpSettingsRequest) {
+  return request<SaveSmtpSettingsResponse>({
+    url: "/api/admin/settings/mail",
     method: "POST",
     data,
   });
 }
 
-function saveSmtpSettings(data: SaveSmtpSettingsRequest) {
-  return request<SaveSmtpSettingsResponse>({
-    url: "/api/admin/settings/mail",
+function saveVideoSettings(data: SaveVideoSettingsRequest) {
+  return request<SaveVideoSettingsResponse>({
+    url: "/api/admin/settings/video",
     method: "POST",
     data,
   });
@@ -52,10 +56,19 @@ function saveCheckInSettings(data: SaveCheckInSettingsRequest) {
   });
 }
 
+function saveAnnouncementSettings(data: SaveAnnouncementSettingsRequest) {
+  return request<SaveAnnouncementSettingsResponse>({
+    url: "/api/admin/settings/announcement",
+    method: "POST",
+    data,
+  });
+}
+
 export const adminSettingsApi = {
-  saveGenerationSettings,
   saveSmtpSettings,
+  saveVideoSettings,
   testSmtpSettings,
   saveEasyPaySettings,
   saveCheckInSettings,
+  saveAnnouncementSettings,
 };

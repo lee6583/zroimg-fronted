@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe2, Moon, Sun } from "lucide-react";
+import { Globe, Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -10,9 +10,24 @@ const themeKey = "zroimg-theme";
 const localeKey = "zroimg-locale";
 const settingsEvent = "zroimg-settings-change";
 
+function readStoredTheme() {
+  const storedTheme = window.localStorage.getItem(themeKey);
+  if (storedTheme === "dark" || storedTheme === "light") {
+    return storedTheme;
+  }
+
+  return null;
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+}
+
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(settingsEvent, callback);
+
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(settingsEvent, callback);
@@ -20,7 +35,17 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): Theme {
-  return window.localStorage.getItem(themeKey) === "dark" ? "dark" : "light";
+  const storedTheme = readStoredTheme();
+  if (storedTheme) {
+    return storedTheme;
+  }
+
+  const pageTheme = document.documentElement.dataset.theme;
+  if (pageTheme === "dark" || pageTheme === "light") {
+    return pageTheme;
+  }
+
+  return "light";
 }
 
 function getLocaleSnapshot(): Locale {
@@ -39,39 +64,45 @@ function emitSettingsChange() {
   window.dispatchEvent(new Event(settingsEvent));
 }
 
+function saveCookie(name: string, value: string) {
+  document.cookie = `${name}=${value};path=/;max-age=31536000;samesite=lax`;
+}
+
 export function ThemeControls() {
   const theme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerThemeSnapshot);
   const locale = useSyncExternalStore(subscribe, getLocaleSnapshot, getServerLocaleSnapshot);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    applyTheme(theme);
     document.documentElement.lang = locale === "ZH" ? "zh-CN" : "en";
   }, [theme, locale]);
 
   function toggleTheme() {
     const nextTheme = theme === "light" ? "dark" : "light";
     window.localStorage.setItem(themeKey, nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
+    saveCookie("zroimg-theme", nextTheme);
+    applyTheme(nextTheme);
     emitSettingsChange();
   }
 
   function toggleLocale() {
     const nextLocale = locale === "ZH" ? "EN" : "ZH";
+    const htmlLocale = nextLocale === "ZH" ? "zh-CN" : "en";
     window.localStorage.setItem(localeKey, nextLocale);
-    document.documentElement.lang = nextLocale === "ZH" ? "zh-CN" : "en";
+    saveCookie("zroimg-locale", htmlLocale);
+    document.documentElement.lang = htmlLocale;
     emitSettingsChange();
   }
 
   return (
     <div className="flex items-center gap-1">
       <button
-        className="nav-icon-button min-w-12 gap-1 px-2 text-xs font-medium"
+        className="nav-icon-button"
         type="button"
         onClick={toggleLocale}
         aria-label="切换语言"
       >
-        <Globe2 size={16} />
-        {locale}
+        <Globe size={17} />
       </button>
       <button
         className="nav-icon-button"

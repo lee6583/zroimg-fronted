@@ -1,4 +1,7 @@
 .gallery {
+  display: flex;
+  min-height: calc(100dvh - 8rem);
+  flex-direction: column;
   width: min(100%, 88rem);
   margin: 0 auto;
   padding: 2.75rem 1rem 4rem;
@@ -10,14 +13,6 @@
   text-align: center;
 }
 
-.gallery__eyebrow {
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-}
-
 .gallery__title {
   margin-top: 1rem;
   font-family: var(--font-serif);
@@ -25,14 +20,6 @@
   font-weight: 500;
   letter-spacing: -0.045em;
   line-height: 1.05;
-}
-
-.gallery__description {
-  margin: 1rem auto 0;
-  max-width: 34rem;
-  color: var(--muted);
-  font-size: 0.875rem;
-  line-height: 1.75;
 }
 
 .gallery__tabs {

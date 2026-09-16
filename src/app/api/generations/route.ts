@@ -1,23 +1,23 @@
 import { z } from "zod";
 import { getCurrentUserProfile } from "@/server/auth";
-import { createTask, requireConversation } from "@/server/bff/generation";
+import { createTask, requireConversation, serializeTask } from "@/server/bff/generation";
 import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { parseJson } from "@/server/validation";
 
+const mediaIdSchema = z
+  .string()
+  .min(1, "参考图 ID 不能为空")
+  .max(128, "参考图 ID 不能超过 128 个字符");
+
 const generationSchema = z.object({
   conversationId: z.string().trim().min(1, "请选择对话").max(128),
+  model: z.string().trim().min(1, "请选择模型").max(100),
   prompt: z.string().trim().min(1, "请输入提示词").max(4000),
   mode: z.enum(["text", "edit"]),
-  quality: z.enum(["low", "medium", "high"]),
-  outputFormat: z.enum(["png", "webp", "jpeg"]),
-  size: z
-    .string()
-    .regex(/^\d{2,4}x\d{2,4}$/, "图片尺寸格式不正确")
-    .refine((value) => value.split("x").every((item) => Number(item) <= 4096), {
-      message: "图片尺寸不能超过 4096",
-    }),
-  imageCount: z.number().int().min(1).max(4),
-  inputMediaIds: z.array(z.string().min(1).max(128)).max(4),
+  referenceMediaId: mediaIdSchema.optional(),
+  quality: z.string().trim().min(1, "请选择画质").max(50),
+  ratio: z.string().regex(/^\d+:\d+$/, "图片比例格式不正确"),
+  count: z.number().int().min(1).max(20),
 });
 
 export async function POST(request: Request) {
@@ -31,31 +31,23 @@ export async function POST(request: Request) {
     if (!parsed.ok) return jsonError(parsed.message);
 
     const payload = parsed.data;
+    if (payload.mode === "edit" && !payload.referenceMediaId) {
+      return jsonError("图生图需要 1 张参考图");
+    }
 
     await requireConversation(current.profile.id, payload.conversationId);
     const task = await createTask({
       userProfileId: current.profile.id,
       conversationId: payload.conversationId,
+      model: payload.model,
       prompt: payload.prompt,
       mode: payload.mode,
+      referenceMediaId: payload.referenceMediaId,
       quality: payload.quality,
-      outputFormat: payload.outputFormat,
-      size: payload.size,
-      imageCount: payload.imageCount,
-      inputMediaIds: payload.inputMediaIds,
+      ratio: payload.ratio,
+      count: payload.count,
     });
 
-    return jsonOk({
-      task: {
-        id: task.id,
-        prompt: task.prompt,
-        mode: task.mode,
-        status: task.status,
-        size: task.size,
-        imageCount: task.imageCount,
-        costCredits: task.costCredits,
-        createdAt: task.createdAt.toISOString(),
-      },
-    });
+    return jsonOk({ task: await serializeTask(task) });
   });
 }

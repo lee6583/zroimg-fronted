@@ -5,19 +5,25 @@ import { handleApi, jsonError, jsonOk } from "@/server/http";
 import { proxyRequestToJavaApi } from "@/server/java-api";
 import { parseJson } from "@/server/validation";
 
-const resetSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email("邮箱格式不正确")
-    .transform((value) => value.toLowerCase()),
-  code: z.string().trim().min(1, "请输入验证码").max(12, "验证码格式不正确"),
-  password: z.string().min(8, "密码至少 8 位").max(128, "密码最多 128 位"),
-});
+const resetSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .email("邮箱格式不正确")
+      .transform((value) => value.toLowerCase()),
+    code: z.string().trim().min(1, "请输入验证码").max(12, "验证码格式不正确"),
+    password: z.string().min(8, "密码至少 8 位").max(128, "密码最多 128 位"),
+    confirmPassword: z.string().min(8, "确认密码至少 8 位").max(128, "确认密码最多 128 位"),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    message: "两次输入的新密码不一致",
+    path: ["confirmPassword"],
+  });
 
 export async function POST(request: Request) {
   if (isJavaAuthEnabled()) {
-    return proxyRequestToJavaApi(request, "/auth/user/password-reset");
+    return proxyRequestToJavaApi(request, "/auth/user/reset-password");
   }
 
   return handleApi(async () => {

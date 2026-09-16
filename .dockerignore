@@ -6,6 +6,7 @@ node_modules
 .env.*
 !.env.example
 Dockerfile
+deploy
 README.md
 tsconfig.tsbuildinfo
 .DS_Store

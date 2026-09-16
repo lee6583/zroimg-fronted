@@ -1,6 +1,6 @@
 import type { FeedbackStatus, FeedbackType } from "@/utils/feedback";
 
-export type TicketMessage = {
+type TicketMessage = {
   id: string;
   body: string;
   isAdmin: boolean;
@@ -8,7 +8,13 @@ export type TicketMessage = {
   authorName: string;
 };
 
-export type TicketItem = {
+type TicketAttachment = {
+  id: string;
+  fileName: string | null;
+  url: string;
+};
+
+type TicketItem = {
   id: string;
   type: FeedbackType;
   status: FeedbackStatus;
@@ -17,34 +23,123 @@ export type TicketItem = {
   createdAt: string;
   updatedAt: string;
   messages: TicketMessage[];
+  attachments: TicketAttachment[];
 };
 
-export type CreateTicketRequest = {
+type FeedbackMessageRecord = {
+  id: string;
+  body: string;
+  isAdmin: boolean;
+  createdAt: Date;
+  authorProfile: {
+    username: string;
+  };
+};
+
+type FeedbackTicketRecord = {
+  id: string;
+  type: FeedbackType;
+  status: FeedbackStatus;
+  subject: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  messages: FeedbackMessageRecord[];
+  attachments: TicketAttachment[];
+};
+
+type AdminFeedbackTicketRecord = FeedbackTicketRecord & {
+  userProfile: {
+    username: string;
+    user: {
+      email: string;
+      name: string;
+    };
+  };
+};
+
+type TicketStatusFilter = "all" | "open" | "in_progress" | "processed";
+
+type TicketListSummary = {
+  all: number;
+  open: number;
+  inProgress: number;
+  processed: number;
+};
+
+type ListTicketsRequest = {
+  page: number;
+  pageSize: number;
+  status?: TicketStatusFilter;
+};
+
+type ListTicketsResponse = {
+  tickets: TicketItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  summary: TicketListSummary;
+};
+
+type CreateTicketRequest = {
   type: string;
   subject: string;
   content: string;
+  attachmentMediaIds?: string[];
 };
 
-export type CreateTicketResponse = {
+type CreateTicketResponse = {
   ticket: TicketItem;
 };
 
-export type ReplyTicketRequest = {
+type ReplyTicketRequest = {
   body: string;
 };
 
-export type ReplyTicketResponse = {
+type ReplyTicketResponse = {
   ok?: boolean;
 };
 
-export type AdminReplyTicketRequest = ReplyTicketRequest;
+type AdminReplyTicketRequest = ReplyTicketRequest & {
+  status: FeedbackStatus;
+};
 
-export type AdminReplyTicketResponse = ReplyTicketResponse;
+type AdminReplyTicketResponse = ReplyTicketResponse;
 
-export type UpdateTicketStatusRequest = {
+type UpdateTicketStatusRequest = {
   status: string;
 };
 
-export type UpdateTicketStatusResponse = {
+type UpdateTicketStatusResponse = {
   ok?: boolean;
+};
+
+type UploadTicketAttachmentResponse = {
+  media: {
+    id: string;
+    fileName: string | null;
+    kind: "input" | "output";
+  };
+};
+
+export type {
+  TicketMessage,
+  TicketAttachment,
+  TicketItem,
+  FeedbackMessageRecord,
+  FeedbackTicketRecord,
+  AdminFeedbackTicketRecord,
+  TicketStatusFilter,
+  TicketListSummary,
+  ListTicketsRequest,
+  ListTicketsResponse,
+  CreateTicketRequest,
+  CreateTicketResponse,
+  ReplyTicketRequest,
+  ReplyTicketResponse,
+  AdminReplyTicketRequest,
+  AdminReplyTicketResponse,
+  UpdateTicketStatusRequest,
+  UpdateTicketStatusResponse,
+  UploadTicketAttachmentResponse,
 };

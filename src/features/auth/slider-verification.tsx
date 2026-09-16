@@ -6,7 +6,13 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 type SliderVerificationProps = {
   verified: boolean;
-  onVerified: () => boolean | void | Promise<boolean | void>;
+  onStart?: () => Promise<number | false>;
+  onVerified: (proof: SliderProof) => boolean | void | Promise<boolean | void>;
+};
+
+type SliderProof = {
+  positionRatio: number;
+  durationMs: number;
 };
 
 const KNOB_SIZE = 40;
@@ -15,7 +21,11 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function SliderVerification({ verified, onVerified }: SliderVerificationProps) {
+export function SliderVerification(props: SliderVerificationProps) {
+  const verified = props.verified;
+  const onVerified = props.onVerified;
+  const onStart = props.onStart;
+
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef(0);
   const dragStartOffset = useRef(0);
@@ -23,8 +33,10 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
   const [isVerifying, setVerifying] = useState(false);
   const [offset, setOffset] = useState(0);
   const [max, setMax] = useState(0);
+  const [targetRatio, setTargetRatio] = useState(0.94);
+  const dragStartedAt = useRef(0);
 
-  const isComplete = verified || isVerifying;
+  const isComplete = verified || (isVerifying && offset > 0);
   let progress = 0;
   if (isComplete) {
     progress = 100;
@@ -49,12 +61,15 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
     return Math.max(width - KNOB_SIZE - 4, 0);
   }
 
-  async function complete(nextMaxOffset: number) {
-    setOffset(nextMaxOffset);
+  async function complete(nextMaxOffset: number, nextOffset: number) {
+    setOffset(nextOffset);
     setDragging(false);
     setVerifying(true);
+
+    const positionRatio = nextMaxOffset > 0 ? nextOffset / nextMaxOffset : targetRatio;
+    const durationMs = Math.max(Date.now() - dragStartedAt.current, 250);
     try {
-      const result = await onVerified();
+      const result = await onVerified({ positionRatio, durationMs });
       if (result === false) {
         setOffset(0);
       }
@@ -63,12 +78,24 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
     }
   }
 
-  function start(clientX: number) {
+  async function start(clientX: number) {
     if (verified || isVerifying) return;
+
+    setVerifying(true);
+    const nextTargetRatio = onStart ? await onStart() : 0.94;
+    if (nextTargetRatio === false) {
+      setVerifying(false);
+      return;
+    }
+
     const nextMaxOffset = getMaxOffset();
+    const safeTargetRatio = clamp(nextTargetRatio, 0.2, 0.94);
+    setTargetRatio(safeTargetRatio);
     setMax(nextMaxOffset);
     dragStartX.current = clientX;
     dragStartOffset.current = offset;
+    dragStartedAt.current = Date.now();
+    setVerifying(false);
     setDragging(true);
   }
 
@@ -80,8 +107,8 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
       0,
       nextMaxOffset,
     );
-    if (nextMaxOffset > 0 && nextOffset >= nextMaxOffset * 0.94) {
-      complete(nextMaxOffset);
+    if (nextMaxOffset > 0 && nextOffset >= nextMaxOffset * targetRatio) {
+      complete(nextMaxOffset, nextMaxOffset * targetRatio);
       return;
     }
     setOffset(nextOffset);
@@ -130,15 +157,15 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
 
     if (event.key === "End" || event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      complete(nextMaxOffset);
+      complete(nextMaxOffset, nextMaxOffset * targetRatio);
       return;
     }
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
       const nextOffset = clamp(offset + 24, 0, nextMaxOffset);
-      if (nextMaxOffset > 0 && nextOffset >= nextMaxOffset * 0.94) {
-        complete(nextMaxOffset);
+      if (nextMaxOffset > 0 && nextOffset >= nextMaxOffset * targetRatio) {
+        complete(nextMaxOffset, nextMaxOffset * targetRatio);
         return;
       }
       setOffset(nextOffset);
@@ -185,7 +212,7 @@ export function SliderVerification({ verified, onVerified }: SliderVerificationP
         onPointerDown={(event) => {
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
-          start(event.clientX);
+          void start(event.clientX);
         }}
       >
         {verified ? (

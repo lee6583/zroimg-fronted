@@ -1,0 +1,106 @@
+.feedbackActions {
+  display: grid;
+  gap: 1rem;
+}
+
+.feedbackActions__statusGroup {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.feedbackActions__statusButtons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.425rem;
+}
+
+.feedbackActions__statusButton {
+  min-height: 2.25rem;
+  border: 0;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.5rem;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.feedbackActions__statusButton + .feedbackActions__statusButton {
+  border-left: 1px solid var(--line);
+}
+
+.feedbackActions__statusButton:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.feedbackActions__statusButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.feedbackActions__statusButtonActive {
+  background: var(--status-background);
+  color: var(--status-color);
+  box-shadow: inset 0 -2px 0 var(--status-color);
+}
+
+.feedbackActions__statusOpen {
+  --status-background: color-mix(in oklab, #f97316 10%, var(--panel));
+  --status-color: #c2410c;
+}
+
+.feedbackActions__statusProgress {
+  --status-background: color-mix(in oklab, #2563eb 10%, var(--panel));
+  --status-color: #1d4ed8;
+}
+
+.feedbackActions__statusDone {
+  --status-background: color-mix(in oklab, #16a34a 10%, var(--panel));
+  --status-color: #15803d;
+}
+
+.feedbackActions__reply {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.45rem;
+}
+
+.feedbackActions__label,
+.feedbackActions__reply span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.feedbackActions__textarea {
+  min-height: 8rem;
+  resize: vertical;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.feedbackActions__footer {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.feedbackActions__message {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.feedbackActions__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+}

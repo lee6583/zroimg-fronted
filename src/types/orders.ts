@@ -1,19 +1,172 @@
-export type PaymentType = "alipay" | "wxpay";
+type PaymentType = "alipay" | "wxpay";
 
-export type CreateOrderRequest =
-  | {
-      mode: "package";
-      packageCode: string;
-      paymentType: PaymentType;
-    }
-  | {
-      mode: "custom";
-      amountCny: number;
-      paymentType: PaymentType;
-    };
+type PackageOrderRequest = {
+  mode: "package";
+  packageId: string;
+  paymentType: PaymentType;
+};
 
-export type CreateOrderResponse = {
+type CustomOrderRequest = {
+  mode: "custom";
+  amountCny: number;
+  paymentType: PaymentType;
+};
+
+type CreateOrderRequest = PackageOrderRequest | CustomOrderRequest;
+
+type CreateOrderResponse = {
   order?: {
+    orderNo?: string;
+    packageId?: string;
+    packageName?: string;
+    amountCent?: number;
+    amountText?: string;
+    rechargeAmountCent?: number;
+    feeAmountCent?: number;
+    credits?: number;
+    payStatus?: string;
+    creditsStatus?: string;
+    displayStatus?: string;
+    expireTime?: string | null;
     payUrl?: string | null;
+    resultUrl?: string | null;
   };
+};
+
+type CancelOrderResponse = {
+  ok: boolean;
+  orderNo: string;
+  status: "cancelled";
+};
+
+type CreatePaymentResponse = {
+  orderNo: string;
+  payChannel: string;
+  merchantId: string;
+  payUrl: string;
+  payStatus: string;
+};
+
+type RechargeOrder = {
+  orderNo: string;
+  packageId: string;
+  packageCode: string;
+  packageName: string;
+  packageDescription?: string | null;
+  amountCent: number;
+  amountText: string;
+  rechargeAmountCent: number;
+  feeAmountCent: number;
+  credits: number;
+  payChannel?: string | null;
+  payChannelText?: string | null;
+  payStatus: string;
+  creditsStatus: string;
+  displayStatus: string;
+  thirdTradeNo?: string | null;
+  createTime: string;
+  payTime?: string | null;
+  expireTime?: string | null;
+};
+
+type RechargeRules = {
+  feeRatePercent: number;
+  timeoutMinutes: number;
+  creditsPerYuan: number;
+  maxPendingOrders: number;
+  minAmountCent: number;
+  maxAmountCent: number;
+};
+
+type RechargeOverview = {
+  pendingOrderCount: number;
+  completedOrderCount: number;
+  enabledPackageCount: number;
+  totalPoints: number;
+  rechargeRules: RechargeRules;
+};
+
+type RechargeOrderPageQuery = {
+  userProfileId: string;
+  page: number;
+  pageSize: number;
+};
+
+type RechargeOrderPage = {
+  total: number;
+  pages: number;
+  list: RechargeOrder[];
+};
+
+type CreditPackage = {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  amountCent: number;
+  amountText: string;
+  credits: number;
+  highlights: string[];
+  recommended: boolean;
+  enabled: boolean;
+  sort: number;
+};
+
+type AdminCreditPackageInput = {
+  code: string;
+  name: string;
+  description: string;
+  amountCent: number;
+  credits: number;
+  highlights: string[];
+  recommended: boolean;
+  enabled: boolean;
+  sort: number;
+};
+
+type AdminRechargeOrder = RechargeOrder & {
+  username?: string | null;
+  creditsErrorReason?: string | null;
+  closeTime?: string | null;
+};
+
+type AdminRechargeOrderPageQuery = {
+  page: number;
+  pageSize: number;
+  userId?: string;
+  orderNo?: string;
+  status?: string;
+};
+
+type AdminRechargeOrderPage = {
+  total: number;
+  pages: number;
+  list: AdminRechargeOrder[];
+};
+
+type ReissueCreditsResponse = {
+  ok: boolean;
+  orderNo: string;
+  creditsStatus: string;
+};
+
+export type {
+  PaymentType,
+  PackageOrderRequest,
+  CustomOrderRequest,
+  CreateOrderRequest,
+  CreateOrderResponse,
+  CancelOrderResponse,
+  CreatePaymentResponse,
+  RechargeOrder,
+  RechargeOverview,
+  RechargeRules,
+  RechargeOrderPageQuery,
+  RechargeOrderPage,
+  CreditPackage,
+  AdminCreditPackageInput,
+  AdminRechargeOrder,
+  AdminRechargeOrderPageQuery,
+  AdminRechargeOrderPage,
+  ReissueCreditsResponse,
 };

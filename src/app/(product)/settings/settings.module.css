@@ -1,0 +1,11 @@
+.settings {
+  display: grid;
+  width: min(100%, 72rem);
+  gap: var(--page-title-content-gap);
+}
+
+.settings__header {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+}

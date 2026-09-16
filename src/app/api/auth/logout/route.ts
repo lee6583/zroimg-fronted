@@ -1,16 +1,21 @@
-import { JAVA_SESSION_COOKIE, MOCK_SESSION_COOKIE } from "@/server/auth";
+import { MOCK_SESSION_COOKIE } from "@/server/auth";
 import { isJavaAuthEnabled } from "@/server/env";
-import { jsonOk } from "@/server/http";
+import { handleApi, jsonOk } from "@/server/http";
+import { proxyRequestToJavaApi } from "@/server/java-api";
 
-export async function POST() {
-  const response = jsonOk({ ok: true as const });
-  const cookieName = isJavaAuthEnabled() ? JAVA_SESSION_COOKIE : MOCK_SESSION_COOKIE;
+export async function POST(request: Request) {
+  return handleApi(async () => {
+    if (isJavaAuthEnabled()) {
+      return proxyRequestToJavaApi(request, "/auth/user/logout");
+    }
 
-  response.cookies.set(cookieName, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
+    const response = jsonOk({ message: "退出登录成功" });
+    response.cookies.set(MOCK_SESSION_COOKIE, "", {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+    return response;
   });
-  return response;
 }

@@ -1,24 +1,20 @@
 import type {
   GenerationConversationApiItem,
   GenerationMode,
-  GenerationOutputFormat,
-  GenerationQuality,
+  GenerationModelOption,
+  GenerationQualityOption,
+  GenerationTaskOutputApiItem,
   GenerationTaskStatus,
   UploadedMediaApiItem,
 } from "@/types/generation";
-import { estimateGenerationCredits } from "@/utils/generation-credits";
 
-export type QualityOption = GenerationQuality | "auto";
-export type Ratio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
-export type Resolution = "1K" | "2K" | "4K";
+export type QualityOption = GenerationQualityOption;
 
 export type GenerationOptions = {
   mode: GenerationMode;
   model: string;
-  ratio: Ratio;
-  resolution: Resolution;
+  ratio: string;
   quality: QualityOption;
-  format: GenerationOutputFormat;
   count: number;
 };
 
@@ -52,45 +48,23 @@ export type TaskItem = {
   mode: GenerationMode;
   status: GenerationTaskStatus;
   size: string;
+  ratio: string;
+  quality: GenerationQualityOption;
   imageCount: number;
   costCredits: number;
+  unitCostCredits: number;
   createdAt: string;
-  imageUrls?: string[];
+  outputs: GenerationTaskOutputApiItem[];
 };
 
-export const defaultOptions: GenerationOptions = {
-  mode: "text",
-  model: "gpt-image-2",
-  ratio: "1:1",
-  resolution: "1K",
-  quality: "auto",
-  format: "png",
-  count: 1,
+export type FavoriteCollectionItem = {
+  id: string;
+  name: string;
+  imageCount: number;
 };
 
-export const modelOptions = [{ value: "gpt-image-2", label: "gpt-image-2" }];
-export const ratios: Ratio[] = ["1:1", "16:9", "9:16", "4:3", "3:4"];
-export const resolutions: Resolution[] = ["1K", "2K", "4K"];
-export const qualities: Array<{ value: QualityOption; label: string }> = [
-  { value: "auto", label: "自动" },
-  { value: "low", label: "低" },
-  { value: "medium", label: "中" },
-  { value: "high", label: "高" },
-];
-export const formats: Array<{
-  value: GenerationOutputFormat;
-  label: string;
-}> = [
-  { value: "webp", label: "WebP" },
-  { value: "png", label: "PNG" },
-  { value: "jpeg", label: "JPG" },
-];
-export const imageCounts = [1, 2, 4];
-export const promptSuggestions = [
-  "一只在星空下弹吉他的猫",
-  "未来城市的日落景色",
-  "水彩风格的樱花园",
-];
+export const activeConversationCookieName = "zroimg-active-generation-conversation";
+
 export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
   queued: "排队中",
   running: "生成中",
@@ -98,45 +72,68 @@ export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
   failed: "失败",
 };
 
-const sizes: Record<Resolution, Record<Ratio, string>> = {
-  "1K": {
-    "1:1": "1024x1024",
-    "16:9": "1360x768",
-    "9:16": "768x1360",
-    "4:3": "1152x864",
-    "3:4": "864x1152",
-  },
-  "2K": {
-    "1:1": "1536x1536",
-    "16:9": "2048x1152",
-    "9:16": "1152x2048",
-    "4:3": "1792x1344",
-    "3:4": "1344x1792",
-  },
-  "4K": {
-    "1:1": "2048x2048",
-    "16:9": "3840x2160",
-    "9:16": "1216x2160",
-    "4:3": "2816x2112",
-    "3:4": "1584x2112",
-  },
-};
-
 export function getGenerationSize(options: GenerationOptions) {
-  return sizes[options.resolution][options.ratio];
+  return options.ratio;
 }
 
-export function getGenerationQuality(quality: QualityOption): GenerationQuality {
-  return quality === "auto" ? "medium" : quality;
+export function getDefaultOptions(models: GenerationModelOption[]): GenerationOptions {
+  const model = models[0];
+  if (!model) {
+    throw new Error("暂无可用图片模型");
+  }
+
+  const mode = model.defaultMode;
+  const params = model.params[mode];
+  if (!params) {
+    throw new Error("图片模型缺少参数配置");
+  }
+
+  return {
+    mode,
+    model: model.value,
+    ratio: params.defaults.ratio,
+    quality: params.defaults.quality,
+    count: params.defaults.count,
+  };
 }
 
-export function estimateOptionsCredits(options: GenerationOptions) {
-  return estimateGenerationCredits({
-    mode: options.mode,
-    quality: getGenerationQuality(options.quality),
-    size: getGenerationSize(options),
-    count: options.count,
+export function normalizeOptions(
+  options: GenerationOptions,
+  models: GenerationModelOption[],
+): GenerationOptions {
+  let model = models.find((item) => {
+    const isSelectedModel = item.value === options.model;
+    const supportsMode = item.modes.includes(options.mode);
+    return isSelectedModel && supportsMode;
   });
+
+  if (!model) {
+    model = models.find((item) => item.modes.includes(options.mode));
+  }
+  if (!model) {
+    throw new Error("当前生成模式没有可用模型");
+  }
+
+  const params = model.params[options.mode];
+  if (!params) {
+    throw new Error("图片模型缺少当前模式参数");
+  }
+
+  return {
+    mode: options.mode,
+    model: model.value,
+    ratio: pickValue(options.ratio, params.ratios, params.defaults.ratio),
+    quality: pickValue(options.quality, params.qualities, params.defaults.quality),
+    count: pickValue(options.count, params.counts, params.defaults.count),
+  };
+}
+
+function pickValue<Value>(value: Value, values: Value[], defaultValue: Value) {
+  if (values.includes(value)) {
+    return value;
+  }
+
+  return defaultValue;
 }
 
 export function normalizeConversation(item: GenerationConversationApiItem): ConversationItem {
@@ -152,6 +149,19 @@ export function normalizeConversation(item: GenerationConversationApiItem): Conv
     updatedAt: item.updatedAt,
     createdAt: item.createdAt,
   };
+}
+
+export function resolveActiveConversationId(
+  items: Array<{ id: string }>,
+  ...preferredIds: Array<string | null | undefined>
+) {
+  for (const preferredId of preferredIds) {
+    if (preferredId && items.some((item) => item.id === preferredId)) {
+      return preferredId;
+    }
+  }
+
+  return items[0]?.id ?? "";
 }
 
 export function groupConversations(items: ConversationItem[]) {

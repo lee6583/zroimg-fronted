@@ -1,13 +1,28 @@
 import type { OkResponse } from "@/types/api";
 
-export type UpdateAccountProfileRequest = FormData;
+type UpdateAccountProfileRequest = FormData;
 
-export type UpdateAccountPasswordRequest = {
+type UpdateAccountPasswordRequest = {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 };
 
-export type UpdateAccountProfileResponse = OkResponse;
+type UpdateAccountAvatarRequest = FormData;
 
-export type UpdateAccountPasswordResponse = OkResponse;
+type UpdateAccountAvatarResponse = {
+  avatarUrl: string;
+};
+
+type UpdateAccountProfileResponse = OkResponse;
+
+type UpdateAccountPasswordResponse = OkResponse;
+
+export type {
+  UpdateAccountProfileRequest,
+  UpdateAccountPasswordRequest,
+  UpdateAccountAvatarRequest,
+  UpdateAccountAvatarResponse,
+  UpdateAccountProfileResponse,
+  UpdateAccountPasswordResponse,
+};
