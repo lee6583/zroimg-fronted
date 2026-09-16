@@ -23,6 +23,8 @@ type VideoModelParams = {
 type VideoModel = {
   value: string;
   label: string;
+  modelType: "video";
+  provider: "openai" | "grok";
   modes: VideoModeOption[];
   params: VideoModelParams;
 };

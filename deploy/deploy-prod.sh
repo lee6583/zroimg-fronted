@@ -1,16 +1,16 @@
 #!/bin/sh
 set -eu
 
-IMAGE_TAG="${1:?Usage: deploy-dev.sh IMAGE_TAG}"
+IMAGE_TAG="${1:?Usage: deploy-prod.sh IMAGE_TAG}"
 APP_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-COMPOSE_FILE="$APP_DIR/compose.dev.yml"
+COMPOSE_FILE="$APP_DIR/compose.prod.yml"
 ENV_FILE="$APP_DIR/.env"
 TAG_FILE="$APP_DIR/.deployed-tag"
-CONTAINER_NAME="zroimg-frontend-dev"
+CONTAINER_NAME="zroimg-frontend-prod"
 NGINX_CONTAINER="nginx"
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Missing $ENV_FILE. Create it from env.dev.example before the first deployment." >&2
+  echo "Missing $ENV_FILE. Create it before the first deployment." >&2
   exit 1
 fi
 
@@ -21,7 +21,7 @@ fi
 
 compose() {
   docker compose \
-    --project-name zroimg-frontend-dev \
+    --project-name zroimg-frontend-prod \
     --env-file "$ENV_FILE" \
     --file "$COMPOSE_FILE" \
     "$@"
@@ -62,7 +62,7 @@ compose up -d --remove-orphans frontend
 if wait_until_healthy && reload_nginx; then
   printf '%s\n' "$IMAGE_TAG" > "$TAG_FILE.tmp"
   mv "$TAG_FILE.tmp" "$TAG_FILE"
-  echo "Frontend deployment succeeded: $IMAGE_TAG"
+  echo "Frontend production deployment succeeded: $IMAGE_TAG"
   exit 0
 fi
 

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Ban, CircleCheck, Coins, Eye, EyeOff, KeyRound, Pencil, Trash2, X } from "lucide-react";
+import { Ban, CircleCheck, Eye, EyeOff, Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminUsersApi } from "@/api/admin/users";
@@ -15,7 +15,7 @@ type UserActionsProps = {
   variant?: "icon" | "button";
 };
 
-type PendingAction = "credits" | "password" | "status" | "delete" | null;
+type PendingAction = "edit" | "status" | "delete" | null;
 
 export function UserActions(props: UserActionsProps) {
   const user = props.user;
@@ -25,7 +25,7 @@ export function UserActions(props: UserActionsProps) {
   const canUpdateStatus = variant === "icon" && user.role !== "admin";
 
   const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
-  const [amount, setAmount] = useState(100);
+  const [amount, setAmount] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [statusOverride, setStatusOverride] = useState<AdminUser["status"] | null>(null);
@@ -52,6 +52,9 @@ export function UserActions(props: UserActionsProps) {
   }, [dialog, pendingAction]);
 
   function openEditDialog() {
+    setAmount("");
+    setPassword("");
+    setShowPassword(false);
     setMessage("");
     setError(false);
     setDialog("edit");
@@ -69,38 +72,44 @@ export function UserActions(props: UserActionsProps) {
     setMessage(getErrorMessage(error));
   }
 
-  async function adjustCredits(event: React.FormEvent<HTMLFormElement>) {
+  async function submitEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!Number.isInteger(amount) || amount === 0) {
+    const hasAmount = amount.trim() !== "";
+    const hasPassword = password.trim() !== "";
+
+    if (!hasAmount && !hasPassword) {
       setError(true);
-      setMessage("调整数量必须是非零整数");
+      setMessage("请输入调整积分或新密码");
       return;
     }
-    setPendingAction("credits");
-    setMessage("");
 
-    try {
-      await adminUsersApi.adjustCredits(user.id, { amount });
-      setError(false);
-      setMessage("积分已调整");
-      router.refresh();
-    } catch (error) {
-      showError(error);
-    } finally {
-      setPendingAction(null);
+    const targetPoints = Number(amount);
+    if (hasAmount && (!Number.isInteger(targetPoints) || targetPoints < 0)) {
+      setError(true);
+      setMessage("调整积分必须是非负整数");
+      return;
     }
-  }
+    if (hasPassword && password.length < 8) {
+      setError(true);
+      setMessage("新密码至少 8 位");
+      return;
+    }
 
-  async function resetPassword(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPendingAction("password");
+    setPendingAction("edit");
     setMessage("");
 
     try {
-      await adminUsersApi.resetPassword(user.id, { password });
+      if (hasAmount && targetPoints !== user.totalPoints) {
+        await adminUsersApi.adjustCredits(user.id, { amount: targetPoints - user.totalPoints });
+      }
+      if (hasPassword) {
+        await adminUsersApi.resetPassword(user.id, { password });
+      }
+      setAmount("");
       setPassword("");
       setError(false);
-      setMessage("密码已重置");
+      setDialog(null);
+      router.refresh();
     } catch (error) {
       showError(error);
     } finally {
@@ -208,67 +217,46 @@ export function UserActions(props: UserActionsProps) {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                className={styles.userActions__closeButton}
-                aria-label="关闭编辑弹窗"
-                title="关闭"
-                disabled={isLoading}
-                onClick={() => setDialog(null)}
-              >
-                <X size={18} />
-              </button>
+              <div className={styles.userActions__headerTools}>
+                <button
+                  type="button"
+                  className={styles.userActions__closeButton}
+                  aria-label="关闭编辑弹窗"
+                  title="关闭"
+                  disabled={isLoading}
+                  onClick={() => setDialog(null)}
+                >
+                  <X size={18} />
+                </button>
+                <span className={styles.userActions__balance}>
+                  {user.totalPoints.toLocaleString("zh-CN")} 积分
+                </span>
+              </div>
             </header>
 
-            <div className={styles.userActions__body}>
-              <form className={styles.userActions__section} onSubmit={adjustCredits}>
-                <div className={styles.userActions__sectionHeading}>
-                  <div className={styles.userActions__sectionTitle}>
-                    <span className={styles.userActions__sectionIcon} aria-hidden="true">
-                      <Coins size={16} />
-                    </span>
-                    <div>
-                      <h3>调整积分</h3>
-                      <p>当前余额 {user.totalPoints.toLocaleString("zh-CN")} 积分</p>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.userActions__controls}>
-                  <label>
-                    <span>调整数量</span>
+            <form className={styles.userActions__editForm} onSubmit={submitEdit}>
+              <div className={styles.userActions__body}>
+                <div className={styles.userActions__section}>
+                  <label className={styles.userActions__singleControl}>
+                    <span>调整积分</span>
                     <input
                       className="field"
                       type="number"
-                      required
                       value={amount}
-                      onChange={(event) => setAmount(Number(event.target.value))}
+                      onChange={(event) =>
+                        setAmount(event.target.value.replace(/^(-?)0+(?=\d)/, "$1"))
+                      }
                     />
                   </label>
-                  <button className="btn-primary" type="submit" disabled={isLoading}>
-                    {pendingAction === "credits" ? "处理中..." : "确认调整"}
-                  </button>
                 </div>
-              </form>
 
-              <form className={styles.userActions__section} onSubmit={resetPassword}>
-                <div className={styles.userActions__sectionHeading}>
-                  <div className={styles.userActions__sectionTitle}>
-                    <span className={styles.userActions__sectionIcon} aria-hidden="true">
-                      <KeyRound size={16} />
-                    </span>
-                    <div>
-                      <h3>重置密码</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.userActions__controls}>
-                  <label>
+                <div className={styles.userActions__section}>
+                  <label className={styles.userActions__singleControl}>
                     <span>新密码</span>
                     <div className={styles.userActions__passwordField}>
                       <input
                         className="field"
                         type={showPassword ? "text" : "password"}
-                        required
                         autoComplete="new-password"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
@@ -284,24 +272,38 @@ export function UserActions(props: UserActionsProps) {
                       </button>
                     </div>
                   </label>
-                  <button className="btn-secondary" type="submit" disabled={isLoading || !password}>
-                    {pendingAction === "password" ? "处理中..." : "重置密码"}
+                </div>
+              </div>
+
+              <footer className={styles.userActions__editFooter}>
+                {message ? (
+                  <p
+                    className={clsx(
+                      styles.userActions__message,
+                      isError && styles.userActions__messageError,
+                    )}
+                    role="status"
+                  >
+                    {message}
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <div className={styles.userActions__editActions}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    disabled={isLoading}
+                    onClick={() => setDialog(null)}
+                  >
+                    取消
+                  </button>
+                  <button className="btn-primary" type="submit" disabled={isLoading}>
+                    {isLoading ? "处理中..." : "确认"}
                   </button>
                 </div>
-              </form>
-            </div>
-
-            {message ? (
-              <p
-                className={clsx(
-                  styles.userActions__message,
-                  isError && styles.userActions__messageError,
-                )}
-                role="status"
-              >
-                {message}
-              </p>
-            ) : null}
+              </footer>
+            </form>
           </section>
         </div>
       ) : null}

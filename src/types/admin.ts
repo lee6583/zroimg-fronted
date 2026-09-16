@@ -211,10 +211,13 @@ type AdminOverview = {
 
 type GenerationModelAdapter = "openai" | "grok";
 
+type LegacyGenerationModelAdapter = GenerationModelAdapter | "generic-video";
+
 type GenerationModelType = "image" | "video";
 
 type GenerationModelCatalogItem = {
   modelCode: string;
+  capabilityProfile: string;
   modelName: string;
   modelType: GenerationModelType;
   adapter: GenerationModelAdapter;
@@ -232,13 +235,66 @@ type GenerationModelCatalogItem = {
   defaultReferencePoints: Record<string, number>;
 };
 
+type GenerationProviderConnection = {
+  id: string;
+  name: string;
+  adapter: GenerationModelAdapter;
+  apiBaseUrl: string;
+  status: "enabled" | "disabled";
+  hasApiKey: boolean;
+  apiKeyPreview: string | null;
+  modelCount: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+type DiscoveredProviderModel = {
+  id: string;
+  displayName: string;
+  ownedBy: string;
+  object: string;
+};
+
+type SaveProviderConnectionRequest = {
+  name: string;
+  adapter: GenerationModelAdapter;
+  apiBaseUrl: string;
+  apiKey: string;
+  clearApiKey: boolean;
+  status: "enabled" | "disabled";
+};
+
+type DiscoverProviderModelsRequest = {
+  adapter: GenerationModelAdapter;
+  apiBaseUrl: string;
+  apiKey: string;
+};
+
+type ProviderConnectionsResponse = {
+  connections: GenerationProviderConnection[];
+};
+
+type ProviderConnectionResponse = {
+  connection: GenerationProviderConnection;
+};
+
+type DiscoveredProviderModelsResponse = {
+  models: DiscoveredProviderModel[];
+};
+
 type AdminGenerationModel = {
   id: string;
   modelCode: string;
   modelName: string;
   modelType: GenerationModelType;
-  adapter: GenerationModelAdapter;
-  apiBaseUrl: string;
+  adapter: LegacyGenerationModelAdapter;
+  connectionId: string | null;
+  connectionName: string | null;
+  providerModelCode: string;
+  capabilityProfile: string;
+  verificationStatus: "verified" | "unverified";
+  verifiedAt: string | null;
+  apiBaseUrl: string | null;
   hasApiKey: boolean;
   apiKeyPreview: string | null;
   status: "enabled" | "disabled";
@@ -259,19 +315,29 @@ type AdminGenerationModel = {
   updatedAt: string | null;
 };
 
-type SaveAdminGenerationModelBase = {
-  modelCode: string;
-  adapter: GenerationModelAdapter;
-  apiBaseUrl: string;
-  apiKey: string;
-  clearApiKey: boolean;
+type SaveAdminGenerationModelCommon = {
+  modelName: string;
   status: "enabled" | "disabled";
   defaultFlag: number;
   sortOrder: number;
   ratios: string[];
 };
 
-type SaveAdminImageModelRequest = SaveAdminGenerationModelBase & {
+type SaveAdminGenerationModelDynamicBase = SaveAdminGenerationModelCommon & {
+  connectionId: string;
+  providerModelCode: string;
+  capabilityProfile: string;
+};
+
+type SaveAdminGenerationModelLegacyBase = SaveAdminGenerationModelCommon & {
+  modelCode: string;
+  adapter: LegacyGenerationModelAdapter;
+  apiBaseUrl: string;
+  apiKey: string;
+  clearApiKey: boolean;
+};
+
+type SaveAdminImageModelRequest = SaveAdminGenerationModelDynamicBase & {
   modelType: "image";
   imageToImageEnabled: boolean;
   qualities: string[];
@@ -279,7 +345,7 @@ type SaveAdminImageModelRequest = SaveAdminGenerationModelBase & {
   qualityPrices: Array<{ quality: string; points: number }>;
 };
 
-type SaveAdminVideoModelRequest = SaveAdminGenerationModelBase & {
+type SaveAdminVideoModelRequest = SaveAdminGenerationModelDynamicBase & {
   modelType: "video";
   imageToVideoEnabled: boolean;
   resolutions: string[];
@@ -292,7 +358,32 @@ type SaveAdminVideoModelRequest = SaveAdminGenerationModelBase & {
   }>;
 };
 
-type SaveAdminGenerationModelRequest = SaveAdminImageModelRequest | SaveAdminVideoModelRequest;
+type SaveAdminLegacyImageModelRequest = SaveAdminGenerationModelLegacyBase & {
+  modelType: "image";
+  imageToImageEnabled: boolean;
+  qualities: string[];
+  maxCount: number;
+  qualityPrices: Array<{ quality: string; points: number }>;
+};
+
+type SaveAdminLegacyVideoModelRequest = SaveAdminGenerationModelLegacyBase & {
+  modelType: "video";
+  imageToVideoEnabled: boolean;
+  resolutions: string[];
+  minDuration: number;
+  maxDuration: number;
+  videoPrices: Array<{
+    resolution: string;
+    pointsPerSecond: number;
+    referencePoints: number;
+  }>;
+};
+
+type SaveAdminGenerationModelRequest =
+  | SaveAdminImageModelRequest
+  | SaveAdminVideoModelRequest
+  | SaveAdminLegacyImageModelRequest
+  | SaveAdminLegacyVideoModelRequest;
 
 type AdminGenerationModelsResponse = {
   models: AdminGenerationModel[];
@@ -335,9 +426,22 @@ export type {
   AdminOverviewTicket,
   AdminOverview,
   GenerationModelAdapter,
+  LegacyGenerationModelAdapter,
   GenerationModelType,
   GenerationModelCatalogItem,
+  GenerationProviderConnection,
+  DiscoveredProviderModel,
+  SaveProviderConnectionRequest,
+  DiscoverProviderModelsRequest,
+  ProviderConnectionsResponse,
+  ProviderConnectionResponse,
+  DiscoveredProviderModelsResponse,
   AdminGenerationModel,
+  SaveAdminGenerationModelCommon,
+  SaveAdminGenerationModelDynamicBase,
+  SaveAdminGenerationModelLegacyBase,
+  SaveAdminLegacyImageModelRequest,
+  SaveAdminLegacyVideoModelRequest,
   SaveAdminGenerationModelRequest,
   AdminGenerationModelsResponse,
   AdminGenerationModelResponse,

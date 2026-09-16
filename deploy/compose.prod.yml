@@ -1,11 +1,17 @@
 services:
   frontend:
-    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE in .env}:${IMAGE_TAG:-dev}
-    container_name: zroimg-frontend-dev
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE in .env}:${IMAGE_TAG:-main}
+    container_name: zroimg-frontend-prod
     restart: unless-stopped
     init: true
     environment:
+      NODE_ENV: production
+      BFF_MODE: java
+      AUTH_BFF_MODE: java
+      PAYMENT_BFF_MODE: java
+      ALLOW_MOCK_BFF: "false"
       JAVA_API_BASE_URL: ${JAVA_API_BASE_URL:?Set JAVA_API_BASE_URL in .env}
+      TZ: Asia/Shanghai
     security_opt:
       - no-new-privileges:true
     healthcheck:

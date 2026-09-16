@@ -2,7 +2,12 @@ import { request } from "@/utils/request";
 import type {
   AdminGenerationModelsResponse,
   AdminGenerationModelResponse,
+  DiscoverProviderModelsRequest,
+  DiscoveredProviderModelsResponse,
+  ProviderConnectionResponse,
+  ProviderConnectionsResponse,
   SaveAdminGenerationModelRequest,
+  SaveProviderConnectionRequest,
 } from "@/types/admin";
 
 function list() {
@@ -49,11 +54,61 @@ function remove(id: string) {
   });
 }
 
+function listConnections() {
+  return request<ProviderConnectionsResponse>({
+    url: "/api/admin/provider-connections",
+  });
+}
+
+function createConnection(data: SaveProviderConnectionRequest) {
+  return request<ProviderConnectionResponse>({
+    url: "/api/admin/provider-connections",
+    method: "POST",
+    data,
+  });
+}
+
+function updateConnection(id: string, data: SaveProviderConnectionRequest) {
+  return request<ProviderConnectionResponse>({
+    url: `/api/admin/provider-connections/${encodeURIComponent(id)}`,
+    method: "PUT",
+    data,
+  });
+}
+
+function removeConnection(id: string) {
+  return request<{ ok: boolean }>({
+    url: `/api/admin/provider-connections/${encodeURIComponent(id)}`,
+    method: "DELETE",
+  });
+}
+
+function discoverConnection(data: DiscoverProviderModelsRequest) {
+  return request<DiscoveredProviderModelsResponse>({
+    url: "/api/admin/provider-connections/discover",
+    method: "POST",
+    data,
+  });
+}
+
+function discoverSavedConnection(id: string) {
+  return request<DiscoveredProviderModelsResponse>({
+    url: `/api/admin/provider-connections/${encodeURIComponent(id)}/discover`,
+    method: "POST",
+  });
+}
+
 export const adminModelsApi = {
   create,
+  createConnection,
+  discoverConnection,
+  discoverSavedConnection,
   list,
+  listConnections,
   remove,
+  removeConnection,
   setDefault,
   update,
+  updateConnection,
   updateStatus,
 };

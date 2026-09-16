@@ -15,29 +15,31 @@ import type {
 } from "@/types/video";
 
 const modelDefaultsSchema = z.object({
-  mode: z.string().nullable(),
-  ratio: z.string().nullable(),
-  resolution: z.string().nullable(),
+  mode: z.string().nullable().optional(),
+  ratio: z.string().nullable().optional(),
+  resolution: z.string().nullable().optional(),
   quality: z.string().nullable().optional(),
-  duration: z.number().nullable(),
+  duration: z.number().int().nullable().optional(),
   audio: z.boolean().nullable().optional(),
 });
 
 const modelParamsSchema = z.object({
-  ratios: z.array(z.string()),
-  resolutions: z.array(z.string()),
+  ratios: z.array(z.string()).default([]),
+  resolutions: z.array(z.string()).default([]),
   resolutionsByMode: z.record(z.string(), z.array(z.string())).nullish(),
   qualities: z.array(z.string()).optional(),
-  durations: z.array(z.number()),
-  durationMin: z.number().nullish(),
-  durationMax: z.number().nullish(),
+  durations: z.array(z.number().int()).default([]),
+  durationMin: z.number().int().nullish(),
+  durationMax: z.number().int().nullish(),
   audios: z.array(z.boolean()).optional(),
-  defaults: modelDefaultsSchema,
+  defaults: modelDefaultsSchema.default({}),
 });
 
 const modelSchema = z.object({
   modelCode: z.string(),
   modelName: z.string(),
+  modelType: z.literal("video").default("video"),
+  provider: z.enum(["openai", "grok"]).default("grok"),
   supportModes: z.array(z.string()),
   supportParams: modelParamsSchema,
 });
@@ -117,6 +119,8 @@ function mapModel(model: z.infer<typeof modelSchema>): VideoModel {
   return {
     value: model.modelCode,
     label: model.modelName,
+    modelType: model.modelType,
+    provider: model.provider,
     modes,
     params: {
       ratios: params.ratios,
@@ -125,7 +129,12 @@ function mapModel(model: z.infer<typeof modelSchema>): VideoModel {
       durations: params.durations,
       durationMin,
       durationMax,
-      defaults: params.defaults,
+      defaults: {
+        mode: params.defaults.mode ?? null,
+        ratio: params.defaults.ratio ?? null,
+        resolution: params.defaults.resolution ?? null,
+        duration: params.defaults.duration ?? null,
+      },
     },
   };
 }
@@ -185,44 +194,26 @@ async function readModelRecords() {
   return z.array(modelSchema).parse(payload);
 }
 
-async function buildCompatibleRequest(input: VideoPriceRequest | CreateVideoTaskRequest) {
-  const models = await readModelRecords();
-  const model = models.find((item) => item.modelCode === input.model);
-  const params = model?.supportParams;
-  const quality = params?.defaults.quality ?? params?.qualities?.[0] ?? "standard";
-  const audio = params?.defaults.audio ?? params?.audios?.[0] ?? false;
-
-  return {
-    ...input,
-    modelCode: input.model,
-    durationSeconds: input.duration,
-    quality,
-    audio,
-  };
-}
-
 export async function listVideoModels(): Promise<VideoModel[]> {
   const models = await readModelRecords();
   return models.map(mapModel);
 }
 
 export async function estimateVideoPrice(input: VideoPriceRequest): Promise<VideoPrice> {
-  const requestBody = await buildCompatibleRequest(input);
   const payload = await requestJavaApiData<unknown>("/generation/user/video/price/estimate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(input),
   });
   const price = priceSchema.parse(payload);
   return mapPrice(price, input);
 }
 
 export async function createVideoTask(input: CreateVideoTaskRequest): Promise<VideoTask> {
-  const requestBody = await buildCompatibleRequest(input);
   const payload = await requestJavaApiData<unknown>("/generation/user/video/tasks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(input),
   });
   const task = taskSchema.parse(payload);
   return mapTask(task);
