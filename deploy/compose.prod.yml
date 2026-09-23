@@ -12,6 +12,8 @@ services:
       ALLOW_MOCK_BFF: "false"
       JAVA_API_BASE_URL: ${JAVA_API_BASE_URL:?Set JAVA_API_BASE_URL in .env}
       TZ: Asia/Shanghai
+    ports:
+      - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_HOST_PORT:-13000}:3000"
     security_opt:
       - no-new-privileges:true
     healthcheck:

@@ -48,8 +48,14 @@ wait_until_healthy() {
 }
 
 reload_nginx() {
-  docker exec "$NGINX_CONTAINER" nginx -t
-  docker exec "$NGINX_CONTAINER" nginx -s reload
+  if docker inspect "$NGINX_CONTAINER" >/dev/null 2>&1; then
+    docker exec "$NGINX_CONTAINER" nginx -t
+    docker exec "$NGINX_CONTAINER" nginx -s reload
+    return
+  fi
+
+  sudo nginx -t
+  sudo systemctl reload nginx
 }
 
 cd "$APP_DIR"
