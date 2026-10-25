@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
@@ -8,7 +9,6 @@ import type {
   EasyPayAdminConfig,
   SecretSource,
   SmtpAdminConfig,
-  VideoProviderAdminConfig,
 } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
@@ -37,10 +37,6 @@ type CheckInSettingsFormProps = {
   initialSettings: CheckInSettingsConfig;
 };
 
-type VideoSettingsFormProps = {
-  initialSettings: VideoProviderAdminConfig;
-};
-
 function Toggle(props: ToggleProps) {
   const checked = props.checked;
   const onChange = props.onChange;
@@ -56,18 +52,13 @@ function Toggle(props: ToggleProps) {
         ) : null}
       </span>
       <span
-        className={
-          checked
-            ? `${styles.adminForms__switch} ${styles.adminForms__switchChecked}`
-            : styles.adminForms__switch
-        }
+        className={clsx(styles.adminForms__switch, checked && styles.adminForms__switchChecked)}
       >
         <span
-          className={
-            checked
-              ? `${styles.adminForms__switchThumb} ${styles.adminForms__switchThumbChecked}`
-              : styles.adminForms__switchThumb
-          }
+          className={clsx(
+            styles.adminForms__switchThumb,
+            checked && styles.adminForms__switchThumbChecked,
+          )}
         />
       </span>
     </button>
@@ -109,7 +100,7 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
     setSaving(true);
     setMessage("");
     try {
-      const data = await adminSettingsApi.saveSmtpSettings({
+      const nextSettings = await adminSettingsApi.saveSmtp({
         enabled: form.isEnabled,
         host: form.host,
         port: Number(form.port),
@@ -119,17 +110,16 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
         clearPassword: form.shouldClearPassword,
         from: form.from,
       });
-      setSaving(false);
-      setSettings(data.settings);
+      setSettings(nextSettings);
       updateForm({
         password: "",
         shouldClearPassword: false,
       });
       setMessage("SMTP 配置已保存。");
     } catch (error) {
-      setSaving(false);
       setMessage(getErrorMessage(error));
-      return;
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -137,15 +127,19 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
     setTesting(true);
     setMessage("");
     try {
-      await adminSettingsApi.testSmtpSettings(
-        mode === "connection" ? { mode } : { mode, email: form.testEmail },
-      );
-      setTesting(false);
-      setMessage(mode === "connection" ? "SMTP 连接测试通过。" : "测试邮件已发送。");
+      const isConnection = mode === "connection";
+      const data = isConnection ? { mode } : { mode, email: form.testEmail };
+      await adminSettingsApi.testSmtp(data);
+
+      if (isConnection) {
+        setMessage("SMTP 连接测试通过。");
+      } else {
+        setMessage("测试邮件已发送。");
+      }
     } catch (error) {
-      setTesting(false);
       setMessage(getErrorMessage(error));
-      return;
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -272,130 +266,6 @@ export function SmtpSettingsForm(props: SmtpSettingsFormProps) {
   );
 }
 
-export function VideoSettingsForm(props: VideoSettingsFormProps) {
-  const initialSettings = props.initialSettings;
-  const [settings, setSettings] = useState(initialSettings);
-  const [form, setForm] = useState({
-    isEnabled: initialSettings.enabled,
-    baseUrl: initialSettings.baseUrl ?? "",
-    model: initialSettings.model,
-    publicBaseUrl: initialSettings.publicBaseUrl ?? "",
-    apiKey: "",
-    shouldClearKey: false,
-  });
-  const [message, setMessage] = useState("");
-  const [isSaving, setSaving] = useState(false);
-
-  function updateForm(nextForm: Partial<typeof form>) {
-    setForm((currentForm) => {
-      return { ...currentForm, ...nextForm };
-    });
-  }
-
-  async function saveSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setMessage("");
-    try {
-      const data = await adminSettingsApi.saveVideoSettings({
-        enabled: form.isEnabled,
-        baseUrl: form.baseUrl,
-        model: form.model,
-        publicBaseUrl: form.publicBaseUrl,
-        apiKey: form.apiKey,
-        clearApiKey: form.shouldClearKey,
-      });
-      setSettings(data.settings);
-      updateForm({ apiKey: "", shouldClearKey: false });
-      setMessage("视频 Provider 配置已保存。");
-    } catch (error) {
-      setMessage(getErrorMessage(error));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <form className={styles.adminForms__form} onSubmit={saveSettings}>
-      <div className={styles.adminForms__header}>
-        <div>
-          <h2 className={styles.adminForms__title}>视频服务设置</h2>
-        </div>
-        <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
-          {form.isEnabled ? "已启用" : "已停用"}
-        </span>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2">
-          <span className="label">Provider 地址</span>
-          <input
-            className="field"
-            value={form.baseUrl}
-            onChange={(event) => updateForm({ baseUrl: event.target.value })}
-            placeholder="https://video.example.com"
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="label">模型名</span>
-          <input
-            className="field"
-            value={form.model}
-            onChange={(event) => updateForm({ model: event.target.value })}
-            placeholder="video-generic"
-          />
-        </label>
-        <label className="grid gap-2 md:col-span-2">
-          <span className="label">视频公开地址前缀</span>
-          <input
-            className="field"
-            value={form.publicBaseUrl}
-            onChange={(event) => updateForm({ publicBaseUrl: event.target.value })}
-            placeholder="https://dev.zroimg.com"
-          />
-        </label>
-        <label className="grid gap-2 md:col-span-2">
-          <span className="label">API Key</span>
-          <input
-            className="field"
-            type="password"
-            autoComplete="new-password"
-            value={form.apiKey}
-            onChange={(event) => updateForm({ apiKey: event.target.value })}
-            placeholder={settings.hasApiKey ? "留空表示保留当前密钥" : "请输入视频 Provider 密钥"}
-            disabled={form.shouldClearKey}
-          />
-          <span className="text-xs text-muted">
-            {settings.hasApiKey
-              ? `已配置（${settings.apiKeyPreview}，来源：${sourceLabels[settings.apiKeySource]}）`
-              : "未配置"}
-          </span>
-        </label>
-      </div>
-
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input
-          type="checkbox"
-          checked={form.shouldClearKey}
-          onChange={(event) => updateForm({ shouldClearKey: event.target.checked })}
-        />
-        清空数据库里的视频密钥
-      </label>
-      <Toggle
-        checked={form.isEnabled}
-        onChange={(nextValue) => updateForm({ isEnabled: nextValue })}
-        label="启用视频生成"
-        description="启用后，用户可以创建视频任务并消耗积分。"
-      />
-
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-      <button className="btn-primary w-full md:w-fit" disabled={isSaving || !form.model.trim()}>
-        {isSaving ? "保存中" : "保存视频设置"}
-      </button>
-    </form>
-  );
-}
-
 export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
   const initialSettings = props.initialSettings;
 
@@ -433,7 +303,7 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
     setSaving(true);
     setMessage("");
     try {
-      const data = await adminSettingsApi.saveEasyPaySettings({
+      const nextSettings = await adminSettingsApi.saveEasyPay({
         enabled: form.isEnabled,
         apiBase: form.apiBase,
         pid: form.pid,
@@ -448,15 +318,15 @@ export function EasyPaySettingsForm(props: EasyPaySettingsFormProps) {
         minAmountCent: Math.round(Number(form.minAmount) * 100),
         maxAmountCent: Math.round(Number(form.maxAmount) * 100),
       });
-      setSaving(false);
-      setSettings(data.settings);
+      setSettings(nextSettings);
       updateForm({
         key: "",
       });
+      setMessage("支付配置已保存。");
     } catch (error) {
-      setSaving(false);
       setMessage(getErrorMessage(error));
-      return;
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -663,16 +533,15 @@ export function CheckInSettingsForm(props: CheckInSettingsFormProps) {
     setSaving(true);
     setMessage("");
     try {
-      const data = await adminSettingsApi.saveCheckInSettings({
+      const nextSettings = await adminSettingsApi.saveCheckIn({
         dailyCredits: Number(dailyCredits),
       });
-      setSaving(false);
-      setDailyCredits(String(data.settings.dailyCredits));
+      setDailyCredits(String(nextSettings.dailyCredits));
       setMessage("签到积分已保存。");
     } catch (error) {
-      setSaving(false);
       setMessage(getErrorMessage(error));
-      return;
+    } finally {
+      setSaving(false);
     }
   }
 

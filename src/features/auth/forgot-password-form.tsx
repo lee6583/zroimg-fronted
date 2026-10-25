@@ -46,7 +46,7 @@ export function ForgotPasswordForm() {
       const data = await authApi.sendPasswordResetCode({ email });
       setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
-      setMessage(data.message);
+      setMessage("验证码已发送到您的邮箱");
     } catch (error) {
       setMessageType("error");
       setMessage(getErrorMessage(error));

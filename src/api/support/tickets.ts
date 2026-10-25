@@ -1,28 +1,38 @@
 import { request } from "@/utils/request";
 import type {
-  AdminReplyTicketRequest,
-  AdminReplyTicketResponse,
   CreateTicketRequest,
   CreateTicketResponse,
   ListTicketsRequest,
   ListTicketsResponse,
   ReplyTicketRequest,
   ReplyTicketResponse,
+  AdminReplyTicketRequest,
+  AdminReplyTicketResponse,
   UpdateTicketStatusRequest,
   UpdateTicketStatusResponse,
   UploadTicketAttachmentResponse,
 } from "@/types/feedback";
 
 function listTickets(params: ListTicketsRequest) {
+  // Java 不接受 status=all，查询全部时不传 status
+  let status = params.status;
+  if (status === "all") {
+    status = undefined;
+  }
+
   return request<ListTicketsResponse>({
-    url: "/api/tickets",
-    params,
+    url: "/api/feedback/user/tickets",
+    params: {
+      pageNo: params.page,
+      pageSize: params.pageSize,
+      status,
+    },
   });
 }
 
 function createTicket(data: CreateTicketRequest) {
   return request<CreateTicketResponse>({
-    url: "/api/tickets",
+    url: "/api/feedback/user/tickets",
     method: "POST",
     data,
   });
@@ -30,7 +40,7 @@ function createTicket(data: CreateTicketRequest) {
 
 function uploadAttachment(data: FormData) {
   return request<UploadTicketAttachmentResponse>({
-    url: "/api/media/upload",
+    url: "/api/media/user/assets",
     method: "POST",
     body: data,
   });
@@ -38,7 +48,7 @@ function uploadAttachment(data: FormData) {
 
 function replyTicket(ticketId: string, data: ReplyTicketRequest) {
   return request<ReplyTicketResponse>({
-    url: `/api/tickets/${ticketId}/messages`,
+    url: `/api/feedback/user/tickets/${ticketId}/messages`,
     method: "POST",
     data,
   });
@@ -46,7 +56,7 @@ function replyTicket(ticketId: string, data: ReplyTicketRequest) {
 
 function adminReply(ticketId: string, data: AdminReplyTicketRequest) {
   return request<AdminReplyTicketResponse>({
-    url: `/api/admin/tickets/${ticketId}/reply`,
+    url: `/api/feedback/admin/tickets/${ticketId}/reply`,
     method: "POST",
     data,
   });
@@ -54,7 +64,7 @@ function adminReply(ticketId: string, data: AdminReplyTicketRequest) {
 
 function updateStatus(ticketId: string, data: UpdateTicketStatusRequest) {
   return request<UpdateTicketStatusResponse>({
-    url: `/api/admin/tickets/${ticketId}/status`,
+    url: `/api/feedback/admin/tickets/${ticketId}/status`,
     method: "POST",
     data,
   });

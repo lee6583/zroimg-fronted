@@ -12,14 +12,15 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { getAdminOverview } from "@/server/bff/admin";
+import { requestJava } from "@/server/java-api";
+import type { AdminOverview } from "@/types/admin";
 import { feedbackStatusLabels } from "@/utils/feedback";
 import styles from "./admin.module.css";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const overview = await getAdminOverview();
+  const overview = await requestJava<AdminOverview>("/dashboard/admin/overview");
   const metrics = [
     {
       label: "用户总量",

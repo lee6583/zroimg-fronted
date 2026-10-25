@@ -1,15 +1,20 @@
+import clsx from "clsx";
+import { CreditCard, Gift, Mail, Megaphone } from "lucide-react";
+import Link from "next/link";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { AnnouncementSettingsForm } from "@/features/admin/announcement-settings-form";
 import {
   CheckInSettingsForm,
   EasyPaySettingsForm,
   SmtpSettingsForm,
 } from "@/features/admin/service-settings-forms";
-import {
-  getAnnouncementSettings,
-  getCheckInSettings,
-  getEasyPayAdminConfig,
-  getSmtpAdminConfig,
-} from "@/server/bff/account";
+import { requestJava } from "@/server/java-api";
+import type {
+  AnnouncementSettingsConfig,
+  CheckInSettingsConfig,
+  EasyPayAdminConfig,
+  SmtpAdminConfig,
+} from "@/types/admin";
 import styles from "./settings.module.css";
 
 export const dynamic = "force-dynamic";
@@ -34,10 +39,10 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     ? (requestedSection as SettingsSection)
     : "payment";
   const [smtpSettings, easyPaySettings, checkInSettings, announcementSettings] = await Promise.all([
-    getSmtpAdminConfig(),
-    getEasyPayAdminConfig(),
-    getCheckInSettings(),
-    getAnnouncementSettings(),
+    requestJava<SmtpAdminConfig>("/admin/settings/smtp"),
+    requestJava<EasyPayAdminConfig>("/admin/settings/easypay"),
+    requestJava<CheckInSettingsConfig>("/admin/settings/checkin"),
+    requestJava<AnnouncementSettingsConfig>("/admin/settings/announcement"),
   ]);
 
   const sections = [
@@ -115,7 +120,3 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     </div>
   );
 }
-import clsx from "clsx";
-import { CreditCard, Gift, Mail, Megaphone } from "lucide-react";
-import Link from "next/link";
-import workspace from "@/features/admin/admin-workspace.module.css";

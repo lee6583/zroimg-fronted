@@ -1,14 +1,24 @@
 import { request } from "@/utils/request";
-import type { PublishGalleryImageRequest, PublishGalleryImageResponse } from "@/types/generation";
+import type { PageResult } from "@/types/api";
+import type { GalleryImage, GalleryImageQuery, PublishGalleryRequest } from "@/types/gallery";
 
-function publishImage(data: PublishGalleryImageRequest) {
-  return request<PublishGalleryImageResponse>({
-    url: "/api/gallery/publish",
-    method: "POST",
-    data,
+function listPublicImages(params: GalleryImageQuery = {}) {
+  return request<PageResult<GalleryImage>>({ url: "/api/gallery/public/images", params });
+}
+
+function publishImage(data: PublishGalleryRequest) {
+  return request<GalleryImage>({ url: "/api/gallery/user/publish", method: "POST", data });
+}
+
+function unpublishImage(generatedImageId: string) {
+  return request<void>({
+    url: `/api/gallery/user/publish/${encodeURIComponent(generatedImageId)}`,
+    method: "DELETE",
   });
 }
 
 export const galleryApi = {
+  listPublicImages,
   publishImage,
+  unpublishImage,
 };

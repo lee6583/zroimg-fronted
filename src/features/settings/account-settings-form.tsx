@@ -101,8 +101,8 @@ function ProfileForm(props: AccountSettingsFormProps) {
     const data = new FormData();
     data.set("file", file);
     try {
-      const response = await accountApi.updateAvatar(data);
-      setAvatarUrl(response.avatarUrl);
+      const asset = await accountApi.updateAvatar(data);
+      setAvatarUrl(asset.contentUrl);
       setAvatarPreviewUrl(null);
       setAvatarMessage("头像已更新");
       router.refresh();
@@ -124,7 +124,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
     data.set("bio", intro);
 
     try {
-      await accountApi.updateProfile(data);
+      await accountApi.updateProfile({ username: name, bio: intro });
       setMessage("资料已保存");
       router.refresh();
     } catch (error) {

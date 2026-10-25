@@ -1,3 +1,4 @@
+// Java settings service: getAnnouncementSettings / getPublicAnnouncement
 type AnnouncementSettingsConfig = {
   enabled: boolean;
   title: string;

@@ -24,7 +24,7 @@ export function OrderActions(props: OrderActionsProps) {
 
     startTransition(async () => {
       try {
-        await ordersApi.cancelOrder(orderNo);
+        await ordersApi.cancel(orderNo);
         router.refresh();
       } catch (error) {
         setMessage(getErrorMessage(error));

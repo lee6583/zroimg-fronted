@@ -1,40 +1,51 @@
-type VideoModeOption = {
-  value: string;
-  label: string;
-};
+import type { PageResult } from "@/types/api";
+
+type VideoGenerationMode = "text_to_video" | "image_to_video";
+
+type VideoTaskStatus = "pending" | "processing" | "succeeded" | "failed";
 
 type VideoModelDefaults = {
   mode: string | null;
   ratio: string | null;
+  quality: string | null;
+  count: number | null;
   resolution: string | null;
   duration: number | null;
 };
 
-type VideoModelParams = {
+type VideoModelSupportParams = {
   ratios: string[];
+  qualities: string[];
+  counts: number[];
   resolutions: string[];
-  resolutionsByMode: Record<string, string[]>;
   durations: number[];
+  resolutionsByMode: Record<string, string[]>;
   durationMin: number;
   durationMax: number;
   defaults: VideoModelDefaults;
 };
 
 type VideoModel = {
-  value: string;
-  label: string;
-  modelType: "video";
-  provider: "openai" | "grok";
-  modes: VideoModeOption[];
-  params: VideoModelParams;
+  modelCode: string;
+  modelName: string;
+  provider: string;
+  modelType: string;
+  supportModes: string[];
+  supportParams: VideoModelSupportParams;
+  priceVersion: string | null;
+  defaultFlag: number | null;
+  sortOrder: number | null;
+  remark: string | null;
 };
 
-type VideoPrice = {
+type VideoPriceEstimate = {
+  modelCode: string;
   priceVersion: string;
   unitPoints: number;
-  billingUnit: "second" | "legacy_5_seconds";
-  referencePoints: number;
-  durationSeconds: number;
+  billingUnit: string;
+  referencePoints: number | null;
+  durationSeconds: number | null;
+  count: number | null;
   requiredPoints: number;
   currentPoints: number;
   shortagePoints: number;
@@ -44,88 +55,81 @@ type VideoPrice = {
 
 type VideoResult = {
   id: string;
-  mediaAssetId: string | null;
   resultType: string;
+  mediaAssetId: string | null;
   resultUrl: string;
+  sortOrder: number | null;
 };
 
 type VideoTask = {
+  id: string;
   taskNo: string;
-  prompt: string;
+  modelCode: string;
+  modelName: string | null;
+  provider: string | null;
+  modelType: string;
   mode: string;
-  status: string;
-  durationSeconds: number;
+  prompt: string;
+  referenceImageUrl: string | null;
+  referenceMediaId: string | null;
   ratio: string;
   resolution: string;
+  durationSeconds: number | null;
+  priceVersion: string;
   unitPoints: number;
-  billingUnit: string;
-  referencePoints: number;
+  billingUnit: string | null;
+  referencePoints: number | null;
   requiredPoints: number;
+  status: VideoTaskStatus;
   failReason: string | null;
   results: VideoResult[];
   createTime: string;
+  updateTime: string | null;
+  finishTime: string | null;
 };
 
-type VideoTaskPage = {
-  total: number;
-  pages: number;
-  list: VideoTask[];
-};
+type VideoTaskPage = PageResult<VideoTask>;
 
-type VideoModelResponse = {
-  models: VideoModel[];
-};
-
-type VideoPriceRequest = {
+type VideoPriceEstimateRequest = {
   model: string;
-  mode: "text_to_video" | "image_to_video";
+  mode: VideoGenerationMode;
   ratio: string;
   resolution: string;
   duration: number;
+  priceVersion?: string;
 };
 
-type VideoPriceResponse = {
-  price: VideoPrice;
-};
-
-type CreateVideoTaskRequest = VideoPriceRequest & {
+type CreateVideoTaskRequest = {
+  model: string;
+  mode: VideoGenerationMode;
   prompt: string;
+  ratio: string;
+  resolution: string;
+  duration: number;
   priceVersion: string;
   referenceMediaId?: string;
-};
-
-type CreateVideoTaskResponse = {
-  task: VideoTask;
-};
-
-type VideoTaskResponse = {
-  task: VideoTask;
-};
-
-type VideoTaskPageResponse = {
-  page: VideoTaskPage;
 };
 
 type VideoTaskPageQuery = {
   pageNo: number;
   pageSize: number;
+  isAsc?: boolean;
+  sortBy?: string;
+  status?: VideoTaskStatus;
+  mode?: VideoGenerationMode;
 };
 
 export type {
-  VideoModeOption,
+  VideoGenerationMode,
+  VideoTaskStatus,
   VideoModelDefaults,
-  VideoModelParams,
+  VideoModelSupportParams,
   VideoModel,
-  VideoPrice,
+  VideoPriceEstimate,
   VideoResult,
   VideoTask,
   VideoTaskPage,
-  VideoModelResponse,
-  VideoPriceRequest,
-  VideoPriceResponse,
+  VideoPriceEstimateRequest,
   CreateVideoTaskRequest,
-  CreateVideoTaskResponse,
-  VideoTaskResponse,
-  VideoTaskPageResponse,
   VideoTaskPageQuery,
 };

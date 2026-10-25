@@ -3,7 +3,8 @@ import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
-import { listAdminTickets } from "@/server/bff/account";
+import { requestJava } from "@/server/java-api";
+import type { AdminTicketPage } from "@/types/admin";
 import { feedbackTypeLabels } from "@/utils/feedback";
 import { TicketTypeFilter } from "./ticket-type-filter";
 
@@ -23,8 +24,12 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDate(value: Date) {
-  return value.toISOString().slice(0, 16).replace("T", " ");
+function formatDate(value: string) {
+  return value.slice(0, 16).replace("T", " ");
+}
+
+function readTypeLabel(type: string) {
+  return feedbackTypeLabels[type as keyof typeof feedbackTypeLabels] ?? type;
 }
 
 function readStatusLabel(status: string) {
@@ -64,14 +69,16 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
   const page = Math.max(1, Number(readParam(params, "page") || 1));
   const requestedPageSize = Number(readParam(params, "pageSize") || 20);
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
-  const result = await listAdminTickets({
-    q,
-    status: statusFilter,
-    type: typeFilter,
-    page,
-    pageSize,
+  const ticketPage = await requestJava<AdminTicketPage>("/feedback/admin/tickets", {
+    params: {
+      pageNo: page,
+      pageSize,
+      q,
+      status: statusFilter,
+      type: typeFilter,
+    },
   });
-  const { tickets, total } = result;
+  const tickets = ticketPage.list;
 
   return (
     <div className={workspace.workspace}>
@@ -124,15 +131,13 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
                   <th>类型</th>
                   <th>用户</th>
                   <th>状态</th>
-                  <th>消息</th>
                   <th>最近更新</th>
                   <th aria-label="操作" />
                 </tr>
               </thead>
               <tbody>
                 {tickets.map((ticket) => {
-                  const userName =
-                    ticket.userProfile?.username || ticket.userProfile?.user?.name || "-";
+                  const userName = ticket.user?.name || ticket.user?.email || "-";
 
                   return (
                     <tr key={ticket.id}>
@@ -146,7 +151,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
                           </Link>
                         </div>
                       </td>
-                      <td data-label="类型">{feedbackTypeLabels[ticket.type]}</td>
+                      <td data-label="类型">{readTypeLabel(ticket.type)}</td>
                       <td data-label="用户">
                         <span>{userName}</span>
                       </td>
@@ -157,11 +162,8 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
                           {readStatusLabel(ticket.status)}
                         </span>
                       </td>
-                      <td data-label="消息" className={workspace.numeric}>
-                        {ticket.messages.length}
-                      </td>
                       <td data-label="最近更新" className={workspace.dateText}>
-                        {formatDate(ticket.updatedAt)}
+                        {formatDate(ticket.updateTime)}
                       </td>
                       <td data-label="操作">
                         <div className={workspace.rowActions}>
@@ -186,7 +188,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
         )}
 
         <footer className={workspace.footer}>
-          <AppPagination current={page} pageSize={result.pageSize} total={total} />
+          <AppPagination current={page} pageSize={pageSize} total={ticketPage.total} />
         </footer>
       </section>
     </div>

@@ -3,7 +3,8 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
-import { listAdminRechargeOrders } from "@/server/bff/orders";
+import { requestJava } from "@/server/java-api";
+import type { AdminRechargeOrderPage } from "@/types/admin";
 import { orderDisplayStatusLabels } from "@/utils/order-status";
 import { ReissueButton } from "./reissue-button";
 
@@ -22,17 +23,12 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDateText(value?: string | null) {
+function formatDateText(value: string | null) {
   if (!value) {
     return "—";
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toISOString().slice(0, 16).replace("T", " ");
+  return value.slice(0, 16).replace("T", " ");
 }
 
 function readStatusLabel(status: string) {
@@ -67,11 +63,15 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
   const isKnownStatus = orderStatuses.includes(status as (typeof orderStatuses)[number]);
 
-  const orderPage = await listAdminRechargeOrders({
-    page,
-    pageSize,
-    orderNo: q || undefined,
-    status: isKnownStatus ? status : undefined,
+  const orderPage = await requestJava<AdminRechargeOrderPage>("/order/admin/recharge-orders", {
+    params: {
+      pageNo: page,
+      pageSize,
+      orderNo: q,
+      status: isKnownStatus ? status : undefined,
+      sortBy: "create_time",
+      isAsc: false,
+    },
   });
 
   const orders = orderPage.list;
@@ -140,7 +140,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                     <td data-label="用户">{order.username || "未知用户"}</td>
                     <td data-label="套餐">
                       <div className={workspace.primaryCell}>
-                        <span>{order.packageName}</span>
+                        <span>{order.packageName || "自定义充值"}</span>
                         <span className={workspace.secondaryText}>
                           {order.credits.toLocaleString("zh-CN")} 积分
                         </span>

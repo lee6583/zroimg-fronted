@@ -8,13 +8,13 @@ import { uploadMediaFile } from "@/api/media/uploads";
 import { videoApi } from "@/api/video";
 import { AppSelect } from "@/components/ui/app-select";
 import { getErrorMessage } from "@/utils/error";
-import type { VideoModel } from "@/types/video";
+import type { VideoGenerationMode, VideoModel } from "@/types/video";
 import styles from "./video.module.css";
 
 type VideoForm = {
   model: string;
   prompt: string;
-  mode: string;
+  mode: VideoGenerationMode | "";
   duration: number | null;
   ratio: string;
   resolution: string;
@@ -54,7 +54,7 @@ function firstNumber(values: number[], defaultValue: number | null) {
 }
 
 function getModel(models: VideoModel[], modelCode: string) {
-  return models.find((model) => model.value === modelCode) || null;
+  return models.find((model) => model.modelCode === modelCode) || null;
 }
 
 function createForm(model: VideoModel | null, prompt = ""): VideoForm {
@@ -71,15 +71,17 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
     };
   }
 
-  const params = model.params;
+  const params = model.supportParams;
+  const modes = model.supportModes.filter(isVideoMode);
   const defaultMode = params.defaults.mode;
-  const mode = model.modes.some((item) => item.value === defaultMode)
-    ? (defaultMode ?? "")
-    : (model.modes[0]?.value ?? "");
+  let mode: VideoGenerationMode | "" = modes[0] ?? "";
+  if (defaultMode && isVideoMode(defaultMode) && modes.includes(defaultMode)) {
+    mode = defaultMode;
+  }
   const resolutions = params.resolutionsByMode[mode] ?? params.resolutions;
 
   return {
-    model: model.value,
+    model: model.modelCode,
     prompt,
     mode,
     duration: firstNumber(params.durations, params.defaults.duration),
@@ -90,14 +92,15 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
   };
 }
 
-function displayMode(mode: string) {
+function isVideoMode(mode: string): mode is VideoGenerationMode {
+  return mode === "text_to_video" || mode === "image_to_video";
+}
+
+function displayMode(mode: VideoGenerationMode) {
   if (mode === "text_to_video") {
     return "文生视频";
   }
-  if (mode === "image_to_video") {
-    return "图生视频";
-  }
-  return mode;
+  return "图生视频";
 }
 
 export function VideoSettings(props: VideoSettingsProps) {
@@ -108,7 +111,8 @@ export function VideoSettings(props: VideoSettingsProps) {
   const [isUploading, setUploading] = useState(false);
 
   const model = getModel(props.models, form.model);
-  const params = model?.params || null;
+  const params = model?.supportParams || null;
+  const modes = model?.supportModes.filter(isVideoMode) ?? [];
   const canUseReferenceImage = form.mode === "image_to_video";
   const resolutions = params?.resolutionsByMode[form.mode] ?? params?.resolutions ?? [];
 
@@ -125,7 +129,7 @@ export function VideoSettings(props: VideoSettingsProps) {
     setMessage("");
   }
 
-  function selectMode(mode: string) {
+  function selectMode(mode: VideoGenerationMode) {
     const shouldClearReference = mode !== "image_to_video";
     const nextResolutions = params?.resolutionsByMode[mode] ?? params?.resolutions ?? [];
     updateForm({
@@ -146,10 +150,10 @@ export function VideoSettings(props: VideoSettingsProps) {
     try {
       setUploading(true);
       setMessage("");
-      const result = await uploadMediaFile(file);
+      const asset = await uploadMediaFile(file);
       updateForm({
-        referenceMediaId: result.media.id,
-        referenceFileName: result.media.fileName || file.name,
+        referenceMediaId: asset.id,
+        referenceFileName: asset.originalName || file.name,
       });
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -180,27 +184,27 @@ export function VideoSettings(props: VideoSettingsProps) {
     setMessage("");
 
     try {
-      const priceData = await videoApi.estimate({
+      const price = await videoApi.estimate({
         model: form.model,
-        mode: form.mode as "text_to_video" | "image_to_video",
+        mode: form.mode,
         ratio: form.ratio,
         resolution: form.resolution,
         duration: form.duration,
       });
 
-      if (!priceData.price.enough) {
-        setMessage(`积分不足，还需要 ${priceData.price.shortagePoints} 积分`);
+      if (!price.enough) {
+        setMessage(`积分不足，还需要 ${price.shortagePoints} 积分`);
         return;
       }
 
       await videoApi.createTask({
         model: form.model,
-        mode: form.mode as "text_to_video" | "image_to_video",
+        mode: form.mode,
         prompt: form.prompt.trim(),
         ratio: form.ratio,
         resolution: form.resolution,
         duration: form.duration,
-        priceVersion: priceData.price.priceVersion,
+        priceVersion: price.priceVersion,
         referenceMediaId: canUseReferenceImage ? form.referenceMediaId : undefined,
       });
       await props.onCreated();
@@ -218,7 +222,7 @@ export function VideoSettings(props: VideoSettingsProps) {
         <AppSelect
           value={form.model}
           onChange={selectModel}
-          options={props.models.map((item) => ({ value: item.value, label: item.label }))}
+          options={props.models.map((item) => ({ value: item.modelCode, label: item.modelName }))}
         />
       </SettingGroup>
 
@@ -234,13 +238,9 @@ export function VideoSettings(props: VideoSettingsProps) {
 
       <SettingGroup title="生成模式">
         <div className={styles.videoPage__optionGridThree}>
-          {model?.modes.map((item) => (
-            <Option
-              key={item.value}
-              active={form.mode === item.value}
-              onClick={() => selectMode(item.value)}
-            >
-              {item.label || displayMode(item.value)}
+          {modes.map((mode) => (
+            <Option key={mode} active={form.mode === mode} onClick={() => selectMode(mode)}>
+              {displayMode(mode)}
             </Option>
           ))}
         </div>

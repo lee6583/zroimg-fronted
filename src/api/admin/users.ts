@@ -1,48 +1,46 @@
 import { request } from "@/utils/request";
 import type {
-  AdjustUserCreditsRequest,
-  AdjustUserCreditsResponse,
-  DeleteUserResponse,
-  ResetUserPasswordRequest,
-  ResetUserPasswordResponse,
+  AdjustPointsRequest,
+  AdjustPointsResponse,
+  AdminUser,
+  UpdateUserPasswordRequest,
   UpdateUserStatusRequest,
-  UpdateUserStatusResponse,
 } from "@/types/admin";
 
-function adjustCredits(userId: string, data: AdjustUserCreditsRequest) {
-  return request<AdjustUserCreditsResponse>({
-    url: `/api/admin/users/${userId}/credits`,
-    method: "POST",
-    data,
-  });
-}
-
 function updateStatus(userId: string, data: UpdateUserStatusRequest) {
-  return request<UpdateUserStatusResponse>({
-    url: `/api/admin/users/${userId}/status`,
+  return request<AdminUser>({
+    url: `/api/auth/admin/users/${userId}/status`,
+    method: "PATCH",
+    data,
+  });
+}
+
+function updatePassword(userId: string, data: UpdateUserPasswordRequest) {
+  return request<Record<string, never>>({
+    url: `/api/auth/admin/users/${userId}/password`,
     method: "POST",
     data,
   });
 }
 
-function resetPassword(userId: string, data: ResetUserPasswordRequest) {
-  return request<ResetUserPasswordResponse>({
-    url: `/api/admin/users/${userId}/password`,
-    method: "POST",
-    data,
-  });
-}
-
-function deleteUser(userId: string) {
-  return request<DeleteUserResponse>({
-    url: `/api/admin/users/${userId}`,
+function remove(userId: string) {
+  return request<Record<string, never>>({
+    url: `/api/auth/admin/users/${userId}`,
     method: "DELETE",
   });
 }
 
+function adjustPoints(userId: string, data: AdjustPointsRequest) {
+  return request<AdjustPointsResponse>({
+    url: `/api/points/admin/users/${userId}/adjust`,
+    method: "POST",
+    data,
+  });
+}
+
 export const adminUsersApi = {
-  adjustCredits,
-  deleteUser,
-  resetPassword,
   updateStatus,
+  updatePassword,
+  remove,
+  adjustPoints,
 };

@@ -33,7 +33,7 @@ export function PaymentActions(props: PaymentActionsProps) {
         return;
       }
 
-      const data = await ordersApi.createPayment(orderNo);
+      const data = await ordersApi.pay(orderNo);
       if (!data.payUrl) {
         setMessage("支付地址为空，请稍后重试");
         setPaying(false);
@@ -53,7 +53,7 @@ export function PaymentActions(props: PaymentActionsProps) {
 
     startTransition(async () => {
       try {
-        await ordersApi.cancelOrder(orderNo);
+        await ordersApi.cancel(orderNo);
         router.replace("/billing");
         router.refresh();
       } catch (error) {

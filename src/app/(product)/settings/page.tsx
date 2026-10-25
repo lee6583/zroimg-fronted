@@ -5,7 +5,7 @@ import styles from "./settings.module.css";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const current = await requireUser();
+  const user = await requireUser();
 
   return (
     <div className={styles.settings}>
@@ -14,10 +14,10 @@ export default async function SettingsPage() {
       </section>
 
       <AccountSettingsForm
-        username={current.profile.username}
-        email={current.user.email}
-        bio={current.profile.bio || ""}
-        avatarUrl={current.profile.avatarUrl}
+        username={user.username}
+        email={user.email}
+        bio={user.bio || ""}
+        avatarUrl={user.avatarUrl}
       />
     </div>
   );

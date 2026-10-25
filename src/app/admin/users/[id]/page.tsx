@@ -3,9 +3,21 @@ import { ArrowLeft, CalendarDays, Coins, Mail, ReceiptText, ShieldCheck } from "
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import {
+  isTaskRunning,
+  readTaskModel,
+  readTaskSpec,
+  readTaskType,
+  taskStatusLabels,
+} from "@/features/admin/generation-task";
 import { UserActions } from "@/features/admin/user-actions";
-import { listAdminRechargeOrders } from "@/server/bff/orders";
-import { getAdminUser, listAdminFlows, listAdminTasks } from "@/server/bff/users";
+import { JavaApiError, requestJava } from "@/server/java-api";
+import type {
+  AdminGenerationTaskPage,
+  AdminPointsFlowPage,
+  AdminRechargeOrderPage,
+  AdminUser,
+} from "@/types/admin";
 import { normalizeOrderDisplayStatus, orderDisplayStatusLabels } from "@/utils/order-status";
 import styles from "./user-detail.module.css";
 
@@ -13,15 +25,6 @@ export const dynamic = "force-dynamic";
 
 type AdminUserDetailPageProps = {
   params: Promise<{ id: string }>;
-};
-
-const generationStatusLabels: Record<string, string> = {
-  pending: "生成中",
-  processing: "生成中",
-  queued: "生成中",
-  running: "生成中",
-  succeeded: "已完成",
-  failed: "失败",
 };
 
 function formatDate(value: string) {
@@ -34,17 +37,9 @@ function roleLabel(role: string) {
   return role;
 }
 
-function generationType(modelType: "image" | "video", mode: string) {
-  if (modelType === "video" || mode.includes("video")) return "视频";
-  if (mode === "image_to_image" || mode === "edit") return "图生图";
-  return "文生图";
-}
-
 function generationStatusClass(status: string) {
   if (status === "succeeded") return styles.userDetail__statusSuccess;
-  if (["pending", "processing", "queued", "running"].includes(status)) {
-    return styles.userDetail__statusInfo;
-  }
+  if (isTaskRunning(status)) return styles.userDetail__statusInfo;
   if (status === "failed") return styles.userDetail__statusDanger;
   return undefined;
 }
@@ -56,19 +51,39 @@ function orderStatusClass(status: string) {
   return undefined;
 }
 
+async function loadUser(id: string) {
+  try {
+    return await requestJava<AdminUser>(`/auth/admin/users/${id}`);
+  } catch (error) {
+    // Java 对不存在的用户返回 400，而不是 404。
+    if (error instanceof JavaApiError && error.status === 400) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 export default async function AdminUserDetailPage(props: AdminUserDetailPageProps) {
-  const params = props.params;
-  const { id } = await params;
-  const profile = await getAdminUser(id);
+  const params = await props.params;
+  const id = params.id;
+  const profile = await loadUser(id);
 
   if (!profile) notFound();
 
-  const [flows, orderPage, tasks] = await Promise.all([
-    listAdminFlows(id),
-    listAdminRechargeOrders({ page: 1, pageSize: 20, userId: id }),
-    listAdminTasks(id),
+  const latestPage = { pageNo: 1, pageSize: 20, sortBy: "create_time", isAsc: false };
+  const [flowPage, orderPage, taskPage] = await Promise.all([
+    requestJava<AdminPointsFlowPage>(`/points/admin/users/${id}/flows`, { params: latestPage }),
+    requestJava<AdminRechargeOrderPage>("/order/admin/recharge-orders", {
+      params: { ...latestPage, userId: id },
+    }),
+    requestJava<AdminGenerationTaskPage>(`/generation/admin/users/${id}/tasks`, {
+      params: latestPage,
+    }),
   ]);
+  const flows = flowPage.list;
   const orders = orderPage.list;
+  const tasks = taskPage.list;
 
   return (
     <main className={styles.userDetail}>
@@ -190,12 +205,12 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                           ) : null}
                         </div>
                       </td>
-                      <td>{generationType(task.modelType, task.mode)}</td>
+                      <td>{readTaskType(task)}</td>
                       <td>
                         <div className={styles.userDetail__primaryCell}>
-                          <span>{task.model}</span>
+                          <span>{readTaskModel(task)}</span>
                           <span className={styles.userDetail__secondaryText}>
-                            {task.size} · {task.quality}
+                            {readTaskSpec(task)}
                           </span>
                         </div>
                       </td>
@@ -209,10 +224,10 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                             generationStatusClass(task.status),
                           )}
                         >
-                          {generationStatusLabels[task.status] || task.status}
+                          {taskStatusLabels[task.status] || task.status}
                         </span>
                       </td>
-                      <td className={styles.userDetail__date}>{formatDate(task.createdAt)}</td>
+                      <td className={styles.userDetail__date}>{formatDate(task.createTime)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -270,7 +285,9 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                 {flows.map((item) => (
                   <article key={item.id} className={styles.userDetail__listRow}>
                     <div className={styles.userDetail__listMain}>
-                      <span className={styles.userDetail__listTitle}>{item.remark}</span>
+                      <span className={styles.userDetail__listTitle}>
+                        {item.remark || item.changeType}
+                      </span>
                       <span className={styles.userDetail__listMeta}>
                         余额 {item.afterPoints.toLocaleString("zh-CN")} ·{" "}
                         {formatDate(item.createdAt)}

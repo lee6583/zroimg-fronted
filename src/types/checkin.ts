@@ -1,27 +1,3 @@
-type CheckInDateInfo = {
-  dayKey: string;
-  year: string;
-  month: string;
-  day: string;
-  weekday: string;
-};
-
-type CheckInStatus = {
-  date: CheckInDateInfo;
-  dailyCredits: number;
-  checkedIn: boolean;
-  checkedAt: string | null;
-  streakDays: number;
-  weekSignDays: number;
-  checkedDayKeys: string[];
-};
-
-type ClaimCheckInResponse = {
-  checkIn: CheckInStatus;
-  addedCredits?: number;
-  totalCredits?: number;
-};
-
 type SignWeekDay = {
   date: string;
   dayOfWeek: string;
@@ -30,8 +6,9 @@ type SignWeekDay = {
   today: boolean;
 };
 
-type JavaSignCard = {
+type SignCard = {
   today: string;
+  totalPoints: number;
   dailySignPoints: number;
   todaySigned: boolean;
   weekSignDays: number;
@@ -39,16 +16,14 @@ type JavaSignCard = {
   weekDays: SignWeekDay[];
 };
 
-type JavaSignResult = JavaSignCard & {
+type SignResult = SignCard & {
   addedPoints: number;
-  totalPoints: number;
 };
 
-export type {
-  CheckInDateInfo,
-  CheckInStatus,
-  ClaimCheckInResponse,
-  JavaSignCard,
-  JavaSignResult,
-  SignWeekDay,
+type DashboardStats = {
+  generatedCount: number;
+  monthlyGeneratedCount: number;
+  favoriteCount: number;
 };
+
+export type { SignWeekDay, SignCard, SignResult, DashboardStats };

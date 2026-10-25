@@ -1,18 +1,16 @@
 import { CheckCircle2, Coins, ReceiptText, WalletCards } from "lucide-react";
 import { OrderForm } from "@/features/billing/order-form";
 import { requireUser } from "@/server/auth";
-import { getRechargeOverview, listCreditPackages } from "@/server/bff/orders";
+import { requestJava } from "@/server/java-api";
+import type { CreditPackage, RechargeOverview } from "@/types/orders";
 
 export const dynamic = "force-dynamic";
 
 export default async function CreditsPage() {
-  const current = await requireUser();
+  await requireUser();
   const [packages, overview] = await Promise.all([
-    listCreditPackages(),
-    getRechargeOverview({
-      userProfileId: current.profile.id,
-      totalPoints: current.profile.creditBalance,
-    }),
+    requestJava<CreditPackage[]>("/order/user/packages"),
+    requestJava<RechargeOverview>("/order/user/recharge-orders/overview"),
   ]);
 
   return (

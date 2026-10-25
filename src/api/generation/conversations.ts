@@ -1,47 +1,43 @@
 import { request } from "@/utils/request";
 import type {
-  CreateGenerationConversationRequest,
-  CreateGenerationConversationResponse,
-  DeleteGenerationConversationResponse,
-  FetchConversationTasksResponse,
-  FetchGenerationConversationsResponse,
-  UpdateGenerationConversationRequest,
-  UpdateGenerationConversationResponse,
+  GenerationConversation,
+  GenerationConversationRequest,
+  GenerationTask,
 } from "@/types/generation";
 
 function fetchConversations() {
-  return request<FetchGenerationConversationsResponse>({
-    url: "/api/generation-conversations",
+  return request<GenerationConversation[]>({
+    url: "/api/generation/user/conversations",
     method: "GET",
   });
 }
 
-function createConversation(data?: CreateGenerationConversationRequest) {
-  return request<CreateGenerationConversationResponse>({
-    url: "/api/generation-conversations",
+function createConversation(data: GenerationConversationRequest) {
+  return request<GenerationConversation>({
+    url: "/api/generation/user/conversations",
     method: "POST",
     data,
   });
 }
 
 function fetchConversationTasks(conversationId: string) {
-  return request<FetchConversationTasksResponse>({
-    url: `/api/generation-conversations/${conversationId}/tasks`,
+  return request<GenerationTask[]>({
+    url: `/api/generation/user/conversations/${encodeURIComponent(conversationId)}/tasks`,
     method: "GET",
   });
 }
 
-function updateConversation(conversationId: string, data: UpdateGenerationConversationRequest) {
-  return request<UpdateGenerationConversationResponse>({
-    url: `/api/generation-conversations/${conversationId}`,
+function updateConversation(conversationId: string, data: GenerationConversationRequest) {
+  return request<GenerationConversation>({
+    url: `/api/generation/user/conversations/${encodeURIComponent(conversationId)}`,
     method: "PATCH",
     data,
   });
 }
 
 function deleteConversation(conversationId: string) {
-  return request<DeleteGenerationConversationResponse>({
-    url: `/api/generation-conversations/${conversationId}`,
+  return request<null>({
+    url: `/api/generation/user/conversations/${encodeURIComponent(conversationId)}`,
     method: "DELETE",
   });
 }

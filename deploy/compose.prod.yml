@@ -6,10 +6,6 @@ services:
     init: true
     environment:
       NODE_ENV: production
-      BFF_MODE: java
-      AUTH_BFF_MODE: java
-      PAYMENT_BFF_MODE: java
-      ALLOW_MOCK_BFF: "false"
       JAVA_API_BASE_URL: ${JAVA_API_BASE_URL:?Set JAVA_API_BASE_URL in .env}
       TZ: Asia/Shanghai
     ports:

@@ -3,19 +3,22 @@ import clsx from "clsx";
 import { useEffect, useRef } from "react";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
+import type { FavoriteCollection } from "@/types/favorites";
+import type { GenerationTask } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
-import { taskStatusLabels, type FavoriteCollectionItem, type TaskItem } from "./generation-model";
+import { userAssetDownloadUrl } from "@/utils/media";
+import { isTaskPending, taskStatusLabels } from "./generation-model";
 import styles from "./generate-form.module.css";
 
 type TaskPreviewProps = {
-  tasks: TaskItem[];
-  collections: FavoriteCollectionItem[];
+  tasks: GenerationTask[];
+  collections: FavoriteCollection[];
   onPromptChange: (value: string) => void;
 };
 
 type TaskMessageProps = {
-  task: TaskItem;
-  collections: FavoriteCollectionItem[];
+  task: GenerationTask;
+  collections: FavoriteCollection[];
 };
 
 const promptSuggestions = ["一只在星空下弹吉他的猫", "未来城市的日落景色", "水彩风格的樱花园"];
@@ -28,7 +31,7 @@ export function TaskPreview(props: TaskPreviewProps) {
   const chatRef = useRef<HTMLDivElement>(null);
   const scrollKey = tasks
     .map((task) => {
-      const imageCount = task.outputs.length;
+      const imageCount = task.results?.length ?? 0;
       return `${task.id}:${task.status}:${imageCount}`;
     })
     .join("|");
@@ -79,9 +82,12 @@ export function TaskPreview(props: TaskPreviewProps) {
 function TaskMessage(props: TaskMessageProps) {
   const task = props.task;
   const collections = props.collections;
-  const hasImages = task.outputs.length > 0;
-  const isWaiting = task.status === "queued" || task.status === "running";
-  const metaText = `${taskStatusLabels[task.status]} · ${getImageResolutionLabel(task.quality)} · ${task.ratio} · ${task.imageCount} 张 · ${task.costCredits} 积分`;
+  const results = task.results ?? [];
+  const hasImages = results.length > 0;
+  const isWaiting = isTaskPending(task);
+  const quality = getImageResolutionLabel(task.quality ?? "");
+  const metaText = `${taskStatusLabels[task.status]} · ${quality} · ${task.ratio} · ${task.count} 张 · ${task.requiredPoints} 积分`;
+  const extension = task.format || "png";
 
   return (
     <div className={styles.generateForm__taskMessages}>
@@ -107,24 +113,23 @@ function TaskMessage(props: TaskMessageProps) {
         >
           {hasImages ? (
             <div className={styles.generateForm__chatImages}>
-              {task.outputs.map((output, index) => (
-                <div key={output.id} className={styles.generateForm__chatImageItem}>
+              {results.map((result, index) => (
+                <div key={result.id} className={styles.generateForm__chatImageItem}>
                   <ImageLightbox
-                    src={output.fullImageUrl}
-                    previewSrc={output.imageUrl}
+                    src={result.resultUrl}
                     alt={`${task.prompt}，生成结果 ${index + 1}`}
-                    width={output.width || 768}
-                    height={output.height || 768}
+                    width={768}
+                    height={768}
                     fit="intrinsic"
                     triggerClassName={styles.generateForm__chatImageTrigger}
                     imageClassName={styles.generateForm__chatImage}
                   />
                   <HistoryImageActions
-                    generatedImageId={output.id}
+                    generatedImageId={result.id}
                     initialPublished={false}
                     collections={collections}
-                    downloadUrl={output.downloadUrl}
-                    downloadFileName={output.fileName || `zroimg-${task.id}-${index + 1}.png`}
+                    downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                    downloadFileName={`zroimg-${task.taskNo}-${index + 1}.${extension}`}
                     showPublish={false}
                     placement="result"
                   />

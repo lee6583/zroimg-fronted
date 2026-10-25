@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveActiveConversationId } from "../src/features/generation/generation-model.ts";
+import {
+  getDefaultOptions,
+  isTaskPending,
+  normalizeOptions,
+  resolveActiveConversationId,
+} from "../src/features/generation/generation-model.ts";
+import type { GenerationModel } from "../src/types/generation.ts";
 import { getImageResolutionLabel } from "../src/utils/generation-quality.ts";
 
 const conversations = [{ id: "first" }, { id: "remembered" }];
@@ -23,4 +29,55 @@ test("图片 quality 使用分辨率档位显示", () => {
   assert.equal(getImageResolutionLabel("medium"), "2K");
   assert.equal(getImageResolutionLabel("high"), "4K");
   assert.equal(getImageResolutionLabel("auto"), "自动");
+});
+
+const model: GenerationModel = {
+  modelCode: "gpt-image-2",
+  modelName: "GPT Image 2",
+  provider: "openai",
+  modelType: "image",
+  supportModes: ["text_to_image", "image_to_image"],
+  supportParams: {
+    ratios: ["1:1", "16:9"],
+    qualities: ["low", "medium"],
+    counts: [1, 2, 4],
+    defaults: { mode: "text_to_image", ratio: "1:1", quality: "low", count: 1 },
+  },
+  priceVersion: "v1",
+  defaultFlag: 1,
+  sortOrder: 10,
+  remark: null,
+};
+
+test("默认选项来自 Java 模型 supportParams.defaults", () => {
+  assert.deepEqual(getDefaultOptions([model]), {
+    mode: "text_to_image",
+    modelCode: "gpt-image-2",
+    ratio: "1:1",
+    quality: "low",
+    count: 1,
+  });
+});
+
+test("不支持的参数回退到模型默认值", () => {
+  const options = {
+    mode: "image_to_image" as const,
+    modelCode: "x",
+    ratio: "9:16",
+    quality: "medium",
+    count: 3,
+  };
+  assert.deepEqual(normalizeOptions(options, [model]), {
+    mode: "image_to_image",
+    modelCode: "gpt-image-2",
+    ratio: "1:1",
+    quality: "medium",
+    count: 1,
+  });
+});
+
+test("pending 和 processing 视为进行中", () => {
+  assert.equal(isTaskPending({ status: "pending" }), true);
+  assert.equal(isTaskPending({ status: "processing" }), true);
+  assert.equal(isTaskPending({ status: "failed" }), false);
 });

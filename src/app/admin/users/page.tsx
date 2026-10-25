@@ -1,9 +1,11 @@
+import clsx from "clsx";
 import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { UserActions } from "@/features/admin/user-actions";
-import { listAdminUsers } from "@/server/bff/users";
+import { requestJava } from "@/server/java-api";
+import type { AdminUserPage } from "@/types/admin";
 import styles from "./users-page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +47,16 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
   const requestedPageSize = Number(readParam(params, "pageSize") || 10);
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 10;
   const page = Math.max(1, Number(readParam(params, "page") || 1));
-  const userPage = await listAdminUsers({ page, pageSize, q, status: statusFilter });
+  const userPage = await requestJava<AdminUserPage>("/auth/admin/users", {
+    params: {
+      pageNo: page,
+      pageSize,
+      q,
+      status: statusFilter,
+      sortBy: "create_time",
+      isAsc: false,
+    },
+  });
   const users = userPage.list;
 
   return (
@@ -132,11 +143,11 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
                     </td>
                     <td>
                       <span
-                        className={`${styles.usersPage__status} ${
-                          user.status === "active"
-                            ? styles.usersPage__statusActive
-                            : styles.usersPage__statusBanned
-                        }`}
+                        className={clsx(
+                          styles.usersPage__status,
+                          user.status === "active" && styles.usersPage__statusActive,
+                          user.status === "banned" && styles.usersPage__statusBanned,
+                        )}
                       >
                         <i aria-hidden="true" />
                         {user.status === "active" ? "正常" : "已封禁"}

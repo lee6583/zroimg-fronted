@@ -1,15 +1,8 @@
+import type { PageResult } from "@/types/api";
+
 type SecretSource = "database" | "env" | "none";
 
-type VideoProviderAdminConfig = {
-  enabled: boolean;
-  baseUrl: string | null;
-  model: string;
-  publicBaseUrl: string | null;
-  apiKeySource: SecretSource;
-  hasApiKey: boolean;
-  apiKeyPreview: string | null;
-};
-
+// /admin/settings/*
 type SmtpAdminConfig = {
   enabled: boolean;
   host: string | null;
@@ -43,17 +36,28 @@ type CheckInSettingsConfig = {
   dailyCredits: number;
 };
 
-type SaveVideoSettingsRequest = {
+type AnnouncementSettingsConfig = {
   enabled: boolean;
-  baseUrl: string;
-  model: string;
-  publicBaseUrl: string;
-  apiKey: string;
-  clearApiKey: boolean;
+  title: string;
+  content: string;
+  updatedAt: string;
 };
 
-type SaveVideoSettingsResponse = {
-  settings: VideoProviderAdminConfig;
+type DocsItem = {
+  id: string;
+  title: string;
+  body: string;
+};
+
+type DocsGroup = {
+  title: string;
+  items: DocsItem[];
+};
+
+type DocsConfig = {
+  title: string;
+  description: string;
+  groups: DocsGroup[];
 };
 
 type SaveSmtpSettingsRequest = {
@@ -67,17 +71,9 @@ type SaveSmtpSettingsRequest = {
   from: string;
 };
 
-type SaveSmtpSettingsResponse = {
-  settings: SmtpAdminConfig;
-};
-
 type TestSmtpSettingsRequest = {
   mode: "connection" | "email";
   email?: string;
-};
-
-type TestSmtpSettingsResponse = {
-  ok?: boolean;
 };
 
 type SaveEasyPaySettingsRequest = {
@@ -96,51 +92,22 @@ type SaveEasyPaySettingsRequest = {
   maxAmountCent: number;
 };
 
-type SaveEasyPaySettingsResponse = {
-  settings: EasyPayAdminConfig;
-};
-
 type SaveCheckInSettingsRequest = {
   dailyCredits: number;
 };
 
-type SaveCheckInSettingsResponse = {
-  settings: CheckInSettingsConfig;
+type SaveAnnouncementSettingsRequest = {
+  enabled: boolean;
+  title: string;
+  content: string;
 };
 
-type AdjustUserCreditsRequest = {
-  amount: number;
-};
-
-type AdjustUserCreditsResponse = {
-  ok?: boolean;
-};
-
-type UpdateUserStatusRequest = {
-  status: "active" | "banned";
-};
-
-type UpdateUserStatusResponse = {
-  ok?: boolean;
-};
-
-type ResetUserPasswordRequest = {
-  password: string;
-};
-
-type ResetUserPasswordResponse = {
-  ok?: boolean;
-};
-
-type DeleteUserResponse = {
-  ok?: boolean;
-};
-
+// auth AdminUserVO
 type AdminUser = {
   id: string;
   username: string;
   email: string;
-  bio: string;
+  bio: string | null;
   avatarUrl: string | null;
   role: string;
   status: "active" | "banned";
@@ -148,50 +115,180 @@ type AdminUser = {
   createdAt: string;
 };
 
-type AdminUserPageQuery = {
-  page: number;
-  pageSize: number;
-  q?: string;
-  status?: "active" | "banned";
+type UpdateUserStatusRequest = {
+  status: "active" | "banned";
 };
 
-type AdminUserPage = {
-  total: number;
-  pages: number;
-  list: AdminUser[];
+type UpdateUserPasswordRequest = {
+  password: string;
 };
 
+// points PointsFlowVO / AdjustPointsDTO / AdjustPointsVO
 type AdminPointsFlow = {
   id: string;
+  flowNo: string;
+  sourceType: string;
+  changeType: string;
   amount: number;
+  beforePoints: number;
   afterPoints: number;
-  remark: string;
+  remark: string | null;
   createdAt: string;
+};
+
+type AdjustPointsRequest = {
+  amount: number;
+};
+
+type AdjustPointsResponse = {
+  balance: number;
+};
+
+// order PointsPackageVO / AdminCreatePointsPackageDTO
+type AdminPackage = {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  amountCent: number;
+  amountText: string;
+  credits: number;
+  highlights: string[] | null;
+  recommended: boolean;
+  enabled: boolean;
+  sort: number;
+};
+
+type SavePackageRequest = {
+  code: string;
+  name: string;
+  description: string;
+  amountCent: number;
+  credits: number;
+  highlights: string[];
+  recommended: boolean;
+  enabled: boolean;
+  sort: number;
+};
+
+// order AdminRechargeOrderVO
+type AdminRechargeOrder = {
+  orderNo: string;
+  packageId: string | null;
+  packageCode: string | null;
+  packageName: string | null;
+  packageDescription: string | null;
+  amountCent: number;
+  amountText: string;
+  rechargeAmountCent: number | null;
+  feeAmountCent: number | null;
+  credits: number;
+  payChannel: string | null;
+  payChannelText: string | null;
+  payStatus: string;
+  creditsStatus: string;
+  displayStatus: string;
+  thirdTradeNo: string | null;
+  createTime: string;
+  payTime: string | null;
+  expireTime: string | null;
+  userId: string;
+  username: string | null;
+  creditsErrorReason: string | null;
+  closeTime: string | null;
+};
+
+// feedback AdminFeedbackTicketVO
+type AdminTicketUser = {
+  id: string;
+  email: string;
+  name: string;
+};
+
+type AdminTicketMessage = {
+  id: string;
+  body: string;
+  isAdmin: boolean;
+  createdAt: string;
+  authorName: string | null;
+};
+
+type AdminTicketAttachment = {
+  id: string;
+  mediaId: string;
+  fileName: string | null;
+  url: string;
+};
+
+type AdminTicket = {
+  id: string;
+  type: string;
+  status: string;
+  subject: string;
+  content: string;
+  createTime: string;
+  updateTime: string;
+  user: AdminTicketUser | null;
+  messages: AdminTicketMessage[];
+  attachments: AdminTicketAttachment[];
+};
+
+type ReplyTicketRequest = {
+  body: string;
+  status: string;
+};
+
+type UpdateTicketStatusRequest = {
+  status: string;
+};
+
+type TicketOperationResponse = {
+  ok: boolean;
+};
+
+// generation GenerationTaskVO
+type AdminTaskResult = {
+  id: string;
+  resultType: string;
+  mediaAssetId: string | null;
+  resultUrl: string;
+  sortOrder: number;
 };
 
 type AdminGenerationTask = {
   id: string;
   taskNo: string;
-  username: string;
-  prompt: string;
-  status: string;
-  modelType: "image" | "video";
+  modelCode: string;
+  modelName: string | null;
+  provider: string | null;
+  userEmail: string | null;
+  username: string | null;
+  modelType: string;
   mode: string;
-  model: string;
-  size: string;
-  quality: string;
+  prompt: string;
+  referenceImageUrl: string | null;
+  referenceMediaId: string | null;
+  ratio: string | null;
+  resolution: string | null;
+  quality: string | null;
+  format: string | null;
+  count: number | null;
+  durationSeconds: number | null;
+  audio: boolean | null;
+  priceVersion: string | null;
+  unitPoints: number | null;
+  billingUnit: string | null;
+  referencePoints: number | null;
   requiredPoints: number;
-  outputCount: number;
+  status: string;
   failReason: string | null;
-  createdAt: string;
+  results: AdminTaskResult[] | null;
+  createTime: string;
+  updateTime: string | null;
+  finishTime: string | null;
 };
 
-type AdminGenerationPage = {
-  total: number;
-  pages: number;
-  list: AdminGenerationTask[];
-};
-
+// dashboard AdminOverviewVO
 type AdminOverviewTicket = {
   id: string;
   subject: string;
@@ -209,6 +306,7 @@ type AdminOverview = {
   latestTickets: AdminOverviewTicket[];
 };
 
+// generation models / provider connections
 type GenerationModelAdapter = "openai" | "grok";
 
 type LegacyGenerationModelAdapter = GenerationModelAdapter | "generic-video";
@@ -270,18 +368,6 @@ type DiscoverProviderModelsRequest = {
   apiKey: string;
 };
 
-type ProviderConnectionsResponse = {
-  connections: GenerationProviderConnection[];
-};
-
-type ProviderConnectionResponse = {
-  connection: GenerationProviderConnection;
-};
-
-type DiscoveredProviderModelsResponse = {
-  models: DiscoveredProviderModel[];
-};
-
 type AdminGenerationModel = {
   id: string;
   modelCode: string;
@@ -315,7 +401,18 @@ type AdminGenerationModel = {
   updatedAt: string | null;
 };
 
-type SaveAdminGenerationModelCommon = {
+type ImageQualityPrice = {
+  quality: string;
+  points: number;
+};
+
+type VideoResolutionPrice = {
+  resolution: string;
+  pointsPerSecond: number;
+  referencePoints: number;
+};
+
+type SaveModelCommon = {
   modelName: string;
   status: "enabled" | "disabled";
   defaultFlag: number;
@@ -323,13 +420,13 @@ type SaveAdminGenerationModelCommon = {
   ratios: string[];
 };
 
-type SaveAdminGenerationModelDynamicBase = SaveAdminGenerationModelCommon & {
+type SaveModelDynamicBase = SaveModelCommon & {
   connectionId: string;
   providerModelCode: string;
   capabilityProfile: string;
 };
 
-type SaveAdminGenerationModelLegacyBase = SaveAdminGenerationModelCommon & {
+type SaveModelLegacyBase = SaveModelCommon & {
   modelCode: string;
   adapter: LegacyGenerationModelAdapter;
   apiBaseUrl: string;
@@ -337,92 +434,72 @@ type SaveAdminGenerationModelLegacyBase = SaveAdminGenerationModelCommon & {
   clearApiKey: boolean;
 };
 
-type SaveAdminImageModelRequest = SaveAdminGenerationModelDynamicBase & {
+type ImageModelFields = {
   modelType: "image";
   imageToImageEnabled: boolean;
   qualities: string[];
   maxCount: number;
-  qualityPrices: Array<{ quality: string; points: number }>;
+  qualityPrices: ImageQualityPrice[];
 };
 
-type SaveAdminVideoModelRequest = SaveAdminGenerationModelDynamicBase & {
+type VideoModelFields = {
   modelType: "video";
   imageToVideoEnabled: boolean;
   resolutions: string[];
   minDuration: number;
   maxDuration: number;
-  videoPrices: Array<{
-    resolution: string;
-    pointsPerSecond: number;
-    referencePoints: number;
-  }>;
+  videoPrices: VideoResolutionPrice[];
 };
 
-type SaveAdminLegacyImageModelRequest = SaveAdminGenerationModelLegacyBase & {
-  modelType: "image";
-  imageToImageEnabled: boolean;
-  qualities: string[];
-  maxCount: number;
-  qualityPrices: Array<{ quality: string; points: number }>;
-};
+type SaveModelRequest =
+  | (SaveModelDynamicBase & ImageModelFields)
+  | (SaveModelDynamicBase & VideoModelFields)
+  | (SaveModelLegacyBase & ImageModelFields)
+  | (SaveModelLegacyBase & VideoModelFields);
 
-type SaveAdminLegacyVideoModelRequest = SaveAdminGenerationModelLegacyBase & {
-  modelType: "video";
-  imageToVideoEnabled: boolean;
-  resolutions: string[];
-  minDuration: number;
-  maxDuration: number;
-  videoPrices: Array<{
-    resolution: string;
-    pointsPerSecond: number;
-    referencePoints: number;
-  }>;
-};
-
-type SaveAdminGenerationModelRequest =
-  | SaveAdminImageModelRequest
-  | SaveAdminVideoModelRequest
-  | SaveAdminLegacyImageModelRequest
-  | SaveAdminLegacyVideoModelRequest;
-
-type AdminGenerationModelsResponse = {
-  models: AdminGenerationModel[];
-  catalog: GenerationModelCatalogItem[];
-};
-
-type AdminGenerationModelResponse = {
-  model: AdminGenerationModel;
-};
+type AdminUserPage = PageResult<AdminUser>;
+type AdminPointsFlowPage = PageResult<AdminPointsFlow>;
+type AdminRechargeOrderPage = PageResult<AdminRechargeOrder>;
+type AdminTicketPage = PageResult<AdminTicket>;
+type AdminGenerationTaskPage = PageResult<AdminGenerationTask>;
 
 export type {
   SecretSource,
-  VideoProviderAdminConfig,
   SmtpAdminConfig,
   EasyPayAdminConfig,
   CheckInSettingsConfig,
-  SaveVideoSettingsRequest,
-  SaveVideoSettingsResponse,
+  AnnouncementSettingsConfig,
+  DocsItem,
+  DocsGroup,
+  DocsConfig,
   SaveSmtpSettingsRequest,
-  SaveSmtpSettingsResponse,
   TestSmtpSettingsRequest,
-  TestSmtpSettingsResponse,
   SaveEasyPaySettingsRequest,
-  SaveEasyPaySettingsResponse,
   SaveCheckInSettingsRequest,
-  SaveCheckInSettingsResponse,
-  AdjustUserCreditsRequest,
-  AdjustUserCreditsResponse,
-  UpdateUserStatusRequest,
-  UpdateUserStatusResponse,
-  ResetUserPasswordRequest,
-  ResetUserPasswordResponse,
-  DeleteUserResponse,
+  SaveAnnouncementSettingsRequest,
   AdminUser,
-  AdminUserPageQuery,
   AdminUserPage,
+  UpdateUserStatusRequest,
+  UpdateUserPasswordRequest,
   AdminPointsFlow,
+  AdminPointsFlowPage,
+  AdjustPointsRequest,
+  AdjustPointsResponse,
+  AdminPackage,
+  SavePackageRequest,
+  AdminRechargeOrder,
+  AdminRechargeOrderPage,
+  AdminTicketUser,
+  AdminTicketMessage,
+  AdminTicketAttachment,
+  AdminTicket,
+  AdminTicketPage,
+  ReplyTicketRequest,
+  UpdateTicketStatusRequest,
+  TicketOperationResponse,
+  AdminTaskResult,
   AdminGenerationTask,
-  AdminGenerationPage,
+  AdminGenerationTaskPage,
   AdminOverviewTicket,
   AdminOverview,
   GenerationModelAdapter,
@@ -433,16 +510,8 @@ export type {
   DiscoveredProviderModel,
   SaveProviderConnectionRequest,
   DiscoverProviderModelsRequest,
-  ProviderConnectionsResponse,
-  ProviderConnectionResponse,
-  DiscoveredProviderModelsResponse,
   AdminGenerationModel,
-  SaveAdminGenerationModelCommon,
-  SaveAdminGenerationModelDynamicBase,
-  SaveAdminGenerationModelLegacyBase,
-  SaveAdminLegacyImageModelRequest,
-  SaveAdminLegacyVideoModelRequest,
-  SaveAdminGenerationModelRequest,
-  AdminGenerationModelsResponse,
-  AdminGenerationModelResponse,
+  ImageQualityPrice,
+  VideoResolutionPrice,
+  SaveModelRequest,
 };

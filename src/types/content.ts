@@ -1,3 +1,4 @@
+// Java settings service: getDocs
 type DocsItem = {
   id: string;
   title: string;

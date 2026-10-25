@@ -1,37 +1,57 @@
 import { request } from "@/utils/request";
 import type {
   CreateGenerationTaskRequest,
-  CreateGenerationTaskResponse,
-  FetchGenerationTaskResponse,
-  GenerationPriceRequest,
-  GenerationPriceResponse,
+  GenerationModel,
+  GenerationPriceEstimate,
+  GenerationPriceEstimateRequest,
+  GenerationTask,
+  GenerationTaskQuery,
 } from "@/types/generation";
+import type { PageResult } from "@/types/api";
 
-function createTask(data: CreateGenerationTaskRequest) {
-  return request<CreateGenerationTaskResponse>({
-    url: "/api/generations",
+function fetchModels(params?: { modelType?: string; mode?: string }) {
+  return request<GenerationModel[]>({
+    url: "/api/generation/user/models",
+    method: "GET",
+    params,
+  });
+}
+
+function estimatePrice(data: GenerationPriceEstimateRequest) {
+  return request<GenerationPriceEstimate>({
+    url: "/api/generation/user/price/estimate",
     method: "POST",
     data,
   });
 }
 
-function fetchTask(taskId: string) {
-  return request<FetchGenerationTaskResponse>({
-    url: `/api/generations/${taskId}`,
+function createTask(data: CreateGenerationTaskRequest) {
+  return request<GenerationTask>({
+    url: "/api/generation/user/tasks",
+    method: "POST",
+    data,
+  });
+}
+
+function fetchTasks(params: GenerationTaskQuery) {
+  return request<PageResult<GenerationTask>>({
+    url: "/api/generation/user/tasks",
+    method: "GET",
+    params,
+  });
+}
+
+function fetchTask(taskNo: string) {
+  return request<GenerationTask>({
+    url: `/api/generation/user/tasks/${encodeURIComponent(taskNo)}`,
     method: "GET",
   });
 }
 
-function estimatePrice(data: GenerationPriceRequest) {
-  return request<GenerationPriceResponse>({
-    url: "/api/generations/estimate",
-    method: "POST",
-    data,
-  });
-}
-
 export const generationTasksApi = {
-  createTask,
-  fetchTask,
+  fetchModels,
   estimatePrice,
+  createTask,
+  fetchTasks,
+  fetchTask,
 };

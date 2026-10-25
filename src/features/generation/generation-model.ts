@@ -1,130 +1,108 @@
 import type {
-  GenerationConversationApiItem,
+  GenerationConversation,
   GenerationMode,
-  GenerationModelOption,
-  GenerationQualityOption,
-  GenerationTaskOutputApiItem,
+  GenerationModel,
+  GenerationTask,
   GenerationTaskStatus,
-  UploadedMediaApiItem,
 } from "@/types/generation";
-
-export type QualityOption = GenerationQualityOption;
 
 export type GenerationOptions = {
   mode: GenerationMode;
-  model: string;
+  modelCode: string;
   ratio: string;
-  quality: QualityOption;
+  quality: string;
   count: number;
 };
-
-export type MediaInput = UploadedMediaApiItem;
 
 export type Notice = {
   text: string;
   tone: "info" | "error";
 } | null;
 
-export type ConversationItem = {
-  id: string;
-  title: string;
-  taskCount: number;
-  latestTaskStatus: string | null;
-  latestTaskCost: number | null;
-  lastTaskAt: string | null;
-  updatedAt: string;
-  createdAt: string;
-};
-
 export type ConversationGroup = {
   key: string;
   label: string;
-  items: ConversationItem[];
-};
-
-export type TaskItem = {
-  id: string;
-  prompt: string;
-  mode: GenerationMode;
-  status: GenerationTaskStatus;
-  size: string;
-  ratio: string;
-  quality: GenerationQualityOption;
-  imageCount: number;
-  costCredits: number;
-  unitCostCredits: number;
-  createdAt: string;
-  outputs: GenerationTaskOutputApiItem[];
-};
-
-export type FavoriteCollectionItem = {
-  id: string;
-  name: string;
-  imageCount: number;
+  items: GenerationConversation[];
 };
 
 export const activeConversationCookieName = "zroimg-active-generation-conversation";
 
+export const imageModes: GenerationMode[] = ["text_to_image", "image_to_image"];
+
+export const modeLabels: Record<GenerationMode, string> = {
+  text_to_image: "文生图",
+  image_to_image: "图生图",
+};
+
 export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
-  queued: "排队中",
-  running: "生成中",
+  pending: "排队中",
+  processing: "生成中",
   succeeded: "已完成",
   failed: "失败",
 };
 
-export function getGenerationSize(options: GenerationOptions) {
-  return options.ratio;
+export function isTaskPending(task: Pick<GenerationTask, "status">) {
+  return task.status === "pending" || task.status === "processing";
 }
 
-export function getDefaultOptions(models: GenerationModelOption[]): GenerationOptions {
-  const model = models[0];
+export function supportsMode(model: GenerationModel, mode: GenerationMode) {
+  return model.supportModes.includes(mode);
+}
+
+export function getDefaultOptions(models: GenerationModel[]): GenerationOptions {
+  const model = models.find((item) => item.defaultFlag === 1) ?? models[0];
   if (!model) {
     throw new Error("暂无可用图片模型");
   }
 
-  const mode = model.defaultMode;
-  const params = model.params[mode];
-  if (!params) {
-    throw new Error("图片模型缺少参数配置");
+  const params = model.supportParams;
+  const defaults = params.defaults;
+  let mode = imageModes.find((item) => item === defaults.mode);
+  if (!mode) {
+    mode = imageModes.find((item) => supportsMode(model, item));
+  }
+  if (!mode) {
+    throw new Error("图片模型缺少生成模式配置");
   }
 
   return {
     mode,
-    model: model.value,
-    ratio: params.defaults.ratio,
-    quality: params.defaults.quality,
-    count: params.defaults.count,
+    modelCode: model.modelCode,
+    ratio: defaults.ratio ?? params.ratios[0] ?? "",
+    quality: defaults.quality ?? params.qualities[0] ?? "",
+    count: defaults.count ?? params.counts[0] ?? 1,
   };
 }
 
 export function normalizeOptions(
   options: GenerationOptions,
-  models: GenerationModelOption[],
+  models: GenerationModel[],
 ): GenerationOptions {
   let model = models.find((item) => {
-    const isSelectedModel = item.value === options.model;
-    const supportsMode = item.modes.includes(options.mode);
-    return isSelectedModel && supportsMode;
+    const isSelected = item.modelCode === options.modelCode;
+    return isSelected && supportsMode(item, options.mode);
   });
 
   if (!model) {
-    model = models.find((item) => item.modes.includes(options.mode));
+    model = models.find((item) => supportsMode(item, options.mode));
   }
   if (!model) {
     throw new Error("当前生成模式没有可用模型");
   }
 
-  const params = model.params[options.mode];
-  if (!params) {
-    throw new Error("图片模型缺少当前模式参数");
-  }
+  const params = model.supportParams;
+  const defaults = params.defaults;
 
   return {
     mode: options.mode,
-    model: model.value,
-    ratio: pickValue(options.ratio, params.ratios, params.defaults.ratio),
-    quality: pickValue(options.quality, params.qualities, params.defaults.quality),
-    count: pickValue(options.count, params.counts, params.defaults.count),
+    modelCode: model.modelCode,
+    ratio: pickValue(options.ratio, params.ratios, defaults.ratio ?? params.ratios[0] ?? ""),
+    quality: pickValue(
+      options.quality,
+      params.qualities,
+      defaults.quality ?? params.qualities[0] ?? "",
+    ),
+    count: pickValue(options.count, params.counts, defaults.count ?? params.counts[0] ?? 1),
   };
 }
 
@@ -134,21 +112,6 @@ function pickValue<Value>(value: Value, values: Value[], defaultValue: Value) {
   }
 
   return defaultValue;
-}
-
-export function normalizeConversation(item: GenerationConversationApiItem): ConversationItem {
-  const latestTask = item.tasks[0];
-
-  return {
-    id: item.id,
-    title: item.title,
-    taskCount: item._count.tasks,
-    latestTaskStatus: latestTask?.status ?? null,
-    latestTaskCost: latestTask?.costCredits ?? null,
-    lastTaskAt: item.lastTaskAt,
-    updatedAt: item.updatedAt,
-    createdAt: item.createdAt,
-  };
 }
 
 export function resolveActiveConversationId(
@@ -164,7 +127,7 @@ export function resolveActiveConversationId(
   return items[0]?.id ?? "";
 }
 
-export function groupConversations(items: ConversationItem[]) {
+export function groupConversations(items: GenerationConversation[]) {
   const groups: ConversationGroup[] = [];
 
   for (const item of items) {

@@ -4,16 +4,38 @@ import clsx from "clsx";
 import { Download, Film, PanelLeftClose } from "lucide-react";
 import { useEffect, useState } from "react";
 import { videoApi } from "@/api/video";
-import type { VideoModel, VideoTask, VideoTaskPage } from "@/types/video";
+import type { VideoModel, VideoTask, VideoTaskPage, VideoTaskStatus } from "@/types/video";
+import { userAssetDownloadUrl } from "@/utils/media";
 import { VideoSettings } from "./video-settings";
 import styles from "./video.module.css";
+
+const pageSize = 20;
 
 type VideoWorkspaceProps = {
   initialModels: VideoModel[];
   initialPage: VideoTaskPage;
 };
 
-function statusText(status: string) {
+function isTaskRunning(status: VideoTaskStatus) {
+  return status === "pending" || status === "processing";
+}
+
+function listTaskPage(pageNo: number) {
+  return videoApi.listTasks({ pageNo, pageSize, isAsc: false, sortBy: "create_time" });
+}
+
+function getDownloadUrl(task: VideoTask) {
+  const result = task.results[0];
+  if (!result) {
+    return null;
+  }
+  if (result.mediaAssetId) {
+    return userAssetDownloadUrl(result.mediaAssetId);
+  }
+  return result.resultUrl;
+}
+
+function statusText(status: VideoTaskStatus) {
   if (status === "pending") return "排队中";
   if (status === "processing") return "生成中";
   if (status === "succeeded") return "已完成";
@@ -37,9 +59,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   const [totalPages, setTotalPages] = useState(props.initialPage.pages);
   const [isLoadingMore, setLoadingMore] = useState(false);
 
-  const hasPendingTask = tasks.some((task) => {
-    return task.status === "pending" || task.status === "processing";
-  });
+  const hasPendingTask = tasks.some((task) => isTaskRunning(task.status));
 
   useEffect(() => {
     if (!hasPendingTask) {
@@ -47,14 +67,12 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
     }
 
     const timer = window.setInterval(async () => {
-      const pendingTasks = tasks.filter((task) => {
-        return task.status === "pending" || task.status === "processing";
-      });
+      const pendingTasks = tasks.filter((task) => isTaskRunning(task.status));
 
       for (const task of pendingTasks) {
         try {
-          const data = await videoApi.getTask(task.taskNo);
-          setTasks((currentTasks) => replaceTasks(currentTasks, data.task));
+          const nextTask = await videoApi.getTask(task.taskNo);
+          setTasks((currentTasks) => replaceTasks(currentTasks, nextTask));
         } catch {
           continue;
         }
@@ -65,10 +83,10 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   }, [hasPendingTask, tasks]);
 
   async function refreshTasks() {
-    const data = await videoApi.listTasks({ pageNo: 1, pageSize: 20 });
-    setTasks(data.page.list);
+    const page = await listTaskPage(1);
+    setTasks(page.list);
     setPageNo(1);
-    setTotalPages(data.page.pages);
+    setTotalPages(page.pages);
   }
 
   async function loadMore() {
@@ -78,16 +96,16 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
 
     try {
       setLoadingMore(true);
-      const data = await videoApi.listTasks({ pageNo: pageNo + 1, pageSize: 20 });
+      const page = await listTaskPage(pageNo + 1);
       setTasks((currentTasks) => {
         const taskMap = new Map(currentTasks.map((task) => [task.taskNo, task]));
-        for (const task of data.page.list) {
+        for (const task of page.list) {
           taskMap.set(task.taskNo, task);
         }
         return Array.from(taskMap.values());
       });
       setPageNo((currentPage) => currentPage + 1);
-      setTotalPages(data.page.pages);
+      setTotalPages(page.pages);
     } finally {
       setLoadingMore(false);
     }
@@ -132,37 +150,38 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
           ) : (
             <>
               <div className={styles.videoPage__taskList}>
-                {tasks.map((task) => (
-                  <article key={task.taskNo} className={styles.videoPage__task}>
-                    {task.results[0]?.resultUrl ? (
-                      <video
-                        controls
-                        className={styles.videoPage__player}
-                        src={task.results[0].resultUrl}
-                      />
-                    ) : null}
-                    <div className={styles.videoPage__taskInfo}>
-                      <div className={styles.videoPage__taskHeader}>
-                        <p className={styles.videoPage__taskStatus}>{statusText(task.status)}</p>
-                        {task.results[0]?.resultUrl ? (
-                          <a
-                            href={task.results[0].resultUrl}
-                            download
-                            className={styles.videoPage__download}
-                            aria-label="下载视频"
-                          >
-                            <Download size={15} />
-                            下载
-                          </a>
+                {tasks.map((task) => {
+                  const resultUrl = task.results[0]?.resultUrl;
+                  const downloadUrl = getDownloadUrl(task);
+
+                  return (
+                    <article key={task.taskNo} className={styles.videoPage__task}>
+                      {resultUrl ? (
+                        <video controls className={styles.videoPage__player} src={resultUrl} />
+                      ) : null}
+                      <div className={styles.videoPage__taskInfo}>
+                        <div className={styles.videoPage__taskHeader}>
+                          <p className={styles.videoPage__taskStatus}>{statusText(task.status)}</p>
+                          {downloadUrl ? (
+                            <a
+                              href={downloadUrl}
+                              download
+                              className={styles.videoPage__download}
+                              aria-label="下载视频"
+                            >
+                              <Download size={15} />
+                              下载
+                            </a>
+                          ) : null}
+                        </div>
+                        <p className={styles.videoPage__taskPrompt}>{task.prompt}</p>
+                        {task.failReason ? (
+                          <p className={styles.videoPage__taskError}>{task.failReason}</p>
                         ) : null}
                       </div>
-                      <p className={styles.videoPage__taskPrompt}>{task.prompt}</p>
-                      {task.failReason ? (
-                        <p className={styles.videoPage__taskError}>{task.failReason}</p>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
               {pageNo < totalPages ? (
                 <button

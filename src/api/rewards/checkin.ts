@@ -1,9 +1,9 @@
 import { request } from "@/utils/request";
-import type { ClaimCheckInResponse } from "@/types/checkin";
+import type { SignResult } from "@/types/checkin";
 
 function claim() {
-  return request<ClaimCheckInResponse>({
-    url: "/api/checkins",
+  return request<SignResult>({
+    url: "/api/points/user/sign",
     method: "POST",
   });
 }

@@ -3,12 +3,16 @@ import Link from "next/link";
 import { Clock3, ImageOff } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { taskStatusLabels } from "@/features/generation/generation-model";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
-import { listCollections } from "@/server/bff/account";
-import { getMediaDownloadUrl, getMediaSignedUrl, pageHistoryTasks } from "@/server/bff/generation";
+import { requestJava } from "@/server/java-api";
+import type { PageResult } from "@/types/api";
+import type { FavoriteCollection } from "@/types/favorites";
+import type { GenerationResult, GenerationTask, GenerationTaskQuery } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
+import { userAssetDownloadUrl } from "@/utils/media";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
 
@@ -19,16 +23,16 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type HistoryPageProps = {
   searchParams: SearchParams;
 };
-type HistoryTask = Awaited<ReturnType<typeof pageHistoryTasks>>["list"][number];
-type HistoryOutput = HistoryTask["outputs"][number];
 type HistoryItem = {
   id: string;
-  task: HistoryTask;
-  output: HistoryOutput | null;
+  index: number;
+  task: GenerationTask;
+  result: GenerationResult | null;
 };
 
 const defaultPageSize = 10;
 const pageSizes = [10, 20, 50];
+const emptyPage: PageResult<GenerationTask> = { total: 0, pages: 0, list: [] };
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -95,106 +99,42 @@ function normalizeTimeText(value: string | undefined, mode: "start" | "end") {
   return "";
 }
 
-function dateFromText(value: string, mode: "start" | "end") {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(`${value}:00+08:00`);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  if (mode === "end") {
-    date.setSeconds(59, 999);
-  }
-
-  return date;
-}
-
-function getDateRange(fromText: string, toText: string) {
-  const from = dateFromText(fromText, "start");
-  const to = dateFromText(toText, "end");
-
+function getTimeRange(from: string, to: string) {
   if (from && to && from > to) {
     return {};
   }
 
   return {
-    ...(from ? { from } : {}),
-    ...(to ? { to } : {}),
+    beginTime: from ? `${from}:00` : undefined,
+    endTime: to ? `${to}:59` : undefined,
   };
 }
 
-function historyHref() {
-  return "/history";
+function formatTime(value: string) {
+  return value.replace("T", " ").slice(0, 19);
 }
 
-function getPreviewAsset(output: HistoryOutput | null) {
-  if (!output) {
-    return null;
+function getUnitPoints(task: GenerationTask) {
+  if (task.unitPoints !== null) {
+    return task.unitPoints;
   }
 
-  if (output.thumbnailAsset) {
-    return output.thumbnailAsset;
-  }
-
-  return output.outputAsset;
+  return Math.round(task.requiredPoints / Math.max(task.count, 1));
 }
 
-function getPreviewUrl(output: HistoryOutput | null, urls: Map<string, string>) {
-  const asset = getPreviewAsset(output);
-  if (!asset) {
-    return null;
-  }
-
-  const url = urls.get(asset.id);
-  if (!url) {
-    return null;
-  }
-
-  return url;
-}
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(date);
-}
-
-function getStatusLabel(status: HistoryTask["status"]) {
-  if (status === "succeeded") {
-    return "已完成";
-  }
-
-  if (status === "failed") {
-    return "失败";
-  }
-
-  if (status === "running") {
-    return "生成中";
-  }
-
-  return "排队中";
-}
-
-function toHistoryItems(tasks: HistoryTask[]) {
+function toHistoryItems(tasks: GenerationTask[]) {
   const items: HistoryItem[] = [];
 
   for (const task of tasks) {
-    if (task.outputs.length === 0) {
-      items.push({ id: task.id, task, output: null });
+    const results = task.results ?? [];
+    if (results.length === 0) {
+      items.push({ id: task.id, index: 0, task, result: null });
       continue;
     }
 
-    for (const output of task.outputs) {
-      items.push({ id: output.id, task, output });
-    }
+    results.forEach((result, index) => {
+      items.push({ id: result.id, index, task, result });
+    });
   }
 
   return items;
@@ -208,55 +148,29 @@ export default async function HistoryPage(props: HistoryPageProps) {
   const media = normalizeMedia(readParam(params, "media"));
   const rawPage = normalizePage(readParam(params, "page"));
   const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
-  const range = getDateRange(from, to);
+  const range = getTimeRange(from, to);
   const shouldShowImages = media === "all" || media === "image";
 
-  const current = await requireUser();
-  const tasksPromise = shouldShowImages
-    ? pageHistoryTasks(current.profile.id, {
-        ...range,
-        page: rawPage,
-        pageSize: currentPageSize,
-        sort: "desc",
-        modelType: "image",
-      })
-    : Promise.resolve({ total: 0, pages: 0, list: [] });
+  await requireUser();
+  let tasksPromise = Promise.resolve(emptyPage);
+  if (shouldShowImages) {
+    const query: GenerationTaskQuery = {
+      ...range,
+      pageNo: rawPage,
+      pageSize: currentPageSize,
+      modelType: "image",
+    };
+    tasksPromise = requestJava<PageResult<GenerationTask>>("/generation/user/tasks", {
+      params: query,
+    });
+  }
   const [taskPage, collections] = await Promise.all([
     tasksPromise,
-    listCollections(current.profile.id),
+    requestJava<FavoriteCollection[]>("/favorite/user/collections"),
   ]);
   const historyItems = toHistoryItems(taskPage.list);
   const total = taskPage.total;
   const currentPage = rawPage;
-  const pageItems = historyItems;
-
-  const assetIds = new Set<string>();
-  const downloadAssetIds = new Set<string>();
-  for (const item of pageItems) {
-    if (!item.output) {
-      continue;
-    }
-
-    const previewAsset = item.output.thumbnailAsset || item.output.outputAsset;
-    assetIds.add(previewAsset.id);
-    downloadAssetIds.add(item.output.outputAsset.id);
-  }
-  const [urlEntries, downloadEntries] = await Promise.all([
-    Promise.all(
-      Array.from(assetIds).map(async (assetId) => {
-        const url = await getMediaSignedUrl(assetId);
-        return [assetId, url] as const;
-      }),
-    ),
-    Promise.all(
-      Array.from(downloadAssetIds).map(async (assetId) => {
-        const url = await getMediaDownloadUrl(assetId);
-        return [assetId, url] as const;
-      }),
-    ),
-  ]);
-  const urls = new Map(urlEntries);
-  const downloadUrls = new Map(downloadEntries);
 
   const hasDateFilter = Boolean(from || to);
   const hasMediaFilter = media !== "all";
@@ -269,7 +183,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
   if (activeFilter) {
     emptyTitle = "当前筛选条件下没有创作记录";
     emptyText = "可以调整时间或类型筛选，或者查看全部历史。";
-    emptyHref = historyHref();
+    emptyHref = "/history";
     emptyAction = "查看全部";
   }
 
@@ -279,12 +193,6 @@ export default async function HistoryPage(props: HistoryPageProps) {
     emptyHref = "/video";
     emptyAction = "去创作视频";
   }
-
-  const collectionOptions = collections.map((collection) => ({
-    id: collection.id,
-    name: collection.name,
-    imageCount: collection._count.items,
-  }));
 
   return (
     <main className={styles.history}>
@@ -313,23 +221,21 @@ export default async function HistoryPage(props: HistoryPageProps) {
               </div>
 
               <div className={styles.history__tableBody}>
-                {pageItems.map((item) => {
+                {historyItems.map((item) => {
                   const task = item.task;
-                  const output = item.output;
-                  const asset = getPreviewAsset(output);
-                  const url = getPreviewUrl(output, urls);
-                  const statusLabel = getStatusLabel(task.status);
+                  const result = item.result;
+                  const extension = task.format || "png";
+                  const fileName = `zroimg-${task.taskNo}-${item.index + 1}.${extension}`;
 
                   return (
                     <article key={item.id} className={styles.history__tableRow}>
                       <div className={styles.history__preview}>
-                        {url && output && asset ? (
+                        {result ? (
                           <ImageLightbox
-                            src={urls.get(output.outputAsset.id) || url}
-                            previewSrc={url}
+                            src={result.resultUrl}
                             alt={task.prompt}
-                            width={output.width || asset.width || 768}
-                            height={output.height || asset.height || 768}
+                            width={768}
+                            height={768}
                             imageClassName={styles.history__image}
                           />
                         ) : (
@@ -341,21 +247,22 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
                       <div className={styles.history__promptCell}>
                         <h2 className={styles.history__prompt}>{task.prompt}</h2>
-                        {task.error ? <p className={styles.history__error}>{task.error}</p> : null}
+                        {task.failReason ? (
+                          <p className={styles.history__error}>{task.failReason}</p>
+                        ) : null}
                       </div>
 
                       <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {task.model}
+                        {task.modelName || task.modelCode}
                       </p>
                       <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {getImageResolutionLabel(task.quality)}
+                        {getImageResolutionLabel(task.quality ?? "-")}
                       </p>
                       <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
                         {task.ratio || "-"}
                       </p>
                       <p className={clsx(styles.history__credits, styles.history__centerCell)}>
-                        {task.unitCostCredits ??
-                          Math.round(task.costCredits / Math.max(task.imageCount, 1))}
+                        {getUnitPoints(task)}
                       </p>
                       <span
                         className={clsx(
@@ -365,23 +272,23 @@ export default async function HistoryPage(props: HistoryPageProps) {
                           task.status === "failed" && styles.history__statusDanger,
                         )}
                       >
-                        {statusLabel}
+                        {taskStatusLabels[task.status]}
                       </span>
                       <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {formatDate(task.createdAt)}
+                        {formatTime(task.createTime)}
                       </p>
 
                       <div className={styles.history__actions}>
-                        {output && asset && url ? (
+                        {result ? (
                           <HistoryImageActions
-                            generatedImageId={output.id}
-                            initialPublished={Boolean(output.galleryImage)}
-                            collections={collectionOptions}
-                            downloadUrl={downloadUrls.get(output.outputAsset.id) || url}
-                            downloadFileName={output.outputAsset.fileName || "zroimg-image.png"}
+                            generatedImageId={result.id}
+                            initialPublished={false}
+                            collections={collections}
+                            downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                            downloadFileName={fileName}
                           />
                         ) : (
-                          <TaskPoller taskId={task.id} initialStatus={task.status} />
+                          <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
                         )}
                       </div>
                     </article>

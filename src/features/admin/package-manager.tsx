@@ -5,11 +5,11 @@ import { Pencil, Plus, Power, Save, Star, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { adminPackagesApi } from "@/api/admin/packages";
 import { getErrorMessage } from "@/utils/error";
-import type { AdminCreditPackageInput, CreditPackage } from "@/types/orders";
+import type { AdminPackage, SavePackageRequest } from "@/types/admin";
 import workspace from "./admin-workspace.module.css";
 
 type PackageManagerProps = {
-  initialPackages: CreditPackage[];
+  initialPackages: AdminPackage[];
 };
 
 type PackageForm = {
@@ -38,21 +38,21 @@ function emptyForm(): PackageForm {
   };
 }
 
-function formFromPackage(packageItem: CreditPackage): PackageForm {
+function formFromPackage(packageItem: AdminPackage): PackageForm {
   return {
     code: packageItem.code,
     name: packageItem.name,
-    description: packageItem.description,
+    description: packageItem.description ?? "",
     amount: (packageItem.amountCent / 100).toFixed(2),
     credits: String(packageItem.credits),
-    highlights: packageItem.highlights.join("\n"),
+    highlights: (packageItem.highlights ?? []).join("\n"),
     recommended: packageItem.recommended,
     enabled: packageItem.enabled,
     sort: String(packageItem.sort),
   };
 }
 
-function buildInput(form: PackageForm): AdminCreditPackageInput {
+function buildInput(form: PackageForm): SavePackageRequest {
   const amount = Number(form.amount);
   const credits = Number(form.credits);
   const sort = Number(form.sort);
@@ -108,7 +108,7 @@ export function PackageManager(props: PackageManagerProps) {
     setDrawerOpen(true);
   }
 
-  function startEdit(packageItem: CreditPackage) {
+  function startEdit(packageItem: AdminPackage) {
     setEditingId(packageItem.id);
     setForm(formFromPackage(packageItem));
     setMessage("");
@@ -125,7 +125,7 @@ export function PackageManager(props: PackageManagerProps) {
   async function savePackage() {
     setMessage("");
 
-    let input: AdminCreditPackageInput;
+    let input: SavePackageRequest;
     try {
       input = buildInput(form);
     } catch (error) {
@@ -136,13 +136,13 @@ export function PackageManager(props: PackageManagerProps) {
     setSaving(true);
     try {
       if (editingId) {
-        const data = await adminPackagesApi.update(editingId, input);
+        const saved = await adminPackagesApi.update(editingId, input);
         setPackages((current) => {
-          return current.map((item) => (item.id === editingId ? data.package : item));
+          return current.map((item) => (item.id === editingId ? saved : item));
         });
       } else {
-        const data = await adminPackagesApi.create(input);
-        setPackages((current) => [...current, data.package].sort((a, b) => a.sort - b.sort));
+        const saved = await adminPackagesApi.create(input);
+        setPackages((current) => [...current, saved].sort((a, b) => a.sort - b.sort));
       }
 
       setDrawerOpen(false);
@@ -156,26 +156,30 @@ export function PackageManager(props: PackageManagerProps) {
     }
   }
 
-  async function toggleStatus(packageItem: CreditPackage) {
+  async function toggleStatus(packageItem: AdminPackage) {
     try {
-      const data = await adminPackagesApi.updateStatus(packageItem.id, !packageItem.enabled);
-      setPackages((current) =>
-        current.map((item) => (item.id === data.package.id ? data.package : item)),
-      );
+      const saved = await adminPackagesApi.updateStatus(packageItem.id, !packageItem.enabled);
+      setPackages((current) => current.map((item) => (item.id === saved.id ? saved : item)));
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
   }
 
-  async function toggleRecommend(packageItem: CreditPackage) {
+  async function toggleRecommend(packageItem: AdminPackage) {
     try {
-      const data = await adminPackagesApi.updateRecommend(packageItem.id, !packageItem.recommended);
+      const saved = await adminPackagesApi.updateRecommend(
+        packageItem.id,
+        !packageItem.recommended,
+      );
       setPackages((current) => {
         return current.map((item) => {
-          if (item.id === data.package.id) {
-            return data.package;
+          if (item.id === saved.id) {
+            return saved;
           }
-          return data.package.recommended ? { ...item, recommended: false } : item;
+          if (saved.recommended) {
+            return { ...item, recommended: false };
+          }
+          return item;
         });
       });
     } catch (error) {
@@ -183,7 +187,7 @@ export function PackageManager(props: PackageManagerProps) {
     }
   }
 
-  async function updateSort(packageItem: CreditPackage, value: string) {
+  async function updateSort(packageItem: AdminPackage, value: string) {
     const sort = Number(value);
     if (!Number.isInteger(sort)) {
       setMessage("排序值必须是整数");
@@ -191,18 +195,18 @@ export function PackageManager(props: PackageManagerProps) {
     }
 
     try {
-      const data = await adminPackagesApi.updateSort(packageItem.id, sort);
+      const saved = await adminPackagesApi.updateSort(packageItem.id, sort);
       setPackages((current) => {
-        return current
-          .map((item) => (item.id === data.package.id ? data.package : item))
-          .sort((itemA, itemB) => itemA.sort - itemB.sort);
+        const next = current.map((item) => (item.id === saved.id ? saved : item));
+        next.sort((itemA, itemB) => itemA.sort - itemB.sort);
+        return next;
       });
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
   }
 
-  async function deletePackage(packageItem: CreditPackage) {
+  async function deletePackage(packageItem: AdminPackage) {
     const shouldDelete = window.confirm(`确定删除套餐“${packageItem.name}”吗？`);
     if (!shouldDelete) {
       return;

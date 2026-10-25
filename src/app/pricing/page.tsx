@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
-import { listCreditPackages } from "@/server/bff/orders";
+import { requestJava } from "@/server/java-api";
+import type { CreditPackage } from "@/types/orders";
 import styles from "./pricing.module.css";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ const freeFeatures = [
 ];
 
 export default async function PricingPage() {
-  const packages = await listCreditPackages();
+  const packages = await requestJava<CreditPackage[]>("/order/user/packages");
   return (
     <>
       <ProductTopNav />

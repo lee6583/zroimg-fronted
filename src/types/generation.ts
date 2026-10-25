@@ -1,116 +1,117 @@
-type GenerationMode = "text" | "edit";
+type GenerationMode = "text_to_image" | "image_to_image";
 
-type GenerationQuality = string;
-
-type GenerationOutputFormat = string;
-
-type GenerationQualityOption = GenerationQuality | "auto";
-
-type GenerationTaskStatus = "queued" | "running" | "succeeded" | "failed";
-
-type GenerationAsset = {
-  id: string;
-  fileName: string | null;
-  width: number | null;
-  height: number | null;
-};
-
-type GenerationOutput = {
-  id: string;
-  width: number | null;
-  height: number | null;
-  outputAsset: GenerationAsset;
-  thumbnailAsset: GenerationAsset | null;
-  galleryImage: unknown | null;
-};
-
-type GenerationTaskView = {
-  id: string;
-  prompt: string;
-  mode: GenerationMode;
-  status: GenerationTaskStatus;
-  model: string;
-  size: string;
-  ratio?: string;
-  resolution?: string;
-  quality: GenerationQuality;
-  outputFormat: GenerationOutputFormat;
-  imageCount: number;
-  costCredits: number;
-  unitCostCredits?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  outputs: GenerationOutput[];
-  error: string | null;
-};
+type GenerationTaskStatus = "pending" | "processing" | "succeeded" | "failed";
 
 type GenerationModelParams = {
   ratios: string[];
-  qualities: GenerationQualityOption[];
+  qualities: string[];
   counts: number[];
   defaults: {
-    ratio: string;
-    quality: GenerationQualityOption;
-    count: number;
+    mode: string | null;
+    ratio: string | null;
+    quality: string | null;
+    count: number | null;
   };
 };
 
-type GenerationModelOption = {
-  value: string;
-  label: string;
-  modes: GenerationMode[];
-  defaultMode: GenerationMode;
-  params: Partial<Record<GenerationMode, GenerationModelParams>>;
+type GenerationModel = {
+  modelCode: string;
+  modelName: string;
+  provider: string;
+  modelType: string;
+  supportModes: string[];
+  supportParams: GenerationModelParams;
+  priceVersion: string;
+  defaultFlag: number;
+  sortOrder: number;
+  remark: string | null;
 };
 
-type GenerationPriceRequest = {
-  model: string;
-  mode: GenerationMode;
+type GenerationPriceEstimateRequest = {
+  modelCode: string;
+  mode: string;
   ratio: string;
-  quality: GenerationQualityOption;
+  quality: string;
   count: number;
 };
 
-type GenerationPriceResponse = {
+type GenerationPriceEstimate = {
+  modelCode: string;
   priceVersion: string;
   unitPoints: number;
-  imageCount: number;
+  billingUnit: string | null;
+  referencePoints: number | null;
+  durationSeconds: number | null;
+  count: number;
   requiredPoints: number;
   currentPoints: number;
   shortagePoints: number;
   enough: boolean;
-  detail: string;
+  detail: string | null;
 };
 
-type UploadedMediaApiItem = {
+type GenerationResult = {
   id: string;
-  fileName: string | null;
-  kind: "input" | "output";
+  resultType: string;
+  mediaAssetId: string;
+  resultUrl: string;
+  sortOrder: number;
 };
 
-type GenerationTaskOutputApiItem = {
+type GenerationTask = {
   id: string;
-  imageUrl: string;
-  fullImageUrl: string;
-  downloadUrl: string;
-  fileName: string | null;
-  width: number | null;
-  height: number | null;
-};
-
-type GenerationTaskApiItem = {
-  id: string;
+  taskNo: string;
+  modelCode: string;
+  modelName: string | null;
+  provider: string | null;
+  userEmail: string | null;
+  username: string | null;
+  modelType: string;
+  mode: string;
   prompt: string;
-  mode: GenerationMode;
+  referenceImageUrl: string | null;
+  referenceMediaId: string | null;
+  ratio: string | null;
+  resolution: string | null;
+  quality: string | null;
+  format: string | null;
+  count: number;
+  durationSeconds: number | null;
+  audio: boolean | null;
+  priceVersion: string | null;
+  unitPoints: number | null;
+  billingUnit: string | null;
+  referencePoints: number | null;
+  requiredPoints: number;
   status: GenerationTaskStatus;
-  size: string;
+  failReason: string | null;
+  results: GenerationResult[] | null;
+  createTime: string;
+  updateTime: string | null;
+  finishTime: string | null;
+};
+
+type GenerationTaskQuery = {
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: string;
+  isAsc?: boolean;
+  status?: GenerationTaskStatus;
+  mode?: string;
+  modelType?: string;
+  beginTime?: string;
+  endTime?: string;
+};
+
+type CreateGenerationTaskRequest = {
+  modelCode: string;
+  conversationId: string;
+  mode: string;
+  prompt: string;
+  referenceMediaId?: string;
   ratio: string;
-  quality: GenerationQualityOption;
-  imageCount: number;
-  costCredits: number;
-  unitCostCredits: number;
-  createdAt: string;
-  outputs: GenerationTaskOutputApiItem[];
+  quality: string;
+  count: number;
 };
 
 type GenerationConversationTaskSummary = {
@@ -118,134 +119,62 @@ type GenerationConversationTaskSummary = {
   costCredits: number;
 };
 
-type GenerationConversationApiItem = {
+type GenerationConversation = {
   id: string;
   title: string;
   lastTaskAt: string | null;
   updatedAt: string;
   createdAt: string;
-  _count: { tasks: number };
+  count: { tasks: number };
   tasks: GenerationConversationTaskSummary[];
 };
 
-type FetchGenerationConversationsResponse = {
-  conversations: GenerationConversationApiItem[];
-};
-
-type CreateGenerationConversationRequest = {
-  title?: string;
-};
-
-type CreateGenerationConversationResponse = {
-  conversation: GenerationConversationApiItem;
-};
-
-type FetchConversationTasksResponse = {
-  tasks: GenerationTaskApiItem[];
-};
-
-type UpdateGenerationConversationRequest = {
+type GenerationConversationRequest = {
   title: string;
 };
 
-type UpdateGenerationConversationResponse = {
-  conversation: GenerationConversationApiItem;
+type MediaAsset = {
+  id: string;
+  originalName: string | null;
+  mediaType: string;
+  mimeType: string;
+  fileSize: number;
+  width: number | null;
+  height: number | null;
+  status: string;
+  contentUrl: string;
+  createdAt: string;
 };
 
-type DeleteGenerationConversationResponse = {
-  ok: true;
+type MediaUploadPresignRequest = {
+  originalName: string;
+  contentType: string;
+  size: number;
 };
 
-type UploadMediaResponse = {
-  media: UploadedMediaApiItem;
-};
-
-type CreateGenerationTaskRequest = {
-  conversationId: string;
-  model: string;
-  prompt: string;
-  mode: GenerationMode;
-  referenceMediaId?: string;
-  quality: GenerationQualityOption;
-  ratio: string;
-  count: number;
-};
-
-type CreateGenerationTaskResponse = {
-  task: GenerationTaskApiItem;
-};
-
-type FetchGenerationTaskResponse = {
-  task: GenerationTaskApiItem;
-};
-
-type CreateFavoriteCollectionRequest = {
-  name: string;
-};
-
-type FavoriteCollectionMutationResponse = {
-  collection: unknown;
-};
-
-type UpdateFavoriteCollectionRequest = {
-  name: string;
-};
-
-type DeleteFavoriteCollectionResponse = {
-  ok?: boolean;
-};
-
-type AddImageToFavoriteCollectionRequest = {
-  generatedImageId: string;
-};
-
-type AddImageToFavoriteCollectionResponse = {
-  ok?: boolean;
-};
-
-type PublishGalleryImageRequest = {
-  generatedImageId: string;
-};
-
-type PublishGalleryImageResponse = {
-  ok?: boolean;
+type MediaUploadPresign = {
+  assetId: string;
+  uploadUrl: string;
+  requiredHeaders: Record<string, string>;
+  expiresAt: string;
+  originalName: string;
 };
 
 export type {
   GenerationMode,
-  GenerationQuality,
-  GenerationQualityOption,
-  GenerationOutputFormat,
   GenerationTaskStatus,
-  GenerationAsset,
-  GenerationOutput,
-  GenerationTaskView,
   GenerationModelParams,
-  GenerationModelOption,
-  GenerationPriceRequest,
-  GenerationPriceResponse,
-  UploadedMediaApiItem,
-  GenerationTaskOutputApiItem,
-  GenerationTaskApiItem,
-  GenerationConversationTaskSummary,
-  GenerationConversationApiItem,
-  FetchGenerationConversationsResponse,
-  CreateGenerationConversationRequest,
-  CreateGenerationConversationResponse,
-  FetchConversationTasksResponse,
-  UpdateGenerationConversationRequest,
-  UpdateGenerationConversationResponse,
-  DeleteGenerationConversationResponse,
-  UploadMediaResponse,
+  GenerationModel,
+  GenerationPriceEstimateRequest,
+  GenerationPriceEstimate,
+  GenerationResult,
+  GenerationTask,
+  GenerationTaskQuery,
   CreateGenerationTaskRequest,
-  CreateGenerationTaskResponse,
-  FetchGenerationTaskResponse,
-  CreateFavoriteCollectionRequest,
-  FavoriteCollectionMutationResponse,
-  UpdateFavoriteCollectionRequest,
-  DeleteFavoriteCollectionResponse,
-  AddImageToFavoriteCollectionRequest,
-  AddImageToFavoriteCollectionResponse,
-  PublishGalleryImageRequest,
-  PublishGalleryImageResponse,
+  GenerationConversationTaskSummary,
+  GenerationConversation,
+  GenerationConversationRequest,
+  MediaAsset,
+  MediaUploadPresignRequest,
+  MediaUploadPresign,
 };

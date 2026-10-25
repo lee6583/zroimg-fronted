@@ -3,20 +3,21 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
-import { listAdminGenerations } from "@/server/bff/admin";
+import {
+  isTaskRunning,
+  readTaskModel,
+  readTaskOutputCount,
+  readTaskSpec,
+  readTaskType,
+  taskStatusLabels,
+} from "@/features/admin/generation-task";
+import { requestJava } from "@/server/java-api";
+import type { AdminGenerationTaskPage } from "@/types/admin";
 
 export const dynamic = "force-dynamic";
 
 const generationStatuses = ["processing", "succeeded", "failed"] as const;
 const pageSizeOptions = [10, 20, 50];
-const generationStatusLabels: Record<string, string> = {
-  pending: "生成中",
-  processing: "生成中",
-  queued: "生成中",
-  running: "生成中",
-  succeeded: "已完成",
-  failed: "失败",
-};
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminGenerationsPageProps = {
   searchParams: SearchParams;
@@ -27,8 +28,8 @@ function readParam(params: Record<string, string | string[] | undefined>, key: s
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatDate(value: string | null) {
-  return value ? new Date(value).toISOString().slice(0, 16).replace("T", " ") : "-";
+function formatDate(value: string) {
+  return value.slice(0, 16).replace("T", " ");
 }
 
 function href(input: { q?: string; status?: string; page?: number; pageSize?: number }) {
@@ -43,17 +44,9 @@ function href(input: { q?: string; status?: string; page?: number; pageSize?: nu
 
 function statusClass(status: string) {
   if (status === "succeeded") return workspace.statusSuccess;
-  if (["pending", "processing", "queued", "running"].includes(status)) {
-    return workspace.statusInfo;
-  }
+  if (isTaskRunning(status)) return workspace.statusInfo;
   if (status === "failed") return workspace.statusDanger;
   return undefined;
-}
-
-function generationType(modelType: "image" | "video", mode: string) {
-  if (modelType === "video" || mode.includes("video")) return "视频";
-  if (mode === "image_to_image" || mode === "edit") return "图生图";
-  return "文生图";
 }
 
 export default async function AdminGenerationsPage(props: AdminGenerationsPageProps) {
@@ -66,11 +59,15 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
   const requestedPageSize = Number(readParam(params, "pageSize") || 20);
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
   const isKnownStatus = generationStatuses.includes(status as (typeof generationStatuses)[number]);
-  const taskPage = await listAdminGenerations({
-    page,
-    pageSize,
-    q,
-    status: isKnownStatus ? status : undefined,
+  const taskPage = await requestJava<AdminGenerationTaskPage>("/generation/admin/tasks", {
+    params: {
+      pageNo: page,
+      pageSize,
+      q,
+      status: isKnownStatus ? status : undefined,
+      sortBy: "create_time",
+      isAsc: false,
+    },
   });
   const tasks = taskPage.list;
   const total = taskPage.total;
@@ -106,7 +103,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                 className={status === item ? workspace.filterActive : undefined}
                 href={href({ q, status: item, page: 1, pageSize })}
               >
-                {generationStatusLabels[item]}
+                {taskStatusLabels[item]}
               </Link>
             ))}
           </nav>
@@ -131,7 +128,9 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                   <tr key={task.id}>
                     <td data-label="用户">
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>{task.username}</span>
+                        <span className={workspace.primaryText}>
+                          {task.username || task.userEmail || "-"}
+                        </span>
                       </div>
                     </td>
                     <td data-label="提示词">
@@ -149,28 +148,28 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                         ) : null}
                       </div>
                     </td>
-                    <td data-label="类型">{generationType(task.modelType, task.mode)}</td>
+                    <td data-label="类型">{readTaskType(task)}</td>
                     <td data-label="模型配置">
                       <div className={workspace.primaryCell}>
-                        <span>{task.model}</span>
-                        <span className={workspace.secondaryText}>
-                          {task.size} · {task.quality}
-                        </span>
+                        <span>{readTaskModel(task)}</span>
+                        <span className={workspace.secondaryText}>{readTaskSpec(task)}</span>
                       </div>
                     </td>
                     <td data-label="消耗 / 输出">
                       <div className={workspace.primaryCell}>
                         <span className={workspace.numeric}>{task.requiredPoints} 积分</span>
-                        <span className={workspace.secondaryText}>{task.outputCount} 张图片</span>
+                        <span className={workspace.secondaryText}>
+                          {readTaskOutputCount(task)} 个结果
+                        </span>
                       </div>
                     </td>
                     <td data-label="状态">
                       <span className={clsx(workspace.status, statusClass(task.status))}>
-                        {generationStatusLabels[task.status] ?? task.status}
+                        {taskStatusLabels[task.status] ?? task.status}
                       </span>
                     </td>
                     <td data-label="创建时间" className={workspace.dateText}>
-                      {formatDate(task.createdAt)}
+                      {formatDate(task.createTime)}
                     </td>
                   </tr>
                 ))}

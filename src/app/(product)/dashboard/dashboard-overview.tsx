@@ -4,7 +4,7 @@ import Image from "next/image";
 import { CalendarDays, Heart, ImageIcon, WalletCards } from "lucide-react";
 import { useState } from "react";
 import { CheckInCard } from "@/features/dashboard/check-in-card";
-import type { CheckInStatus } from "@/types/checkin";
+import type { SignCard } from "@/types/checkin";
 import styles from "./dashboard.module.css";
 
 type MetricCardProps = {
@@ -38,7 +38,7 @@ type DashboardOverviewProps = {
   monthlyGeneratedCount: number;
   favoriteCount: number;
   initialBalance: number;
-  checkInStatus: CheckInStatus;
+  signCard: SignCard;
   recentCreations: RecentCreation[];
 };
 
@@ -46,27 +46,22 @@ type RecentCreation = {
   id: string;
   prompt: string;
   imageUrl: string;
-  width: number;
-  height: number;
 };
+
+const previewSize = 768;
 
 export function DashboardOverview(props: DashboardOverviewProps) {
   const generatedCount = props.generatedCount;
   const monthlyGeneratedCount = props.monthlyGeneratedCount;
   const favoriteCount = props.favoriteCount;
   const initialBalance = props.initialBalance;
-  const checkInStatus = props.checkInStatus;
+  const signCard = props.signCard;
   const recentCreations = props.recentCreations;
 
   const [balance, setBalance] = useState(initialBalance);
 
-  function onCheckInClaimed(credits: number, totalCredits?: number) {
-    if (typeof totalCredits === "number") {
-      setBalance(totalCredits);
-      return;
-    }
-
-    setBalance((current) => current + credits);
+  function onCheckInClaimed(totalPoints: number) {
+    setBalance(totalPoints);
   }
 
   return (
@@ -79,7 +74,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
           <MetricCard label="剩余积分" value={balance} icon={WalletCards} />
         </div>
 
-        <CheckInCard initialStatus={checkInStatus} onClaimed={onCheckInClaimed} />
+        <CheckInCard signCard={signCard} onClaimed={onCheckInClaimed} />
       </div>
 
       <section className={styles.dashboard__recent}>
@@ -92,8 +87,8 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                   className={styles.dashboard__recentImage}
                   src={item.imageUrl}
                   alt={item.prompt}
-                  width={item.width}
-                  height={item.height}
+                  width={previewSize}
+                  height={previewSize}
                   unoptimized
                 />
                 <p className={styles.dashboard__recentPrompt}>{item.prompt}</p>
@@ -107,3 +102,5 @@ export function DashboardOverview(props: DashboardOverviewProps) {
     </section>
   );
 }
+
+export type { RecentCreation };

@@ -2,9 +2,15 @@
 
 import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
-import type { CreditPackage, PaymentType, RechargeRules } from "@/types/orders";
+import type {
+  CreateRechargeOrderRequest,
+  CreditPackage,
+  PaymentType,
+  RechargeRules,
+} from "@/types/orders";
 import { calculateCustomCredits } from "@/utils/credits";
 import { calculateRechargeFeeCent } from "@/utils/recharge";
 import styles from "./order-form.module.css";
@@ -102,6 +108,7 @@ export function OrderForm(props: OrderFormProps) {
   const defaultCustomAmount = Math.min(maxAmountCny, Math.max(minAmountCny, 29));
   const customPackageAmount = Math.min(maxAmountCny, Math.max(minAmountCny, enterpriseAmount));
 
+  const router = useRouter();
   const [customAmount, setCustomAmount] = useState(String(defaultCustomAmount));
   const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentType>("alipay");
@@ -137,27 +144,24 @@ export function OrderForm(props: OrderFormProps) {
   const customPayableCent = customAmountCent + customFeeCent;
   const customCredits = calculateCustomCredits(amount, rules.creditsPerYuan);
 
-  async function createPackageOrder(packageId: string) {
+  async function submitOrder(data: CreateRechargeOrderRequest) {
     setLoading(true);
     setMessage("");
 
     try {
-      const data = await ordersApi.createOrder({
-        mode: "package",
-        packageId,
-        paymentType,
-      });
-      handleOrderResult(data.order?.resultUrl ?? undefined);
+      const order = await ordersApi.create(data);
+      router.push(`/billing/result?order=${encodeURIComponent(order.orderNo)}`);
     } catch (error) {
       setLoading(false);
       setMessage(getErrorMessage(error));
     }
   }
 
-  async function createCustomOrder(amountOverride?: number) {
-    setLoading(true);
-    setMessage("");
+  function createPackageOrder(packageId: string) {
+    void submitOrder({ packageId, payChannel: paymentType });
+  }
 
+  function createCustomOrder(amountOverride?: number) {
     const orderAmount = amountOverride ?? amount;
     const isInvalidAmount =
       !Number.isFinite(orderAmount) || orderAmount < minAmountCny || orderAmount > maxAmountCny;
@@ -166,31 +170,10 @@ export function OrderForm(props: OrderFormProps) {
       setMessage(
         `请输入 ${formatCny(rules.minAmountCent)} - ${formatCny(rules.maxAmountCent)} 之间的金额`,
       );
-      setLoading(false);
       return;
     }
 
-    try {
-      const data = await ordersApi.createOrder({
-        mode: "custom",
-        amountCny: orderAmount,
-        paymentType,
-      });
-      handleOrderResult(data.order?.resultUrl ?? undefined);
-    } catch (error) {
-      setLoading(false);
-      setMessage(getErrorMessage(error));
-    }
-  }
-
-  function handleOrderResult(resultUrl?: string) {
-    setLoading(false);
-    if (resultUrl) {
-      window.location.assign(resultUrl);
-      return;
-    }
-
-    setMessage("订单已创建，但订单确认页地址为空，请检查支付配置。");
+    void submitOrder({ amountCent: Math.round(orderAmount * 100), payChannel: paymentType });
   }
 
   function handleQuickAmountClick(value: number) {
@@ -255,6 +238,12 @@ export function OrderForm(props: OrderFormProps) {
             const canPurchase =
               item.kind === "custom" ||
               (item.amountCent >= rules.minAmountCent && item.amountCent <= rules.maxAmountCent);
+            let buttonLabel = "立即购买";
+            if (isLoading) {
+              buttonLabel = "创建中";
+            } else if (!canPurchase) {
+              buttonLabel = "暂不可购买";
+            }
 
             return (
               <article
@@ -295,18 +284,18 @@ export function OrderForm(props: OrderFormProps) {
                   disabled={isLoading || !canPurchase}
                   onClick={() => {
                     if (item.kind === "package") {
-                      void createPackageOrder(item.id);
+                      createPackageOrder(item.id);
                       return;
                     }
 
-                    void createCustomOrder(item.amountCny);
+                    createCustomOrder(item.amountCny);
                   }}
                   className={clsx(
                     styles.orderForm__packageButton,
                     isPopular && styles.orderForm__packageButtonPopular,
                   )}
                 >
-                  {isLoading ? "创建中" : canPurchase ? "立即购买" : "暂不可购买"}
+                  {buttonLabel}
                 </button>
               </article>
             );

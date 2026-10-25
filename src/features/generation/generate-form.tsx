@@ -8,36 +8,38 @@ import { generationTasksApi } from "@/api/generation/tasks";
 import { uploadMediaFile } from "@/api/media/uploads";
 import { getErrorMessage } from "@/utils/error";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
-import type { GenerationModelOption } from "@/types/generation";
+import type { FavoriteCollection } from "@/types/favorites";
+import type {
+  GenerationConversation,
+  GenerationModel,
+  GenerationTask,
+  MediaAsset,
+} from "@/types/generation";
 import { ConversationSidebar } from "./conversation-sidebar";
 import { GenerationSettings } from "./generation-settings";
 import {
   activeConversationCookieName,
-  getGenerationSize,
   groupConversations,
+  isTaskPending,
   normalizeOptions,
-  normalizeConversation,
   resolveActiveConversationId,
-  type ConversationItem,
-  type FavoriteCollectionItem,
+  supportsMode,
   type GenerationOptions,
-  type MediaInput,
   type Notice,
-  type TaskItem,
 } from "./generation-model";
 import { PromptComposer } from "./prompt-composer";
 import { TaskPreview } from "./task-preview";
 import styles from "./generate-form.module.css";
 
 type GenerateFormProps = {
-  initialChats: ConversationItem[];
+  initialChats: GenerationConversation[];
   initialId?: string;
-  initialTasks: TaskItem[];
+  initialTasks: GenerationTask[];
   initialBalance: number;
   initialOptions: GenerationOptions;
   initialEstimate: number;
-  initialCollections: FavoriteCollectionItem[];
-  modelOptions: GenerationModelOption[];
+  initialCollections: FavoriteCollection[];
+  modelOptions: GenerationModel[];
 };
 
 const maxGenerationInputs = 1;
@@ -59,7 +61,7 @@ export function GenerateForm(props: GenerateFormProps) {
   const [options, setOptions] = useState<GenerationOptions>(initialOptions);
   const [estimate, setEstimate] = useState(initialEstimate);
   const [hasEstimateError, setEstimateError] = useState(false);
-  const [inputs, setInputs] = useState<MediaInput[]>([]);
+  const [inputs, setInputs] = useState<MediaAsset[]>([]);
   const [notice, setNotice] = useState<Notice>(null);
   const [balance, setBalance] = useState(initialBalance);
   const [errorCost, setErrorCost] = useState<number | null>(null);
@@ -73,11 +75,10 @@ export function GenerateForm(props: GenerateFormProps) {
   const isCreatingChatRef = useRef(false);
   const selectionVersionRef = useRef(0);
 
-  const size = getGenerationSize(options);
   const isCostError = !isEstimating && (balance < estimate || errorCost === estimate);
   const groups = groupConversations(chats);
   const pendingKey = tasks
-    .filter(isPending)
+    .filter(isTaskPending)
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
   const summary = `${options.ratio} · 预计 ${estimate} 积分`;
@@ -92,20 +93,20 @@ export function GenerateForm(props: GenerateFormProps) {
 
       try {
         if (rememberedId && !nextChats.some((item) => item.id === rememberedId)) {
-          const data = await generationConversationsApi.fetchConversations();
-          nextChats = data.conversations.map(normalizeConversation);
+          nextChats = await generationConversationsApi.fetchConversations();
         }
 
         const nextId = resolveActiveConversationId(nextChats, rememberedId, initialId);
-        const data = nextId
-          ? await generationConversationsApi.fetchConversationTasks(nextId)
-          : { tasks: [] };
+        let nextTasks: GenerationTask[] = [];
+        if (nextId) {
+          nextTasks = await generationConversationsApi.fetchConversationTasks(nextId);
+        }
 
         if (disposed || selectionVersionRef.current !== selectionVersion) return;
 
         setChats(nextChats);
         setActiveId(nextId);
-        setTasks(data.tasks);
+        setTasks(nextTasks);
         if (nextId) rememberActiveConversation(nextId);
       } catch {
         // Keep the server-rendered conversation available when background restoration fails.
@@ -124,7 +125,7 @@ export function GenerateForm(props: GenerateFormProps) {
     const timer = window.setTimeout(async () => {
       try {
         const price = await generationTasksApi.estimatePrice({
-          model: options.model,
+          modelCode: options.modelCode,
           mode: options.mode,
           ratio: options.ratio,
           quality: options.quality,
@@ -154,7 +155,7 @@ export function GenerateForm(props: GenerateFormProps) {
       isCurrent = false;
       window.clearTimeout(timer);
     };
-  }, [options.count, options.mode, options.model, options.quality, options.ratio, size]);
+  }, [options.count, options.mode, options.modelCode, options.quality, options.ratio]);
 
   useEffect(() => {
     if (!activeId || !pendingKey) return;
@@ -164,11 +165,11 @@ export function GenerateForm(props: GenerateFormProps) {
 
     async function poll() {
       try {
-        const data = await generationConversationsApi.fetchConversationTasks(activeId);
+        const nextTasks = await generationConversationsApi.fetchConversationTasks(activeId);
         if (disposed) return;
 
-        setTasks(data.tasks);
-        if (!data.tasks.some(isPending)) {
+        setTasks(nextTasks);
+        if (!nextTasks.some(isTaskPending)) {
           await refreshList();
           return;
         }
@@ -188,8 +189,7 @@ export function GenerateForm(props: GenerateFormProps) {
 
   async function refreshList() {
     try {
-      const data = await generationConversationsApi.fetchConversations();
-      setChats(data.conversations.map(normalizeConversation));
+      setChats(await generationConversationsApi.fetchConversations());
     } catch {
       // The task list is still usable when this background refresh fails.
     }
@@ -215,10 +215,9 @@ export function GenerateForm(props: GenerateFormProps) {
     setNotice(null);
 
     try {
-      const data = await generationConversationsApi.createConversation({
+      const item = await generationConversationsApi.createConversation({
         title: "新对话",
       });
-      const item = normalizeConversation(data.conversation);
 
       selectionVersionRef.current += 1;
       setChats((current) => [item, ...current.filter((entry) => entry.id !== item.id)]);
@@ -245,8 +244,7 @@ export function GenerateForm(props: GenerateFormProps) {
     setNotice(null);
 
     try {
-      const data = await generationConversationsApi.fetchConversationTasks(id);
-      setTasks(data.tasks);
+      setTasks(await generationConversationsApi.fetchConversationTasks(id));
     } catch (error) {
       showError(error);
     }
@@ -260,10 +258,9 @@ export function GenerateForm(props: GenerateFormProps) {
 
     setNotice(null);
     try {
-      const data = await generationConversationsApi.updateConversation(id, {
+      const updated = await generationConversationsApi.updateConversation(id, {
         title,
       });
-      const updated = normalizeConversation(data.conversation);
       setChats((current) => current.map((item) => (item.id === id ? updated : item)));
       return true;
     } catch (error) {
@@ -308,7 +305,7 @@ export function GenerateForm(props: GenerateFormProps) {
   async function addFiles(files: FileList | null) {
     if (!files) return;
 
-    const supportsEdit = modelOptions.some((model) => model.modes.includes("edit"));
+    const supportsEdit = modelOptions.some((model) => supportsMode(model, "image_to_image"));
     if (!supportsEdit) {
       setNotice({ text: "暂无可用图生图模型", tone: "error" });
       return;
@@ -339,11 +336,11 @@ export function GenerateForm(props: GenerateFormProps) {
     setUploading(true);
     setNotice(null);
     try {
-      const uploaded = await Promise.all(selected.map(uploadFile));
+      const uploaded = await Promise.all(selected.map(uploadMediaFile));
       setInputs((current) => [...current, ...uploaded].slice(0, maxGenerationInputs));
       setEstimating(true);
       setOptions((current) => {
-        const nextOptions = { ...current, mode: "edit" as const };
+        const nextOptions = { ...current, mode: "image_to_image" as const };
         return normalizeOptions(nextOptions, modelOptions);
       });
     } catch (error) {
@@ -366,7 +363,7 @@ export function GenerateForm(props: GenerateFormProps) {
       setNotice(null);
       return;
     }
-    if (options.mode === "edit" && !inputs.length) {
+    if (options.mode === "image_to_image" && !inputs.length) {
       setNotice({
         text: "图生图需要先上传至少 1 张参考图",
         tone: "error",
@@ -384,57 +381,51 @@ export function GenerateForm(props: GenerateFormProps) {
       if (!conversationId) return;
 
       pendingId = `pending-${Date.now()}`;
-      const pendingTask: TaskItem = {
-        id: pendingId,
-        prompt: text,
-        mode: options.mode,
-        status: "running",
-        size,
-        ratio: options.ratio,
-        quality: options.quality,
-        imageCount: options.count,
-        costCredits: estimate,
-        unitCostCredits: Math.round(estimate / Math.max(options.count, 1)),
-        createdAt: new Date().toISOString(),
-        outputs: [],
-      };
+      const pendingTask = createPendingTask(pendingId, text, options, estimate);
 
       setTasks((current) => [pendingTask, ...current]);
       setPrompt("");
 
-      const data = await generationTasksApi.createTask({
+      let referenceMediaId: string | undefined;
+      if (options.mode === "image_to_image") {
+        referenceMediaId = inputs[0]?.id;
+      }
+
+      const task = await generationTasksApi.createTask({
         conversationId,
-        model: options.model,
+        modelCode: options.modelCode,
         prompt: text,
         mode: options.mode,
-        referenceMediaId: options.mode === "edit" ? inputs[0]?.id : undefined,
+        referenceMediaId,
         quality: options.quality,
         ratio: options.ratio,
         count: options.count,
       });
-      const task = data.task;
+      const latestTask = { status: task.status, costCredits: task.requiredPoints };
 
       setErrorCost(null);
       setTasks((current) => current.map((item) => (item.id === pendingId ? task : item)));
       setBalance((current) => {
-        const next = current - task.costCredits;
+        const next = current - task.requiredPoints;
         if (next < 0) return 0;
 
         return next;
       });
       setChats((current) =>
-        current.map((item) =>
-          item.id === conversationId
-            ? {
-                ...item,
-                title: item.title === "新对话" ? getTitle(text) : item.title,
-                taskCount: item.taskCount + 1,
-                latestTaskStatus: task.status,
-                latestTaskCost: task.costCredits,
-                lastTaskAt: task.createdAt,
-              }
-            : item,
-        ),
+        current.map((item) => {
+          if (item.id !== conversationId) return item;
+
+          let title = item.title;
+          if (title === "新对话") title = getTitle(text);
+
+          return {
+            ...item,
+            title,
+            count: { tasks: item.count.tasks + 1 },
+            tasks: [latestTask],
+            lastTaskAt: task.createTime,
+          };
+        }),
       );
       await refreshList();
     } catch (error) {
@@ -446,7 +437,7 @@ export function GenerateForm(props: GenerateFormProps) {
 
           return {
             ...item,
-            status: "failed",
+            status: "failed" as const,
           };
         }),
       );
@@ -608,21 +599,53 @@ export function GenerateForm(props: GenerateFormProps) {
   );
 }
 
-function isPending(task: TaskItem) {
-  return task.status === "queued" || task.status === "running";
-}
-
 function getTitle(prompt: string) {
   const text = prompt.replace(/\s+/g, " ").trim();
   return text.length > 24 ? `${text.slice(0, 24)}...` : text || "新对话";
 }
 
-function isReusableDraftChat(chat: ConversationItem, tasks: TaskItem[]) {
-  return chat.taskCount === 0 && !chat.lastTaskAt && tasks.length === 0;
+function isReusableDraftChat(chat: GenerationConversation, tasks: GenerationTask[]) {
+  return chat.count.tasks === 0 && !chat.lastTaskAt && tasks.length === 0;
 }
 
-async function uploadFile(file: File) {
-  return (await uploadMediaFile(file)).media;
+function createPendingTask(
+  id: string,
+  prompt: string,
+  options: GenerationOptions,
+  estimate: number,
+): GenerationTask {
+  return {
+    id,
+    taskNo: id,
+    modelCode: options.modelCode,
+    modelName: null,
+    provider: null,
+    userEmail: null,
+    username: null,
+    modelType: "image",
+    mode: options.mode,
+    prompt,
+    referenceImageUrl: null,
+    referenceMediaId: null,
+    ratio: options.ratio,
+    resolution: null,
+    quality: options.quality,
+    format: null,
+    count: options.count,
+    durationSeconds: null,
+    audio: null,
+    priceVersion: null,
+    unitPoints: null,
+    billingUnit: null,
+    referencePoints: null,
+    requiredPoints: estimate,
+    status: "processing",
+    failReason: null,
+    results: [],
+    createTime: new Date().toISOString(),
+    updateTime: null,
+    finishTime: null,
+  };
 }
 
 function readActiveConversationId() {

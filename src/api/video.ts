@@ -1,46 +1,44 @@
 import { request } from "@/utils/request";
 import type {
   CreateVideoTaskRequest,
-  CreateVideoTaskResponse,
-  VideoModelResponse,
-  VideoPriceRequest,
-  VideoPriceResponse,
+  VideoModel,
+  VideoPriceEstimate,
+  VideoPriceEstimateRequest,
+  VideoTask,
+  VideoTaskPage,
   VideoTaskPageQuery,
-  VideoTaskPageResponse,
-  VideoTaskResponse,
 } from "@/types/video";
 
 function listModels() {
-  return request<VideoModelResponse>({ url: "/api/video/models" });
+  return request<VideoModel[]>({ url: "/api/generation/user/video/models" });
 }
 
-function estimate(data: VideoPriceRequest) {
-  return request<VideoPriceResponse>({
-    url: "/api/video/price/estimate",
+function estimate(data: VideoPriceEstimateRequest) {
+  return request<VideoPriceEstimate>({
+    url: "/api/generation/user/video/price/estimate",
     method: "POST",
     data,
   });
 }
 
 function createTask(data: CreateVideoTaskRequest) {
-  return request<CreateVideoTaskResponse>({
-    url: "/api/video/tasks",
+  return request<VideoTask>({
+    url: "/api/generation/user/video/tasks",
     method: "POST",
     data,
   });
 }
 
 function listTasks(query: VideoTaskPageQuery) {
-  return request<VideoTaskPageResponse>({
-    url: "/api/video/tasks",
+  return request<VideoTaskPage>({
+    url: "/api/generation/user/video/tasks",
     params: query,
   });
 }
 
 function getTask(taskNo: string) {
-  const safeTaskNo = encodeURIComponent(taskNo);
-  return request<VideoTaskResponse>({
-    url: `/api/video/tasks/${safeTaskNo}`,
+  return request<VideoTask>({
+    url: `/api/generation/user/video/tasks/${encodeURIComponent(taskNo)}`,
   });
 }
 

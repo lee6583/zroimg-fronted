@@ -1,9 +1,6 @@
-import { getStore } from "@/server/bff/mock-store";
-import { isJavaBffEnabled } from "@/server/env";
-import { getJavaApiData, requestJavaApiData } from "@/server/java-api";
-import type { DocsConfig } from "@/types/content";
+import type { DocsConfig } from "@/types/admin";
 
-export const defaultDocsConfig: DocsConfig = {
+const defaultDocs: DocsConfig = {
   title: "ZroImg 文档",
   description: "了解 ZroImg 的图片创作、积分、订单、收藏和账户使用方式。",
   groups: [
@@ -50,29 +47,4 @@ ZroImg 是一个面向创作者的 AI 图片生成产品。
   ],
 };
 
-export async function getDocsConfig(): Promise<DocsConfig> {
-  if (isJavaBffEnabled()) {
-    const docs = await getJavaApiData<DocsConfig>("/content/public/docs");
-    if (!docs?.title || !Array.isArray(docs.groups)) {
-      return defaultDocsConfig;
-    }
-
-    return docs;
-  }
-
-  const docs = getStore().settings.docs;
-  return (docs as DocsConfig) || defaultDocsConfig;
-}
-
-export async function updateDocsConfig(nextDocs: DocsConfig) {
-  if (isJavaBffEnabled()) {
-    return requestJavaApiData<DocsConfig>("/admin/settings/docs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nextDocs),
-    });
-  }
-
-  getStore().settings.docs = nextDocs;
-  return nextDocs;
-}
+export { defaultDocs };

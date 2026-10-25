@@ -1,13 +1,27 @@
 import clsx from "clsx";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import { AppPagination } from "@/components/ui/app-pagination";
-import { listPublicImages, normalizeCategory } from "@/server/bff/generation";
-import { getMediaSignedUrl } from "@/server/bff/generation";
+import { requestJava } from "@/server/java-api";
+import type { PageResult } from "@/types/api";
+import type { GalleryCategory, GalleryImage } from "@/types/gallery";
+import { publicAssetUrl } from "@/utils/media";
 import styles from "./gallery.module.css";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "作品画廊 | ZroImg",
+  description:
+    "浏览 ZroImg 社区创作者公开发布的 AI 生成图片作品，按写实、动漫、艺术等分类探索灵感。",
+  openGraph: {
+    title: "作品画廊 | ZroImg",
+    description: "浏览 ZroImg 社区创作者公开发布的 AI 生成图片作品。",
+    type: "website",
+  },
+};
 
 const categoryTabs = [
   { label: "全部", href: "/gallery", value: undefined },
@@ -17,7 +31,7 @@ const categoryTabs = [
   { label: "其他", href: "/gallery?category=other", value: "other" },
 ] as const;
 
-const categoryLabels: Record<string, string> = {
+const categoryLabels: Record<GalleryCategory, string> = {
   realistic: "写实",
   anime: "动漫",
   art: "艺术",
@@ -43,6 +57,15 @@ function readParam(value?: string | string[]) {
   return value;
 }
 
+function normalizeCategory(value?: string | string[]): GalleryCategory | undefined {
+  const category = readParam(value);
+  if (category && Object.hasOwn(categoryLabels, category)) {
+    return category as GalleryCategory;
+  }
+
+  return undefined;
+}
+
 function normalizePage(value?: string) {
   const page = Number(value || 1);
   if (!Number.isFinite(page)) {
@@ -61,11 +84,11 @@ function normalizePageSize(value?: string) {
   return defaultPageSize;
 }
 
-function formatDate(date: Date) {
+function formatDate(value: string) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
     day: "2-digit",
-  }).format(date);
+  }).format(new Date(value));
 }
 
 export default async function GalleryPage(props: GalleryPageProps) {
@@ -74,20 +97,10 @@ export default async function GalleryPage(props: GalleryPageProps) {
   const category = normalizeCategory(params.category);
   const page = normalizePage(readParam(params.page));
   const pageSize = normalizePageSize(readParam(params.pageSize));
-  const galleryPage = await listPublicImages({ category, page, pageSize });
+  const galleryPage = await requestJava<PageResult<GalleryImage>>("/gallery/public/images", {
+    params: { pageNo: page, pageSize, category },
+  });
   const images = galleryPage.list;
-  const signedUrls = await Promise.all(
-    images.map(async (item) => {
-      let asset = item.generatedImage.outputAsset;
-      if (item.generatedImage.thumbnailAsset) {
-        asset = item.generatedImage.thumbnailAsset;
-      }
-
-      const url = await getMediaSignedUrl(asset.id, true);
-      return [asset.id, url] as const;
-    }),
-  );
-  const urls = new Map(signedUrls);
 
   return (
     <>
@@ -116,27 +129,20 @@ export default async function GalleryPage(props: GalleryPageProps) {
           <>
             <section className={styles.gallery__masonry} aria-label="社区作品">
               {images.map((item) => {
-                let asset = item.generatedImage.outputAsset;
-                if (item.generatedImage.thumbnailAsset) {
-                  asset = item.generatedImage.thumbnailAsset;
-                }
-
-                const url = urls.get(asset.id);
+                const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
                 const authorName =
                   item.userProfile.username || item.userProfile.user?.name || "创作者";
 
                 return (
                   <article key={item.id} className={styles.gallery__card}>
-                    {url ? (
-                      <Image
-                        className={styles.gallery__image}
-                        src={url}
-                        alt={item.title || item.prompt}
-                        width={item.generatedImage.width || asset.width || 768}
-                        height={item.generatedImage.height || asset.height || 768}
-                        unoptimized
-                      />
-                    ) : null}
+                    <Image
+                      className={styles.gallery__image}
+                      src={publicAssetUrl(item.generatedImageId)}
+                      alt={item.title || item.prompt}
+                      width={item.generatedImage.width || asset.width || 768}
+                      height={item.generatedImage.height || asset.height || 768}
+                      unoptimized
+                    />
 
                     <div className={styles.gallery__cardBody}>
                       <div className={styles.gallery__cardMeta}>

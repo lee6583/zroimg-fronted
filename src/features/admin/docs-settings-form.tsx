@@ -3,8 +3,8 @@
 import { Braces, CircleCheck, RotateCcw, Save } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
-import { adminDocsApi } from "@/api/admin/docs";
-import type { DocsConfig } from "@/types/content";
+import { adminSettingsApi } from "@/api/admin/settings";
+import type { DocsConfig } from "@/types/admin";
 import styles from "./docs-settings-form.module.css";
 
 type DocsSettingsFormProps = {
@@ -52,7 +52,7 @@ export function DocsSettingsForm(props: DocsSettingsFormProps) {
     setSaving(true);
     setMessage("");
 
-    let groups: unknown;
+    let groups: DocsConfig["groups"];
     try {
       groups = JSON.parse(groupsJson);
     } catch {
@@ -62,21 +62,15 @@ export function DocsSettingsForm(props: DocsSettingsFormProps) {
     }
 
     try {
-      const data = await adminDocsApi.saveDocsConfig({
-        title,
-        description,
-        groups,
-      });
-
-      setSaving(false);
-      setTitle(data.docs.title);
-      setDescription(data.docs.description);
-      setGroupsJson(JSON.stringify(data.docs.groups, null, 2));
+      const docs = await adminSettingsApi.saveDocs({ title, description, groups });
+      setTitle(docs.title);
+      setDescription(docs.description);
+      setGroupsJson(JSON.stringify(docs.groups, null, 2));
       setMessage("文档已保存，前台 /docs 会立即读取最新内容。");
     } catch (error) {
-      setSaving(false);
       setMessage(getErrorMessage(error));
-      return;
+    } finally {
+      setSaving(false);
     }
   }
 

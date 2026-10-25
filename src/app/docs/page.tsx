@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
-import { getDocsConfig } from "@/server/bff/content";
+import { requestJava } from "@/server/java-api";
+import type { DocsConfig } from "@/types/content";
 import styles from "./docs.module.css";
 
 export const dynamic = "force-dynamic";
@@ -149,7 +150,9 @@ function renderMarkdown(body: string) {
 }
 
 export default async function DocsPage() {
-  const docs = await getDocsConfig();
+  // 后台尚未保存文档时 Java 返回空对象 {}
+  const docs = await requestJava<Partial<DocsConfig>>("/content/public/docs");
+  const groups = docs.groups ?? [];
 
   return (
     <>
@@ -158,7 +161,7 @@ export default async function DocsPage() {
         <aside className={styles.docs__sidebar}>
           <div className={styles.docs__sidebarInner}>
             <nav className={styles.docs__nav}>
-              {docs.groups.map((group) => (
+              {groups.map((group) => (
                 <section key={group.title}>
                   <div className={styles.docs__navGroupHeader}>
                     <h2 className={styles.docs__navGroupTitle}>{group.title}</h2>
@@ -179,7 +182,8 @@ export default async function DocsPage() {
 
         <section className={styles.docs__content}>
           <div className={styles.docs__contentInner}>
-            {docs.groups.map((group) =>
+            {groups.length === 0 ? <p className={styles.docs__paragraph}>暂无文档</p> : null}
+            {groups.map((group) =>
               group.items.map((item) => (
                 <article key={item.id} id={item.id} className={styles.docs__article}>
                   {renderMarkdown(item.body)}

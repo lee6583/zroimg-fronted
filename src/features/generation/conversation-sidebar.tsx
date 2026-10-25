@@ -4,7 +4,8 @@ import clsx from "clsx";
 import { Archive, Check, Pencil, Plus, Settings, Trash2 } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
-import type { ConversationGroup, ConversationItem } from "./generation-model";
+import type { GenerationConversation } from "@/types/generation";
+import type { ConversationGroup } from "./generation-model";
 import styles from "./generate-form.module.css";
 
 const titlePreviewLength = 9;
@@ -42,9 +43,9 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
   const [editId, setEditId] = useState("");
   const [title, setTitle] = useState("");
   const [pendingId, setPendingId] = useState("");
-  const [deleteCandidate, setDeleteCandidate] = useState<ConversationItem | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<GenerationConversation | null>(null);
 
-  function startEdit(item: ConversationItem) {
+  function startEdit(item: GenerationConversation) {
     setEditId(item.id);
     setTitle(item.title);
   }

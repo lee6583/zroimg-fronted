@@ -3,7 +3,7 @@
 import { getErrorMessage } from "@/utils/error";
 import { useState, type FormEvent } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
-import type { AnnouncementSettingsConfig } from "@/types/announcement";
+import type { AnnouncementSettingsConfig } from "@/types/admin";
 import styles from "./admin-forms.module.css";
 
 type AnnouncementSettingsFormProps = {
@@ -37,12 +37,12 @@ export function AnnouncementSettingsForm(props: AnnouncementSettingsFormProps) {
     setMessage("");
 
     try {
-      const data = await adminSettingsApi.saveAnnouncementSettings({
+      const nextSettings = await adminSettingsApi.saveAnnouncement({
         enabled: form.isEnabled,
         title: form.title,
         content: form.content,
       });
-      setSettings(data.settings);
+      setSettings(nextSettings);
       setMessage("公告设置已保存。");
     } catch (error) {
       setMessage(getErrorMessage(error));

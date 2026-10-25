@@ -6,16 +6,11 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderHeart, Pencil, Plus, Trash2, X } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
+import type { FavoriteCollection } from "@/types/favorites";
 import styles from "./favorites.module.css";
 
-type FavoriteCollectionItem = {
-  id: string;
-  name: string;
-  imageCount: number;
-};
-
 type FavoriteCollectionsViewProps = {
-  collections: FavoriteCollectionItem[];
+  collections: FavoriteCollection[];
 };
 
 export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
@@ -61,7 +56,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
     router.push(`/favorites/${collectionId}`);
   }
 
-  function startEdit(collection: FavoriteCollectionItem) {
+  function startEdit(collection: FavoriteCollection) {
     setError("");
     setEditId(collection.id);
     setEditName(collection.name);
@@ -250,7 +245,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
               ) : (
                 <h2 className={styles.favorites__cardTitle}>{collection.name}</h2>
               )}
-              <p className={styles.favorites__cardMeta}>{collection.imageCount} 张图片</p>
+              <p className={styles.favorites__cardMeta}>{collection.count.items} 张图片</p>
             </div>
             {editId !== collection.id ? (
               <div className={styles.favorites__cardActions}>

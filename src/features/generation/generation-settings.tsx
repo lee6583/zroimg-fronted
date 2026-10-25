@@ -3,16 +3,22 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { AppSelect } from "@/components/ui/app-select";
-import type { GenerationMode, GenerationModelOption } from "@/types/generation";
+import type { GenerationModel } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
-import { normalizeOptions, type GenerationOptions } from "./generation-model";
+import {
+  imageModes,
+  modeLabels,
+  normalizeOptions,
+  supportsMode,
+  type GenerationOptions,
+} from "./generation-model";
 import styles from "./generate-form.module.css";
 
 type GenerationSettingsProps = {
   value: GenerationOptions;
   estimate: number;
   isEstimating: boolean;
-  modelOptions: GenerationModelOption[];
+  modelOptions: GenerationModel[];
   onChange: (value: GenerationOptions) => void;
 };
 
@@ -34,10 +40,12 @@ export function GenerationSettings(props: GenerationSettingsProps) {
   const isEstimating = props.isEstimating;
   const modelOptions = props.modelOptions;
   const onChange = props.onChange;
-  const model = modelOptions.find((item) => item.value === value.model);
-  const params = model?.params[value.mode];
-  const availableModels = modelOptions.filter((item) => item.modes.includes(value.mode));
-  const availableModes = getAvailableModes(modelOptions);
+  const model = modelOptions.find((item) => item.modelCode === value.modelCode);
+  const params = model?.supportParams;
+  const availableModels = modelOptions.filter((item) => supportsMode(item, value.mode));
+  const availableModes = imageModes.filter((mode) =>
+    modelOptions.some((item) => supportsMode(item, mode)),
+  );
 
   if (!params) {
     return null;
@@ -57,7 +65,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         <div className={styles.generateForm__optionGridTwo}>
           {availableModes.map((mode) => (
             <Option key={mode} active={value.mode === mode} onClick={() => update("mode", mode)}>
-              {mode === "edit" ? "图生图" : "文生图"}
+              {modeLabels[mode]}
             </Option>
           ))}
         </div>
@@ -65,11 +73,11 @@ export function GenerationSettings(props: GenerationSettingsProps) {
 
       <SettingGroup title="模型">
         <AppSelect
-          value={value.model}
-          onChange={(model) => update("model", model)}
+          value={value.modelCode}
+          onChange={(modelCode) => update("modelCode", modelCode)}
           options={availableModels.map((option) => ({
-            value: option.value,
-            label: option.label,
+            value: option.modelCode,
+            label: option.modelName,
           }))}
         />
       </SettingGroup>
@@ -120,21 +128,6 @@ export function GenerationSettings(props: GenerationSettingsProps) {
       </SettingGroup>
     </aside>
   );
-}
-
-function getAvailableModes(models: GenerationModelOption[]) {
-  const modes: GenerationMode[] = [];
-  const hasTextMode = models.some((model) => model.modes.includes("text"));
-  const hasEditMode = models.some((model) => model.modes.includes("edit"));
-
-  if (hasTextMode) {
-    modes.push("text");
-  }
-  if (hasEditMode) {
-    modes.push("edit");
-  }
-
-  return modes;
 }
 
 function Option(props: OptionProps) {

@@ -3,7 +3,9 @@ import { ArrowLeft, MessageSquareText, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FeedbackActions } from "@/features/admin/feedback-actions";
-import { getAdminTicket } from "@/server/bff/account";
+import { JavaApiError, requestJava } from "@/server/java-api";
+import type { AdminTicket } from "@/types/admin";
+import type { FeedbackStatus } from "@/utils/feedback";
 import styles from "../tickets.module.css";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +14,29 @@ type AdminTicketDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-function formatDate(value: Date) {
-  return value.toISOString().slice(0, 16).replace("T", " ");
+function formatDate(value: string) {
+  return value.slice(0, 16).replace("T", " ");
+}
+
+function readStatus(status: string): FeedbackStatus {
+  if (status === "in_progress" || status === "resolved" || status === "closed") {
+    return status;
+  }
+
+  return "open";
+}
+
+async function loadTicket(id: string) {
+  try {
+    return await requestJava<AdminTicket>(`/feedback/admin/tickets/${id}`);
+  } catch (error) {
+    // Java 对不存在的工单返回 400，而不是 404。
+    if (error instanceof JavaApiError && error.status === 400) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 function readStatusLabel(status: string) {
@@ -33,8 +56,8 @@ function readStatusClassName(status: string) {
 }
 
 export default async function AdminTicketDetailPage(props: AdminTicketDetailPageProps) {
-  const { id } = await props.params;
-  const ticket = await getAdminTicket(id);
+  const params = await props.params;
+  const ticket = await loadTicket(params.id);
   if (!ticket) notFound();
 
   const statusClassName = readStatusClassName(ticket.status);
@@ -86,28 +109,30 @@ export default async function AdminTicketDetailPage(props: AdminTicketDetailPage
             </header>
             <div className={styles.adminTickets__messagesList}>
               {ticket.messages.length ? (
-                ticket.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={clsx(
-                      styles.adminTickets__message,
-                      message.isAdmin && styles.adminTickets__messageAdmin,
-                    )}
-                  >
-                    <span className={styles.adminTickets__messageAvatar}>
-                      {message.isAdmin ? "管" : message.authorProfile.username.slice(0, 1)}
-                    </span>
-                    <div className={styles.adminTickets__messageContent}>
-                      <p className={styles.adminTickets__messageMeta}>
-                        <span>{message.isAdmin ? "管理员" : message.authorProfile.username}</span>
-                        <time dateTime={message.createdAt.toISOString()}>
-                          {formatDate(message.createdAt)}
-                        </time>
-                      </p>
-                      <p className={styles.adminTickets__messageBody}>{message.body}</p>
+                ticket.messages.map((message) => {
+                  const authorName = message.authorName || ticket.user?.name || "用户";
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={clsx(
+                        styles.adminTickets__message,
+                        message.isAdmin && styles.adminTickets__messageAdmin,
+                      )}
+                    >
+                      <span className={styles.adminTickets__messageAvatar}>
+                        {message.isAdmin ? "管" : authorName.slice(0, 1)}
+                      </span>
+                      <div className={styles.adminTickets__messageContent}>
+                        <p className={styles.adminTickets__messageMeta}>
+                          <span>{message.isAdmin ? "管理员" : authorName}</span>
+                          <time dateTime={message.createdAt}>{formatDate(message.createdAt)}</time>
+                        </p>
+                        <p className={styles.adminTickets__messageBody}>{message.body}</p>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className={styles.adminTickets__emptyMessage}>暂无沟通记录</p>
               )}
@@ -124,7 +149,7 @@ export default async function AdminTicketDetailPage(props: AdminTicketDetailPage
             </span>
           </header>
           <div className={styles.adminTickets__handlingBody}>
-            <FeedbackActions ticketId={ticket.id} currentStatus={ticket.status} />
+            <FeedbackActions ticketId={ticket.id} currentStatus={readStatus(ticket.status)} />
           </div>
         </aside>
       </section>

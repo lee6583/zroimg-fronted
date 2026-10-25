@@ -6,13 +6,8 @@ import { useEffect, useState } from "react";
 import { Download, Star, X } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
+import type { FavoriteCollection } from "@/types/favorites";
 import styles from "./history-image-actions.module.css";
-
-type FavoriteCollection = {
-  id: string;
-  name: string;
-  imageCount: number;
-};
 
 type HistoryImageActionsProps = {
   generatedImageId: string;
@@ -170,7 +165,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
                           {collection.name}
                         </span>
                         <span className={styles.historyImageActions__collectionMeta}>
-                          {collection.imageCount} 张图片
+                          {collection.count.items} 张图片
                         </span>
                       </span>
                     </button>

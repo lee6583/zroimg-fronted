@@ -1,3 +1,4 @@
+// Java LoginUserVO.UserInfoVO
 type AuthUser = {
   id: string;
   username: string;
@@ -5,6 +6,20 @@ type AuthUser = {
   role: "user" | "admin";
 };
 
+// Java CurrentUserVO（GET /auth/user/me）
+type CurrentUser = {
+  id: string;
+  username: string;
+  email: string;
+  role: "user" | "admin";
+  bio: string | null;
+  avatarUrl: string | null;
+  status: number;
+  totalPoints: number;
+  createdAt: string;
+};
+
+// Java SliderChallengeDTO / SliderChallengeVO
 type SliderChallengeRequest = {
   email: string;
   scene: "register";
@@ -15,6 +30,7 @@ type SliderChallengeResponse = {
   targetRatio: number;
 };
 
+// Java SliderTokenDTO / SliderTokenVO
 type SliderTokenRequest = {
   email: string;
   scene: "register";
@@ -27,27 +43,26 @@ type SliderTokenResponse = {
   sliderToken: string;
 };
 
+// Java SendCodeVO
+type SendCodeResponse = {
+  cooldownSeconds: number;
+  expiresInSeconds: number;
+};
+
 type SendRegisterCodeRequest = {
   email: string;
   sliderToken: string;
 };
 
-type SendRegisterCodeResponse = {
-  message: string;
-  cooldownSeconds: number;
-  expiresInSeconds: number;
-};
+type SendRegisterCodeResponse = SendCodeResponse;
 
 type SendPasswordResetCodeRequest = {
   email: string;
 };
 
-type SendPasswordResetCodeResponse = {
-  message: string;
-  cooldownSeconds: number;
-  expiresInSeconds: number;
-};
+type SendPasswordResetCodeResponse = SendCodeResponse;
 
+// Java RegisterDTO
 type RegisterAccountRequest = {
   username: string;
   email: string;
@@ -55,20 +70,19 @@ type RegisterAccountRequest = {
   code: string;
 };
 
-type RegisterAccountResponse = {
-  message: string;
-};
+type RegisterAccountResponse = null;
 
+// Java LoginDTO / LoginUserVO
 type LoginWithEmailRequest = {
   email: string;
   password: string;
 };
 
 type LoginWithEmailResponse = {
-  message: string;
   user: AuthUser;
 };
 
+// Java ResetPasswordDTO
 type ResetPasswordRequest = {
   email: string;
   code: string;
@@ -76,20 +90,18 @@ type ResetPasswordRequest = {
   confirmPassword: string;
 };
 
-type ResetPasswordResponse = {
-  message: string;
-};
+type ResetPasswordResponse = Record<string, never>;
 
-type LogoutAccountResponse = {
-  message: string;
-};
+type LogoutAccountResponse = null;
 
 export type {
   AuthUser,
+  CurrentUser,
   SliderChallengeRequest,
   SliderChallengeResponse,
   SliderTokenRequest,
   SliderTokenResponse,
+  SendCodeResponse,
   SendRegisterCodeRequest,
   SendRegisterCodeResponse,
   SendPasswordResetCodeRequest,

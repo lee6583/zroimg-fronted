@@ -1,73 +1,60 @@
 import { request } from "@/utils/request";
-import type { AdminCreditPackageInput, CreditPackage } from "@/types/orders";
+import type { AdminPackage, SavePackageRequest } from "@/types/admin";
 
-type PackageResponse = {
-  package: CreditPackage;
-};
+const baseUrl = "/api/order/admin/packages";
 
-type PackageListResponse = {
-  packages: CreditPackage[];
-};
-
-function list() {
-  return request<PackageListResponse>({
-    url: "/api/admin/packages",
-  });
-}
-
-function create(data: AdminCreditPackageInput) {
-  return request<PackageResponse>({
-    url: "/api/admin/packages",
+function create(data: SavePackageRequest) {
+  return request<AdminPackage>({
+    url: baseUrl,
     method: "POST",
     data,
   });
 }
 
-function update(id: string, data: AdminCreditPackageInput) {
-  return request<PackageResponse>({
-    url: `/api/admin/packages/${encodeURIComponent(id)}`,
+function update(id: string, data: SavePackageRequest) {
+  return request<AdminPackage>({
+    url: `${baseUrl}/${id}`,
     method: "PUT",
     data,
   });
 }
 
 function updateStatus(id: string, enabled: boolean) {
-  return request<PackageResponse>({
-    url: `/api/admin/packages/${encodeURIComponent(id)}/status`,
+  return request<AdminPackage>({
+    url: `${baseUrl}/${id}/status`,
     method: "PATCH",
     data: { enabled },
   });
 }
 
 function updateRecommend(id: string, recommended: boolean) {
-  return request<PackageResponse>({
-    url: `/api/admin/packages/${encodeURIComponent(id)}/recommend`,
+  return request<AdminPackage>({
+    url: `${baseUrl}/${id}/recommend`,
     method: "PATCH",
     data: { recommended },
   });
 }
 
 function updateSort(id: string, sort: number) {
-  return request<PackageResponse>({
-    url: `/api/admin/packages/${encodeURIComponent(id)}/sort`,
+  return request<AdminPackage>({
+    url: `${baseUrl}/${id}/sort`,
     method: "PATCH",
     data: { sort },
   });
 }
 
 function remove(id: string) {
-  return request<{ ok: boolean }>({
-    url: `/api/admin/packages/${encodeURIComponent(id)}`,
+  return request<null>({
+    url: `${baseUrl}/${id}`,
     method: "DELETE",
   });
 }
 
 export const adminPackagesApi = {
   create,
-  list,
-  remove,
   update,
+  updateStatus,
   updateRecommend,
   updateSort,
-  updateStatus,
+  remove,
 };

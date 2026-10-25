@@ -24,7 +24,7 @@ import type {
   GenerationModelCatalogItem,
   GenerationProviderConnection,
   LegacyGenerationModelAdapter,
-  SaveAdminGenerationModelRequest,
+  SaveModelRequest,
 } from "@/types/admin";
 import { getErrorMessage } from "@/utils/error";
 import workspace from "./admin-workspace.module.css";
@@ -508,24 +508,24 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
     setDiscoveryState("idle");
     setDiscoveredModels([]);
     try {
-      const result = await adminModelsApi.discoverSavedConnection(connectionId);
-      setDiscoveredModels(result.models);
+      const models = await adminModelsApi.discoverSaved(connectionId);
+      setDiscoveredModels(models);
       setDiscoveredConnectionId(connectionId);
-      if (result.models.length > 0) {
+      if (models.length > 0) {
         setDiscoveryState("success");
       } else {
         setDiscoveryState("empty");
       }
-      if (result.models.some((item) => item.id === form.providerModelCode.trim())) {
+      if (models.some((item) => item.id === form.providerModelCode.trim())) {
         updateForm({ verificationStatus: "verified" });
       } else {
         updateForm({
-          providerModelCode: result.models.length > 0 ? "" : form.providerModelCode,
+          providerModelCode: models.length > 0 ? "" : form.providerModelCode,
           verificationStatus: "unverified",
           status: "disabled",
           defaultFlag: 0,
         });
-        if (result.models.length === 0) {
+        if (models.length === 0) {
           setMessage("中转站没有返回可用模型");
         }
       }
@@ -540,7 +540,7 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
     }
   }
 
-  function buildPayload(): SaveAdminGenerationModelRequest {
+  function buildPayload(): SaveModelRequest {
     const common = {
       modelName: form.modelName.trim(),
       status: form.status,
@@ -709,10 +709,13 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
         throw new Error("至少选择一个视频分辨率");
       }
       const payload = buildPayload();
-      const result = editingId
-        ? await adminModelsApi.update(editingId, payload)
-        : await adminModelsApi.create(payload);
-      replaceModel(result.model);
+      let model: AdminGenerationModel;
+      if (editingId) {
+        model = await adminModelsApi.update(editingId, payload);
+      } else {
+        model = await adminModelsApi.create(payload);
+      }
+      replaceModel(model);
       closeEditor();
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -724,8 +727,8 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
   async function toggleStatus(model: AdminGenerationModel) {
     try {
       const status = model.status === "enabled" ? "disabled" : "enabled";
-      const result = await adminModelsApi.updateStatus(model.id, status);
-      replaceModel(result.model);
+      const nextModel = await adminModelsApi.updateStatus(model.id, status);
+      replaceModel(nextModel);
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
@@ -733,8 +736,8 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
 
   async function setDefault(model: AdminGenerationModel) {
     try {
-      const result = await adminModelsApi.setDefault(model.id);
-      replaceModel(result.model);
+      const nextModel = await adminModelsApi.setDefault(model.id);
+      replaceModel(nextModel);
     } catch (error) {
       setMessage(getErrorMessage(error));
     }
@@ -827,17 +830,23 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
     setConnectionDiscovering(true);
     setConnectionMessage("");
     try {
-      const result =
-        connectionForm.id && !connectionForm.apiKey.trim()
-          ? await adminModelsApi.discoverSavedConnection(connectionForm.id)
-          : await adminModelsApi.discoverConnection({
-              adapter: connectionForm.adapter,
-              apiBaseUrl: connectionForm.apiBaseUrl.trim(),
-              apiKey: connectionForm.apiKey.trim(),
-            });
-      setConnectionDiscoveredModels(result.models);
-      setConnectionDiscoveryState(result.models.length > 0 ? "success" : "empty");
-      if (result.models.length === 0) {
+      const apiKey = connectionForm.apiKey.trim();
+      const canUseSavedKey = Boolean(connectionForm.id) && !apiKey;
+
+      let models: DiscoveredProviderModel[];
+      if (canUseSavedKey && connectionForm.id) {
+        models = await adminModelsApi.discoverSaved(connectionForm.id);
+      } else {
+        models = await adminModelsApi.discover({
+          adapter: connectionForm.adapter,
+          apiBaseUrl: connectionForm.apiBaseUrl.trim(),
+          apiKey,
+        });
+      }
+
+      setConnectionDiscoveredModels(models);
+      setConnectionDiscoveryState(models.length > 0 ? "success" : "empty");
+      if (models.length === 0) {
         setConnectionMessage("中转站没有返回可用模型");
       }
     } catch (error) {
@@ -901,24 +910,24 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
         : false;
       const reuseDiscovery = !providerConfigChanged;
       const discoveredBeforeSave = reuseDiscovery ? discoveryModelsBeforeSave : [];
-      const connectionResponse = connectionForm.id
-        ? await adminModelsApi.updateConnection(connectionForm.id, {
-            name: connectionForm.name.trim(),
-            adapter: connectionForm.adapter,
-            apiBaseUrl: normalizedApiBaseUrl,
-            apiKey: connectionForm.apiKey.trim(),
-            clearApiKey: connectionForm.clearApiKey,
-            status: connectionForm.status,
-          })
-        : await adminModelsApi.createConnection({
-            name: connectionForm.name.trim(),
-            adapter: connectionForm.adapter,
-            apiBaseUrl: normalizedApiBaseUrl,
-            apiKey: connectionForm.apiKey.trim(),
-            clearApiKey: false,
-            status: connectionForm.status,
-          });
-      const connection = connectionResponse.connection;
+      const connectionData = {
+        name: connectionForm.name.trim(),
+        adapter: connectionForm.adapter,
+        apiBaseUrl: normalizedApiBaseUrl,
+        apiKey: connectionForm.apiKey.trim(),
+        clearApiKey: connectionForm.clearApiKey,
+        status: connectionForm.status,
+      };
+
+      let connection: GenerationProviderConnection;
+      if (connectionForm.id) {
+        connection = await adminModelsApi.updateConnection(connectionForm.id, connectionData);
+      } else {
+        connection = await adminModelsApi.createConnection({
+          ...connectionData,
+          clearApiKey: false,
+        });
+      }
       setConnections((current) =>
         sortConnections(
           current.some((item) => item.id === connection.id)

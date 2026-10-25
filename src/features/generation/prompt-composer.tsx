@@ -2,12 +2,12 @@
 
 import clsx from "clsx";
 import { ArrowUp, ImagePlus, MessageSquarePlus, RefreshCw, X } from "lucide-react";
-import type { GenerationMode } from "@/types/generation";
-import type { MediaInput, Notice } from "./generation-model";
+import type { GenerationMode, MediaAsset } from "@/types/generation";
+import type { Notice } from "./generation-model";
 import styles from "./generate-form.module.css";
 
 type PromptComposerProps = {
-  inputs: MediaInput[];
+  inputs: MediaAsset[];
   prompt: string;
   mode: GenerationMode;
   estimate: number;
@@ -38,6 +38,10 @@ export function PromptComposer(props: PromptComposerProps) {
   const onRemove = props.onRemove;
   const onNew = props.onNew;
   const onSubmit = props.onSubmit;
+  let placeholder = "描述你想要的图片...";
+  if (mode === "image_to_image") {
+    placeholder = "描述你想让参考图发生什么变化...";
+  }
   let costText = `预计 ${estimate} 积分`;
   if (hasCostError) {
     costText = "积分不足";
@@ -51,7 +55,7 @@ export function PromptComposer(props: PromptComposerProps) {
             {inputs.map((item) => (
               <span key={item.id} className={styles.generateForm__inputChip}>
                 <span className={styles.generateForm__inputChipName}>
-                  {item.fileName || `参考图 ${item.id.slice(0, 5)}`}
+                  {item.originalName || `参考图 ${item.id.slice(0, 5)}`}
                 </span>
                 <button
                   type="button"
@@ -70,7 +74,7 @@ export function PromptComposer(props: PromptComposerProps) {
           className={styles.generateForm__textarea}
           value={prompt}
           onChange={(event) => onPromptChange(event.target.value)}
-          placeholder={mode === "text" ? "描述你想要的图片..." : "描述你想让参考图发生什么变化..."}
+          placeholder={placeholder}
         />
 
         <div className={styles.generateForm__composerFooter}>

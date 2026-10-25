@@ -3,8 +3,9 @@ import Link from "next/link";
 import { ArrowLeft, ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/server/auth";
-import { getCollection } from "@/server/bff/account";
-import { getMediaSignedUrl } from "@/server/bff/generation";
+import { JavaApiError, requestJava } from "@/server/java-api";
+import type { FavoriteCollection } from "@/types/favorites";
+import { userAssetUrl } from "@/utils/media";
 import styles from "../favorites.module.css";
 
 export const dynamic = "force-dynamic";
@@ -14,33 +15,36 @@ type FavoriteCollectionPageProps = {
   params: PageParams;
 };
 
-type CollectionItem = NonNullable<Awaited<ReturnType<typeof getCollection>>>["items"][number];
-
-function formatDate(date: Date) {
+function formatDate(value: string) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
     day: "2-digit",
-  }).format(date);
+  }).format(new Date(value));
+}
+
+async function readCollection(id: string) {
+  try {
+    return await requestJava<FavoriteCollection>(
+      `/favorite/user/collections/${encodeURIComponent(id)}`,
+    );
+  } catch (error) {
+    // Java 对不存在或不属于当前用户的合集返回 400「合集不存在」
+    if (error instanceof JavaApiError && (error.status === 400 || error.status === 404)) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export default async function FavoriteCollectionPage(props: FavoriteCollectionPageProps) {
   const params = props.params;
 
-  const current = await requireUser();
+  await requireUser();
   const { id } = await params;
-  const collection = await getCollection(current.profile.id, id);
+  const collection = await readCollection(id);
 
   if (!collection) notFound();
-
-  const urlEntries = await Promise.all(
-    collection.items.map(async (item) => {
-      const image = item.generatedImage;
-      const asset = image.thumbnailAsset || image.outputAsset;
-      const url = await getMediaSignedUrl(asset.id);
-      return [asset.id, url] as const;
-    }),
-  );
-  const imageUrls = new Map(urlEntries);
 
   return (
     <main className={styles.favorites}>
@@ -54,27 +58,20 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
 
       {collection.items.length > 0 ? (
         <section className={styles.favorites__imageGrid} aria-label="合集图片">
-          {collection.items.map((item: CollectionItem) => {
+          {collection.items.map((item) => {
             const image = item.generatedImage;
             const asset = image.thumbnailAsset || image.outputAsset;
-            const url = imageUrls.get(asset.id);
 
             return (
               <article key={item.id} className={styles.favorites__imageCard}>
-                {url ? (
-                  <Image
-                    className={styles.favorites__image}
-                    src={url}
-                    alt={image.task.prompt}
-                    width={image.width || asset.width || 768}
-                    height={image.height || asset.height || 768}
-                    unoptimized
-                  />
-                ) : (
-                  <div className={styles.favorites__imagePlaceholder}>
-                    <ImageOff size={22} />
-                  </div>
-                )}
+                <Image
+                  className={styles.favorites__image}
+                  src={userAssetUrl(asset.id)}
+                  alt={image.task.prompt}
+                  width={image.width || asset.width || 768}
+                  height={image.height || asset.height || 768}
+                  unoptimized
+                />
                 <div className={styles.favorites__imageBody}>
                   <p className={styles.favorites__imagePrompt}>{image.task.prompt}</p>
                   <p className={styles.favorites__imageMeta}>{formatDate(item.createdAt)}</p>

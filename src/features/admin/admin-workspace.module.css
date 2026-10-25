@@ -393,14 +393,10 @@
 }
 
 .ticketsTable th:nth-child(5) {
-  width: 7rem;
-}
-
-.ticketsTable th:nth-child(6) {
   width: 11rem;
 }
 
-.ticketsTable th:nth-child(7) {
+.ticketsTable th:nth-child(6) {
   width: 4rem;
 }
 

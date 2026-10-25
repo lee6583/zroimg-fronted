@@ -19,7 +19,7 @@ import type {
 
 function getSliderChallenge(data: SliderChallengeRequest) {
   return request<SliderChallengeResponse>({
-    url: "/api/auth/slider-challenge",
+    url: "/api/auth/user/slider-challenge",
     method: "POST",
     data,
   });
@@ -27,7 +27,7 @@ function getSliderChallenge(data: SliderChallengeRequest) {
 
 function getSliderToken(data: SliderTokenRequest) {
   return request<SliderTokenResponse>({
-    url: "/api/auth/slider-token",
+    url: "/api/auth/user/slider-token",
     method: "POST",
     data,
   });
@@ -35,7 +35,7 @@ function getSliderToken(data: SliderTokenRequest) {
 
 function sendRegisterCode(data: SendRegisterCodeRequest) {
   return request<SendRegisterCodeResponse>({
-    url: "/api/auth/send-code",
+    url: "/api/auth/user/send-code",
     method: "POST",
     data,
   });
@@ -43,7 +43,7 @@ function sendRegisterCode(data: SendRegisterCodeRequest) {
 
 function sendPasswordResetCode(data: SendPasswordResetCodeRequest) {
   return request<SendPasswordResetCodeResponse>({
-    url: "/api/auth/password-reset/send-code",
+    url: "/api/auth/user/reset-password/send-code",
     method: "POST",
     data,
   });
@@ -51,7 +51,7 @@ function sendPasswordResetCode(data: SendPasswordResetCodeRequest) {
 
 function registerAccount(data: RegisterAccountRequest) {
   return request<RegisterAccountResponse>({
-    url: "/api/auth/register",
+    url: "/api/auth/user/register",
     method: "POST",
     data,
   });
@@ -59,7 +59,7 @@ function registerAccount(data: RegisterAccountRequest) {
 
 function resetPassword(data: ResetPasswordRequest) {
   return request<ResetPasswordResponse>({
-    url: "/api/auth/password-reset",
+    url: "/api/auth/user/reset-password",
     method: "POST",
     data,
   });
@@ -67,7 +67,7 @@ function resetPassword(data: ResetPasswordRequest) {
 
 function loginWithEmail(data: LoginWithEmailRequest) {
   return request<LoginWithEmailResponse>({
-    url: "/api/auth/sign-in/email",
+    url: "/api/auth/user/sign-in",
     method: "POST",
     data,
   });
@@ -75,7 +75,7 @@ function loginWithEmail(data: LoginWithEmailRequest) {
 
 function logoutAccount() {
   return request<LogoutAccountResponse>({
-    url: "/api/auth/logout",
+    url: "/api/auth/user/logout",
     method: "POST",
   });
 }

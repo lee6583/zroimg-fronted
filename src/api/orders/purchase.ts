@@ -1,43 +1,37 @@
 import { request } from "@/utils/request";
 import type {
-  CancelOrderResponse,
-  CreateOrderRequest,
-  CreateOrderResponse,
   CreatePaymentResponse,
+  CreateRechargeOrderRequest,
+  CreatedRechargeOrder,
   RechargeOrder,
 } from "@/types/orders";
 
-function createOrder(data: CreateOrderRequest) {
-  return request<CreateOrderResponse>({
-    url: "/api/orders",
+const baseUrl = "/api/order/user/recharge-orders";
+
+function create(data: CreateRechargeOrderRequest) {
+  return request<CreatedRechargeOrder>({
+    url: baseUrl,
     method: "POST",
     data,
   });
 }
 
-function cancelOrder(orderNo: string) {
-  return request<CancelOrderResponse>({
-    url: `/api/orders/${orderNo}/cancel`,
-    method: "POST",
-  });
-}
-
-function createPayment(orderNo: string) {
-  return request<CreatePaymentResponse>({
-    url: `/api/orders/${orderNo}/pay`,
-    method: "POST",
-  });
-}
-
-function getOrder(orderNo: string) {
+function cancel(orderNo: string) {
   return request<RechargeOrder>({
-    url: `/api/orders/${orderNo}`,
+    url: `${baseUrl}/${encodeURIComponent(orderNo)}/cancel`,
+    method: "POST",
+  });
+}
+
+function pay(orderNo: string) {
+  return request<CreatePaymentResponse>({
+    url: `${baseUrl}/${encodeURIComponent(orderNo)}/pay`,
+    method: "POST",
   });
 }
 
 export const ordersApi = {
-  cancelOrder,
-  createOrder,
-  createPayment,
-  getOrder,
+  cancel,
+  create,
+  pay,
 };

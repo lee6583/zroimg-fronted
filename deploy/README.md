@@ -57,8 +57,10 @@ BACKEND_DEPLOY_PATH=/opt/zroimg/backend-prod
 
 ```dotenv
 FRONTEND_IMAGE=ghcr.io/lee6583/zroimg-frontend
-JAVA_API_BASE_URL=https://api.zroimg.com
+JAVA_API_BASE_URL=http://zroimg-backend-prod:8080
 ```
+
+`JAVA_API_BASE_URL` 只给 Next 服务端渲染使用，走 `zroimg_default` 内网，不要填公网域名。
 
 后端目录 `/opt/zroimg/backend-prod/.env` 使用仓库 `deploy/.env.example` 作为字段参考，至少应配置：
 
@@ -77,23 +79,17 @@ chmod 600 /opt/zroimg/frontend-prod/.env
 chmod 600 /opt/zroimg/backend-prod/.env
 ```
 
-前端运行时会强制设置：
-
-```dotenv
-BFF_MODE=java
-AUTH_BFF_MODE=java
-PAYMENT_BFF_MODE=java
-ALLOW_MOCK_BFF=false
-```
-
 ## Nginx
 
 复制并按服务器证书路径检查 `nginx.prod.conf.example`，让 Nginx 转发：
 
 ```text
-zroimg.com      -> zroimg-frontend-prod:3000
-api.zroimg.com  -> zroimg-backend-prod:8080
+zroimg.com/api/*  -> zroimg-backend-prod:8080（去掉 /api 前缀，浏览器接口直连 Java）
+zroimg.com/*      -> zroimg-frontend-prod:3000（页面，Next 服务端渲染）
+api.zroimg.com    -> zroimg-backend-prod:8080（支付回调等外部调用）
 ```
+
+浏览器接口与页面同域，Java 设置的登录 Cookie 可以直接生效，前端不再有接口转发层。
 
 Nginx、前端和后端必须加入同一个 `zroimg_default` 网络。MySQL、Redis、前端和后端都不要发布宿主机公网端口。
 

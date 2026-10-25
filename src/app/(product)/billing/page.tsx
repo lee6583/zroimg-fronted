@@ -3,7 +3,9 @@ import Link from "next/link";
 import { FileClock } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { requireUser } from "@/server/auth";
-import { listRechargeOrders } from "@/server/bff/orders";
+import { requestJava } from "@/server/java-api";
+import type { PageResult } from "@/types/api";
+import type { RechargeOrder } from "@/types/orders";
 import { orderDisplayStatusLabels } from "@/utils/order-status";
 import { OrderActions } from "./order-actions";
 import styles from "./billing.module.css";
@@ -78,6 +80,12 @@ function formatCredits(value: number) {
   return new Intl.NumberFormat("zh-CN").format(value);
 }
 
+function listOrders(pageNo: number, pageSize: number) {
+  return requestJava<PageResult<RechargeOrder>>("/order/user/recharge-orders", {
+    params: { pageNo, pageSize, sortBy: "create_time", isAsc: false },
+  });
+}
+
 function statusClassName(status: string) {
   if (status === "paid") {
     return styles.billing__statusSuccess;
@@ -98,22 +106,14 @@ export default async function BillingPage(props: BillingPageProps) {
   const params = await props.searchParams;
   const rawPage = normalizePage(readParam(params, "page"));
   const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
-  const current = await requireUser();
-  let orderPage = await listRechargeOrders({
-    userProfileId: current.profile.id,
-    page: rawPage,
-    pageSize: currentPageSize,
-  });
+  await requireUser();
+  let orderPage = await listOrders(rawPage, currentPageSize);
 
   let totalPages = Math.max(1, orderPage.pages);
   let currentPage = Math.min(rawPage, totalPages);
 
   if (currentPage !== rawPage) {
-    orderPage = await listRechargeOrders({
-      userProfileId: current.profile.id,
-      page: currentPage,
-      pageSize: currentPageSize,
-    });
+    orderPage = await listOrders(currentPage, currentPageSize);
     totalPages = Math.max(1, orderPage.pages);
     currentPage = Math.min(currentPage, totalPages);
   }

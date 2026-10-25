@@ -10,23 +10,23 @@ import type {
 
 function updateProfile(data: UpdateAccountProfileRequest) {
   return request<UpdateAccountProfileResponse>({
-    url: "/api/account/profile",
-    method: "POST",
-    body: data,
+    url: "/api/auth/user/profile",
+    method: "PUT",
+    data,
   });
 }
 
 function updatePassword(data: UpdateAccountPasswordRequest) {
   return request<UpdateAccountPasswordResponse>({
-    url: "/api/account/password",
-    method: "POST",
+    url: "/api/auth/user/password",
+    method: "PUT",
     data,
   });
 }
 
 function updateAvatar(data: UpdateAccountAvatarRequest) {
   return request<UpdateAccountAvatarResponse>({
-    url: "/api/account/avatar",
+    url: "/api/media/user/assets/avatar",
     method: "POST",
     body: data,
   });

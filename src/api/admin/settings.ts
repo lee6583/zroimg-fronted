@@ -1,74 +1,70 @@
 import { request } from "@/utils/request";
 import type {
+  AnnouncementSettingsConfig,
+  CheckInSettingsConfig,
+  DocsConfig,
+  EasyPayAdminConfig,
   SaveAnnouncementSettingsRequest,
-  SaveAnnouncementSettingsResponse,
-} from "@/types/announcement";
-import type {
   SaveCheckInSettingsRequest,
-  SaveCheckInSettingsResponse,
   SaveEasyPaySettingsRequest,
-  SaveEasyPaySettingsResponse,
-  SaveVideoSettingsRequest,
-  SaveVideoSettingsResponse,
   SaveSmtpSettingsRequest,
-  SaveSmtpSettingsResponse,
+  SmtpAdminConfig,
   TestSmtpSettingsRequest,
-  TestSmtpSettingsResponse,
 } from "@/types/admin";
 
-function saveSmtpSettings(data: SaveSmtpSettingsRequest) {
-  return request<SaveSmtpSettingsResponse>({
-    url: "/api/admin/settings/mail",
+function saveSmtp(data: SaveSmtpSettingsRequest) {
+  return request<SmtpAdminConfig>({
+    url: "/api/admin/settings/smtp",
     method: "POST",
     data,
   });
 }
 
-function saveVideoSettings(data: SaveVideoSettingsRequest) {
-  return request<SaveVideoSettingsResponse>({
-    url: "/api/admin/settings/video",
+function testSmtp(data: TestSmtpSettingsRequest) {
+  return request<null>({
+    url: "/api/admin/settings/smtp/test",
     method: "POST",
     data,
   });
 }
 
-function testSmtpSettings(data: TestSmtpSettingsRequest) {
-  return request<TestSmtpSettingsResponse>({
-    url: "/api/admin/settings/mail/test",
+function saveEasyPay(data: SaveEasyPaySettingsRequest) {
+  return request<EasyPayAdminConfig>({
+    url: "/api/admin/settings/easypay",
     method: "POST",
     data,
   });
 }
 
-function saveEasyPaySettings(data: SaveEasyPaySettingsRequest) {
-  return request<SaveEasyPaySettingsResponse>({
-    url: "/api/admin/settings/payment/easypay",
-    method: "POST",
-    data,
-  });
-}
-
-function saveCheckInSettings(data: SaveCheckInSettingsRequest) {
-  return request<SaveCheckInSettingsResponse>({
+function saveCheckIn(data: SaveCheckInSettingsRequest) {
+  return request<CheckInSettingsConfig>({
     url: "/api/admin/settings/checkin",
     method: "POST",
     data,
   });
 }
 
-function saveAnnouncementSettings(data: SaveAnnouncementSettingsRequest) {
-  return request<SaveAnnouncementSettingsResponse>({
+function saveAnnouncement(data: SaveAnnouncementSettingsRequest) {
+  return request<AnnouncementSettingsConfig>({
     url: "/api/admin/settings/announcement",
     method: "POST",
     data,
   });
 }
 
+function saveDocs(data: DocsConfig) {
+  return request<DocsConfig>({
+    url: "/api/admin/settings/docs",
+    method: "POST",
+    data,
+  });
+}
+
 export const adminSettingsApi = {
-  saveSmtpSettings,
-  saveVideoSettings,
-  testSmtpSettings,
-  saveEasyPaySettings,
-  saveCheckInSettings,
-  saveAnnouncementSettings,
+  saveSmtp,
+  testSmtp,
+  saveEasyPay,
+  saveCheckIn,
+  saveAnnouncement,
+  saveDocs,
 };

@@ -112,13 +112,13 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
         pageSize: nextPageSize,
         status: nextStatus,
       });
-      setTickets(data.tickets);
-      setTotal(data.total);
-      setPage(data.page);
-      setPageSize(data.pageSize);
+      setTickets(data.list);
+      setTotal(Number(data.total));
+      setPage(1);
+      setPageSize(nextPageSize);
       setSummary(data.summary);
       setActiveId((currentId) =>
-        data.tickets.some((ticket) => ticket.id === currentId) ? currentId : "",
+        data.list.some((ticket) => ticket.id === currentId) ? currentId : "",
       );
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -169,7 +169,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
       const data = new FormData();
       data.append("file", file);
       const result = await ticketsApi.uploadAttachment(data);
-      attachmentMediaIds.push(result.media.id);
+      attachmentMediaIds.push(result.id);
     }
 
     return attachmentMediaIds;
@@ -180,16 +180,12 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
     setMessage("");
     try {
       const attachmentMediaIds = await uploadFiles();
-      const data = await ticketsApi.createTicket({
+      const ticket = await ticketsApi.createTicket({
         type,
         subject,
         content,
         attachmentMediaIds,
       });
-      if (!data.ticket) {
-        setMessage("提交反馈失败");
-        return;
-      }
 
       setSubject("");
       setContent("");
@@ -197,7 +193,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
       setStatusFilter("all");
       setView("list");
       await loadTickets(1, "all");
-      setActiveId(data.ticket.id);
+      setActiveId(ticket.id);
       setMessage("反馈已提交，我们会尽快查看。");
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -269,8 +265,8 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                           <span>{ticket.content}</span>
                         </div>
                       </td>
-                      <td>{formatDate(ticket.createdAt)}</td>
-                      <td>{formatDate(ticket.updatedAt)}</td>
+                      <td>{formatDate(ticket.createTime)}</td>
+                      <td>{formatDate(ticket.updateTime)}</td>
                       <td>
                         <span
                           className={`${styles.feedbackPanel__statusBadge} ${readStatusBadgeClassName(ticket.status)}`}
@@ -328,7 +324,7 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   <header className={styles.feedbackPanel__ticketSummary}>
                     <p className={styles.feedbackPanel__ticketMeta}>
                       {feedbackTypeLabels[activeTicket.type]} / 更新于{" "}
-                      {formatDate(activeTicket.updatedAt)}
+                      {formatDate(activeTicket.updateTime)}
                     </p>
                     <h4>{activeTicket.subject}</h4>
                   </header>

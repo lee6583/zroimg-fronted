@@ -100,10 +100,10 @@ export function UserActions(props: UserActionsProps) {
 
     try {
       if (hasAmount && targetPoints !== user.totalPoints) {
-        await adminUsersApi.adjustCredits(user.id, { amount: targetPoints - user.totalPoints });
+        await adminUsersApi.adjustPoints(user.id, { amount: targetPoints - user.totalPoints });
       }
       if (hasPassword) {
-        await adminUsersApi.resetPassword(user.id, { password });
+        await adminUsersApi.updatePassword(user.id, { password });
       }
       setAmount("");
       setPassword("");
@@ -140,7 +140,7 @@ export function UserActions(props: UserActionsProps) {
     setMessage("");
 
     try {
-      await adminUsersApi.deleteUser(user.id);
+      await adminUsersApi.remove(user.id);
       setDialog(null);
       router.refresh();
     } catch (error) {

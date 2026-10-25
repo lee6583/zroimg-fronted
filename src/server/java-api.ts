@@ -2,13 +2,11 @@ import "server-only";
 
 import { getErrorMessage } from "@/utils/error";
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import { serverEnv } from "@/server/env";
+import type { JavaResult, RequestMethod, RequestParams } from "@/types/api";
 
-const JAVA_PROXY_ERROR_HEADER = "x-zroimg-proxy-error";
-const FORWARDED_REQUEST_HEADERS = [
-  "authorization",
-  "content-type",
+// Server Component 调 Java 时透传的请求头，让 Java 识别同一个登录态和真实客户端
+const FORWARDED_HEADERS = [
   "cookie",
   "user-agent",
   "x-forwarded-for",
@@ -17,31 +15,10 @@ const FORWARDED_REQUEST_HEADERS = [
   "x-request-id",
 ] as const;
 
-const FORWARDED_RESPONSE_HEADERS = [
-  "cache-control",
-  "content-disposition",
-  "content-length",
-  "content-type",
-  "location",
-] as const;
-
-type HeaderSource = {
-  get(name: string): string | null;
-};
-
-type JavaEnvelope<T> = {
-  code?: number;
-  success?: boolean;
-  data?: T;
-  settings?: T;
-  error?: string;
-  message?: string;
-};
-
-type JavaApiDataOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  headers?: HeadersInit;
-  body?: BodyInit | null;
+type RequestJavaOptions = {
+  method?: RequestMethod;
+  params?: RequestParams;
+  data?: unknown;
 };
 
 export class JavaApiError extends Error {
@@ -54,194 +31,90 @@ export class JavaApiError extends Error {
   }
 }
 
-export function getJavaApiErrorStatus(error: unknown) {
-  if (error instanceof JavaApiError) {
-    return error.status;
-  }
-
-  return 502;
-}
-
-function normalizeJavaApiBaseUrl() {
-  const value = serverEnv.javaApiBaseUrl;
-  if (!value) {
-    return "";
-  }
-
-  return value.replace(/\/+$/, "");
-}
-
-function buildJavaApiUrl(path: string) {
-  const baseUrl = normalizeJavaApiBaseUrl();
+function buildUrl(path: string, params: RequestParams | undefined) {
+  const baseUrl = serverEnv.javaApiBaseUrl.replace(/\/+$/, "");
   if (!baseUrl) {
     throw new Error("JAVA_API_BASE_URL 未配置");
   }
 
-  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value === undefined || value === null || value === "") continue;
+    searchParams.set(key, String(value));
+  }
+
+  const query = searchParams.toString();
+  if (!query) {
+    return `${baseUrl}${path}`;
+  }
+
+  return `${baseUrl}${path}?${query}`;
 }
 
-function buildForwardHeaders(source: HeaderSource) {
-  const nextHeaders = new Headers();
+async function buildHeaders(hasBody: boolean) {
+  const headerStore = await headers();
+  const requestHeaders = new Headers();
 
-  for (const name of FORWARDED_REQUEST_HEADERS) {
-    const value = source.get(name);
+  for (const name of FORWARDED_HEADERS) {
+    const value = headerStore.get(name);
     if (value) {
-      nextHeaders.set(name, value);
+      requestHeaders.set(name, value);
     }
   }
 
-  return nextHeaders;
+  if (hasBody) {
+    requestHeaders.set("content-type", "application/json");
+  }
+
+  return requestHeaders;
 }
 
-function buildProxyResponseHeaders(source: Headers) {
-  const nextHeaders = new Headers();
+/**
+ * Server Component 读取 Java 数据。path 是 Java 原始路径（不带 /api），
+ * Java 以 `code !== 200` 表示失败，失败时抛出 JavaApiError。
+ */
+export async function requestJava<T>(path: string, options: RequestJavaOptions = {}) {
+  const method = options.method || "GET";
+  const hasBody = options.data !== undefined;
+  const url = buildUrl(path, options.params);
+  // headers() 必须在 try 外调用：Next 靠它抛出的信号把页面标记为动态渲染
+  const requestHeaders = await buildHeaders(hasBody);
+  let response: Response;
 
-  for (const name of FORWARDED_RESPONSE_HEADERS) {
-    const value = source.get(name);
-    if (value) {
-      nextHeaders.set(name, value);
-    }
-  }
-
-  const responseHeaders = source as Headers & {
-    getSetCookie?: () => string[];
-  };
-
-  if (typeof responseHeaders.getSetCookie === "function") {
-    for (const cookie of responseHeaders.getSetCookie()) {
-      nextHeaders.append("set-cookie", cookie);
-    }
-  } else {
-    const cookie = source.get("set-cookie");
-    if (cookie) {
-      nextHeaders.set("set-cookie", cookie);
-    }
-  }
-
-  return nextHeaders;
-}
-
-function readJavaErrorMessage(payload: unknown, fallback: string) {
-  if (!payload || typeof payload !== "object") {
-    return fallback;
-  }
-
-  if ("message" in payload && typeof payload.message === "string" && payload.message.trim()) {
-    return payload.message;
-  }
-
-  if ("error" in payload && typeof payload.error === "string" && payload.error.trim()) {
-    return payload.error;
-  }
-
-  return fallback;
-}
-
-function isFailedJavaEnvelope(payload: JavaEnvelope<unknown>) {
-  if (typeof payload.code !== "number") {
-    return false;
-  }
-
-  return payload.code !== 200;
-}
-
-export async function proxyRequestToJavaApi(
-  request: Request,
-  path: string,
-  method = request.method,
-) {
   try {
-    const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
-
-    const response = await fetch(buildJavaApiUrl(path), {
+    response = await fetch(url, {
       method,
-      headers: buildForwardHeaders(request.headers),
-      body,
+      headers: requestHeaders,
+      body: hasBody ? JSON.stringify(options.data) : undefined,
       cache: "no-store",
     });
-
-    return new Response(response.body, {
-      status: response.status,
-      headers: buildProxyResponseHeaders(response.headers),
-    });
   } catch (error) {
-    console.error("Java API proxy failed", {
-      method,
-      path,
-      message: getErrorMessage(error),
-    });
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Java 后端暂时不可用，请稍后重试",
-        code: "JAVA_UNAVAILABLE",
-      },
-      {
-        status: 502,
-        headers: {
-          [JAVA_PROXY_ERROR_HEADER]: "java_unavailable",
-        },
-      },
-    );
+    console.error("Java API request failed", { method, path, message: getErrorMessage(error) });
+    throw new JavaApiError("Java 后端暂时不可用，请稍后重试", 502);
   }
+
+  const payload = (await response.json().catch(() => null)) as JavaResult<T> | null;
+  if (!payload || typeof payload.code !== "number") {
+    throw new JavaApiError("Java 后端返回格式不正确", 502);
+  }
+
+  if (!response.ok || payload.code !== 200) {
+    const status = response.ok ? payload.code : response.status;
+    throw new JavaApiError(payload.message || "读取 Java 后端数据失败", status);
+  }
+
+  return payload.data as T;
 }
 
-export async function requestJavaApiData<T>(path: string, options: JavaApiDataOptions = {}) {
+/** 未登录（401）时返回 null，其余错误照常抛出。 */
+export async function requestJavaOrNull<T>(path: string, options: RequestJavaOptions = {}) {
   try {
-    const method = options.method || "GET";
-    const headerStore = await headers();
-    const nextHeaders = buildForwardHeaders(headerStore);
-
-    if (options.headers) {
-      const customHeaders = new Headers(options.headers);
-      customHeaders.forEach((value, key) => {
-        nextHeaders.set(key, value);
-      });
-    }
-
-    if (options.body instanceof FormData) {
-      nextHeaders.delete("content-type");
-    }
-
-    const response = await fetch(buildJavaApiUrl(path), {
-      method,
-      headers: nextHeaders,
-      body: options.body,
-      cache: "no-store",
-    });
-    const payload = (await response.json()) as JavaEnvelope<T>;
-    const failedByJavaCode = isFailedJavaEnvelope(payload);
-
-    if (!response.ok || failedByJavaCode) {
-      let status = response.status;
-      if (failedByJavaCode && payload.code && payload.code >= 400) {
-        status = payload.code;
-      }
-
-      throw new JavaApiError(
-        readJavaErrorMessage(payload, "读取 Java 后端数据失败"),
-        status || 502,
-      );
-    }
-
-    if (payload.data !== undefined) {
-      return payload.data;
-    }
-
-    if (payload.settings !== undefined) {
-      return payload.settings;
-    }
-
-    return payload as T;
+    return await requestJava<T>(path, options);
   } catch (error) {
-    if (error instanceof JavaApiError) {
-      throw error;
+    if (error instanceof JavaApiError && error.status === 401) {
+      return null;
     }
 
-    throw new JavaApiError(getErrorMessage(error), 502);
+    throw error;
   }
-}
-
-export async function getJavaApiData<T>(path: string) {
-  return requestJavaApiData<T>(path);
 }

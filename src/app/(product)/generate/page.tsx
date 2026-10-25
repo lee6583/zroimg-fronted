@@ -6,67 +6,50 @@ import {
   resolveActiveConversationId,
 } from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
-import {
-  estimatePrice,
-  listConversations,
-  listModels,
-  listTasks,
-  serializeTask,
-} from "@/server/bff/generation";
-import { listCollections } from "@/server/bff/account";
+import { requestJava } from "@/server/java-api";
+import type { FavoriteCollection } from "@/types/favorites";
+import type {
+  GenerationConversation,
+  GenerationModel,
+  GenerationPriceEstimate,
+  GenerationTask,
+} from "@/types/generation";
 
 export const dynamic = "force-dynamic";
 
 export default async function GeneratePage() {
-  const current = await requireUser();
-  const modelOptions = await listModels();
-  const initialOptions = getDefaultOptions(modelOptions);
-  const initialPrice = await estimatePrice(current.profile.id, {
-    model: initialOptions.model,
-    mode: initialOptions.mode,
-    ratio: initialOptions.ratio,
-    quality: initialOptions.quality,
-    count: initialOptions.count,
-  });
-  const conversations = await listConversations(current.profile.id);
+  await requireUser();
+  const [models, conversations, collections] = await Promise.all([
+    requestJava<GenerationModel[]>("/generation/user/models", { params: { modelType: "image" } }),
+    requestJava<GenerationConversation[]>("/generation/user/conversations"),
+    requestJava<FavoriteCollection[]>("/favorite/user/collections"),
+  ]);
+  const options = getDefaultOptions(models);
   const cookieStore = await cookies();
   const rememberedId = cookieStore.get(activeConversationCookieName)?.value;
   const activeId = resolveActiveConversationId(conversations, rememberedId);
-  const tasksPromise = activeId ? listTasks(current.profile.id, activeId) : Promise.resolve([]);
-  const [tasks, collections] = await Promise.all([
-    tasksPromise,
-    listCollections(current.profile.id),
-  ]);
-  const items = conversations.map((conversation) => {
-    const latestTask = conversation.tasks[0];
-    return {
-      id: conversation.id,
-      title: conversation.title,
-      taskCount: conversation._count.tasks,
-      latestTaskStatus: latestTask?.status ?? null,
-      latestTaskCost: latestTask?.costCredits ?? null,
-      lastTaskAt: conversation.lastTaskAt?.toISOString() ?? null,
-      updatedAt: conversation.updatedAt.toISOString(),
-      createdAt: conversation.createdAt.toISOString(),
-    };
+
+  let tasksPromise = Promise.resolve<GenerationTask[]>([]);
+  if (activeId) {
+    const path = `/generation/user/conversations/${encodeURIComponent(activeId)}/tasks`;
+    tasksPromise = requestJava<GenerationTask[]>(path);
+  }
+  const pricePromise = requestJava<GenerationPriceEstimate>("/generation/user/price/estimate", {
+    method: "POST",
+    data: options,
   });
-  const taskList = await Promise.all(tasks.map(serializeTask));
-  const collectionItems = collections.map((collection) => ({
-    id: collection.id,
-    name: collection.name,
-    imageCount: collection._count.items,
-  }));
+  const [tasks, price] = await Promise.all([tasksPromise, pricePromise]);
 
   return (
     <GenerateForm
-      initialChats={items}
+      initialChats={conversations}
       initialId={activeId}
-      initialTasks={taskList}
-      initialBalance={initialPrice.currentPoints}
-      initialOptions={initialOptions}
-      initialEstimate={initialPrice.requiredPoints}
-      initialCollections={collectionItems}
-      modelOptions={modelOptions}
+      initialTasks={tasks}
+      initialBalance={price.currentPoints}
+      initialOptions={options}
+      initialEstimate={price.requiredPoints}
+      initialCollections={collections}
+      modelOptions={models}
     />
   );
 }

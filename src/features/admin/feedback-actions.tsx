@@ -5,7 +5,7 @@ import { Send } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ticketsApi } from "@/api/support/tickets";
+import { adminTicketsApi } from "@/api/admin/tickets";
 import type { FeedbackStatus } from "@/utils/feedback";
 import styles from "./feedback-actions.module.css";
 
@@ -37,7 +37,7 @@ export function FeedbackActions(props: FeedbackActionsProps) {
     setMessage("");
     setStatus(nextStatus);
     try {
-      await ticketsApi.updateStatus(ticketId, { status: nextStatus });
+      await adminTicketsApi.updateStatus(ticketId, { status: nextStatus });
       setMessage("状态已更新");
       router.refresh();
     } catch (error) {
@@ -51,7 +51,7 @@ export function FeedbackActions(props: FeedbackActionsProps) {
     setLoading(true);
     setMessage("");
     try {
-      await ticketsApi.adminReply(ticketId, { body, status });
+      await adminTicketsApi.reply(ticketId, { body, status });
       setBody("");
       setMessage("状态和回复已同步");
       router.refresh();

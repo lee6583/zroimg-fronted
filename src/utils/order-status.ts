@@ -6,22 +6,13 @@ const orderDisplayStatusLabels: Record<OrderDisplayStatus, string> = {
   cancelled: "已取消",
 };
 
+// 同时接受 Java 的 displayStatus 和 payStatus（pending/paying/paid/failed/closed）。
 function normalizeOrderDisplayStatus(status: string): OrderDisplayStatus {
-  if (
-    status === "paid" ||
-    status === "fulfilled" ||
-    status === "credited" ||
-    status === "success"
-  ) {
+  if (status === "paid") {
     return "paid";
   }
 
-  if (
-    status === "cancelled" ||
-    status === "closed" ||
-    status === "failed" ||
-    status === "expired"
-  ) {
+  if (status === "cancelled" || status === "closed" || status === "failed") {
     return "cancelled";
   }
 
