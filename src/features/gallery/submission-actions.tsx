@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import type { GallerySubmission } from "@/types/gallery";
+import { useRouter } from "@/i18n/navigation";
 
 type SubmissionActionsProps = {
   submission: GallerySubmission;

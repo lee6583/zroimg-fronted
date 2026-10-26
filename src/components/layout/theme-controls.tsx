@@ -1,13 +1,12 @@
 "use client";
 
-import { Globe, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
-type Locale = "ZH" | "EN";
 
 const themeKey = "zroimg-theme";
-const localeKey = "zroimg-locale";
 const settingsEvent = "zroimg-settings-change";
 
 function readStoredTheme() {
@@ -48,16 +47,8 @@ function getThemeSnapshot(): Theme {
   return "light";
 }
 
-function getLocaleSnapshot(): Locale {
-  return window.localStorage.getItem(localeKey) === "EN" ? "EN" : "ZH";
-}
-
 function getServerThemeSnapshot(): Theme {
   return "light";
-}
-
-function getServerLocaleSnapshot(): Locale {
-  return "ZH";
 }
 
 function emitSettingsChange() {
@@ -68,14 +59,14 @@ function saveCookie(name: string, value: string) {
   document.cookie = `${name}=${value};path=/;max-age=31536000;samesite=lax`;
 }
 
+// 语言切换在 LocaleSwitcher；<html lang> 由根布局按路由语言输出，这里不再改动。
 export function ThemeControls() {
+  const t = useTranslations("nav.theme");
   const theme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerThemeSnapshot);
-  const locale = useSyncExternalStore(subscribe, getLocaleSnapshot, getServerLocaleSnapshot);
 
   useEffect(() => {
     applyTheme(theme);
-    document.documentElement.lang = locale === "ZH" ? "zh-CN" : "en";
-  }, [theme, locale]);
+  }, [theme]);
 
   function toggleTheme() {
     const nextTheme = theme === "light" ? "dark" : "light";
@@ -85,33 +76,14 @@ export function ThemeControls() {
     emitSettingsChange();
   }
 
-  function toggleLocale() {
-    const nextLocale = locale === "ZH" ? "EN" : "ZH";
-    const htmlLocale = nextLocale === "ZH" ? "zh-CN" : "en";
-    window.localStorage.setItem(localeKey, nextLocale);
-    saveCookie("zroimg-locale", htmlLocale);
-    document.documentElement.lang = htmlLocale;
-    emitSettingsChange();
-  }
-
   return (
-    <div className="flex items-center gap-1">
-      <button
-        className="nav-icon-button"
-        type="button"
-        onClick={toggleLocale}
-        aria-label="切换语言"
-      >
-        <Globe size={17} />
-      </button>
-      <button
-        className="nav-icon-button"
-        type="button"
-        onClick={toggleTheme}
-        aria-label="切换明暗模式"
-      >
-        {theme === "light" ? <Sun size={16} /> : <Moon size={16} />}
-      </button>
-    </div>
+    <button
+      className="nav-icon-button"
+      type="button"
+      onClick={toggleTheme}
+      aria-label={t("toggle")}
+    >
+      {theme === "light" ? <Sun size={16} /> : <Moon size={16} />}
+    </button>
   );
 }

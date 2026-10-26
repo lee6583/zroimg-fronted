@@ -1,17 +1,22 @@
 "use client";
 
 import { authApi } from "@/api/auth/email-auth";
-import { getErrorMessage } from "@/utils/error";
+import { translateApiError } from "@/i18n/api-error";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Lock, Mail } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter as useAppRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./auth-form.module.css";
 
 const LOGIN_COOLDOWN_MS = 1500;
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
+  // 后台 /admin 不带语言前缀，用 Next 原生 router 跳转，避免被加上 /en、/ru。
+  const appRouter = useAppRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -56,30 +61,33 @@ export function LoginForm() {
       setLoading(true);
       setMessage("");
       const data = await authApi.loginWithEmail({ email, password });
-      const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
 
-      router.push(redirectTo);
+      if (data.user.role === "admin") {
+        appRouter.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setLoading(false);
     }
   }
 
   const isSubmitDisabled = isLoading || isCoolingDown;
-  let submitText = "登录";
+  let submitText = t("submit");
   if (isLoading) {
-    submitText = "登录中...";
+    submitText = t("submitting");
   } else if (isCoolingDown) {
-    submitText = "请稍候...";
+    submitText = t("coolingDown");
   }
 
   return (
     <form onSubmit={onSubmit} className={styles.authForm}>
       <div className={styles.authForm__fields}>
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>邮箱</span>
+          <span className={styles.authForm__fieldLabel}>{t("email")}</span>
           <span className={styles.authForm__control}>
             <Mail className={styles.authForm__icon} />
             <input
@@ -95,9 +103,9 @@ export function LoginForm() {
 
         <label className={styles.authForm__field}>
           <span className={styles.authForm__labelRow}>
-            <span className={styles.authForm__fieldLabel}>密码</span>
+            <span className={styles.authForm__fieldLabel}>{t("password")}</span>
             <Link href="/forgot-password" className={styles.authForm__fieldLink}>
-              忘记密码？
+              {t("forgotPassword")}
             </Link>
           </span>
           <span className={styles.authForm__control}>

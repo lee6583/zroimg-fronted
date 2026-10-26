@@ -12,7 +12,7 @@ export async function AdminShell(props: AdminShellProps) {
 
   return (
     <>
-      <ProductTopNav />
+      <ProductTopNav isAdminConsole />
       <div className={styles.shell}>
         <div className={styles.shell__grid}>
           <aside className={styles.shell__sidebar}>

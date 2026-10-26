@@ -10,5 +10,7 @@ overrides:
   use-sync-external-store: 1.7.0
 
 allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false
   sharp: true
   unrs-resolver: true

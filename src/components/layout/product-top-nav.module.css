@@ -33,6 +33,7 @@
   justify-content: center;
   padding: 0.5rem 1rem;
   color: inherit;
+  white-space: nowrap;
   text-decoration: none;
   transition:
     background-color 0.15s ease,
@@ -129,24 +130,28 @@
   position: relative;
 }
 
-.productTopNav__avatar {
-  display: grid;
-  width: 2.25rem;
+/* 文案会随语言变长（"登录" -> "Войти"），只设最小宽度，不固定宽度。 */
+.productTopNav__login {
+  display: inline-flex;
+  min-width: 2.25rem;
   height: 2.25rem;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   border-radius: 0.375rem;
   background: var(--panel);
+  padding: 0 0.65rem;
   color: var(--foreground);
   font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
+  white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.productTopNav__avatar:hover {
+.productTopNav__login:hover {
   background: var(--soft);
 }
 
@@ -197,6 +202,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   text-align: left;
+  white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
 }
@@ -212,7 +218,9 @@
 
 .productTopNav__mobileNav {
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
+  overflow-x: auto;
+  scrollbar-width: none;
   gap: 0.25rem;
   border-top: 1px solid var(--line);
   background-color: inherit;
@@ -223,7 +231,9 @@
 }
 
 .productTopNav__mobileLink {
+  flex-shrink: 0;
   padding: 0.375rem 0.75rem;
+  white-space: nowrap;
   color: inherit;
   text-decoration: none;
   transition:

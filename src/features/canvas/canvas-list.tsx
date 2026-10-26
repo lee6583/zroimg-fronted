@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Check, Frame, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { canvasBoardsApi } from "@/api/canvas/boards";
@@ -9,6 +7,7 @@ import type { CanvasBoard, CanvasConfig } from "@/types/canvas";
 import { getErrorMessage } from "@/utils/error";
 import { userAssetUrl } from "@/utils/media";
 import styles from "./canvas-list.module.css";
+import { Link, useRouter } from "@/i18n/navigation";
 
 type CanvasListProps = {
   initialBoards: CanvasBoard[];

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Gift, Hash, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { authApi } from "@/api/auth/email-auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
 import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
+import { useRouter } from "@/i18n/navigation";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const codePattern = /^[0-9]{6}$/;

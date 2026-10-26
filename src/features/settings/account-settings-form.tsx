@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { accountApi } from "@/api/account/settings";
@@ -20,6 +19,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { getErrorMessage } from "@/utils/error";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import styles from "./account-settings-form.module.css";
+import { useRouter } from "@/i18n/navigation";
 
 type AccountSettingsFormProps = {
   username: string;

@@ -1,0 +1,240 @@
+{
+  "common": {
+    "brand": "ZroImg",
+    "actions": {
+      "login": "登录",
+      "register": "注册",
+      "logout": "退出登录",
+      "retry": "重新加载",
+      "startCreating": "开始创作",
+      "backHome": "返回首页",
+      "close": "关闭"
+    },
+    "status": {
+      "loading": "加载中...",
+      "pleaseWait": "请稍候..."
+    }
+  },
+  "nav": {
+    "homeAria": "ZroImg 首页",
+    "top": {
+      "home": "首页",
+      "gallery": "作品画廊",
+      "pricing": "定价",
+      "docs": "文档"
+    },
+    "account": {
+      "openMenu": "打开账户菜单",
+      "settings": "账户设置",
+      "logout": "退出登录"
+    },
+    "theme": {
+      "toggle": "切换明暗模式"
+    },
+    "locale": {
+      "label": "切换语言"
+    },
+    "announcement": {
+      "open": "查看公告",
+      "close": "关闭公告",
+      "kicker": "公告",
+      "emptyTitle": "暂无公告",
+      "emptyContent": "当前没有正在展示的站内公告。"
+    },
+    "sidebar": {
+      "overview": "概览",
+      "groups": {
+        "create": "创作中心",
+        "content": "内容管理",
+        "billing": "交易与资产",
+        "help": "帮助与设置"
+      },
+      "items": {
+        "generate": "图片生成",
+        "canvas": "无限画布",
+        "video": "视频创作",
+        "history": "创作历史",
+        "favorites": "收藏合集",
+        "submissions": "我的投稿",
+        "credits": "积分购买",
+        "billing": "我的订单",
+        "tickets": "意见反馈",
+        "settings": "账户设置"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "欢迎回来",
+      "noAccount": "还没有账号？",
+      "registerLink": "开启创作之旅",
+      "email": "邮箱",
+      "password": "密码",
+      "forgotPassword": "忘记密码？",
+      "submit": "登录",
+      "submitting": "登录中...",
+      "coolingDown": "请稍候..."
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "一念之间，万象生成",
+      "text": "输入一句描述，让 AI 创造独一无二的视觉作品。",
+      "statsTitle": "深受全球创作者喜爱"
+    },
+    "stats": {
+      "images": "已生成图片",
+      "users": "活跃用户",
+      "satisfaction": "满意度"
+    },
+    "features": {
+      "eyebrow": "核心功能",
+      "title": "创作所需，一应俱全",
+      "text": "从一句提示词到一组可用图片，把灵感、风格、参考图和成品管理放在一个地方。",
+      "items": {
+        "conversation": {
+          "title": "对话式创作",
+          "text": "像聊天一样描述画面，人物、场景、光线、风格，都可以用一句话慢慢调整。"
+        },
+        "styles": {
+          "title": "多种风格",
+          "text": "写实、动漫、水彩、油画、极简海报、商品视觉，为不同场景快速找到合适气质。"
+        },
+        "batch": {
+          "title": "批量探索",
+          "text": "一次生成多张变体，适合探索方向、挑选构图，也适合把灵感快速铺开。"
+        },
+        "reference": {
+          "title": "参考图再创作",
+          "text": "上传参考图，保留主体、替换背景、调整风格，让旧素材长出新的可能。"
+        },
+        "hd": {
+          "title": "高清输出",
+          "text": "适合头像、封面、海报、商品图和社媒配图，让作品能直接进入使用场景。"
+        },
+        "credits": {
+          "title": "灵活积分",
+          "text": "按需购买积分，用多少生成多少；适合轻量尝试，也适合持续创作。"
+        }
+      }
+    },
+    "steps": {
+      "eyebrow": "使用流程",
+      "title": "从想法到图片，四步搞定",
+      "text": "无需设计经验，也无需提示词技巧，几分钟即可开始创作。",
+      "number": "Step {number}",
+      "items": {
+        "register": {
+          "title": "注册账号",
+          "text": "几秒钟即可免费注册，无需信用卡。注册后立即获得积分。"
+        },
+        "describe": {
+          "title": "描述你的构想",
+          "text": "开启对话，描述你想要的画面。持续迭代，直到触动你的灵感。"
+        },
+        "generate": {
+          "title": "AI 生成作品",
+          "text": "AI 解读你的提示词，数秒内产出高质量图像。生成多个变体探索方向。"
+        },
+        "share": {
+          "title": "下载分享",
+          "text": "将作品高清下载或直接分享。所有图片都保留在画廊中，随时回看。"
+        }
+      }
+    },
+    "advantages": {
+      "eyebrow": "创作优势",
+      "title": "让灵感更快抵达画面",
+      "text": "适用广，应用于商品展示、社媒配图、头像角色、海报封面和插画草图等场景。",
+      "items": {
+        "noDrawing": "不需要会画画，也能把脑海里的构图讲清楚。",
+        "explore": "从头像、商品图到海报封面，都能快速探索方向。",
+        "history": "每一次生成都会留下记录，满意的图可以继续编辑。",
+        "credits": "积分按需购买，适合偶尔创作，也适合长期产出。"
+      }
+    },
+    "vision": {
+      "eyebrow": "推广目标",
+      "title": "创作不再受限于工具",
+      "text": "我们致力于把 AI 图像、视频创作推广到全球，让更多人把灵感带到真实生活与工作场景中。",
+      "imageAlt": "ZroImg 创作推广目标示意图"
+    },
+    "footer": {
+      "product": "产品",
+      "legal": "法律",
+      "pricing": "定价",
+      "credits": "积分购买",
+      "contact": "联系我们",
+      "terms": "服务条款",
+      "privacy": "隐私政策",
+      "cookies": "Cookie 政策",
+      "licenses": "开源许可",
+      "copyright": "© {year} ZroImg"
+    }
+  },
+  "errors": {
+    "page": {
+      "title": "页面暂时无法加载",
+      "description": "请稍后重试。若问题持续出现，请联系管理员。",
+      "retry": "重新加载"
+    },
+    "notFound": {
+      "code": "404",
+      "title": "页面不存在",
+      "description": "你访问的页面不存在或已被移除。",
+      "backHome": "返回首页"
+    },
+    "api": {
+      "network": "网络连接失败，请检查网络后重试",
+      "unknown": "请求失败，请稍后重试"
+    }
+  },
+  "metadata": {
+    "site": {
+      "title": "ZroImg - AI 图片生成平台",
+      "description": "ZroImg 是基于 gpt-image-2 的 AI 图片生成平台：对话式创作、多种风格、参考图再创作与高清输出，按需购买积分。"
+    },
+    "home": {
+      "title": "ZroImg - 一念之间，万象生成",
+      "description": "输入一句描述，让 AI 创造独一无二的视觉作品。对话式创作、批量探索、参考图再创作，积分按需购买。"
+    },
+    "gallery": {
+      "title": "作品画廊",
+      "description": "浏览 ZroImg 社区创作者公开发布的 AI 生成图片作品，按写实、动漫、艺术等分类探索灵感。"
+    },
+    "pricing": {
+      "title": "定价",
+      "description": "ZroImg 积分套餐与价格：注册即可免费体验，按需购买积分，无需订阅。"
+    },
+    "docs": {
+      "title": "文档",
+      "description": "ZroImg 使用文档：图片生成、无限画布、视频创作、积分与订单等功能说明。"
+    },
+    "licenses": {
+      "title": "开源许可",
+      "description": "ZroImg 使用和参考的开源项目及其许可证。"
+    },
+    "login": {
+      "title": "登录",
+      "description": "登录 ZroImg 账号，继续你的 AI 图片创作。"
+    },
+    "register": {
+      "title": "注册",
+      "description": "注册 ZroImg 账号，免费开始 AI 图片创作。"
+    },
+    "forgotPassword": {
+      "title": "重置密码",
+      "description": "通过邮箱验证码重置 ZroImg 账号密码。"
+    },
+    "app": {
+      "title": "创作工作台",
+      "description": "ZroImg 创作工作台。"
+    },
+    "canvas": {
+      "title": "无限画布"
+    },
+    "notFound": {
+      "title": "页面不存在"
+    }
+  }
+}

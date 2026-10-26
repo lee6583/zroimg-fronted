@@ -1,10 +1,13 @@
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import styles from "./brand-logo.module.css";
 
 export function BrandLogo() {
+  const t = useTranslations("nav");
+
   return (
-    <Link href="/" className={styles.brandLogo} aria-label="ZroImg 首页">
+    <Link href="/" className={styles.brandLogo} aria-label={t("homeAria")}>
       <span className={styles.brandLogo__mark} aria-hidden="true">
         <Image
           src="/assets/day-icon.png"

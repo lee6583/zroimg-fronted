@@ -10,11 +10,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit --incremental false",
-    "test": "node --experimental-strip-types --test tests/canvas.test.ts tests/credits.test.ts tests/dashboard.test.ts tests/generation.test.ts tests/history.test.ts tests/mask.test.ts tests/media.test.ts tests/order-status.test.ts tests/recharge.test.ts tests/task-status.test.ts tests/video.test.ts",
+    "test": "node --experimental-strip-types --test tests/canvas.test.ts tests/credits.test.ts tests/dashboard.test.ts tests/generation.test.ts tests/history.test.ts tests/i18n-messages.test.ts tests/java-time.test.ts tests/mask.test.ts tests/media.test.ts tests/order-status.test.ts tests/recharge.test.ts tests/task-status.test.ts tests/video.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit:prod": "pnpm audit --prod --audit-level=high --ignore-registry-errors --registry=https://registry.npmjs.org",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm i18n:check && pnpm test && pnpm build",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@xyflow/react": "12.12.0",
@@ -24,6 +25,7 @@
     "konva": "10.9.0",
     "lucide-react": "^1.23.0",
     "next": "16.4.3",
+    "next-intl": "4.14.9",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-konva": "19.3.2",

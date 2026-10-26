@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Clock3,
   Clapperboard,
@@ -20,7 +20,9 @@ import {
   LifeBuoy,
   Sparkles,
   Wallet,
+  type LucideIcon,
 } from "lucide-react";
+import { usePathname } from "@/i18n/navigation";
 import { SideNav, type NavGroup, type NavItem } from "./side-nav";
 import styles from "./shell.module.css";
 
@@ -47,106 +49,60 @@ type PendingNav = {
   key: AppSection;
 };
 
-const overviewItems: Array<NavItem<AppSection>> = [
-  {
-    key: "overview",
-    label: "概览",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-];
+type SidebarItemKey = Exclude<AppSection, "overview">;
+type SidebarGroupKey = "create" | "content" | "billing" | "help";
 
-const appNavGroups: Array<NavGroup<AppSection>> = [
+type SidebarItemDef = {
+  key: SidebarItemKey;
+  href: string;
+  icon: LucideIcon;
+};
+
+type SidebarGroupDef = {
+  key: SidebarGroupKey;
+  icon: LucideIcon;
+  items: SidebarItemDef[];
+};
+
+// 只定义结构；显示文案来自 nav.sidebar.groups.* / nav.sidebar.items.*，key 与这里一一对应。
+const sidebarGroups: SidebarGroupDef[] = [
   {
     key: "create",
-    label: "创作中心",
     icon: Sparkles,
     items: [
-      {
-        key: "generate",
-        label: "图片生成",
-        href: "/generate",
-        icon: ImagePlus,
-      },
-      {
-        key: "canvas",
-        label: "无限画布",
-        href: "/canvas",
-        icon: Frame,
-      },
-      {
-        key: "video",
-        label: "视频创作",
-        href: "/video",
-        icon: Clapperboard,
-      },
+      { key: "generate", href: "/generate", icon: ImagePlus },
+      { key: "canvas", href: "/canvas", icon: Frame },
+      { key: "video", href: "/video", icon: Clapperboard },
     ],
   },
   {
     key: "content",
-    label: "内容管理",
     icon: FolderOpen,
     items: [
-      {
-        key: "history",
-        label: "创作历史",
-        href: "/history",
-        icon: Clock3,
-      },
-      {
-        key: "favorites",
-        label: "收藏合集",
-        href: "/favorites",
-        icon: FolderHeart,
-      },
-      {
-        key: "submissions",
-        label: "我的投稿",
-        href: "/submissions",
-        icon: Send,
-      },
+      { key: "history", href: "/history", icon: Clock3 },
+      { key: "favorites", href: "/favorites", icon: FolderHeart },
+      { key: "submissions", href: "/submissions", icon: Send },
     ],
   },
   {
     key: "billing",
-    label: "交易与资产",
     icon: Wallet,
     items: [
-      {
-        key: "credits",
-        label: "积分购买",
-        href: "/credits",
-        icon: Coins,
-      },
-      {
-        key: "billing",
-        label: "我的订单",
-        href: "/billing",
-        icon: ReceiptText,
-      },
+      { key: "credits", href: "/credits", icon: Coins },
+      { key: "billing", href: "/billing", icon: ReceiptText },
     ],
   },
   {
     key: "help",
-    label: "帮助与设置",
     icon: LifeBuoy,
     items: [
-      {
-        key: "tickets",
-        label: "意见反馈",
-        href: "/tickets",
-        icon: PencilLine,
-      },
-      {
-        key: "settings",
-        label: "账户设置",
-        href: "/settings",
-        icon: Settings,
-      },
+      { key: "tickets", href: "/tickets", icon: PencilLine },
+      { key: "settings", href: "/settings", icon: Settings },
     ],
   },
 ];
 
+// pathname 来自 @/i18n/navigation，已去掉 /en、/ru 前缀。
 function getActiveSection(pathname: string): AppSection {
   if (pathname.startsWith("/generate")) return "generate";
   if (pathname.startsWith("/canvas")) return "canvas";
@@ -170,10 +126,28 @@ function getFlush(pathname: string) {
 export function ProductFrame(props: ProductFrameProps) {
   const children = props.children;
   const topNav = props.topNav;
+  const t = useTranslations("nav.sidebar");
   const pathname = usePathname();
   const active = useMemo(() => getActiveSection(pathname), [pathname]);
   const flush = useMemo(() => getFlush(pathname), [pathname]);
   const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
+
+  const overviewItems: Array<NavItem<AppSection>> = [
+    { key: "overview", label: t("overview"), href: "/dashboard", icon: LayoutDashboard },
+  ];
+
+  const appNavGroups: Array<NavGroup<AppSection>> = sidebarGroups.map((group) => {
+    const items = group.items.map((item) => {
+      return { ...item, label: t(`items.${item.key}`) };
+    });
+
+    return {
+      key: group.key,
+      label: t(`groups.${group.key}`),
+      icon: group.icon,
+      items,
+    };
+  });
 
   const isPendingCurrent =
     pendingNav !== null &&

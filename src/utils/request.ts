@@ -3,6 +3,7 @@ import type { ApiErrorInfo, JavaResult, RequestOptions } from "@/types/api";
 
 export class ApiRequestError extends Error implements ApiErrorInfo {
   code: number;
+  errorCode?: string;
   status: number;
   url: string;
   method: ApiErrorInfo["method"];
@@ -11,6 +12,7 @@ export class ApiRequestError extends Error implements ApiErrorInfo {
     super(info.message);
     this.name = "ApiRequestError";
     this.code = info.code;
+    this.errorCode = info.errorCode;
     this.status = info.status;
     this.url = info.url;
     this.method = info.method;
@@ -54,6 +56,15 @@ function isJavaResult(payload: unknown): payload is JavaResult<unknown> {
   return typeof code === "number" && typeof message === "string";
 }
 
+// Java 按 Accept-Language 返回对应语言的 message；语言取自根布局写入的 <html lang>。
+function readPageLocale() {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
+  return document.documentElement.lang;
+}
+
 async function parsePayload(response: Response) {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -70,6 +81,10 @@ async function parsePayload(response: Response) {
 export async function request<T>(options: RequestOptions): Promise<T> {
   const method = options.method || "GET";
   const headers = new Headers(options.headers);
+  const pageLocale = readPageLocale();
+  if (pageLocale && !headers.has("Accept-Language")) {
+    headers.set("Accept-Language", pageLocale);
+  }
   let body = options.body;
 
   if (body === undefined && options.data !== undefined) {
@@ -120,6 +135,7 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     throw new ApiRequestError({
       message: result.message || "请求失败",
       code: result.code,
+      errorCode: typeof result.errorCode === "string" ? result.errorCode : undefined,
       status: response.ok ? result.code : response.status,
       url,
       method,

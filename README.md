@@ -25,6 +25,7 @@ Java 后端负责真实用户、会话、验证码、参数校验、登录限流
 - Tailwind CSS 4 和 CSS Modules。
 - Lucide React，统一图标来源。
 - clsx，统一条件 class 拼接。
+- next-intl 4，用户端多语言（zh-CN 默认、en、ru）。
 - pnpm 11，唯一包管理器；具体版本由 `package.json` 的 `packageManager` 固定。
 
 修改 Next.js API、路由、缓存或文件约定前，必须先阅读当前安装版本位于 `node_modules/next/dist/docs/` 的对应指南。
@@ -47,6 +48,7 @@ pnpm lint          # ESLint
 pnpm typecheck     # Next.js 路由类型 + TypeScript
 pnpm test          # Node.js 内建单元测试
 pnpm format:check  # Prettier 检查
+pnpm i18n:check    # 翻译文件结构检查（缺失翻译只警告）
 pnpm build         # 生产构建
 pnpm audit:prod    # 生产依赖安全审计
 pnpm check         # 提交前完整校验
@@ -58,7 +60,10 @@ CI 位于 `.github/workflows/ci.yml`，Pull Request 和 `main`、`dev` 分支推
 
 ```dotenv
 JAVA_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_SITE_URL=https://zroimg.com
 ```
+
+- `NEXT_PUBLIC_SITE_URL` 是站点对外地址，用于 canonical、hreflang、sitemap 和 OpenGraph；不填默认 `https://zroimg.com`，测试环境需要改成测试域名。
 
 - `JAVA_API_BASE_URL` 只供 Next 服务端渲染调用 Java；生产环境填 Java 的内网地址，不填公网域名。
 - 浏览器接口一律写成 `/api/<Java 路径>`，例如 `/api/auth/user/me`。生产由 nginx 去掉 `/api` 前缀转发给 Java（见 `deploy/nginx.prod.conf.example`）；`pnpm dev` 时由 `next.config.ts` 的 rewrites 做同样的转发。
@@ -67,17 +72,39 @@ JAVA_API_BASE_URL=http://localhost:8080
 - 服务端变量禁止使用 `NEXT_PUBLIC_*` 前缀。
 - 视频页只有在后台“模型配置”中配置并启用视频模型后才具备实际生成能力；`VIDEO_*` 仅保留给历史视频任务兼容使用。
 
-## 4. 目录结构
+## 4. 国际化与 SEO
+
+详细规范：[docs/i18n.md](docs/i18n.md)、[docs/seo.md](docs/seo.md)。硬性规则：
+
+- 用户端代码（`src/app/[locale]/**`、`src/features/**`、`src/components/**`、`src/utils/**` 中会展示给用户的文本）**不写死任何用户可见字符串**，包括 `aria-label`、`title`、`alt`、`placeholder`、toast 和校验提示；全部放进 `messages/zh-CN.json`，en/ru 保持相同 key。Server Component 用 `getTranslations`，Client Component 用 `useTranslations`。
+- key 是 camelCase 语义名（`generate.prompt.placeholder`），不用中文原文做 key；变量、复数用 ICU，不拼接字符串。
+- 站内跳转一律从 `@/i18n/navigation` 导入 `Link`、`redirect`、`useRouter`、`usePathname`，写不带语言前缀的路径。
+- 日期、数字、金额用 next-intl 格式化器（共享格式在 `src/i18n/formats.ts`）；Java 的 `LocalDateTime` 先用 `parseJavaDateTime` 解析（北京时间）。
+- 每个公开页面导出 `generateMetadata` 并使用 `buildMetadata`（`src/lib/seo.ts`），路径登记到 `src/lib/site-routes.ts`；登录后的页面和认证页不收录。
+- 按钮和导航不设固定宽度，长文案（俄文）要能换行或省略。
+- 例外：后台 `/admin` 与 `src/features/admin/**` 只有中文，可以直接写中文，继续用 `next/link`。
+- `pnpm i18n:check` 检查翻译结构（已包含在 `pnpm check` 中）。
+
+## 5. 目录结构
 
 ```text
+messages/              zh-CN.json（完整）、en.json、ru.json
+docs/                  i18n.md、seo.md
+scripts/               check-i18n.mjs
 src/
-  app/                 页面、布局和错误边界
+  proxy.ts             语言协商（next-intl），排除 /api、/admin、静态文件
+  app/
+    [locale]/          用户端全部页面（(product) 应用页、(auth) 认证页、公开页）
+    admin/             后台（独立根布局，只有中文）
+    sitemap.ts、robots.ts、global-not-found.tsx
+  i18n/                路由、导航、请求配置、格式、文案回退
   api/                 浏览器请求 Java 的函数
   components/
     layout/            页面壳、导航和账户菜单
     ui/                业务无关 UI
   features/            按业务域组织的交互组件
     canvas/            无限画布编辑器（React Flow）和局部重绘遮罩（Konva）
+  lib/                 seo.ts（buildMetadata）、structured-data.ts（JSON-LD）、site-routes.ts
   server/
     auth.ts            SSR 会话入口
     env.ts             服务端环境配置
@@ -91,7 +118,7 @@ public/assets/         实际被页面引用的静态资源
 
 不要为了目录对称创建空层、barrel 或“以后可能用到”的 helper。文件没有消费者时直接删除。
 
-## 5. 模块边界
+## 6. 模块边界
 
 ### `src/app`
 
@@ -100,7 +127,8 @@ public/assets/         实际被页面引用的静态资源
 - 页面通过 `requestJava<T>(javaPath, { params })` 读取数据，路径是 Java 原始路径（不带 `/api`），当前请求的 Cookie 会自动透传。
 - 只关心是否登录时用 `getCurrentUser()`；需要登录用 `requireUser()`，需要管理员用 `requireAdmin()`。
 - Java 对不存在的资源可能返回 400，详情页按需转成 `notFound()`。
-- 注册规范地址是 `/register`；`/signup` 只在 `next.config.ts` 保留 308 兼容重定向，不维护第二份页面。
+- 注册规范地址是 `/register`；`/signup`（及 `/en/signup`、`/ru/signup`）只在 `next.config.ts` 保留 308 兼容重定向，不维护第二份页面。
+- 用户端路由放在 `src/app/[locale]/` 下；后台在 `src/app/admin/`。两个根布局共用 `components/layout/root-document.tsx`。
 
 ### `src/api`
 
@@ -152,7 +180,7 @@ public/assets/         实际被页面引用的静态资源
 - `utils` 必须是纯函数或明确的基础设施工具，不能弹消息、导航或读写组件状态。
 - 类型层不能反向依赖 UI 或 feature。
 
-## 6. API 契约
+## 7. API 契约
 
 Java 后端成功响应统一为：
 
@@ -185,7 +213,7 @@ Java 后端成功响应统一为：
 - 表单可以做轻量的前端校验改善体验，但规则以 Java 为准，不在前端重复实现服务端规则。
 - Java OpenAPI 稳定后，以后端契约为唯一来源生成共享类型。
 
-## 7. 安全规则
+## 8. 安全规则
 
 - Session Cookie 必须由真实后端签名或绑定服务端会话，设置 `httpOnly`、`secure`、`sameSite` 和过期策略。
 - 每个写操作都验证当前用户及目标资源归属，尤其是工单、图片、收藏、订单和积分。
@@ -196,7 +224,7 @@ Java 后端成功响应统一为：
 - 服务端请求 Java 失败必须记录不含敏感字段的请求方法、路径和错误摘要。
 - 登录限流在 Java 中用 Redis 实现，前端不做进程内限流。
 
-## 8. Server 与 Client Component
+## 9. Server 与 Client Component
 
 只有以下情况使用 `"use client"`：
 
@@ -213,7 +241,7 @@ Java 后端成功响应统一为：
 - 渲染期间禁止 `Math.random()` 和 `Date.now()` 等不确定值。
 - 轮询、计时器和浏览器事件必须清理，并防止卸载后的异步写入。
 
-## 9. 命名与代码风格
+## 10. 命名与代码风格
 
 命名以“当前作用域是否已经提供上下文”为判断依据。
 
@@ -379,14 +407,14 @@ function attachMessages(ticketId: string) {
 }
 ```
 
-## 10. 生成与积分规则
+## 11. 生成与积分规则
 
 - 界面上的预估积分来自 Java `POST /generation/user/price/estimate`，前端不维护计价公式。
 - Java 后端创建任务时返回的 `requiredPoints` 是最终权威值。
 - 真实扣费、失败退款和并发一致性必须由 Java 后端事务保证。
 - 前端不得根据本地估算直接修改积分余额。
 
-## 11. UI 规范
+## 12. UI 规范
 
 视觉目标是克制、工具化、适合重复操作，不做模板化 AI 营销页。
 
@@ -401,24 +429,25 @@ function attachMessages(ticketId: string) {
 - 移动端和桌面端都必须检查文字截断、固定工具尺寸和无重叠。
 - 列表表格使用真实 `<table>`、`table-layout: fixed` 和 `<colgroup>` 统一列宽：用户端复用 `src/components/ui/data-table.module.css`，后台复用 `admin-workspace.module.css` 的 `table` 与 `col*` 列宽；时间、操作列固定宽度，长文本单行省略并带 `title`，窄屏横向滚动而不是压缩列。
 
-当前全局样式入口是 `src/style/index.css`，导航实现是 `src/components/layout/product-top-nav.tsx`，应用壳是 `src/components/layout/product-frame.tsx`。
+当前全局样式入口是 `src/style/index.css`（由 `components/layout/root-document.tsx` 引入），语言切换器是 `src/components/layout/locale-switcher.tsx`，导航实现是 `src/components/layout/product-top-nav.tsx`，应用壳是 `src/components/layout/product-frame.tsx`。
 
-## 12. 开发流程
+## 13. 开发流程
 
 新增页面：
 
-1. 在 `src/app` 创建路由，默认使用 Server Component。
+1. 在 `src/app/[locale]` 创建路由（后台在 `src/app/admin`），默认使用 Server Component。
 2. 首屏数据通过 `requestJava` 从 Java 获取。
 3. 交互拆到对应 `src/features/<domain>`。
 4. 浏览器请求放到 `src/api/<domain>`。
 5. 请求/响应类型放到对应 `src/types/<domain>.ts`。
 6. 校验、权限和新接口加在 Java 后端，前端不新增 Route Handler。
-7. 为纯业务规则和回归风险补测试。
-8. 运行 `pnpm check` 和 `pnpm audit:prod`。
+7. 文案进 `messages/zh-CN.json`；公开页使用 `buildMetadata` 并登记到 `site-routes.ts`（见 docs/i18n.md 第 4 节）。
+8. 为纯业务规则和回归风险补测试。
+9. 运行 `pnpm check` 和 `pnpm audit:prod`。
 
 提交要求：
 
 - 不提交 `.idea`、构建缓存、环境密钥或真实用户数据。
 - 不保留没有消费者的依赖、文件、导出和静态资源。
-- 不维护平行规范文档。
+- 不维护平行规范文档；国际化与 SEO 的细则只在 `docs/i18n.md`、`docs/seo.md`。
 - README 是仓库唯一开发规范；实现变化必须同步更新对应章节。

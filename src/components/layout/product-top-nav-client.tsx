@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import type { PublicAnnouncement } from "@/types/announcement";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { AnnouncementCenter } from "@/components/layout/announcement-center";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ThemeControls } from "@/components/layout/theme-controls";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import styles from "./product-top-nav.module.css";
 
 type TopNavLink = {
@@ -22,6 +23,7 @@ type ProductTopNavClientProps = {
   username: string;
   isLoggedIn: boolean;
   autoOpenAnnouncement: boolean;
+  canSwitchLocale: boolean;
   links: TopNavLink[];
 };
 
@@ -29,9 +31,18 @@ type PendingLink = {
   href: string;
 };
 
+// pathname 来自 @/i18n/navigation，已去掉 /en、/ru 前缀，可以直接和内部路径比较。
+function isCurrentPath(pathname: string, href: string) {
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 function getActiveHref(pathname: string, links: TopNavLink[]) {
   const activeLink = links.find((item) => {
-    return pathname === item.href || pathname.startsWith(`${item.href}/`);
+    return isCurrentPath(pathname, item.href);
   });
 
   return activeLink?.href ?? "";
@@ -43,7 +54,9 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
   const username = props.username;
   const isLoggedIn = props.isLoggedIn;
   const autoOpenAnnouncement = props.autoOpenAnnouncement;
+  const canSwitchLocale = props.canSwitchLocale;
   const links = props.links;
+  const t = useTranslations("common.actions");
   const pathname = usePathname();
   const router = useRouter();
   const [pendingLink, setPendingLink] = useState<PendingLink | null>(null);
@@ -52,9 +65,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
     return getActiveHref(pathname, links);
   }, [links, pathname]);
 
-  const isPendingCurrent =
-    pendingLink !== null &&
-    (pathname === pendingLink.href || pathname.startsWith(`${pendingLink.href}/`));
+  const isPendingCurrent = pendingLink !== null && isCurrentPath(pathname, pendingLink.href);
   const visibleHref = pendingLink && !isPendingCurrent ? pendingLink.href : activeHref;
 
   function prefetchPage(href: string) {
@@ -92,12 +103,13 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
 
         <div className={styles.productTopNav__actions}>
           <AnnouncementCenter announcement={announcement} shouldAutoOpen={autoOpenAnnouncement} />
+          {canSwitchLocale ? <LocaleSwitcher /> : null}
           <ThemeControls />
           {isLoggedIn ? (
             <AccountMenu name={username} avatarUrl={avatarUrl} />
           ) : (
-            <Link href="/login" className={styles.productTopNav__avatar} aria-label="登录">
-              登录
+            <Link href="/login" className={styles.productTopNav__login}>
+              {t("login")}
             </Link>
           )}
         </div>

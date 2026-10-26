@@ -2,7 +2,6 @@
 
 import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
 import type {
@@ -14,6 +13,7 @@ import type {
 import { calculateCustomCredits } from "@/utils/credits";
 import { calculateRechargeFeeCent } from "@/utils/recharge";
 import styles from "./order-form.module.css";
+import { useRouter } from "@/i18n/navigation";
 
 type PackageCopy = {
   name: string;

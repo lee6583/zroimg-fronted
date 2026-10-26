@@ -1,7 +1,6 @@
 "use client";
 
 import clsx from "clsx";
-import Link from "next/link";
 import {
   ArrowLeft,
   History,
@@ -15,6 +14,7 @@ import {
 import { useRef, type ReactNode } from "react";
 import { imageMimeTypes } from "@/utils/media";
 import styles from "./canvas-editor.module.css";
+import { Link } from "@/i18n/navigation";
 
 type SaveStatus = "saved" | "dirty" | "saving" | "error" | "conflict";
 

@@ -3,9 +3,9 @@
 import { ConfigProvider, message } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
 import zhCN from "antd/locale/zh_CN";
-import { useRouter } from "next/navigation";
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "@/i18n/navigation";
 
 type HistoryTableContextValue = {
   notice: MessageInstance;

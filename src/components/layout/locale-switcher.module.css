@@ -1,0 +1,45 @@
+.localeSwitcher {
+  position: relative;
+}
+
+.localeSwitcher__menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 70;
+  display: grid;
+  min-width: 10rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0.35rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.localeSwitcher__item {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 0.375rem;
+  padding: 0 0.65rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.localeSwitcher__item:hover {
+  background: var(--soft);
+}
+
+.localeSwitcher__itemActive {
+  background: var(--soft);
+}
+
+.localeSwitcher__check {
+  flex-shrink: 0;
+  color: var(--muted);
+}

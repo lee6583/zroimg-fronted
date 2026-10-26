@@ -2,11 +2,11 @@
 
 import clsx from "clsx";
 import { getErrorMessage } from "@/utils/error";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { checkInApi } from "@/api/rewards/checkin";
 import type { SignCard } from "@/types/checkin";
 import styles from "./check-in-card.module.css";
+import { useRouter } from "@/i18n/navigation";
 
 type CheckInCardProps = {
   signCard: SignCard;

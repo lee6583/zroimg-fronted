@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import styles from "./shell.module.css";
 

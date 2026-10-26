@@ -2,10 +2,10 @@
 
 import { Hash, Lock, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { authApi } from "@/api/auth/email-auth";
 import { getErrorMessage } from "@/utils/error";
 import styles from "./auth-form.module.css";
+import { useRouter } from "@/i18n/navigation";
 
 const defaultCodeCooldownSeconds = 60;
 

@@ -1,0 +1,240 @@
+{
+  "common": {
+    "brand": "ZroImg",
+    "actions": {
+      "login": "Log in",
+      "register": "Sign up",
+      "logout": "Log out",
+      "retry": "Reload",
+      "startCreating": "Start creating",
+      "backHome": "Back to home",
+      "close": "Close"
+    },
+    "status": {
+      "loading": "Loading...",
+      "pleaseWait": "Please wait..."
+    }
+  },
+  "nav": {
+    "homeAria": "ZroImg home",
+    "top": {
+      "home": "Home",
+      "gallery": "Gallery",
+      "pricing": "Pricing",
+      "docs": "Docs"
+    },
+    "account": {
+      "openMenu": "Open account menu",
+      "settings": "Account settings",
+      "logout": "Log out"
+    },
+    "theme": {
+      "toggle": "Toggle light/dark mode"
+    },
+    "locale": {
+      "label": "Change language"
+    },
+    "announcement": {
+      "open": "View announcement",
+      "close": "Close announcement",
+      "kicker": "Announcement",
+      "emptyTitle": "No announcements",
+      "emptyContent": "There are no announcements right now."
+    },
+    "sidebar": {
+      "overview": "Overview",
+      "groups": {
+        "create": "Create",
+        "content": "Content",
+        "billing": "Billing & assets",
+        "help": "Help & settings"
+      },
+      "items": {
+        "generate": "Image generation",
+        "canvas": "Infinite canvas",
+        "video": "Video creation",
+        "history": "History",
+        "favorites": "Collections",
+        "submissions": "My submissions",
+        "credits": "Buy credits",
+        "billing": "My orders",
+        "tickets": "Feedback",
+        "settings": "Account settings"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Start creating",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "coolingDown": "Please wait..."
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "One thought, endless images",
+      "text": "Describe it in a sentence and let AI create a one-of-a-kind visual.",
+      "statsTitle": "Loved by creators worldwide"
+    },
+    "stats": {
+      "images": "Images generated",
+      "users": "Active users",
+      "satisfaction": "Satisfaction"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Everything you need to create",
+      "text": "From a single prompt to a set of usable images — ideas, styles, references and results all in one place.",
+      "items": {
+        "conversation": {
+          "title": "Conversational creation",
+          "text": "Describe the scene like a chat. Refine characters, settings, lighting and style one sentence at a time."
+        },
+        "styles": {
+          "title": "Many styles",
+          "text": "Photorealistic, anime, watercolor, oil painting, minimalist posters, product shots — find the right look for every use."
+        },
+        "batch": {
+          "title": "Batch exploration",
+          "text": "Generate several variations at once to explore directions, compare compositions and spread out ideas quickly."
+        },
+        "reference": {
+          "title": "Reference remix",
+          "text": "Upload a reference image to keep the subject, swap the background or restyle it — give old assets new life."
+        },
+        "hd": {
+          "title": "HD output",
+          "text": "Ready for avatars, covers, posters, product images and social posts — use your work right away."
+        },
+        "credits": {
+          "title": "Flexible credits",
+          "text": "Buy credits as you need them and pay only for what you generate — great for trying out or creating every day."
+        }
+      }
+    },
+    "steps": {
+      "eyebrow": "How it works",
+      "title": "From idea to image in four steps",
+      "text": "No design experience or prompt tricks needed — start creating in minutes.",
+      "number": "Step {number}",
+      "items": {
+        "register": {
+          "title": "Create an account",
+          "text": "Sign up for free in seconds, no credit card required. Get credits right after signing up."
+        },
+        "describe": {
+          "title": "Describe your idea",
+          "text": "Start a conversation and describe the image you want. Keep iterating until it clicks."
+        },
+        "generate": {
+          "title": "AI generates it",
+          "text": "AI interprets your prompt and delivers high-quality images in seconds. Generate variations to explore."
+        },
+        "share": {
+          "title": "Download & share",
+          "text": "Download in HD or share directly. Every image stays in your history to revisit anytime."
+        }
+      }
+    },
+    "advantages": {
+      "eyebrow": "Why ZroImg",
+      "title": "Get from idea to image faster",
+      "text": "Works for product showcases, social media visuals, avatars and characters, posters, covers and illustration sketches.",
+      "items": {
+        "noDrawing": "No drawing skills needed to put the picture in your head into words.",
+        "explore": "Quickly explore directions for avatars, product images, posters and covers.",
+        "history": "Every generation is saved, and the ones you like can be edited further.",
+        "credits": "Pay-as-you-go credits suit occasional creators and heavy users alike."
+      }
+    },
+    "vision": {
+      "eyebrow": "Our mission",
+      "title": "Creativity unbound by tools",
+      "text": "We want to bring AI image and video creation to people everywhere, so more ideas make it into real life and work.",
+      "imageAlt": "Illustration of the ZroImg creative mission"
+    },
+    "footer": {
+      "product": "Product",
+      "legal": "Legal",
+      "pricing": "Pricing",
+      "credits": "Buy credits",
+      "contact": "Contact us",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy",
+      "licenses": "Open source licenses",
+      "copyright": "© {year} ZroImg"
+    }
+  },
+  "errors": {
+    "page": {
+      "title": "This page couldn't be loaded",
+      "description": "Please try again later. If the problem persists, contact the administrator.",
+      "retry": "Reload"
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you are looking for doesn't exist or has been removed.",
+      "backHome": "Back to home"
+    },
+    "api": {
+      "network": "Network error. Please check your connection and try again.",
+      "unknown": "Request failed. Please try again later."
+    }
+  },
+  "metadata": {
+    "site": {
+      "title": "ZroImg - AI image generator",
+      "description": "ZroImg is an AI image generator powered by gpt-image-2: conversational creation, many styles, reference remixing and HD output with pay-as-you-go credits."
+    },
+    "home": {
+      "title": "ZroImg - One thought, endless images",
+      "description": "Describe it in a sentence and let AI create a one-of-a-kind visual. Conversational creation, batch exploration and reference remixing with pay-as-you-go credits."
+    },
+    "gallery": {
+      "title": "Gallery",
+      "description": "Browse AI-generated images published by the ZroImg community and find inspiration by category: photorealistic, anime, art and more."
+    },
+    "pricing": {
+      "title": "Pricing",
+      "description": "ZroImg credit packages and prices: try it free after signing up, buy credits as you need them, no subscription."
+    },
+    "docs": {
+      "title": "Docs",
+      "description": "ZroImg documentation: image generation, infinite canvas, video creation, credits and orders."
+    },
+    "licenses": {
+      "title": "Open source licenses",
+      "description": "Open source projects used by ZroImg and their licenses."
+    },
+    "login": {
+      "title": "Log in",
+      "description": "Log in to your ZroImg account to continue creating AI images."
+    },
+    "register": {
+      "title": "Sign up",
+      "description": "Create a ZroImg account and start generating AI images for free."
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "description": "Reset your ZroImg password with an email verification code."
+    },
+    "app": {
+      "title": "Workspace",
+      "description": "ZroImg creative workspace."
+    },
+    "canvas": {
+      "title": "Infinite canvas"
+    },
+    "notFound": {
+      "title": "Page not found"
+    }
+  }
+}

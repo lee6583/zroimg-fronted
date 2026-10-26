@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { PublicAnnouncement } from "@/types/announcement";
@@ -22,6 +23,7 @@ function canShowAnnouncement(announcement: PublicAnnouncement) {
 export function AnnouncementCenter(props: AnnouncementCenterProps) {
   const announcement = props.announcement;
   const shouldAutoOpen = props.shouldAutoOpen;
+  const t = useTranslations("nav.announcement");
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
@@ -53,8 +55,8 @@ export function AnnouncementCenter(props: AnnouncementCenterProps) {
   }
 
   const hasAnnouncement = canShowAnnouncement(announcement);
-  const title = hasAnnouncement ? announcement.title : "暂无公告";
-  const content = hasAnnouncement ? announcement.content : "当前没有正在展示的站内公告。";
+  const title = hasAnnouncement ? announcement.title : t("emptyTitle");
+  const content = hasAnnouncement ? announcement.content : t("emptyContent");
   const dialog =
     isOpen && typeof document !== "undefined"
       ? createPortal(
@@ -67,7 +69,7 @@ export function AnnouncementCenter(props: AnnouncementCenterProps) {
             >
               <div className={styles.productTopNav__announcementHeader}>
                 <div>
-                  <p className={styles.productTopNav__announcementKicker}>公告</p>
+                  <p className={styles.productTopNav__announcementKicker}>{t("kicker")}</p>
                   <h2 id="announcement-title" className={styles.productTopNav__announcementTitle}>
                     {title}
                   </h2>
@@ -76,7 +78,7 @@ export function AnnouncementCenter(props: AnnouncementCenterProps) {
                   type="button"
                   onClick={closeAnnouncement}
                   className={styles.productTopNav__announcementClose}
-                  aria-label="关闭公告"
+                  aria-label={t("close")}
                 >
                   <X size={18} />
                 </button>
@@ -94,7 +96,7 @@ export function AnnouncementCenter(props: AnnouncementCenterProps) {
         className="nav-icon-button"
         type="button"
         onClick={openAnnouncement}
-        aria-label="查看公告"
+        aria-label={t("open")}
       >
         <Bell size={16} />
       </button>

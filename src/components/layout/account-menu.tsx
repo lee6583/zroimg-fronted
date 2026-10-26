@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { LogOut, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { authApi } from "@/api/auth/email-auth";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { Link, useRouter } from "@/i18n/navigation";
 import styles from "./product-top-nav.module.css";
 
 type AccountMenuProps = {
@@ -17,6 +17,7 @@ export function AccountMenu(props: AccountMenuProps) {
   const name = props.name;
   const avatarUrl = props.avatarUrl;
 
+  const t = useTranslations("nav.account");
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
@@ -60,7 +61,7 @@ export function AccountMenu(props: AccountMenuProps) {
       <button
         type="button"
         className={styles.productTopNav__avatarButton}
-        aria-label="打开账户菜单"
+        aria-label={t("openMenu")}
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setOpen((current) => !current)}
@@ -77,7 +78,7 @@ export function AccountMenu(props: AccountMenuProps) {
             onClick={() => setOpen(false)}
           >
             <Settings size={15} />
-            账户设置
+            {t("settings")}
           </Link>
           <button
             type="button"
@@ -87,7 +88,7 @@ export function AccountMenu(props: AccountMenuProps) {
             onClick={logout}
           >
             <LogOut size={15} />
-            退出登录
+            {t("logout")}
           </button>
         </div>
       ) : null}
