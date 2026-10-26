@@ -1,0 +1,215 @@
+.trend {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.trend__header {
+  display: flex;
+  min-height: 3.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.6rem 1rem;
+}
+
+.trend__tabs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.15rem;
+  overflow-x: auto;
+}
+
+.trend__tab {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.trend__tab:hover {
+  color: var(--foreground);
+}
+
+.trend__tabActive,
+.trend__tabActive:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.trend__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.trend__total {
+  color: var(--muted);
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.trend__total strong {
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.trend__ranges {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--background);
+  padding: 0.15rem;
+}
+
+.trend__range {
+  border-radius: 0.25rem;
+  color: var(--muted);
+  padding: 0.3rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.trend__range:hover {
+  color: var(--foreground);
+}
+
+.trend__rangeActive,
+.trend__rangeActive:hover {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.trend__frame {
+  position: relative;
+  min-height: 240px;
+  flex: 1;
+  margin: 0.5rem 0.25rem 0.25rem;
+  border-radius: 0.375rem;
+  outline: none;
+}
+
+.trend__frame:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+.trend__svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  overflow: visible;
+}
+
+.trend__grid {
+  stroke: var(--line);
+  stroke-dasharray: 2 4;
+  stroke-width: 1;
+}
+
+.trend__baseline {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.trend__axisText {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trend__gradientTop {
+  stop-color: var(--foreground);
+  stop-opacity: 0.1;
+}
+
+.trend__gradientBottom {
+  stop-color: var(--foreground);
+  stop-opacity: 0;
+}
+
+.trend__line {
+  fill: none;
+  stroke: var(--foreground);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.trend__crosshair {
+  stroke: var(--muted);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+}
+
+.trend__dot {
+  fill: var(--foreground);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+
+.trend__hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.trend__tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  padding: 0.4rem 0.55rem;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+}
+
+.trend__tooltipBelow {
+  transform: translate(-50%, 0);
+}
+
+.trend__tooltipDate {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.trend__tooltipValue {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.trend__srTable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .trend__tools {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

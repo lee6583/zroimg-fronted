@@ -5,10 +5,10 @@ import { ImagePlus, Sparkles, X } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
-import { videoApi } from "@/api/video";
 import { AppSelect } from "@/components/ui/app-select";
 import { getErrorMessage } from "@/utils/error";
 import type { VideoGenerationMode, VideoModel } from "@/types/video";
+import { displayMode, isVideoMode, submitVideoTask } from "./video-submit";
 import styles from "./video.module.css";
 
 type VideoForm = {
@@ -92,17 +92,6 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
   };
 }
 
-function isVideoMode(mode: string): mode is VideoGenerationMode {
-  return mode === "text_to_video" || mode === "image_to_video";
-}
-
-function displayMode(mode: VideoGenerationMode) {
-  if (mode === "text_to_video") {
-    return "文生视频";
-  }
-  return "图生视频";
-}
-
 export function VideoSettings(props: VideoSettingsProps) {
   const firstModel = props.models[0] || null;
   const [form, setForm] = useState(() => createForm(firstModel));
@@ -184,27 +173,13 @@ export function VideoSettings(props: VideoSettingsProps) {
     setMessage("");
 
     try {
-      const price = await videoApi.estimate({
-        model: form.model,
-        mode: form.mode,
-        ratio: form.ratio,
-        resolution: form.resolution,
-        duration: form.duration,
-      });
-
-      if (!price.enough) {
-        setMessage(`积分不足，还需要 ${price.shortagePoints} 积分`);
-        return;
-      }
-
-      await videoApi.createTask({
+      await submitVideoTask({
         model: form.model,
         mode: form.mode,
         prompt: form.prompt.trim(),
         ratio: form.ratio,
         resolution: form.resolution,
         duration: form.duration,
-        priceVersion: price.priceVersion,
         referenceMediaId: canUseReferenceImage ? form.referenceMediaId : undefined,
       });
       await props.onCreated();

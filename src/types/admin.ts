@@ -331,15 +331,6 @@ type AdminGenerationTask = {
   finishTime: string | null;
 };
 
-// dashboard AdminOverviewVO
-type AdminOverviewTicket = {
-  id: string;
-  subject: string;
-  status: string;
-  username: string | null;
-  createdAt: string;
-};
-
 type GenerationQueueStats = {
   imagePending: number;
   imageProcessing: number;
@@ -349,14 +340,54 @@ type GenerationQueueStats = {
   videoConcurrency: number;
 };
 
-type AdminOverview = {
-  users: number;
-  tasks: number;
-  orders: number;
-  failedTasks: number;
+// dashboard AdminDashboardSummaryVO.KpiVO：changePercent 在昨日为 0 时为 null
+type AdminDashboardKpi = {
+  today: number;
+  yesterday: number;
+  change: number;
+  changePercent: number | null;
+};
+
+// dashboard AdminDashboardSummaryVO
+type AdminDashboardSummary = {
+  date: string;
+  revenue: AdminDashboardKpi;
+  orders: AdminDashboardKpi;
+  tasks: AdminDashboardKpi;
+  users: AdminDashboardKpi;
+  failedTasks24h: number;
+  pendingGallery: number;
   openTickets: number;
-  pendingGalleryCount: number;
-  latestTickets: AdminOverviewTicket[];
+};
+
+type AdminDashboardMetric = "revenue" | "orders" | "tasks" | "users";
+
+// dashboard AdminDashboardTrendVO.PointVO
+type AdminDashboardTrendPoint = {
+  date: string;
+  revenue: number;
+  orders: number;
+  tasks: number;
+  users: number;
+};
+
+// dashboard AdminDashboardTrendVO
+type AdminDashboardTrend = {
+  days: number;
+  points: AdminDashboardTrendPoint[];
+};
+
+// dashboard AdminModelUsageVO
+type AdminModelUsage = {
+  modelCode: string;
+  modelName: string;
+  modelType: "image" | "video";
+  total: number;
+  succeeded: number;
+  failed: number;
+  running: number;
+  successRate: number | null;
+  points: number;
 };
 
 // gallery AdminGallerySubmissionVO
@@ -591,9 +622,13 @@ export type {
   AdminTaskResult,
   AdminGenerationTask,
   AdminGenerationTaskPage,
-  AdminOverviewTicket,
   GenerationQueueStats,
-  AdminOverview,
+  AdminDashboardKpi,
+  AdminDashboardSummary,
+  AdminDashboardMetric,
+  AdminDashboardTrendPoint,
+  AdminDashboardTrend,
+  AdminModelUsage,
   AdminGallerySubmission,
   AdminGallerySubmissionQuery,
   ApproveGallerySubmissionRequest,
