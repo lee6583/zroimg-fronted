@@ -44,3 +44,4 @@ next-env.d.ts
 
 # next-intl（由 next dev / build / typegen 根据 messages/zh-CN.json 生成）
 messages/*.d.json.ts
+mock/
