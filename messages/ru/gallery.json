@@ -1,49 +1,49 @@
 {
   "hero": {
-    "title": ""
+    "title": "Откройте для себя лучшие работы авторов сообщества"
   },
   "tabs": {
-    "label": "",
-    "all": ""
+    "label": "Категории работ",
+    "all": "Все"
   },
   "category": {
-    "realistic": "",
-    "anime": "",
-    "art": "",
-    "other": ""
+    "realistic": "Реализм",
+    "anime": "Аниме",
+    "art": "Арт",
+    "other": "Другое"
   },
   "status": {
-    "pending": "",
-    "approved": "",
-    "rejected": "",
-    "withdrawn": "",
-    "removed": ""
+    "pending": "На модерации",
+    "approved": "Опубликовано",
+    "rejected": "Отклонено",
+    "withdrawn": "Отозвано",
+    "removed": "Снято с публикации"
   },
   "list": {
-    "label": ""
+    "label": "Работы сообщества"
   },
   "card": {
-    "untitled": "",
-    "author": "",
-    "anonymous": ""
+    "untitled": "Работа без названия",
+    "author": "автор: {name}",
+    "anonymous": "Автор"
   },
   "empty": {
-    "label": "",
-    "title": "",
-    "text": ""
+    "label": "Публичных работ пока нет",
+    "title": "Первые работы сообщества ждут вашей публикации.",
+    "text": "Нажмите «Опубликовать в галерее» в истории. После модерации работа появится здесь."
   },
-  "loading": "",
+  "loading": "Загрузка галереи...",
   "publish": {
-    "submit": "",
-    "submitting": "",
-    "withdraw": "",
-    "unpublish": "",
-    "unpublishTitle": "",
-    "unpublishConfirm": "",
-    "cancel": "",
-    "resubmit": "",
-    "noReason": "",
-    "rejectedTitle": "",
-    "removedTitle": ""
+    "submit": "Опубликовать в галерее",
+    "submitting": "Отправка",
+    "withdraw": "Отозвать",
+    "unpublish": "Снять с публикации",
+    "unpublishTitle": "Снятие с публикации",
+    "unpublishConfirm": "После снятия с публикации работу нужно будет отправить на модерацию заново. Продолжить?",
+    "cancel": "Отмена",
+    "resubmit": "Отправить повторно",
+    "noReason": "Причина не указана",
+    "rejectedTitle": "Отклонено: {reason}",
+    "removedTitle": "Снято с публикации: {reason}. Если у вас есть вопросы, свяжитесь с нами через обратную связь"
   }
 }

@@ -1,14 +1,14 @@
 {
   "status": {
-    "pending": "",
-    "processing": "",
-    "succeeded": "",
-    "failed": ""
+    "pending": "Queued",
+    "processing": "Generating",
+    "succeeded": "Completed",
+    "failed": "Failed"
   },
-  "retrying": "",
-  "retryingWait": "",
+  "retrying": "Retrying (attempt {attempt, number})",
+  "retryingWait": "Retrying (attempt {attempt, number}) · in {seconds, number}s",
   "quality": {
-    "auto": "",
-    "standard": ""
+    "auto": "Auto",
+    "standard": "Standard"
   }
 }

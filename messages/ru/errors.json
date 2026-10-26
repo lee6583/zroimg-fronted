@@ -13,32 +13,32 @@
   "api": {
     "network": "Ошибка сети. Проверьте подключение и попробуйте снова.",
     "unknown": "Запрос не выполнен. Попробуйте позже.",
-    "invalidResponse": "",
-    "serviceUnavailable": "",
-    "serverError": "",
-    "requestFailed": "",
-    "uploadFailed": "",
-    "unauthorized": "",
-    "forbidden": "",
-    "notFound": "",
-    "tooManyRequests": "",
-    "invalidCredentials": "",
-    "emailAlreadyRegistered": "",
-    "verificationCodeInvalid": "",
-    "sliderVerificationFailed": "",
-    "pointsInsufficient": "",
-    "fileTooLarge": "",
-    "unsupportedFileType": ""
+    "invalidResponse": "Сервер вернул ответ в неверном формате. Повторите попытку позже",
+    "serviceUnavailable": "Сервис временно недоступен. Повторите попытку позже",
+    "serverError": "Ошибка сервера. Повторите попытку позже",
+    "requestFailed": "Не удалось выполнить запрос. Повторите попытку позже",
+    "uploadFailed": "Не удалось загрузить файл. Повторите попытку",
+    "unauthorized": "Сеанс истёк. Войдите снова",
+    "forbidden": "Недостаточно прав для этого действия",
+    "notFound": "Запрошенный контент не существует или был удалён",
+    "tooManyRequests": "Слишком много запросов. Повторите попытку позже",
+    "invalidCredentials": "Неверная эл. почта или пароль",
+    "emailAlreadyRegistered": "Эта эл. почта уже зарегистрирована",
+    "verificationCodeInvalid": "Неверный или просроченный код подтверждения",
+    "sliderVerificationFailed": "Проверка безопасности не пройдена. Попробуйте ещё раз",
+    "pointsInsufficient": "Недостаточно баллов. Сначала пополните баланс",
+    "fileTooLarge": "Размер файла превышает лимит",
+    "unsupportedFileType": "Неподдерживаемый тип файла"
   },
   "server": {
-    "unavailable": "",
-    "invalidResponse": "",
-    "requestFailed": ""
+    "unavailable": "Серверная часть временно недоступна. Повторите попытку позже",
+    "invalidResponse": "Серверная часть вернула ответ в неверном формате",
+    "requestFailed": "Не удалось загрузить данные. Повторите попытку позже"
   },
   "upload": {
-    "unsupportedImageType": "",
-    "imageTooLarge": "",
-    "tooManyFiles": "",
-    "failed": ""
+    "unsupportedImageType": "Поддерживаются только изображения PNG, JPEG и WebP",
+    "imageTooLarge": "Размер изображения не должен превышать {maxMb, number} МБ",
+    "tooManyFiles": "Можно загрузить не более файлов: {max, number}",
+    "failed": "Не удалось загрузить файл. Повторите попытку"
   }
 }

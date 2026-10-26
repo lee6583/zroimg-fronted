@@ -1,77 +1,77 @@
 {
   "meta": {
-    "title": "",
-    "resultTitle": ""
+    "title": "Мои заказы",
+    "resultTitle": "Результат оплаты"
   },
-  "title": "",
+  "title": "Мои заказы",
   "status": {
-    "pending": "",
-    "paid": "",
-    "cancelled": ""
+    "pending": "Ожидает оплаты",
+    "paid": "Оплачен",
+    "cancelled": "Отменён"
   },
   "payChannel": {
-    "alipay": "",
-    "wxpay": ""
+    "alipay": "Alipay",
+    "wxpay": "WeChat Pay"
   },
   "list": {
-    "label": "",
+    "label": "Список моих заказов",
     "columns": {
-      "orderNo": "",
-      "amount": "",
-      "points": "",
-      "payChannel": "",
-      "status": "",
-      "createTime": "",
-      "payTime": "",
-      "actions": ""
+      "orderNo": "Номер заказа",
+      "amount": "Сумма",
+      "points": "Баллы",
+      "payChannel": "Способ оплаты",
+      "status": "Статус",
+      "createTime": "Создан",
+      "payTime": "Оплачен",
+      "actions": "Действия"
     },
-    "pointsValue": "",
+    "pointsValue": "Баллов: {points, number}",
     "empty": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "Заказов пока нет",
+      "text": "После покупки баллов здесь появятся заказы и статус зачисления.",
+      "action": "Пополнить"
     },
     "actions": {
-      "pay": "",
-      "cancel": "",
-      "cancelling": ""
+      "pay": "Оплатить",
+      "cancel": "Отменить",
+      "cancelling": "Отмена"
     }
   },
   "result": {
-    "detailsLabel": "",
-    "created": "",
+    "detailsLabel": "Данные заказа",
+    "created": "Заказ создан",
     "notFound": {
-      "title": "",
-      "description": ""
+      "title": "Заказ не найден",
+      "description": "Этот заказ не найден в вашем аккаунте. Вернитесь к списку заказов, чтобы посмотреть актуальные записи."
     },
     "loadError": {
-      "title": ""
+      "title": "Не удалось загрузить заказ"
     },
     "unauthorized": {
-      "title": "",
-      "description": ""
+      "title": "Сеанс истёк",
+      "description": "Войдите снова, чтобы посмотреть заказ."
     },
     "fields": {
-      "orderNo": "",
-      "package": "",
-      "amount": "",
-      "rechargeAmount": "",
-      "fee": "",
-      "points": "",
-      "payChannel": "",
-      "status": "",
-      "createTime": "",
-      "expireTime": ""
+      "orderNo": "Номер заказа",
+      "package": "Покупка",
+      "amount": "Сумма оплаты",
+      "rechargeAmount": "Сумма пополнения",
+      "fee": "Комиссия за пополнение",
+      "points": "Зачисляемые баллы",
+      "payChannel": "Способ оплаты",
+      "status": "Статус заказа",
+      "createTime": "Создан",
+      "expireTime": "Действителен до"
     },
-    "pointsValue": "",
+    "pointsValue": "Баллов: {points, number}",
     "actions": {
-      "viewOrders": "",
-      "buyAgain": "",
-      "pay": "",
-      "paying": "",
-      "cancel": "",
-      "cancelling": ""
+      "viewOrders": "Мои заказы",
+      "buyAgain": "Купить баллы снова",
+      "pay": "Подтвердить оплату",
+      "paying": "Переход к оплате",
+      "cancel": "Отменить оплату",
+      "cancelling": "Отмена"
     },
-    "emptyPayUrl": ""
+    "emptyPayUrl": "Ссылка на оплату пуста. Повторите попытку позже"
   }
 }

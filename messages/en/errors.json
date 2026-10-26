@@ -13,32 +13,32 @@
   "api": {
     "network": "Network error. Please check your connection and try again.",
     "unknown": "Request failed. Please try again later.",
-    "invalidResponse": "",
-    "serviceUnavailable": "",
-    "serverError": "",
-    "requestFailed": "",
-    "uploadFailed": "",
-    "unauthorized": "",
-    "forbidden": "",
-    "notFound": "",
-    "tooManyRequests": "",
-    "invalidCredentials": "",
-    "emailAlreadyRegistered": "",
-    "verificationCodeInvalid": "",
-    "sliderVerificationFailed": "",
-    "pointsInsufficient": "",
-    "fileTooLarge": "",
-    "unsupportedFileType": ""
+    "invalidResponse": "The server returned an invalid response. Please try again later.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "serverError": "Server error. Please try again later.",
+    "requestFailed": "Request failed. Please try again later.",
+    "uploadFailed": "File upload failed. Please try again.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "forbidden": "You don't have permission to do this",
+    "notFound": "The requested content doesn't exist or has been deleted",
+    "tooManyRequests": "Too many requests. Please try again later.",
+    "invalidCredentials": "Incorrect email or password",
+    "emailAlreadyRegistered": "This email is already registered",
+    "verificationCodeInvalid": "Verification code is incorrect or expired",
+    "sliderVerificationFailed": "Security check failed. Please try again.",
+    "pointsInsufficient": "Not enough credits. Please top up first.",
+    "fileTooLarge": "File is too large",
+    "unsupportedFileType": "Unsupported file type"
   },
   "server": {
-    "unavailable": "",
-    "invalidResponse": "",
-    "requestFailed": ""
+    "unavailable": "Backend service temporarily unavailable. Please try again later.",
+    "invalidResponse": "The backend returned an invalid response",
+    "requestFailed": "Failed to load data. Please try again later."
   },
   "upload": {
-    "unsupportedImageType": "",
-    "imageTooLarge": "",
-    "tooManyFiles": "",
-    "failed": ""
+    "unsupportedImageType": "Only PNG, JPEG, and WebP images are supported",
+    "imageTooLarge": "Images must be {maxMb, number} MB or smaller",
+    "tooManyFiles": "You can upload up to {max, number} files",
+    "failed": "File upload failed. Please try again."
   }
 }

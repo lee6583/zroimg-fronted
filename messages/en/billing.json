@@ -1,77 +1,77 @@
 {
   "meta": {
-    "title": "",
-    "resultTitle": ""
+    "title": "My Orders",
+    "resultTitle": "Payment Result"
   },
-  "title": "",
+  "title": "My Orders",
   "status": {
-    "pending": "",
-    "paid": "",
-    "cancelled": ""
+    "pending": "Awaiting payment",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
   },
   "payChannel": {
-    "alipay": "",
-    "wxpay": ""
+    "alipay": "Alipay",
+    "wxpay": "WeChat Pay"
   },
   "list": {
-    "label": "",
+    "label": "My orders list",
     "columns": {
-      "orderNo": "",
-      "amount": "",
-      "points": "",
-      "payChannel": "",
-      "status": "",
-      "createTime": "",
-      "payTime": "",
-      "actions": ""
+      "orderNo": "Order No.",
+      "amount": "Amount",
+      "points": "Credits",
+      "payChannel": "Payment method",
+      "status": "Status",
+      "createTime": "Created",
+      "payTime": "Paid",
+      "actions": "Actions"
     },
-    "pointsValue": "",
+    "pointsValue": "{points, number} credits",
     "empty": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "No orders yet",
+      "text": "After you buy credits, your orders and their status will show up here.",
+      "action": "Top up"
     },
     "actions": {
-      "pay": "",
-      "cancel": "",
-      "cancelling": ""
+      "pay": "Pay",
+      "cancel": "Cancel",
+      "cancelling": "Cancelling"
     }
   },
   "result": {
-    "detailsLabel": "",
-    "created": "",
+    "detailsLabel": "Order details",
+    "created": "Order created",
     "notFound": {
-      "title": "",
-      "description": ""
+      "title": "Order not found",
+      "description": "We couldn't find this order under your account. Go back to your orders to see the latest records."
     },
     "loadError": {
-      "title": ""
+      "title": "Couldn't load the order"
     },
     "unauthorized": {
-      "title": "",
-      "description": ""
+      "title": "Session expired",
+      "description": "Please sign in again to view the order."
     },
     "fields": {
-      "orderNo": "",
-      "package": "",
-      "amount": "",
-      "rechargeAmount": "",
-      "fee": "",
-      "points": "",
-      "payChannel": "",
-      "status": "",
-      "createTime": "",
-      "expireTime": ""
+      "orderNo": "Order No.",
+      "package": "Item",
+      "amount": "Amount paid",
+      "rechargeAmount": "Top-up amount",
+      "fee": "Top-up fee",
+      "points": "Credits received",
+      "payChannel": "Payment method",
+      "status": "Order status",
+      "createTime": "Created",
+      "expireTime": "Expires"
     },
-    "pointsValue": "",
+    "pointsValue": "{points, number} credits",
     "actions": {
-      "viewOrders": "",
-      "buyAgain": "",
-      "pay": "",
-      "paying": "",
-      "cancel": "",
-      "cancelling": ""
+      "viewOrders": "View my orders",
+      "buyAgain": "Buy credits again",
+      "pay": "Confirm payment",
+      "paying": "Starting payment",
+      "cancel": "Cancel payment",
+      "cancelling": "Cancelling"
     },
-    "emptyPayUrl": ""
+    "emptyPayUrl": "Payment URL is empty. Please try again later."
   }
 }

@@ -1,48 +1,48 @@
 {
   "meta": {
-    "title": "",
-    "detailTitle": ""
+    "title": "Favorites",
+    "detailTitle": "Favorites"
   },
-  "title": "",
+  "title": "Favorites",
   "actions": {
-    "cancel": "",
-    "save": "",
-    "rename": "",
-    "delete": ""
+    "cancel": "Cancel",
+    "save": "Save",
+    "rename": "Rename collection",
+    "delete": "Delete collection"
   },
   "create": {
-    "open": "",
-    "title": "",
-    "nameLabel": "",
-    "placeholder": "",
-    "submit": "",
-    "submitting": ""
+    "open": "New collection",
+    "title": "New collection",
+    "nameLabel": "Collection name",
+    "placeholder": "e.g. Avatar references",
+    "submit": "Create",
+    "submitting": "Creating"
   },
   "delete": {
-    "title": "",
-    "content": "",
-    "confirm": ""
+    "title": "Delete collection",
+    "content": "Delete the collection \"{name}\"? Images in it won't be deleted.",
+    "confirm": "Delete"
   },
   "card": {
-    "count": ""
+    "count": "{count, plural, one {# image} other {# images}}"
   },
   "empty": {
-    "title": "",
-    "text": ""
+    "title": "No collections yet",
+    "text": "Click \"New collection\" to create your first one"
   },
   "detail": {
-    "back": "",
-    "listLabel": "",
-    "emptyTitle": "",
-    "emptyText": ""
+    "back": "Back to collections",
+    "listLabel": "Collection images",
+    "emptyTitle": "This collection has no images yet",
+    "emptyText": "You can add favorites here from your creation history."
   },
   "picker": {
-    "open": "",
-    "done": "",
-    "title": "",
-    "noCollection": "",
-    "empty": "",
-    "manage": "",
-    "saving": ""
+    "open": "Save to collection",
+    "done": "Saved",
+    "title": "Save to collection",
+    "noCollection": "Create a collection first",
+    "empty": "Create a collection in Favorites first",
+    "manage": "Manage collections",
+    "saving": "Saving..."
   }
 }

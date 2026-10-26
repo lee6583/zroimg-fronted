@@ -5,8 +5,8 @@
     "gallery": "Галерея",
     "pricing": "Цены",
     "docs": "Документация",
-    "menu": "",
-    "menuTitle": ""
+    "menu": "Открыть меню",
+    "menuTitle": "Меню"
   },
   "account": {
     "openMenu": "Открыть меню аккаунта",
@@ -48,17 +48,17 @@
     }
   },
   "tabs": {
-    "label": "",
-    "overview": "",
-    "generate": "",
-    "canvas": "",
-    "works": "",
-    "me": ""
+    "label": "Главная навигация",
+    "overview": "Обзор",
+    "generate": "Создание",
+    "canvas": "Холст",
+    "works": "Работы",
+    "me": "Профиль"
   },
   "me": {
-    "title": "",
-    "points": "",
-    "language": "",
-    "darkMode": ""
+    "title": "Профиль",
+    "points": "Баланс баллов",
+    "language": "Язык",
+    "darkMode": "Тёмная тема"
   }
 }

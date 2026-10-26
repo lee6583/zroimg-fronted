@@ -1,18 +1,18 @@
 {
-  "title": "",
-  "popular": "",
-  "points": "",
-  "buy": "",
+  "title": "Choose the plan that fits you",
+  "popular": "Most popular",
+  "points": "{points, number} credits",
+  "buy": "Buy now",
   "free": {
-    "code": "",
-    "name": "",
-    "credits": "",
-    "action": "",
+    "code": "Free",
+    "name": "Free Trial",
+    "credits": "Starter credits for new users",
+    "action": "Sign up to try",
     "features": {
-      "start": "",
-      "learn": "",
-      "browse": "",
-      "noSubscription": ""
+      "start": "Start exploring right after sign-up",
+      "learn": "Great for learning prompts and workflows",
+      "browse": "Browse works and creation tools",
+      "noSubscription": "No subscription. Top up whenever you need"
     }
   }
 }

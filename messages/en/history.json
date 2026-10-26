@@ -1,68 +1,68 @@
 {
   "meta": {
-    "title": ""
+    "title": "History"
   },
-  "title": "",
+  "title": "History",
   "filters": {
-    "label": "",
-    "timeRange": "",
-    "startDate": "",
-    "endDate": "",
-    "anyTime": "",
-    "rangeSummary": "",
-    "invalidRange": "",
-    "clear": "",
-    "apply": "",
-    "mediaLabel": "",
+    "label": "History filters",
+    "timeRange": "Time range",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "anyTime": "All time",
+    "rangeSummary": "{from} – {to}",
+    "invalidRange": "Start date can't be later than end date",
+    "clear": "Clear",
+    "apply": "Apply",
+    "mediaLabel": "Type",
     "media": {
-      "all": "",
-      "image": "",
-      "video": ""
+      "all": "All types",
+      "image": "Images",
+      "video": "Videos"
     }
   },
   "list": {
-    "label": ""
+    "label": "History works"
   },
   "columns": {
-    "preview": "",
-    "prompt": "",
-    "model": "",
-    "resolution": "",
-    "ratio": "",
-    "points": "",
-    "status": "",
-    "time": "",
-    "actions": ""
+    "preview": "Work",
+    "prompt": "Prompt",
+    "model": "Model",
+    "resolution": "Resolution",
+    "ratio": "Aspect ratio",
+    "points": "Cost",
+    "status": "Status",
+    "time": "Time",
+    "actions": "Actions"
   },
-  "duration": "",
+  "duration": "{seconds, number}s",
   "actions": {
-    "downloadImage": "",
-    "downloadVideo": ""
+    "downloadImage": "Download image",
+    "downloadVideo": "Download video"
   },
   "delete": {
-    "title": "",
-    "running": "",
-    "content": "",
-    "confirm": "",
-    "deleting": "",
-    "cancel": "",
-    "done": ""
+    "title": "Delete work",
+    "running": "Task in progress. Can't delete yet.",
+    "content": "The {media, select, video {video} other {image}} will be permanently removed from storage, and also removed from the gallery and favorites. This can't be undone.",
+    "confirm": "Delete",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "done": "Deleted"
   },
   "empty": {
     "default": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "No creations yet",
+      "text": "Write your first prompt and let inspiration leave its first image here.",
+      "action": "Start creating"
     },
     "filtered": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "No creations match the current filters",
+      "text": "Adjust the time or type filters, or view all history.",
+      "action": "View all"
     },
     "video": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "No video creations yet",
+      "text": "Describe a scene to generate your first video.",
+      "action": "Create a video"
     }
   }
 }

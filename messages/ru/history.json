@@ -1,68 +1,68 @@
 {
   "meta": {
-    "title": ""
+    "title": "История"
   },
-  "title": "",
+  "title": "История",
   "filters": {
-    "label": "",
-    "timeRange": "",
-    "startDate": "",
-    "endDate": "",
-    "anyTime": "",
-    "rangeSummary": "",
-    "invalidRange": "",
-    "clear": "",
-    "apply": "",
-    "mediaLabel": "",
+    "label": "Фильтры истории",
+    "timeRange": "Период",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
+    "anyTime": "За всё время",
+    "rangeSummary": "{from} – {to}",
+    "invalidRange": "Дата начала не может быть позже даты окончания",
+    "clear": "Сбросить",
+    "apply": "Применить",
+    "mediaLabel": "Тип работ",
     "media": {
-      "all": "",
-      "image": "",
-      "video": ""
+      "all": "Все типы",
+      "image": "Изображения",
+      "video": "Видео"
     }
   },
   "list": {
-    "label": ""
+    "label": "Прошлые работы"
   },
   "columns": {
-    "preview": "",
-    "prompt": "",
-    "model": "",
-    "resolution": "",
-    "ratio": "",
-    "points": "",
-    "status": "",
-    "time": "",
-    "actions": ""
+    "preview": "Работа",
+    "prompt": "Промпт",
+    "model": "Модель",
+    "resolution": "Разрешение",
+    "ratio": "Соотношение сторон",
+    "points": "Стоимость",
+    "status": "Статус",
+    "time": "Время",
+    "actions": "Действия"
   },
-  "duration": "",
+  "duration": "{seconds, number} с",
   "actions": {
-    "downloadImage": "",
-    "downloadVideo": ""
+    "downloadImage": "Скачать изображение",
+    "downloadVideo": "Скачать видео"
   },
   "delete": {
-    "title": "",
-    "running": "",
-    "content": "",
-    "confirm": "",
-    "deleting": "",
-    "cancel": "",
-    "done": ""
+    "title": "Удаление работы",
+    "running": "Задача выполняется, удаление пока недоступно",
+    "content": "После удаления {media, select, video {видео будет безвозвратно удалено} other {изображение будет безвозвратно удалено}} из хранилища, а также из галереи и избранного. Восстановить его будет нельзя.",
+    "confirm": "Удалить",
+    "deleting": "Удаление...",
+    "cancel": "Отмена",
+    "done": "Удалено"
   },
   "empty": {
     "default": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "Работ пока нет",
+      "text": "Напишите первый промпт, и здесь появится ваше первое изображение.",
+      "action": "Создать"
     },
     "filtered": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "Нет работ, подходящих под фильтры",
+      "text": "Измените период или тип либо посмотрите всю историю.",
+      "action": "Показать все"
     },
     "video": {
-      "title": "",
-      "text": "",
-      "action": ""
+      "title": "Видео пока нет",
+      "text": "Опишите сцену, чтобы создать первое видео.",
+      "action": "Создать видео"
     }
   }
 }

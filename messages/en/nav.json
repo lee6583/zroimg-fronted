@@ -5,8 +5,8 @@
     "gallery": "Gallery",
     "pricing": "Pricing",
     "docs": "Docs",
-    "menu": "",
-    "menuTitle": ""
+    "menu": "Open menu",
+    "menuTitle": "Menu"
   },
   "account": {
     "openMenu": "Open account menu",
@@ -48,17 +48,17 @@
     }
   },
   "tabs": {
-    "label": "",
-    "overview": "",
-    "generate": "",
-    "canvas": "",
-    "works": "",
-    "me": ""
+    "label": "Main navigation",
+    "overview": "Overview",
+    "generate": "Generate",
+    "canvas": "Canvas",
+    "works": "Works",
+    "me": "Me"
   },
   "me": {
-    "title": "",
-    "points": "",
-    "language": "",
-    "darkMode": ""
+    "title": "Me",
+    "points": "Credit balance",
+    "language": "Language",
+    "darkMode": "Dark mode"
   }
 }

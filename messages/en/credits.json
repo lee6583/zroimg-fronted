@@ -1,54 +1,54 @@
 {
   "meta": {
-    "title": ""
+    "title": "Buy Credits"
   },
-  "title": "",
+  "title": "Buy Credits",
   "overview": {
-    "label": "",
-    "pendingOrders": "",
-    "completedOrders": "",
-    "packages": "",
-    "balance": ""
+    "label": "Orders and balance overview",
+    "pendingOrders": "Pending orders",
+    "completedOrders": "Completed orders",
+    "packages": "Available packages",
+    "balance": "Current balance"
   },
   "payment": {
-    "title": "",
+    "title": "Payment method",
     "channels": {
-      "alipay": "",
-      "wxpay": ""
+      "alipay": "Alipay",
+      "wxpay": "WeChat Pay"
     }
   },
   "packages": {
-    "title": "",
-    "popular": "",
-    "points": "",
-    "payableWithFee": "",
-    "buy": "",
-    "creating": "",
-    "unavailable": ""
+    "title": "Packages",
+    "popular": "Most popular",
+    "points": "{points, number} credits",
+    "payableWithFee": "Fee included, total {amount}",
+    "buy": "Buy now",
+    "creating": "Creating",
+    "unavailable": "Unavailable"
   },
   "enterprise": {
-    "name": "",
-    "line": "",
+    "name": "Enterprise",
+    "line": "More creative capacity for teams, brands, and long-term projects.",
     "features": {
-      "points": "",
-      "materials": "",
-      "members": "",
-      "projects": ""
+      "points": "{points, number} credits, ideal for team collaboration",
+      "materials": "Covers bulk assets, campaign visuals, and brand materials",
+      "members": "Built for steady, long-term output across many members",
+      "projects": "Ideal for project pre-research and live campaigns"
     }
   },
   "custom": {
-    "title": "",
-    "amountLabel": "",
-    "currencySymbol": "",
-    "placeholder": "",
-    "credits": "",
-    "fee": "",
-    "payable": "",
-    "submit": "",
-    "submitShort": "",
-    "creating": "",
-    "summary": "",
-    "invalidAmount": "",
-    "overMax": ""
+    "title": "Custom amount",
+    "amountLabel": "Custom amount",
+    "currencySymbol": "¥",
+    "placeholder": "Enter amount",
+    "credits": "Credits received",
+    "fee": "Fee",
+    "payable": "Total payable",
+    "submit": "Confirm payment of {amount}",
+    "submitShort": "Pay now",
+    "creating": "Creating",
+    "summary": "Pay {amount} · {points, number} credits",
+    "invalidAmount": "Enter an amount between {min} and {max}",
+    "overMax": "A single purchase can't exceed {max}"
   }
 }

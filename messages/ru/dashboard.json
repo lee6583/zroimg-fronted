@@ -1,37 +1,37 @@
 {
   "meta": {
-    "title": ""
+    "title": "Обзор"
   },
-  "title": "",
+  "title": "Обзор",
   "metrics": {
-    "generated": "",
-    "monthlyGenerated": "",
-    "favorites": "",
-    "balance": ""
+    "generated": "Всего создано",
+    "monthlyGenerated": "Создано в этом месяце",
+    "favorites": "Всего в избранном",
+    "balance": "Остаток баллов"
   },
   "quickActions": {
-    "label": "",
-    "generate": "",
-    "video": "",
-    "credits": "",
-    "orders": ""
+    "label": "Быстрые действия",
+    "generate": "Создание изображений",
+    "video": "Создание видео",
+    "credits": "Купить баллы",
+    "orders": "Мои заказы"
   },
   "recent": {
-    "title": "",
-    "empty": ""
+    "title": "Недавние работы",
+    "empty": "Недавних работ пока нет."
   },
   "checkIn": {
-    "title": "",
-    "streak": "",
-    "reward": "",
-    "weekLabel": "",
-    "weekDays": "",
-    "dailyPoints": "",
+    "title": "Ежедневная отметка",
+    "streak": "Дней подряд: {days, number}",
+    "reward": "+{points, number} баллов",
+    "weekLabel": "Отметки за неделю",
+    "weekDays": "Дней на этой неделе: {days, number}",
+    "dailyPoints": "+{points, number} баллов в день",
     "actions": {
-      "claim": "",
-      "claimed": "",
-      "unavailable": "",
-      "claiming": ""
+      "claim": "Отметиться",
+      "claimed": "Сегодня уже отмечено",
+      "unavailable": "Пока недоступно",
+      "claiming": "Отметка"
     }
   }
 }

@@ -12,244 +12,244 @@
       "coolingDown": "Please wait..."
     },
     "register": {
-      "title": "",
-      "hasAccount": "",
-      "loginLink": "",
-      "username": "",
-      "email": "",
-      "code": "",
-      "password": "",
-      "passwordPlaceholder": "",
-      "verification": "",
-      "submit": "",
-      "submitting": "",
-      "rewardTitle": "",
-      "rewardText": ""
+      "title": "Start creating",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Welcome back",
+      "username": "Username",
+      "email": "Email",
+      "code": "Verification code",
+      "password": "Set password",
+      "passwordPlaceholder": "At least 8 characters",
+      "verification": "Security check",
+      "submit": "Sign up",
+      "submitting": "Signing up...",
+      "rewardTitle": "Get 10 credits when you sign up",
+      "rewardText": "Credited automatically on first sign-up. Start creating right away."
     },
     "forgotPassword": {
-      "title": "",
-      "email": "",
-      "code": "",
-      "newPassword": "",
-      "newPasswordPlaceholder": "",
-      "confirmPassword": "",
-      "confirmPasswordPlaceholder": "",
-      "submit": "",
-      "submitting": "",
-      "success": "",
-      "backToLogin": ""
+      "title": "Reset password",
+      "email": "Email",
+      "code": "Verification code",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "submit": "Reset password",
+      "submitting": "Resetting...",
+      "success": "Password reset. Please sign in with your new password.",
+      "backToLogin": "Back to sign in"
     },
     "code": {
-      "send": "",
-      "sending": "",
-      "countdown": "",
-      "sent": ""
+      "send": "Send code",
+      "sending": "Sending",
+      "countdown": "{seconds, number}s",
+      "sent": "Verification code sent to your email"
     },
     "password": {
-      "show": "",
-      "hide": ""
+      "show": "Show password",
+      "hide": "Hide password"
     },
     "slider": {
-      "label": "",
-      "hint": "",
-      "verifying": "",
-      "verified": ""
+      "label": "Slider security check",
+      "hint": "Slide right to verify",
+      "verifying": "Verifying...",
+      "verified": "Verified"
     },
     "validation": {
-      "emailRequired": "",
-      "emailTooLong": "",
-      "emailInvalid": "",
-      "usernameLength": "",
-      "passwordLength": "",
-      "codeInvalid": "",
-      "verificationRequired": "",
-      "passwordMismatch": ""
+      "emailRequired": "Enter your email",
+      "emailTooLong": "Email must be 254 characters or fewer",
+      "emailInvalid": "Invalid email format",
+      "usernameLength": "Username must be 2 to 32 characters",
+      "passwordLength": "Password must be 8 to 128 characters",
+      "codeInvalid": "Verification code must be 6 digits",
+      "verificationRequired": "Complete the security check first",
+      "passwordMismatch": "The new passwords don't match"
     }
   },
   "billing": {
     "meta": {
-      "title": "",
-      "resultTitle": ""
+      "title": "My Orders",
+      "resultTitle": "Payment Result"
     },
-    "title": "",
+    "title": "My Orders",
     "status": {
-      "pending": "",
-      "paid": "",
-      "cancelled": ""
+      "pending": "Awaiting payment",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
     },
     "payChannel": {
-      "alipay": "",
-      "wxpay": ""
+      "alipay": "Alipay",
+      "wxpay": "WeChat Pay"
     },
     "list": {
-      "label": "",
+      "label": "My orders list",
       "columns": {
-        "orderNo": "",
-        "amount": "",
-        "points": "",
-        "payChannel": "",
-        "status": "",
-        "createTime": "",
-        "payTime": "",
-        "actions": ""
+        "orderNo": "Order No.",
+        "amount": "Amount",
+        "points": "Credits",
+        "payChannel": "Payment method",
+        "status": "Status",
+        "createTime": "Created",
+        "payTime": "Paid",
+        "actions": "Actions"
       },
-      "pointsValue": "",
+      "pointsValue": "{points, number} credits",
       "empty": {
-        "title": "",
-        "text": "",
-        "action": ""
+        "title": "No orders yet",
+        "text": "After you buy credits, your orders and their status will show up here.",
+        "action": "Top up"
       },
       "actions": {
-        "pay": "",
-        "cancel": "",
-        "cancelling": ""
+        "pay": "Pay",
+        "cancel": "Cancel",
+        "cancelling": "Cancelling"
       }
     },
     "result": {
-      "detailsLabel": "",
-      "created": "",
+      "detailsLabel": "Order details",
+      "created": "Order created",
       "notFound": {
-        "title": "",
-        "description": ""
+        "title": "Order not found",
+        "description": "We couldn't find this order under your account. Go back to your orders to see the latest records."
       },
       "loadError": {
-        "title": ""
+        "title": "Couldn't load the order"
       },
       "unauthorized": {
-        "title": "",
-        "description": ""
+        "title": "Session expired",
+        "description": "Please sign in again to view the order."
       },
       "fields": {
-        "orderNo": "",
-        "package": "",
-        "amount": "",
-        "rechargeAmount": "",
-        "fee": "",
-        "points": "",
-        "payChannel": "",
-        "status": "",
-        "createTime": "",
-        "expireTime": ""
+        "orderNo": "Order No.",
+        "package": "Item",
+        "amount": "Amount paid",
+        "rechargeAmount": "Top-up amount",
+        "fee": "Top-up fee",
+        "points": "Credits received",
+        "payChannel": "Payment method",
+        "status": "Order status",
+        "createTime": "Created",
+        "expireTime": "Expires"
       },
-      "pointsValue": "",
+      "pointsValue": "{points, number} credits",
       "actions": {
-        "viewOrders": "",
-        "buyAgain": "",
-        "pay": "",
-        "paying": "",
-        "cancel": "",
-        "cancelling": ""
+        "viewOrders": "View my orders",
+        "buyAgain": "Buy credits again",
+        "pay": "Confirm payment",
+        "paying": "Starting payment",
+        "cancel": "Cancel payment",
+        "cancelling": "Cancelling"
       },
-      "emptyPayUrl": ""
+      "emptyPayUrl": "Payment URL is empty. Please try again later."
     }
   },
   "canvas": {
     "meta": {
-      "title": ""
+      "title": "Infinite Canvas"
     },
     "list": {
-      "title": "",
-      "create": "",
-      "disabled": "",
-      "empty": "",
-      "gridLabel": "",
-      "maxBoards": "",
-      "nameRequired": "",
-      "nameLabel": "",
-      "saveName": "",
-      "cancel": "",
-      "rename": "",
-      "delete": "",
-      "deleteTitle": "",
-      "deleteDescription": "",
-      "deleteConfirm": "",
-      "meta": ""
+      "title": "Infinite Canvas",
+      "create": "New canvas",
+      "disabled": "Infinite Canvas isn't available yet",
+      "empty": "No canvases yet",
+      "gridLabel": "Canvas list",
+      "maxBoards": "{count, plural, one {Up to # canvas} other {Up to # canvases}}",
+      "nameRequired": "Canvas name can't be empty",
+      "nameLabel": "Canvas name",
+      "saveName": "Save name",
+      "cancel": "Cancel",
+      "rename": "Rename",
+      "delete": "Delete",
+      "deleteTitle": "Delete canvas",
+      "deleteDescription": "Delete the canvas \"{title}\"? This can't be undone.",
+      "deleteConfirm": "Delete",
+      "meta": "{count, plural, one {# node} other {# nodes}} · {time}"
     },
     "toolbar": {
-      "back": "",
-      "addGenerator": "",
-      "addNote": "",
-      "upload": "",
-      "history": "",
-      "undo": "",
-      "redo": "",
-      "fitView": "",
-      "reload": "",
-      "balance": "",
+      "back": "Back to canvas list",
+      "addGenerator": "Add generator node",
+      "addNote": "Add note",
+      "upload": "Upload image",
+      "history": "Add from history",
+      "undo": "Undo",
+      "redo": "Redo",
+      "fitView": "Fit view",
+      "reload": "Reload",
+      "balance": "Balance: {points, number} credits",
       "status": {
-        "saved": "",
-        "dirty": "",
-        "saving": "",
-        "error": "",
-        "conflict": ""
+        "saved": "Saved",
+        "dirty": "Unsaved",
+        "saving": "Saving…",
+        "error": "Save failed",
+        "conflict": "Canvas was modified in another window"
       }
     },
     "notices": {
-      "sceneTooLarge": "",
-      "maxNodes": "",
-      "noModel": "",
-      "modeNoModel": "",
-      "promptRequired": "",
-      "maxPending": "",
-      "referenceNotReady": "",
-      "fileType": "",
-      "fileSize": ""
+      "sceneTooLarge": "Canvas exceeds the {size, number} KB limit",
+      "maxNodes": "{count, plural, one {Each canvas can have up to # node} other {Each canvas can have up to # nodes}}",
+      "noModel": "No image models available",
+      "modeNoModel": "No models available for {mode}",
+      "promptRequired": "Enter a prompt",
+      "maxPending": "{count, plural, one {Each canvas can run up to # generation task at a time} other {Each canvas can run up to # generation tasks at a time}}",
+      "referenceNotReady": "Reference image isn't ready",
+      "fileType": "Only PNG, JPEG, and WebP images are supported",
+      "fileSize": "Each image must be 10 MB or smaller"
     },
     "generator": {
-      "placeholder": "",
-      "emptyPrompt": "",
-      "reference": "",
-      "mask": "",
-      "removeMask": "",
-      "count": "",
-      "price": "",
-      "generate": "",
-      "delete": "",
-      "edit": "",
-      "model": "",
-      "ratio": "",
-      "resolution": "",
-      "countLabel": ""
+      "placeholder": "Describe the image you want to generate",
+      "emptyPrompt": "Click to enter a prompt",
+      "reference": "Reference image",
+      "mask": "Mask",
+      "removeMask": "Remove mask",
+      "count": "{count, plural, one {# image} other {# images}}",
+      "price": "Est. {points, number} credits · Balance {balance, number}",
+      "generate": "Generate",
+      "delete": "Delete",
+      "edit": "Edit",
+      "model": "Model",
+      "ratio": "Aspect ratio",
+      "resolution": "Resolution",
+      "countLabel": "Quantity"
     },
     "image": {
-      "generateFrom": "",
-      "inpaint": "",
-      "download": "",
-      "delete": "",
-      "uploading": ""
+      "generateFrom": "Generate from this image",
+      "inpaint": "Inpaint",
+      "download": "Download",
+      "delete": "Delete",
+      "uploading": "Uploading"
     },
     "note": {
-      "placeholder": "",
-      "delete": ""
+      "placeholder": "Note",
+      "delete": "Delete"
     },
     "history": {
-      "title": "",
-      "empty": "",
-      "previous": "",
-      "next": "",
-      "page": "",
-      "add": "",
-      "addCount": ""
+      "title": "Add from history",
+      "empty": "No completed images yet",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "{page, number} / {pages, number}",
+      "add": "Add",
+      "addCount": "{count, plural, one {Add # image} other {Add # images}}"
     },
     "mask": {
-      "title": "",
-      "close": "",
-      "tools": "",
-      "brush": "",
-      "eraser": "",
-      "size": "",
-      "sizeValue": "",
-      "undo": "",
-      "clear": "",
-      "loadingBoard": "",
-      "loadingImage": "",
-      "loadFailed": "",
-      "paintRequired": "",
-      "unsupported": "",
-      "createFailed": "",
-      "cancel": "",
-      "confirm": "",
-      "uploading": ""
+      "title": "Inpaint",
+      "close": "Close",
+      "tools": "Paint tools",
+      "brush": "Brush",
+      "eraser": "Eraser",
+      "size": "Brush size",
+      "sizeValue": "{size, number}px",
+      "undo": "Undo",
+      "clear": "Clear",
+      "loadingBoard": "Loading board",
+      "loadingImage": "Loading image",
+      "loadFailed": "Failed to load image",
+      "paintRequired": "Paint the area you want to redraw first",
+      "unsupported": "Your browser can't create masks",
+      "createFailed": "Failed to create mask. Please try again.",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "uploading": "Uploading"
     }
   },
   "common": {
@@ -262,7 +262,7 @@
       "startCreating": "Start creating",
       "backHome": "Back to home",
       "close": "Close",
-      "enterWorkspace": ""
+      "enterWorkspace": "Enter workspace"
     },
     "status": {
       "loading": "Loading...",
@@ -271,100 +271,100 @@
   },
   "credits": {
     "meta": {
-      "title": ""
+      "title": "Buy Credits"
     },
-    "title": "",
+    "title": "Buy Credits",
     "overview": {
-      "label": "",
-      "pendingOrders": "",
-      "completedOrders": "",
-      "packages": "",
-      "balance": ""
+      "label": "Orders and balance overview",
+      "pendingOrders": "Pending orders",
+      "completedOrders": "Completed orders",
+      "packages": "Available packages",
+      "balance": "Current balance"
     },
     "payment": {
-      "title": "",
+      "title": "Payment method",
       "channels": {
-        "alipay": "",
-        "wxpay": ""
+        "alipay": "Alipay",
+        "wxpay": "WeChat Pay"
       }
     },
     "packages": {
-      "title": "",
-      "popular": "",
-      "points": "",
-      "payableWithFee": "",
-      "buy": "",
-      "creating": "",
-      "unavailable": ""
+      "title": "Packages",
+      "popular": "Most popular",
+      "points": "{points, number} credits",
+      "payableWithFee": "Fee included, total {amount}",
+      "buy": "Buy now",
+      "creating": "Creating",
+      "unavailable": "Unavailable"
     },
     "enterprise": {
-      "name": "",
-      "line": "",
+      "name": "Enterprise",
+      "line": "More creative capacity for teams, brands, and long-term projects.",
       "features": {
-        "points": "",
-        "materials": "",
-        "members": "",
-        "projects": ""
+        "points": "{points, number} credits, ideal for team collaboration",
+        "materials": "Covers bulk assets, campaign visuals, and brand materials",
+        "members": "Built for steady, long-term output across many members",
+        "projects": "Ideal for project pre-research and live campaigns"
       }
     },
     "custom": {
-      "title": "",
-      "amountLabel": "",
-      "currencySymbol": "",
-      "placeholder": "",
-      "credits": "",
-      "fee": "",
-      "payable": "",
-      "submit": "",
-      "submitShort": "",
-      "creating": "",
-      "summary": "",
-      "invalidAmount": "",
-      "overMax": ""
+      "title": "Custom amount",
+      "amountLabel": "Custom amount",
+      "currencySymbol": "¥",
+      "placeholder": "Enter amount",
+      "credits": "Credits received",
+      "fee": "Fee",
+      "payable": "Total payable",
+      "submit": "Confirm payment of {amount}",
+      "submitShort": "Pay now",
+      "creating": "Creating",
+      "summary": "Pay {amount} · {points, number} credits",
+      "invalidAmount": "Enter an amount between {min} and {max}",
+      "overMax": "A single purchase can't exceed {max}"
     }
   },
   "dashboard": {
     "meta": {
-      "title": ""
+      "title": "Overview"
     },
-    "title": "",
+    "title": "Overview",
     "metrics": {
-      "generated": "",
-      "monthlyGenerated": "",
-      "favorites": "",
-      "balance": ""
+      "generated": "Total generated",
+      "monthlyGenerated": "Generated this month",
+      "favorites": "Total favorites",
+      "balance": "Credits left"
     },
     "quickActions": {
-      "label": "",
-      "generate": "",
-      "video": "",
-      "credits": "",
-      "orders": ""
+      "label": "Quick actions",
+      "generate": "Image generation",
+      "video": "Video creation",
+      "credits": "Buy credits",
+      "orders": "My orders"
     },
     "recent": {
-      "title": "",
-      "empty": ""
+      "title": "Recent creations",
+      "empty": "No recent creations yet."
     },
     "checkIn": {
-      "title": "",
-      "streak": "",
-      "reward": "",
-      "weekLabel": "",
-      "weekDays": "",
-      "dailyPoints": "",
+      "title": "Daily check-in",
+      "streak": "{days, number}-day streak",
+      "reward": "+{points, number} credits",
+      "weekLabel": "This week",
+      "weekDays": "{days, number} days this week",
+      "dailyPoints": "+{points, number} credits daily",
       "actions": {
-        "claim": "",
-        "claimed": "",
-        "unavailable": "",
-        "claiming": ""
+        "claim": "Check in",
+        "claimed": "Checked in today",
+        "unavailable": "Not available yet",
+        "claiming": "Checking in"
       }
     }
   },
   "docs": {
-    "loading": "",
-    "empty": "",
-    "toc": "",
-    "tocLabel": ""
+    "loading": "Loading docs...",
+    "empty": "No docs yet",
+    "toc": "Contents",
+    "tocLabel": "Docs contents"
   },
   "errors": {
     "page": {
@@ -381,278 +381,278 @@
     "api": {
       "network": "Network error. Please check your connection and try again.",
       "unknown": "Request failed. Please try again later.",
-      "invalidResponse": "",
-      "serviceUnavailable": "",
-      "serverError": "",
-      "requestFailed": "",
-      "uploadFailed": "",
-      "unauthorized": "",
-      "forbidden": "",
-      "notFound": "",
-      "tooManyRequests": "",
-      "invalidCredentials": "",
-      "emailAlreadyRegistered": "",
-      "verificationCodeInvalid": "",
-      "sliderVerificationFailed": "",
-      "pointsInsufficient": "",
-      "fileTooLarge": "",
-      "unsupportedFileType": ""
+      "invalidResponse": "The server returned an invalid response. Please try again later.",
+      "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+      "serverError": "Server error. Please try again later.",
+      "requestFailed": "Request failed. Please try again later.",
+      "uploadFailed": "File upload failed. Please try again.",
+      "unauthorized": "Your session has expired. Please sign in again.",
+      "forbidden": "You don't have permission to do this",
+      "notFound": "The requested content doesn't exist or has been deleted",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "invalidCredentials": "Incorrect email or password",
+      "emailAlreadyRegistered": "This email is already registered",
+      "verificationCodeInvalid": "Verification code is incorrect or expired",
+      "sliderVerificationFailed": "Security check failed. Please try again.",
+      "pointsInsufficient": "Not enough credits. Please top up first.",
+      "fileTooLarge": "File is too large",
+      "unsupportedFileType": "Unsupported file type"
     },
     "server": {
-      "unavailable": "",
-      "invalidResponse": "",
-      "requestFailed": ""
+      "unavailable": "Backend service temporarily unavailable. Please try again later.",
+      "invalidResponse": "The backend returned an invalid response",
+      "requestFailed": "Failed to load data. Please try again later."
     },
     "upload": {
-      "unsupportedImageType": "",
-      "imageTooLarge": "",
-      "tooManyFiles": "",
-      "failed": ""
+      "unsupportedImageType": "Only PNG, JPEG, and WebP images are supported",
+      "imageTooLarge": "Images must be {maxMb, number} MB or smaller",
+      "tooManyFiles": "You can upload up to {max, number} files",
+      "failed": "File upload failed. Please try again."
     }
   },
   "favorites": {
     "meta": {
-      "title": "",
-      "detailTitle": ""
+      "title": "Favorites",
+      "detailTitle": "Favorites"
     },
-    "title": "",
+    "title": "Favorites",
     "actions": {
-      "cancel": "",
-      "save": "",
-      "rename": "",
-      "delete": ""
+      "cancel": "Cancel",
+      "save": "Save",
+      "rename": "Rename collection",
+      "delete": "Delete collection"
     },
     "create": {
-      "open": "",
-      "title": "",
-      "nameLabel": "",
-      "placeholder": "",
-      "submit": "",
-      "submitting": ""
+      "open": "New collection",
+      "title": "New collection",
+      "nameLabel": "Collection name",
+      "placeholder": "e.g. Avatar references",
+      "submit": "Create",
+      "submitting": "Creating"
     },
     "delete": {
-      "title": "",
-      "content": "",
-      "confirm": ""
+      "title": "Delete collection",
+      "content": "Delete the collection \"{name}\"? Images in it won't be deleted.",
+      "confirm": "Delete"
     },
     "card": {
-      "count": ""
+      "count": "{count, plural, one {# image} other {# images}}"
     },
     "empty": {
-      "title": "",
-      "text": ""
+      "title": "No collections yet",
+      "text": "Click \"New collection\" to create your first one"
     },
     "detail": {
-      "back": "",
-      "listLabel": "",
-      "emptyTitle": "",
-      "emptyText": ""
+      "back": "Back to collections",
+      "listLabel": "Collection images",
+      "emptyTitle": "This collection has no images yet",
+      "emptyText": "You can add favorites here from your creation history."
     },
     "picker": {
-      "open": "",
-      "done": "",
-      "title": "",
-      "noCollection": "",
-      "empty": "",
-      "manage": "",
-      "saving": ""
+      "open": "Save to collection",
+      "done": "Saved",
+      "title": "Save to collection",
+      "noCollection": "Create a collection first",
+      "empty": "Create a collection in Favorites first",
+      "manage": "Manage collections",
+      "saving": "Saving..."
     }
   },
   "gallery": {
     "hero": {
-      "title": ""
+      "title": "Explore great work from community creators"
     },
     "tabs": {
-      "label": "",
-      "all": ""
+      "label": "Work categories",
+      "all": "All"
     },
     "category": {
-      "realistic": "",
-      "anime": "",
-      "art": "",
-      "other": ""
+      "realistic": "Realistic",
+      "anime": "Anime",
+      "art": "Art",
+      "other": "Other"
     },
     "status": {
-      "pending": "",
-      "approved": "",
-      "rejected": "",
-      "withdrawn": "",
-      "removed": ""
+      "pending": "In review",
+      "approved": "Public",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn",
+      "removed": "Removed"
     },
     "list": {
-      "label": ""
+      "label": "Community works"
     },
     "card": {
-      "untitled": "",
-      "author": "",
-      "anonymous": ""
+      "untitled": "Untitled",
+      "author": "by {name}",
+      "anonymous": "Creator"
     },
     "empty": {
-      "label": "",
-      "title": "",
-      "text": ""
+      "label": "No public works yet",
+      "title": "The first community works are waiting for you.",
+      "text": "Click \"Submit to gallery\" in your creation history. Approved works will appear here."
     },
-    "loading": "",
+    "loading": "Loading gallery...",
     "publish": {
-      "submit": "",
-      "submitting": "",
-      "withdraw": "",
-      "unpublish": "",
-      "unpublishTitle": "",
-      "unpublishConfirm": "",
-      "cancel": "",
-      "resubmit": "",
-      "noReason": "",
-      "rejectedTitle": "",
-      "removedTitle": ""
+      "submit": "Submit to gallery",
+      "submitting": "Submitting",
+      "withdraw": "Withdraw",
+      "unpublish": "Unpublish",
+      "unpublishTitle": "Unpublish",
+      "unpublishConfirm": "You'll need to resubmit for review after unpublishing. Continue?",
+      "cancel": "Cancel",
+      "resubmit": "Resubmit",
+      "noReason": "No reason provided",
+      "rejectedTitle": "Rejected: {reason}",
+      "removedTitle": "Removed: {reason}. Contact us through feedback if you have questions"
     }
   },
   "generate": {
     "meta": {
-      "title": ""
+      "title": "Image Generation"
     },
     "unavailable": {
-      "title": "",
-      "description": ""
+      "title": "Image generation isn't available yet",
+      "description": "It will be available once an admin configures image models."
     },
     "modes": {
-      "text_to_image": "",
-      "image_to_image": "",
-      "inpaint": ""
+      "text_to_image": "Text to image",
+      "image_to_image": "Image to image",
+      "inpaint": "Inpaint"
     },
     "workspace": {
-      "openConversations": "",
-      "collapseSidebar": "",
-      "expandSidebar": "",
-      "closeSettings": ""
+      "openConversations": "Open conversation list",
+      "collapseSidebar": "Collapse conversation sidebar",
+      "expandSidebar": "Expand conversation sidebar",
+      "closeSettings": "Close generation settings"
     },
     "conversation": {
-      "listTitle": "",
-      "defaultTitle": "",
-      "create": "",
-      "empty": "",
-      "unarchived": "",
-      "editName": "",
-      "saveName": "",
-      "nameRequired": "",
-      "delete": "",
-      "deleteTitle": "",
-      "deleteDescription": "",
-      "deleteConfirm": "",
-      "cancel": ""
+      "listTitle": "Conversations",
+      "defaultTitle": "New conversation",
+      "create": "New conversation",
+      "empty": "No conversations yet",
+      "unarchived": "Unarchived",
+      "editName": "Edit conversation name",
+      "saveName": "Save conversation name",
+      "nameRequired": "Conversation name can't be empty",
+      "delete": "Delete conversation",
+      "deleteTitle": "Delete conversation",
+      "deleteDescription": "Delete \"{title}\"? This can't be undone.",
+      "deleteConfirm": "Delete",
+      "cancel": "Cancel"
     },
     "settings": {
-      "title": "",
-      "summary": "",
-      "compactSummary": "",
-      "mode": "",
-      "model": "",
-      "ratio": "",
-      "resolution": "",
-      "count": "",
-      "estimating": "",
-      "estimate": "",
-      "done": ""
+      "title": "Generation settings",
+      "summary": "{ratio} · Est. {points, number} credits",
+      "compactSummary": "{model} · {ratio} · {quality} · {count, plural, one {# image} other {# images}}",
+      "mode": "Mode",
+      "model": "Model",
+      "ratio": "Aspect ratio",
+      "resolution": "Resolution",
+      "count": "Quantity",
+      "estimating": "Calculating credits",
+      "estimate": "Estimated cost: {points, number} credits",
+      "done": "Done"
     },
     "composer": {
-      "placeholder": "",
-      "placeholderEdit": "",
-      "cost": "",
-      "insufficient": "",
-      "referenceName": "",
-      "removeReference": "",
-      "upload": "",
-      "submit": "",
-      "openSettings": ""
+      "placeholder": "Describe the image you want...",
+      "placeholderEdit": "Describe how you want the reference image to change...",
+      "cost": "Est. {points, number} credits",
+      "insufficient": "Not enough credits",
+      "referenceName": "Reference image {id}",
+      "removeReference": "Remove reference image",
+      "upload": "Upload reference image",
+      "submit": "Generate image",
+      "openSettings": "Open generation settings"
     },
     "errors": {
-      "noEditModel": "",
-      "maxInputs": "",
-      "fileType": "",
-      "fileSize": "",
-      "needReference": ""
+      "noEditModel": "No image-to-image models available",
+      "maxInputs": "{count, plural, one {You can upload up to # reference image} other {You can upload up to # reference images}}",
+      "fileType": "Only PNG, JPEG, and WebP images are supported",
+      "fileSize": "Each image must be 10 MB or smaller",
+      "needReference": "Image to image requires at least 1 reference image"
     },
     "preview": {
-      "greeting": "",
-      "suggestionLabel": "",
+      "greeting": "Hi! Describe the image you want and I'll generate it for you.",
+      "suggestionLabel": "Try these prompts:",
       "suggestions": {
-        "cat": "",
-        "city": "",
-        "sakura": ""
+        "cat": "A cat playing guitar under the stars",
+        "city": "Sunset over a futuristic city",
+        "sakura": "A watercolor cherry blossom garden"
       },
-      "detail": "",
-      "meta": "",
-      "waiting": "",
-      "retrying": "",
-      "failed": "",
-      "resultAlt": ""
+      "detail": "{quality} · {ratio} · {count, plural, one {# image} other {# images}} · {points, number} credits",
+      "meta": "{status} · {detail}",
+      "waiting": "Generating your image",
+      "retrying": "The last request failed. Retrying automatically",
+      "failed": "Generation failed. Adjust your description and try again.",
+      "resultAlt": "{prompt}, result {index, number}"
     }
   },
   "history": {
     "meta": {
-      "title": ""
+      "title": "History"
     },
-    "title": "",
+    "title": "History",
     "filters": {
-      "label": "",
-      "timeRange": "",
-      "startDate": "",
-      "endDate": "",
-      "anyTime": "",
-      "rangeSummary": "",
-      "invalidRange": "",
-      "clear": "",
-      "apply": "",
-      "mediaLabel": "",
+      "label": "History filters",
+      "timeRange": "Time range",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "anyTime": "All time",
+      "rangeSummary": "{from} – {to}",
+      "invalidRange": "Start date can't be later than end date",
+      "clear": "Clear",
+      "apply": "Apply",
+      "mediaLabel": "Type",
       "media": {
-        "all": "",
-        "image": "",
-        "video": ""
+        "all": "All types",
+        "image": "Images",
+        "video": "Videos"
       }
     },
     "list": {
-      "label": ""
+      "label": "History works"
     },
     "columns": {
-      "preview": "",
-      "prompt": "",
-      "model": "",
-      "resolution": "",
-      "ratio": "",
-      "points": "",
-      "status": "",
-      "time": "",
-      "actions": ""
+      "preview": "Work",
+      "prompt": "Prompt",
+      "model": "Model",
+      "resolution": "Resolution",
+      "ratio": "Aspect ratio",
+      "points": "Cost",
+      "status": "Status",
+      "time": "Time",
+      "actions": "Actions"
     },
-    "duration": "",
+    "duration": "{seconds, number}s",
     "actions": {
-      "downloadImage": "",
-      "downloadVideo": ""
+      "downloadImage": "Download image",
+      "downloadVideo": "Download video"
     },
     "delete": {
-      "title": "",
-      "running": "",
-      "content": "",
-      "confirm": "",
-      "deleting": "",
-      "cancel": "",
-      "done": ""
+      "title": "Delete work",
+      "running": "Task in progress. Can't delete yet.",
+      "content": "The {media, select, video {video} other {image}} will be permanently removed from storage, and also removed from the gallery and favorites. This can't be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "done": "Deleted"
     },
     "empty": {
       "default": {
-        "title": "",
-        "text": "",
-        "action": ""
+        "title": "No creations yet",
+        "text": "Write your first prompt and let inspiration leave its first image here.",
+        "action": "Start creating"
       },
       "filtered": {
-        "title": "",
-        "text": "",
-        "action": ""
+        "title": "No creations match the current filters",
+        "text": "Adjust the time or type filters, or view all history.",
+        "action": "View all"
       },
       "video": {
-        "title": "",
-        "text": "",
-        "action": ""
+        "title": "No video creations yet",
+        "text": "Describe a scene to generate your first video.",
+        "action": "Create a video"
       }
     }
   },
@@ -753,20 +753,20 @@
     }
   },
   "licenses": {
-    "title": "",
+    "title": "Open Source Licenses",
     "columns": {
-      "project": "",
-      "license": "",
-      "copyright": "",
-      "usage": ""
+      "project": "Project",
+      "license": "License",
+      "copyright": "Copyright",
+      "usage": "Usage"
     },
     "usage": {
-      "canvasEditor": "",
-      "maskDrawing": "",
-      "canvasState": "",
-      "canvasReference": "",
-      "generationReference": "",
-      "architectureReference": ""
+      "canvasEditor": "Canvas node editing",
+      "maskDrawing": "Mask drawing",
+      "canvasState": "Canvas state",
+      "canvasReference": "Canvas interaction reference",
+      "generationReference": "Generation flow reference",
+      "architectureReference": "Architecture reference"
     }
   },
   "metadata": {
@@ -824,8 +824,8 @@
       "gallery": "Gallery",
       "pricing": "Pricing",
       "docs": "Docs",
-      "menu": "",
-      "menuTitle": ""
+      "menu": "Open menu",
+      "menuTitle": "Menu"
     },
     "account": {
       "openMenu": "Open account menu",
@@ -867,308 +867,308 @@
       }
     },
     "tabs": {
-      "label": "",
-      "overview": "",
-      "generate": "",
-      "canvas": "",
-      "works": "",
-      "me": ""
+      "label": "Main navigation",
+      "overview": "Overview",
+      "generate": "Generate",
+      "canvas": "Canvas",
+      "works": "Works",
+      "me": "Me"
     },
     "me": {
-      "title": "",
-      "points": "",
-      "language": "",
-      "darkMode": ""
+      "title": "Me",
+      "points": "Credit balance",
+      "language": "Language",
+      "darkMode": "Dark mode"
     }
   },
   "pricing": {
-    "title": "",
-    "popular": "",
-    "points": "",
-    "buy": "",
+    "title": "Choose the plan that fits you",
+    "popular": "Most popular",
+    "points": "{points, number} credits",
+    "buy": "Buy now",
     "free": {
-      "code": "",
-      "name": "",
-      "credits": "",
-      "action": "",
+      "code": "Free",
+      "name": "Free Trial",
+      "credits": "Starter credits for new users",
+      "action": "Sign up to try",
       "features": {
-        "start": "",
-        "learn": "",
-        "browse": "",
-        "noSubscription": ""
+        "start": "Start exploring right after sign-up",
+        "learn": "Great for learning prompts and workflows",
+        "browse": "Browse works and creation tools",
+        "noSubscription": "No subscription. Top up whenever you need"
       }
     }
   },
   "settings": {
-    "title": "",
+    "title": "Account Settings",
     "nav": {
-      "label": "",
-      "profile": "",
-      "security": ""
+      "label": "Account settings categories",
+      "profile": "Profile",
+      "security": "Sign-in security"
     },
     "profile": {
-      "title": "",
-      "avatar": "",
-      "changeAvatar": "",
-      "avatarHint": "",
-      "avatarUpdated": "",
-      "username": "",
-      "email": "",
-      "bio": "",
-      "bioPlaceholder": "",
-      "bioCount": "",
-      "save": "",
-      "saving": "",
-      "saved": ""
+      "title": "Profile",
+      "avatar": "Avatar",
+      "changeAvatar": "Change avatar",
+      "avatarHint": "JPG, PNG, or WebP, up to 10 MB",
+      "avatarUpdated": "Avatar updated",
+      "username": "Username",
+      "email": "Email",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell us about yourself or the kinds of work you create...",
+      "bioCount": "{count, number} / {max, number}",
+      "save": "Save profile",
+      "saving": "Saving",
+      "saved": "Profile saved"
     },
     "security": {
-      "title": "",
-      "currentPassword": "",
-      "newPassword": "",
-      "confirmPassword": "",
-      "newPasswordPlaceholder": "",
-      "showField": "",
-      "hideField": "",
-      "showPassword": "",
-      "hidePassword": "",
-      "note": "",
-      "submit": "",
-      "submitting": "",
-      "updated": ""
+      "title": "Sign-in security",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "showField": "Show {field}",
+      "hideField": "Hide {field}",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "note": "New password must be at least 8 characters and match in both fields.",
+      "submit": "Update password",
+      "submitting": "Updating",
+      "updated": "Password updated"
     }
   },
   "submissions": {
     "meta": {
-      "title": ""
+      "title": "My Submissions"
     },
-    "title": "",
+    "title": "My Submissions",
     "tabs": {
-      "label": "",
-      "all": ""
+      "label": "Submission status",
+      "all": "All"
     },
     "list": {
-      "label": ""
+      "label": "Submissions list"
     },
     "reason": {
-      "empty": "",
-      "rejected": "",
-      "removed": ""
+      "empty": "Not provided",
+      "rejected": "Reason: {reason}",
+      "removed": "Reason: {reason}. If you have questions, submit <link>feedback</link>"
     },
     "times": {
-      "submit": "",
-      "review": ""
+      "submit": "Submitted",
+      "review": "Reviewed"
     },
     "empty": {
-      "title": "",
-      "action": ""
+      "title": "No submissions yet",
+      "action": "Submit from history"
     }
   },
   "task": {
     "status": {
-      "pending": "",
-      "processing": "",
-      "succeeded": "",
-      "failed": ""
+      "pending": "Queued",
+      "processing": "Generating",
+      "succeeded": "Completed",
+      "failed": "Failed"
     },
-    "retrying": "",
-    "retryingWait": "",
+    "retrying": "Retrying (attempt {attempt, number})",
+    "retryingWait": "Retrying (attempt {attempt, number}) · in {seconds, number}s",
     "quality": {
-      "auto": "",
-      "standard": ""
+      "auto": "Auto",
+      "standard": "Standard"
     }
   },
   "tickets": {
-    "title": "",
+    "title": "Feedback",
     "stats": {
-      "all": "",
-      "open": "",
-      "inProgress": "",
-      "processed": ""
+      "all": "All feedback",
+      "open": "Open",
+      "inProgress": "In progress",
+      "processed": "Resolved"
     },
     "filter": {
-      "all": "",
-      "open": "",
-      "in_progress": "",
-      "processed": ""
+      "all": "All statuses",
+      "open": "Open",
+      "in_progress": "In progress",
+      "processed": "Resolved"
     },
     "type": {
-      "bug": "",
-      "billing": "",
-      "generation": "",
-      "account": "",
-      "suggestion": "",
-      "other": ""
+      "bug": "Bug report",
+      "billing": "Orders and credits",
+      "generation": "Image generation",
+      "account": "Account issue",
+      "suggestion": "Feature suggestion",
+      "other": "Other"
     },
     "status": {
-      "open": "",
-      "in_progress": "",
-      "resolved": "",
-      "closed": ""
+      "open": "Open",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "closed": "Resolved"
     },
-    "create": "",
-    "view": "",
-    "empty": "",
+    "create": "Submit feedback",
+    "view": "View",
+    "empty": "No matching feedback yet.",
     "table": {
-      "type": "",
-      "subject": "",
-      "createdAt": "",
-      "updatedAt": "",
-      "status": "",
-      "actions": ""
+      "type": "Type",
+      "subject": "Feedback",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "status": "Status",
+      "actions": "Actions"
     },
     "card": {
-      "updatedAt": ""
+      "updatedAt": "Updated {time}"
     },
     "form": {
-      "title": "",
-      "backToList": "",
-      "type": "",
-      "subject": "",
-      "subjectPlaceholder": "",
-      "content": "",
-      "contentPlaceholder": "",
-      "attachments": "",
-      "chooseFiles": "",
-      "attachmentsHint": "",
-      "removeFile": "",
-      "remove": "",
-      "fileSizeKb": "",
-      "fileSizeMb": "",
-      "tooManyFiles": "",
-      "submit": "",
-      "submitting": "",
-      "cancel": "",
-      "submitted": ""
+      "title": "Submit feedback",
+      "backToList": "Back to list",
+      "type": "Type",
+      "subject": "Title",
+      "subjectPlaceholder": "e.g. Image generation task stuck in queue",
+      "content": "Details",
+      "contentPlaceholder": "Describe the issue, when it happened, and include the task ID, order number, or screenshots if relevant.",
+      "attachments": "Attachments",
+      "chooseFiles": "Choose screenshots",
+      "attachmentsHint": "PNG, JPEG, or WebP. Up to {max, number} files, {maxMb, number} MB each",
+      "removeFile": "Remove attachment {name}",
+      "remove": "Remove attachment",
+      "fileSizeKb": "{size, number} KB",
+      "fileSizeMb": "{size} MB",
+      "tooManyFiles": "You can upload up to {max, number} attachments.",
+      "submit": "Submit feedback",
+      "submitting": "Submitting",
+      "cancel": "Cancel",
+      "submitted": "Feedback submitted. We'll look into it soon."
     },
     "detail": {
-      "title": "",
-      "meta": "",
-      "currentStatus": "",
+      "title": "Status",
+      "meta": "{type} / Updated {time}",
+      "currentStatus": "Current status",
       "process": {
-        "open": "",
-        "in_progress": "",
-        "resolved": "",
-        "closed": ""
+        "open": "Feedback received. Waiting for an admin to review.",
+        "in_progress": "An admin is working on this feedback. Watch for status updates.",
+        "resolved": "This feedback has been resolved.",
+        "closed": "This feedback has been resolved."
       },
-      "thread": "",
-      "admin": "",
-      "you": "",
-      "noAdminReply": "",
-      "attachments": "",
-      "attachmentAlt": "",
-      "attachmentFallback": "",
-      "replyLabel": "",
-      "replyPlaceholder": "",
-      "reply": "",
-      "replying": "",
-      "replyClosed": ""
+      "thread": "Conversation",
+      "admin": "Admin",
+      "you": "Me",
+      "noAdminReply": "No admin reply yet. Watch for updates.",
+      "attachments": "Attachments",
+      "attachmentAlt": "Feedback attachment {name}",
+      "attachmentFallback": "Attachment {index, number}",
+      "replyLabel": "Reply",
+      "replyPlaceholder": "Add details or reply to the admin",
+      "reply": "Send",
+      "replying": "Sending",
+      "replyClosed": "This feedback is closed. Please submit a new one if you have another issue."
     }
   },
   "ui": {
     "lightbox": {
-      "open": "",
-      "openTitle": "",
-      "dialog": "",
-      "close": "",
-      "closeTitle": ""
+      "open": "View image larger",
+      "openTitle": "View larger",
+      "dialog": "Image preview",
+      "close": "Close image preview",
+      "closeTitle": "Close"
     },
     "videoLightbox": {
-      "play": "",
-      "dialog": "",
-      "close": "",
-      "closeTitle": ""
+      "play": "Play video",
+      "dialog": "Video preview",
+      "close": "Close video preview",
+      "closeTitle": "Close"
     },
     "pagination": {
-      "total": ""
+      "total": "{count, plural, one {# item total} other {# items total}}"
     },
     "select": {
-      "placeholder": ""
+      "placeholder": "Select"
     },
     "avatar": {
-      "label": ""
+      "label": "{name}'s avatar"
     }
   },
   "video": {
     "meta": {
-      "title": ""
+      "title": "Video Creation"
     },
     "mode": {
-      "text_to_video": "",
-      "image_to_video": ""
+      "text_to_video": "Text to video",
+      "image_to_video": "Image to video"
     },
-    "seconds": "",
-    "durationShort": "",
+    "seconds": "{seconds, number}s",
+    "durationShort": "{seconds, number}s",
     "settings": {
-      "label": "",
-      "title": "",
-      "open": "",
-      "done": "",
-      "model": "",
-      "prompt": "",
-      "promptPlaceholder": "",
-      "mode": "",
-      "duration": "",
-      "durationLabel": "",
-      "reference": "",
-      "referenceHint": "",
-      "upload": "",
-      "uploading": "",
-      "removeReference": "",
-      "ratio": "",
-      "resolution": "",
-      "submit": "",
-      "submitting": "",
-      "submitted": ""
+      "label": "Video generation settings",
+      "title": "Video settings",
+      "open": "Settings",
+      "done": "Done",
+      "model": "Model",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe the video you want, e.g. A black sports car slowly drives down a rainy neon-lit street, cinematic shot.",
+      "mode": "Mode",
+      "duration": "Duration",
+      "durationLabel": "Video duration",
+      "reference": "Reference image",
+      "referenceHint": "PNG, JPEG, or WebP only, up to 10 MB",
+      "upload": "Upload reference image",
+      "uploading": "Uploading...",
+      "removeReference": "Remove reference image",
+      "ratio": "Aspect ratio",
+      "resolution": "Resolution",
+      "submit": "Generate video",
+      "submitting": "Submitting...",
+      "submitted": "Task submitted"
     },
     "errors": {
-      "notConfigured": "",
-      "promptRequired": "",
-      "paramsIncomplete": "",
-      "referenceRequired": "",
-      "insufficientPoints": ""
+      "notConfigured": "Video service isn't configured yet",
+      "promptRequired": "Enter a video prompt",
+      "paramsIncomplete": "Video parameters aren't fully configured",
+      "referenceRequired": "Image to video requires a reference image",
+      "insufficientPoints": "Not enough credits. You need {points, number} more."
     },
     "frame": {
       "stage": {
-        "queued": "",
-        "generating": "",
-        "failed": ""
+        "queued": "Queued",
+        "generating": "Generating video",
+        "failed": "Video generation failed"
       },
       "hint": {
-        "queued": "",
-        "generating": "",
-        "retrying": ""
+        "queued": "Task submitted. Waiting to start.",
+        "generating": "AI is building the visuals and motion",
+        "retrying": "The last request failed. Retrying automatically"
       },
-      "failFallback": "",
-      "retry": "",
-      "retrySubmitting": "",
-      "loadFailed": "",
-      "durationShort": ""
+      "failFallback": "Generation didn't finish. Please try again later.",
+      "retry": "Regenerate",
+      "retrySubmitting": "Submitting...",
+      "loadFailed": "Failed to load video",
+      "durationShort": "{seconds, number}s"
     },
     "info": {
-      "toggle": "",
-      "expand": "",
-      "collapse": "",
-      "model": "",
-      "mode": "",
-      "duration": "",
-      "ratio": "",
-      "resolution": "",
-      "points": "",
-      "createdAt": ""
+      "toggle": "Generation info",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "model": "Model",
+      "mode": "Mode",
+      "duration": "Duration",
+      "ratio": "Aspect ratio",
+      "resolution": "Resolution",
+      "points": "Credits used",
+      "createdAt": "Created"
     },
     "workspace": {
-      "closedTitle": "",
-      "closedText": "",
-      "noWorks": "",
-      "allWorks": "",
-      "taskMeta": "",
-      "loadMore": "",
-      "loadingMore": "",
-      "hideSettings": "",
-      "showSettings": "",
-      "retryIncomplete": "",
-      "download": "",
-      "downloadLabel": ""
+      "closedTitle": "Video creation isn't available yet",
+      "closedText": "Available models will appear here once an admin configures the video service.",
+      "noWorks": "No videos yet",
+      "allWorks": "All works",
+      "taskMeta": "{time} · {ratio}",
+      "loadMore": "Load more",
+      "loadingMore": "Loading...",
+      "hideSettings": "Hide video settings",
+      "showSettings": "Show video settings",
+      "retryIncomplete": "Task parameters are incomplete. Resubmit from video settings.",
+      "download": "Download",
+      "downloadLabel": "Download video"
     }
   }
 }

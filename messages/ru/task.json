@@ -1,14 +1,14 @@
 {
   "status": {
-    "pending": "",
-    "processing": "",
-    "succeeded": "",
-    "failed": ""
+    "pending": "В очереди",
+    "processing": "Создаётся",
+    "succeeded": "Завершено",
+    "failed": "Ошибка"
   },
-  "retrying": "",
-  "retryingWait": "",
+  "retrying": "Повтор (попытка {attempt, number})",
+  "retryingWait": "Повтор (попытка {attempt, number}) · через {seconds, number} с",
   "quality": {
-    "auto": "",
-    "standard": ""
+    "auto": "Авто",
+    "standard": "Стандартное"
   }
 }

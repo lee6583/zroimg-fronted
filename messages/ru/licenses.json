@@ -1,17 +1,17 @@
 {
-  "title": "",
+  "title": "Open source лицензии",
   "columns": {
-    "project": "",
-    "license": "",
-    "copyright": "",
-    "usage": ""
+    "project": "Проект",
+    "license": "Лицензия",
+    "copyright": "Авторские права",
+    "usage": "Назначение"
   },
   "usage": {
-    "canvasEditor": "",
-    "maskDrawing": "",
-    "canvasState": "",
-    "canvasReference": "",
-    "generationReference": "",
-    "architectureReference": ""
+    "canvasEditor": "Редактирование узлов холста",
+    "maskDrawing": "Рисование масок",
+    "canvasState": "Состояние холста",
+    "canvasReference": "Образец взаимодействия с холстом",
+    "generationReference": "Образец процесса генерации",
+    "architectureReference": "Образец архитектуры"
   }
 }

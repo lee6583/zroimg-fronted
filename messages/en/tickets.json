@@ -1,87 +1,87 @@
 {
-  "title": "",
+  "title": "Feedback",
   "stats": {
-    "all": "",
-    "open": "",
-    "inProgress": "",
-    "processed": ""
+    "all": "All feedback",
+    "open": "Open",
+    "inProgress": "In progress",
+    "processed": "Resolved"
   },
   "filter": {
-    "all": "",
-    "open": "",
-    "in_progress": "",
-    "processed": ""
+    "all": "All statuses",
+    "open": "Open",
+    "in_progress": "In progress",
+    "processed": "Resolved"
   },
   "type": {
-    "bug": "",
-    "billing": "",
-    "generation": "",
-    "account": "",
-    "suggestion": "",
-    "other": ""
+    "bug": "Bug report",
+    "billing": "Orders and credits",
+    "generation": "Image generation",
+    "account": "Account issue",
+    "suggestion": "Feature suggestion",
+    "other": "Other"
   },
   "status": {
-    "open": "",
-    "in_progress": "",
-    "resolved": "",
-    "closed": ""
+    "open": "Open",
+    "in_progress": "In progress",
+    "resolved": "Resolved",
+    "closed": "Resolved"
   },
-  "create": "",
-  "view": "",
-  "empty": "",
+  "create": "Submit feedback",
+  "view": "View",
+  "empty": "No matching feedback yet.",
   "table": {
-    "type": "",
-    "subject": "",
-    "createdAt": "",
-    "updatedAt": "",
-    "status": "",
-    "actions": ""
+    "type": "Type",
+    "subject": "Feedback",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "status": "Status",
+    "actions": "Actions"
   },
   "card": {
-    "updatedAt": ""
+    "updatedAt": "Updated {time}"
   },
   "form": {
-    "title": "",
-    "backToList": "",
-    "type": "",
-    "subject": "",
-    "subjectPlaceholder": "",
-    "content": "",
-    "contentPlaceholder": "",
-    "attachments": "",
-    "chooseFiles": "",
-    "attachmentsHint": "",
-    "removeFile": "",
-    "remove": "",
-    "fileSizeKb": "",
-    "fileSizeMb": "",
-    "tooManyFiles": "",
-    "submit": "",
-    "submitting": "",
-    "cancel": "",
-    "submitted": ""
+    "title": "Submit feedback",
+    "backToList": "Back to list",
+    "type": "Type",
+    "subject": "Title",
+    "subjectPlaceholder": "e.g. Image generation task stuck in queue",
+    "content": "Details",
+    "contentPlaceholder": "Describe the issue, when it happened, and include the task ID, order number, or screenshots if relevant.",
+    "attachments": "Attachments",
+    "chooseFiles": "Choose screenshots",
+    "attachmentsHint": "PNG, JPEG, or WebP. Up to {max, number} files, {maxMb, number} MB each",
+    "removeFile": "Remove attachment {name}",
+    "remove": "Remove attachment",
+    "fileSizeKb": "{size, number} KB",
+    "fileSizeMb": "{size} MB",
+    "tooManyFiles": "You can upload up to {max, number} attachments.",
+    "submit": "Submit feedback",
+    "submitting": "Submitting",
+    "cancel": "Cancel",
+    "submitted": "Feedback submitted. We'll look into it soon."
   },
   "detail": {
-    "title": "",
-    "meta": "",
-    "currentStatus": "",
+    "title": "Status",
+    "meta": "{type} / Updated {time}",
+    "currentStatus": "Current status",
     "process": {
-      "open": "",
-      "in_progress": "",
-      "resolved": "",
-      "closed": ""
+      "open": "Feedback received. Waiting for an admin to review.",
+      "in_progress": "An admin is working on this feedback. Watch for status updates.",
+      "resolved": "This feedback has been resolved.",
+      "closed": "This feedback has been resolved."
     },
-    "thread": "",
-    "admin": "",
-    "you": "",
-    "noAdminReply": "",
-    "attachments": "",
-    "attachmentAlt": "",
-    "attachmentFallback": "",
-    "replyLabel": "",
-    "replyPlaceholder": "",
-    "reply": "",
-    "replying": "",
-    "replyClosed": ""
+    "thread": "Conversation",
+    "admin": "Admin",
+    "you": "Me",
+    "noAdminReply": "No admin reply yet. Watch for updates.",
+    "attachments": "Attachments",
+    "attachmentAlt": "Feedback attachment {name}",
+    "attachmentFallback": "Attachment {index, number}",
+    "replyLabel": "Reply",
+    "replyPlaceholder": "Add details or reply to the admin",
+    "reply": "Send",
+    "replying": "Sending",
+    "replyClosed": "This feedback is closed. Please submit a new one if you have another issue."
   }
 }

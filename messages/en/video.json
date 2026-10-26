@@ -1,83 +1,83 @@
 {
   "meta": {
-    "title": ""
+    "title": "Video Creation"
   },
   "mode": {
-    "text_to_video": "",
-    "image_to_video": ""
+    "text_to_video": "Text to video",
+    "image_to_video": "Image to video"
   },
-  "seconds": "",
-  "durationShort": "",
+  "seconds": "{seconds, number}s",
+  "durationShort": "{seconds, number}s",
   "settings": {
-    "label": "",
-    "title": "",
-    "open": "",
-    "done": "",
-    "model": "",
-    "prompt": "",
-    "promptPlaceholder": "",
-    "mode": "",
-    "duration": "",
-    "durationLabel": "",
-    "reference": "",
-    "referenceHint": "",
-    "upload": "",
-    "uploading": "",
-    "removeReference": "",
-    "ratio": "",
-    "resolution": "",
-    "submit": "",
-    "submitting": "",
-    "submitted": ""
+    "label": "Video generation settings",
+    "title": "Video settings",
+    "open": "Settings",
+    "done": "Done",
+    "model": "Model",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Describe the video you want, e.g. A black sports car slowly drives down a rainy neon-lit street, cinematic shot.",
+    "mode": "Mode",
+    "duration": "Duration",
+    "durationLabel": "Video duration",
+    "reference": "Reference image",
+    "referenceHint": "PNG, JPEG, or WebP only, up to 10 MB",
+    "upload": "Upload reference image",
+    "uploading": "Uploading...",
+    "removeReference": "Remove reference image",
+    "ratio": "Aspect ratio",
+    "resolution": "Resolution",
+    "submit": "Generate video",
+    "submitting": "Submitting...",
+    "submitted": "Task submitted"
   },
   "errors": {
-    "notConfigured": "",
-    "promptRequired": "",
-    "paramsIncomplete": "",
-    "referenceRequired": "",
-    "insufficientPoints": ""
+    "notConfigured": "Video service isn't configured yet",
+    "promptRequired": "Enter a video prompt",
+    "paramsIncomplete": "Video parameters aren't fully configured",
+    "referenceRequired": "Image to video requires a reference image",
+    "insufficientPoints": "Not enough credits. You need {points, number} more."
   },
   "frame": {
     "stage": {
-      "queued": "",
-      "generating": "",
-      "failed": ""
+      "queued": "Queued",
+      "generating": "Generating video",
+      "failed": "Video generation failed"
     },
     "hint": {
-      "queued": "",
-      "generating": "",
-      "retrying": ""
+      "queued": "Task submitted. Waiting to start.",
+      "generating": "AI is building the visuals and motion",
+      "retrying": "The last request failed. Retrying automatically"
     },
-    "failFallback": "",
-    "retry": "",
-    "retrySubmitting": "",
-    "loadFailed": "",
-    "durationShort": ""
+    "failFallback": "Generation didn't finish. Please try again later.",
+    "retry": "Regenerate",
+    "retrySubmitting": "Submitting...",
+    "loadFailed": "Failed to load video",
+    "durationShort": "{seconds, number}s"
   },
   "info": {
-    "toggle": "",
-    "expand": "",
-    "collapse": "",
-    "model": "",
-    "mode": "",
-    "duration": "",
-    "ratio": "",
-    "resolution": "",
-    "points": "",
-    "createdAt": ""
+    "toggle": "Generation info",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "model": "Model",
+    "mode": "Mode",
+    "duration": "Duration",
+    "ratio": "Aspect ratio",
+    "resolution": "Resolution",
+    "points": "Credits used",
+    "createdAt": "Created"
   },
   "workspace": {
-    "closedTitle": "",
-    "closedText": "",
-    "noWorks": "",
-    "allWorks": "",
-    "taskMeta": "",
-    "loadMore": "",
-    "loadingMore": "",
-    "hideSettings": "",
-    "showSettings": "",
-    "retryIncomplete": "",
-    "download": "",
-    "downloadLabel": ""
+    "closedTitle": "Video creation isn't available yet",
+    "closedText": "Available models will appear here once an admin configures the video service.",
+    "noWorks": "No videos yet",
+    "allWorks": "All works",
+    "taskMeta": "{time} · {ratio}",
+    "loadMore": "Load more",
+    "loadingMore": "Loading...",
+    "hideSettings": "Hide video settings",
+    "showSettings": "Show video settings",
+    "retryIncomplete": "Task parameters are incomplete. Resubmit from video settings.",
+    "download": "Download",
+    "downloadLabel": "Download video"
   }
 }

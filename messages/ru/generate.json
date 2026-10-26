@@ -1,81 +1,81 @@
 {
   "meta": {
-    "title": ""
+    "title": "Создание изображений"
   },
   "unavailable": {
-    "title": "",
-    "description": ""
+    "title": "Создание изображений пока недоступно",
+    "description": "Функция заработает после того, как администратор настроит модели изображений."
   },
   "modes": {
-    "text_to_image": "",
-    "image_to_image": "",
-    "inpaint": ""
+    "text_to_image": "Текст в изображение",
+    "image_to_image": "Изображение в изображение",
+    "inpaint": "Перерисовка области"
   },
   "workspace": {
-    "openConversations": "",
-    "collapseSidebar": "",
-    "expandSidebar": "",
-    "closeSettings": ""
+    "openConversations": "Открыть список диалогов",
+    "collapseSidebar": "Свернуть боковую панель диалогов",
+    "expandSidebar": "Развернуть боковую панель диалогов",
+    "closeSettings": "Закрыть настройки генерации"
   },
   "conversation": {
-    "listTitle": "",
-    "defaultTitle": "",
-    "create": "",
-    "empty": "",
-    "unarchived": "",
-    "editName": "",
-    "saveName": "",
-    "nameRequired": "",
-    "delete": "",
-    "deleteTitle": "",
-    "deleteDescription": "",
-    "deleteConfirm": "",
-    "cancel": ""
+    "listTitle": "Диалоги",
+    "defaultTitle": "Новый диалог",
+    "create": "Новый диалог",
+    "empty": "Диалогов пока нет",
+    "unarchived": "Не в архиве",
+    "editName": "Изменить название диалога",
+    "saveName": "Сохранить название диалога",
+    "nameRequired": "Название диалога не может быть пустым",
+    "delete": "Удалить диалог",
+    "deleteTitle": "Удаление диалога",
+    "deleteDescription": "Удалить «{title}»? Это действие нельзя отменить.",
+    "deleteConfirm": "Удалить",
+    "cancel": "Отмена"
   },
   "settings": {
-    "title": "",
-    "summary": "",
-    "compactSummary": "",
-    "mode": "",
-    "model": "",
-    "ratio": "",
-    "resolution": "",
-    "count": "",
-    "estimating": "",
-    "estimate": "",
-    "done": ""
+    "title": "Настройки генерации",
+    "summary": "{ratio} · Ориентировочно {points, number} баллов",
+    "compactSummary": "{model} · {ratio} · {quality} · {count, plural, one {# изобр.} few {# изобр.} many {# изобр.} other {# изобр.}}",
+    "mode": "Режим",
+    "model": "Модель",
+    "ratio": "Соотношение сторон",
+    "resolution": "Разрешение",
+    "count": "Количество изображений",
+    "estimating": "Расчёт стоимости",
+    "estimate": "Ориентировочная стоимость: {points, number} баллов",
+    "done": "Готово"
   },
   "composer": {
-    "placeholder": "",
-    "placeholderEdit": "",
-    "cost": "",
-    "insufficient": "",
-    "referenceName": "",
-    "removeReference": "",
-    "upload": "",
-    "submit": "",
-    "openSettings": ""
+    "placeholder": "Опишите нужное изображение...",
+    "placeholderEdit": "Опишите, что нужно изменить на референсе...",
+    "cost": "Ориентировочно {points, number} баллов",
+    "insufficient": "Недостаточно баллов",
+    "referenceName": "Референс {id}",
+    "removeReference": "Удалить референс",
+    "upload": "Загрузить референс",
+    "submit": "Создать изображение",
+    "openSettings": "Открыть настройки генерации"
   },
   "errors": {
-    "noEditModel": "",
-    "maxInputs": "",
-    "fileType": "",
-    "fileSize": "",
-    "needReference": ""
+    "noEditModel": "Нет доступных моделей для режима «изображение в изображение»",
+    "maxInputs": "{count, plural, one {Можно загрузить не более # референса} few {Можно загрузить не более # референсов} many {Можно загрузить не более # референсов} other {Можно загрузить не более # референса}}",
+    "fileType": "Поддерживаются только изображения PNG, JPEG и WebP",
+    "fileSize": "Размер одного изображения не должен превышать 10 МБ",
+    "needReference": "Для режима «изображение в изображение» загрузите хотя бы один референс"
   },
   "preview": {
-    "greeting": "",
-    "suggestionLabel": "",
+    "greeting": "Здравствуйте! Опишите нужное изображение, и я его создам.",
+    "suggestionLabel": "Попробуйте эти промпты:",
     "suggestions": {
-      "cat": "",
-      "city": "",
-      "sakura": ""
+      "cat": "Кот играет на гитаре под звёздным небом",
+      "city": "Закат над городом будущего",
+      "sakura": "Сад сакуры в стиле акварели"
     },
-    "detail": "",
-    "meta": "",
-    "waiting": "",
-    "retrying": "",
-    "failed": "",
-    "resultAlt": ""
+    "detail": "{quality} · {ratio} · {count, plural, one {# изобр.} few {# изобр.} many {# изобр.} other {# изобр.}} · {points, number} баллов",
+    "meta": "{status} · {detail}",
+    "waiting": "Создаём изображение",
+    "retrying": "Прошлый запрос не удался, выполняется автоматический повтор",
+    "failed": "Не удалось создать изображение. Измените описание и попробуйте снова.",
+    "resultAlt": "{prompt}, результат {index, number}"
   }
 }

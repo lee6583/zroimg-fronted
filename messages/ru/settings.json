@@ -1,38 +1,38 @@
 {
-  "title": "",
+  "title": "Настройки аккаунта",
   "nav": {
-    "label": "",
-    "profile": "",
-    "security": ""
+    "label": "Разделы настроек аккаунта",
+    "profile": "Профиль",
+    "security": "Безопасность входа"
   },
   "profile": {
-    "title": "",
-    "avatar": "",
-    "changeAvatar": "",
-    "avatarHint": "",
-    "avatarUpdated": "",
-    "username": "",
-    "email": "",
-    "bio": "",
-    "bioPlaceholder": "",
-    "bioCount": "",
-    "save": "",
-    "saving": "",
-    "saved": ""
+    "title": "Профиль",
+    "avatar": "Аватар",
+    "changeAvatar": "Сменить аватар",
+    "avatarHint": "Форматы JPG, PNG, WebP, размер файла до 10 МБ",
+    "avatarUpdated": "Аватар обновлён",
+    "username": "Имя пользователя",
+    "email": "Эл. почта",
+    "bio": "О себе",
+    "bioPlaceholder": "Расскажите о себе или о том, что вы чаще всего создаёте...",
+    "bioCount": "{count, number} / {max, number}",
+    "save": "Сохранить профиль",
+    "saving": "Сохранение",
+    "saved": "Профиль сохранён"
   },
   "security": {
-    "title": "",
-    "currentPassword": "",
-    "newPassword": "",
-    "confirmPassword": "",
-    "newPasswordPlaceholder": "",
-    "showField": "",
-    "hideField": "",
-    "showPassword": "",
-    "hidePassword": "",
-    "note": "",
-    "submit": "",
-    "submitting": "",
-    "updated": ""
+    "title": "Безопасность входа",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "confirmPassword": "Подтвердите новый пароль",
+    "newPasswordPlaceholder": "Не менее 8 символов",
+    "showField": "Показать: {field}",
+    "hideField": "Скрыть: {field}",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "note": "Новый пароль должен содержать не менее 8 символов, оба введённых значения должны совпадать.",
+    "submit": "Обновить пароль",
+    "submitting": "Обновление",
+    "updated": "Пароль обновлён"
   }
 }

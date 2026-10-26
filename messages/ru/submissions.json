@@ -1,26 +1,26 @@
 {
   "meta": {
-    "title": ""
+    "title": "Мои публикации"
   },
-  "title": "",
+  "title": "Мои публикации",
   "tabs": {
-    "label": "",
-    "all": ""
+    "label": "Статус публикаций",
+    "all": "Все"
   },
   "list": {
-    "label": ""
+    "label": "Список публикаций"
   },
   "reason": {
-    "empty": "",
-    "rejected": "",
-    "removed": ""
+    "empty": "Не указана",
+    "rejected": "Причина: {reason}",
+    "removed": "Причина: {reason}. Если у вас есть вопросы, отправьте <link>обратную связь</link>"
   },
   "times": {
-    "submit": "",
-    "review": ""
+    "submit": "Отправлено",
+    "review": "Проверено"
   },
   "empty": {
-    "title": "",
-    "action": ""
+    "title": "Публикаций пока нет",
+    "action": "Опубликовать из истории"
   }
 }

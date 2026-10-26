@@ -1,24 +1,24 @@
 {
   "lightbox": {
-    "open": "",
-    "openTitle": "",
-    "dialog": "",
-    "close": "",
-    "closeTitle": ""
+    "open": "View image larger",
+    "openTitle": "View larger",
+    "dialog": "Image preview",
+    "close": "Close image preview",
+    "closeTitle": "Close"
   },
   "videoLightbox": {
-    "play": "",
-    "dialog": "",
-    "close": "",
-    "closeTitle": ""
+    "play": "Play video",
+    "dialog": "Video preview",
+    "close": "Close video preview",
+    "closeTitle": "Close"
   },
   "pagination": {
-    "total": ""
+    "total": "{count, plural, one {# item total} other {# items total}}"
   },
   "select": {
-    "placeholder": ""
+    "placeholder": "Select"
   },
   "avatar": {
-    "label": ""
+    "label": "{name}'s avatar"
   }
 }

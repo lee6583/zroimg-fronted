@@ -1,87 +1,87 @@
 {
-  "title": "",
+  "title": "Обратная связь",
   "stats": {
-    "all": "",
-    "open": "",
-    "inProgress": "",
-    "processed": ""
+    "all": "Все обращения",
+    "open": "Ожидают обработки",
+    "inProgress": "В обработке",
+    "processed": "Обработаны"
   },
   "filter": {
-    "all": "",
-    "open": "",
-    "in_progress": "",
-    "processed": ""
+    "all": "Все статусы",
+    "open": "Ожидает обработки",
+    "in_progress": "В обработке",
+    "processed": "Обработано"
   },
   "type": {
-    "bug": "",
-    "billing": "",
-    "generation": "",
-    "account": "",
-    "suggestion": "",
-    "other": ""
+    "bug": "Сообщение о проблеме",
+    "billing": "Заказы и баллы",
+    "generation": "Создание изображений",
+    "account": "Проблемы с аккаунтом",
+    "suggestion": "Предложение по функциям",
+    "other": "Другое"
   },
   "status": {
-    "open": "",
-    "in_progress": "",
-    "resolved": "",
-    "closed": ""
+    "open": "Ожидает обработки",
+    "in_progress": "В обработке",
+    "resolved": "Обработано",
+    "closed": "Обработано"
   },
-  "create": "",
-  "view": "",
-  "empty": "",
+  "create": "Отправить обращение",
+  "view": "Открыть",
+  "empty": "Подходящих обращений пока нет.",
   "table": {
-    "type": "",
-    "subject": "",
-    "createdAt": "",
-    "updatedAt": "",
-    "status": "",
-    "actions": ""
+    "type": "Тип обращения",
+    "subject": "Обращение",
+    "createdAt": "Создано",
+    "updatedAt": "Обновлено",
+    "status": "Статус",
+    "actions": "Действия"
   },
   "card": {
-    "updatedAt": ""
+    "updatedAt": "Обновлено: {time}"
   },
   "form": {
-    "title": "",
-    "backToList": "",
-    "type": "",
-    "subject": "",
-    "subjectPlaceholder": "",
-    "content": "",
-    "contentPlaceholder": "",
-    "attachments": "",
-    "chooseFiles": "",
-    "attachmentsHint": "",
-    "removeFile": "",
-    "remove": "",
-    "fileSizeKb": "",
-    "fileSizeMb": "",
-    "tooManyFiles": "",
-    "submit": "",
-    "submitting": "",
-    "cancel": "",
-    "submitted": ""
+    "title": "Отправить обращение",
+    "backToList": "Назад к списку",
+    "type": "Тип",
+    "subject": "Тема",
+    "subjectPlaceholder": "Например: задача создания изображения всё время в очереди",
+    "content": "Описание",
+    "contentPlaceholder": "Опишите проблему, когда она возникла, укажите номер задачи, номер заказа или приложите скриншоты.",
+    "attachments": "Вложения",
+    "chooseFiles": "Выбрать скриншоты",
+    "attachmentsHint": "PNG, JPEG, WebP, не более {max, number} файлов, до {maxMb, number} МБ каждый",
+    "removeFile": "Удалить вложение {name}",
+    "remove": "Удалить вложение",
+    "fileSizeKb": "{size, number} КБ",
+    "fileSizeMb": "{size} МБ",
+    "tooManyFiles": "Можно загрузить не более {max, number} вложений.",
+    "submit": "Отправить обращение",
+    "submitting": "Отправка",
+    "cancel": "Отмена",
+    "submitted": "Обращение отправлено, мы скоро его рассмотрим."
   },
   "detail": {
-    "title": "",
-    "meta": "",
-    "currentStatus": "",
+    "title": "Статус обработки",
+    "meta": "{type} / обновлено {time}",
+    "currentStatus": "Текущий статус",
     "process": {
-      "open": "",
-      "in_progress": "",
-      "resolved": "",
-      "closed": ""
+      "open": "Обращение получено, ожидает рассмотрения администратором.",
+      "in_progress": "Администратор обрабатывает ваше обращение. Следите за обновлением статуса.",
+      "resolved": "Обращение обработано.",
+      "closed": "Обращение обработано."
     },
-    "thread": "",
-    "admin": "",
-    "you": "",
-    "noAdminReply": "",
-    "attachments": "",
-    "attachmentAlt": "",
-    "attachmentFallback": "",
-    "replyLabel": "",
-    "replyPlaceholder": "",
-    "reply": "",
-    "replying": "",
-    "replyClosed": ""
+    "thread": "История переписки",
+    "admin": "Администратор",
+    "you": "Я",
+    "noAdminReply": "Ответа администратора пока нет. Следите за обновлениями.",
+    "attachments": "Вложения",
+    "attachmentAlt": "Вложение обращения {name}",
+    "attachmentFallback": "Вложение {index, number}",
+    "replyLabel": "Ответ",
+    "replyPlaceholder": "Дополните обращение или ответьте администратору",
+    "reply": "Отправить",
+    "replying": "Отправка",
+    "replyClosed": "Обращение закрыто. Если появился новый вопрос, отправьте новое обращение."
   }
 }

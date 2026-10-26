@@ -1,49 +1,49 @@
 {
   "hero": {
-    "title": ""
+    "title": "Explore great work from community creators"
   },
   "tabs": {
-    "label": "",
-    "all": ""
+    "label": "Work categories",
+    "all": "All"
   },
   "category": {
-    "realistic": "",
-    "anime": "",
-    "art": "",
-    "other": ""
+    "realistic": "Realistic",
+    "anime": "Anime",
+    "art": "Art",
+    "other": "Other"
   },
   "status": {
-    "pending": "",
-    "approved": "",
-    "rejected": "",
-    "withdrawn": "",
-    "removed": ""
+    "pending": "In review",
+    "approved": "Public",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "removed": "Removed"
   },
   "list": {
-    "label": ""
+    "label": "Community works"
   },
   "card": {
-    "untitled": "",
-    "author": "",
-    "anonymous": ""
+    "untitled": "Untitled",
+    "author": "by {name}",
+    "anonymous": "Creator"
   },
   "empty": {
-    "label": "",
-    "title": "",
-    "text": ""
+    "label": "No public works yet",
+    "title": "The first community works are waiting for you.",
+    "text": "Click \"Submit to gallery\" in your creation history. Approved works will appear here."
   },
-  "loading": "",
+  "loading": "Loading gallery...",
   "publish": {
-    "submit": "",
-    "submitting": "",
-    "withdraw": "",
-    "unpublish": "",
-    "unpublishTitle": "",
-    "unpublishConfirm": "",
-    "cancel": "",
-    "resubmit": "",
-    "noReason": "",
-    "rejectedTitle": "",
-    "removedTitle": ""
+    "submit": "Submit to gallery",
+    "submitting": "Submitting",
+    "withdraw": "Withdraw",
+    "unpublish": "Unpublish",
+    "unpublishTitle": "Unpublish",
+    "unpublishConfirm": "You'll need to resubmit for review after unpublishing. Continue?",
+    "cancel": "Cancel",
+    "resubmit": "Resubmit",
+    "noReason": "No reason provided",
+    "rejectedTitle": "Rejected: {reason}",
+    "removedTitle": "Removed: {reason}. Contact us through feedback if you have questions"
   }
 }

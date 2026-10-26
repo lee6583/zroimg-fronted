@@ -1,37 +1,37 @@
 {
   "meta": {
-    "title": ""
+    "title": "Overview"
   },
-  "title": "",
+  "title": "Overview",
   "metrics": {
-    "generated": "",
-    "monthlyGenerated": "",
-    "favorites": "",
-    "balance": ""
+    "generated": "Total generated",
+    "monthlyGenerated": "Generated this month",
+    "favorites": "Total favorites",
+    "balance": "Credits left"
   },
   "quickActions": {
-    "label": "",
-    "generate": "",
-    "video": "",
-    "credits": "",
-    "orders": ""
+    "label": "Quick actions",
+    "generate": "Image generation",
+    "video": "Video creation",
+    "credits": "Buy credits",
+    "orders": "My orders"
   },
   "recent": {
-    "title": "",
-    "empty": ""
+    "title": "Recent creations",
+    "empty": "No recent creations yet."
   },
   "checkIn": {
-    "title": "",
-    "streak": "",
-    "reward": "",
-    "weekLabel": "",
-    "weekDays": "",
-    "dailyPoints": "",
+    "title": "Daily check-in",
+    "streak": "{days, number}-day streak",
+    "reward": "+{points, number} credits",
+    "weekLabel": "This week",
+    "weekDays": "{days, number} days this week",
+    "dailyPoints": "+{points, number} credits daily",
     "actions": {
-      "claim": "",
-      "claimed": "",
-      "unavailable": "",
-      "claiming": ""
+      "claim": "Check in",
+      "claimed": "Checked in today",
+      "unavailable": "Not available yet",
+      "claiming": "Checking in"
     }
   }
 }

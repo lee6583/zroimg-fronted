@@ -1,6 +1,6 @@
 {
-  "loading": "",
-  "empty": "",
-  "toc": "",
-  "tocLabel": ""
+  "loading": "Loading docs...",
+  "empty": "No docs yet",
+  "toc": "Contents",
+  "tocLabel": "Docs contents"
 }

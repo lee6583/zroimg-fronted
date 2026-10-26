@@ -1,81 +1,81 @@
 {
   "meta": {
-    "title": ""
+    "title": "Image Generation"
   },
   "unavailable": {
-    "title": "",
-    "description": ""
+    "title": "Image generation isn't available yet",
+    "description": "It will be available once an admin configures image models."
   },
   "modes": {
-    "text_to_image": "",
-    "image_to_image": "",
-    "inpaint": ""
+    "text_to_image": "Text to image",
+    "image_to_image": "Image to image",
+    "inpaint": "Inpaint"
   },
   "workspace": {
-    "openConversations": "",
-    "collapseSidebar": "",
-    "expandSidebar": "",
-    "closeSettings": ""
+    "openConversations": "Open conversation list",
+    "collapseSidebar": "Collapse conversation sidebar",
+    "expandSidebar": "Expand conversation sidebar",
+    "closeSettings": "Close generation settings"
   },
   "conversation": {
-    "listTitle": "",
-    "defaultTitle": "",
-    "create": "",
-    "empty": "",
-    "unarchived": "",
-    "editName": "",
-    "saveName": "",
-    "nameRequired": "",
-    "delete": "",
-    "deleteTitle": "",
-    "deleteDescription": "",
-    "deleteConfirm": "",
-    "cancel": ""
+    "listTitle": "Conversations",
+    "defaultTitle": "New conversation",
+    "create": "New conversation",
+    "empty": "No conversations yet",
+    "unarchived": "Unarchived",
+    "editName": "Edit conversation name",
+    "saveName": "Save conversation name",
+    "nameRequired": "Conversation name can't be empty",
+    "delete": "Delete conversation",
+    "deleteTitle": "Delete conversation",
+    "deleteDescription": "Delete \"{title}\"? This can't be undone.",
+    "deleteConfirm": "Delete",
+    "cancel": "Cancel"
   },
   "settings": {
-    "title": "",
-    "summary": "",
-    "compactSummary": "",
-    "mode": "",
-    "model": "",
-    "ratio": "",
-    "resolution": "",
-    "count": "",
-    "estimating": "",
-    "estimate": "",
-    "done": ""
+    "title": "Generation settings",
+    "summary": "{ratio} · Est. {points, number} credits",
+    "compactSummary": "{model} · {ratio} · {quality} · {count, plural, one {# image} other {# images}}",
+    "mode": "Mode",
+    "model": "Model",
+    "ratio": "Aspect ratio",
+    "resolution": "Resolution",
+    "count": "Quantity",
+    "estimating": "Calculating credits",
+    "estimate": "Estimated cost: {points, number} credits",
+    "done": "Done"
   },
   "composer": {
-    "placeholder": "",
-    "placeholderEdit": "",
-    "cost": "",
-    "insufficient": "",
-    "referenceName": "",
-    "removeReference": "",
-    "upload": "",
-    "submit": "",
-    "openSettings": ""
+    "placeholder": "Describe the image you want...",
+    "placeholderEdit": "Describe how you want the reference image to change...",
+    "cost": "Est. {points, number} credits",
+    "insufficient": "Not enough credits",
+    "referenceName": "Reference image {id}",
+    "removeReference": "Remove reference image",
+    "upload": "Upload reference image",
+    "submit": "Generate image",
+    "openSettings": "Open generation settings"
   },
   "errors": {
-    "noEditModel": "",
-    "maxInputs": "",
-    "fileType": "",
-    "fileSize": "",
-    "needReference": ""
+    "noEditModel": "No image-to-image models available",
+    "maxInputs": "{count, plural, one {You can upload up to # reference image} other {You can upload up to # reference images}}",
+    "fileType": "Only PNG, JPEG, and WebP images are supported",
+    "fileSize": "Each image must be 10 MB or smaller",
+    "needReference": "Image to image requires at least 1 reference image"
   },
   "preview": {
-    "greeting": "",
-    "suggestionLabel": "",
+    "greeting": "Hi! Describe the image you want and I'll generate it for you.",
+    "suggestionLabel": "Try these prompts:",
     "suggestions": {
-      "cat": "",
-      "city": "",
-      "sakura": ""
+      "cat": "A cat playing guitar under the stars",
+      "city": "Sunset over a futuristic city",
+      "sakura": "A watercolor cherry blossom garden"
     },
-    "detail": "",
-    "meta": "",
-    "waiting": "",
-    "retrying": "",
-    "failed": "",
-    "resultAlt": ""
+    "detail": "{quality} · {ratio} · {count, plural, one {# image} other {# images}} · {points, number} credits",
+    "meta": "{status} · {detail}",
+    "waiting": "Generating your image",
+    "retrying": "The last request failed. Retrying automatically",
+    "failed": "Generation failed. Adjust your description and try again.",
+    "resultAlt": "{prompt}, result {index, number}"
   }
 }

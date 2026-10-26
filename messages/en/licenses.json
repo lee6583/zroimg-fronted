@@ -1,17 +1,17 @@
 {
-  "title": "",
+  "title": "Open Source Licenses",
   "columns": {
-    "project": "",
-    "license": "",
-    "copyright": "",
-    "usage": ""
+    "project": "Project",
+    "license": "License",
+    "copyright": "Copyright",
+    "usage": "Usage"
   },
   "usage": {
-    "canvasEditor": "",
-    "maskDrawing": "",
-    "canvasState": "",
-    "canvasReference": "",
-    "generationReference": "",
-    "architectureReference": ""
+    "canvasEditor": "Canvas node editing",
+    "maskDrawing": "Mask drawing",
+    "canvasState": "Canvas state",
+    "canvasReference": "Canvas interaction reference",
+    "generationReference": "Generation flow reference",
+    "architectureReference": "Architecture reference"
   }
 }

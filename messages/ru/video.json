@@ -1,83 +1,83 @@
 {
   "meta": {
-    "title": ""
+    "title": "Создание видео"
   },
   "mode": {
-    "text_to_video": "",
-    "image_to_video": ""
+    "text_to_video": "Текст в видео",
+    "image_to_video": "Изображение в видео"
   },
-  "seconds": "",
-  "durationShort": "",
+  "seconds": "{seconds, number} с",
+  "durationShort": "{seconds, number} с",
   "settings": {
-    "label": "",
-    "title": "",
-    "open": "",
-    "done": "",
-    "model": "",
-    "prompt": "",
-    "promptPlaceholder": "",
-    "mode": "",
-    "duration": "",
-    "durationLabel": "",
-    "reference": "",
-    "referenceHint": "",
-    "upload": "",
-    "uploading": "",
-    "removeReference": "",
-    "ratio": "",
-    "resolution": "",
-    "submit": "",
-    "submitting": "",
-    "submitted": ""
+    "label": "Параметры генерации видео",
+    "title": "Настройки видео",
+    "open": "Настройки",
+    "done": "Готово",
+    "model": "Модель",
+    "prompt": "Промпт",
+    "promptPlaceholder": "Опишите сцену для видео, например: по ночной неоновой улице под дождём медленно проезжает чёрный спорткар, кинематографичный кадр.",
+    "mode": "Режим генерации",
+    "duration": "Длительность",
+    "durationLabel": "Длительность видео",
+    "reference": "Референс",
+    "referenceHint": "Только PNG, JPEG, WebP, до 10 МБ",
+    "upload": "Загрузить референс",
+    "uploading": "Загрузка...",
+    "removeReference": "Удалить референс",
+    "ratio": "Соотношение сторон",
+    "resolution": "Разрешение",
+    "submit": "Создать видео",
+    "submitting": "Отправка...",
+    "submitted": "Задача отправлена"
   },
   "errors": {
-    "notConfigured": "",
-    "promptRequired": "",
-    "paramsIncomplete": "",
-    "referenceRequired": "",
-    "insufficientPoints": ""
+    "notConfigured": "Видеосервис пока не настроен",
+    "promptRequired": "Введите промпт для видео",
+    "paramsIncomplete": "Параметры видео заданы не полностью",
+    "referenceRequired": "Для режима «изображение в видео» загрузите референс",
+    "insufficientPoints": "Недостаточно баллов, не хватает ещё {points, number}"
   },
   "frame": {
     "stage": {
-      "queued": "",
-      "generating": "",
-      "failed": ""
+      "queued": "В очереди",
+      "generating": "Создаётся видео",
+      "failed": "Не удалось создать видео"
     },
     "hint": {
-      "queued": "",
-      "generating": "",
-      "retrying": ""
+      "queued": "Задача отправлена, ожидает начала генерации",
+      "generating": "AI создаёт изображение и движение",
+      "retrying": "Прошлый запрос не удался, выполняется автоматический повтор"
     },
-    "failFallback": "",
-    "retry": "",
-    "retrySubmitting": "",
-    "loadFailed": "",
-    "durationShort": ""
+    "failFallback": "Генерация не завершена. Повторите попытку позже",
+    "retry": "Создать заново",
+    "retrySubmitting": "Отправка...",
+    "loadFailed": "Не удалось загрузить видео",
+    "durationShort": "{seconds, number} с"
   },
   "info": {
-    "toggle": "",
-    "expand": "",
-    "collapse": "",
-    "model": "",
-    "mode": "",
-    "duration": "",
-    "ratio": "",
-    "resolution": "",
-    "points": "",
-    "createdAt": ""
+    "toggle": "Сведения о генерации",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "model": "Модель",
+    "mode": "Режим",
+    "duration": "Длительность",
+    "ratio": "Соотношение сторон",
+    "resolution": "Разрешение",
+    "points": "Потрачено баллов",
+    "createdAt": "Создано"
   },
   "workspace": {
-    "closedTitle": "",
-    "closedText": "",
-    "noWorks": "",
-    "allWorks": "",
-    "taskMeta": "",
-    "loadMore": "",
-    "loadingMore": "",
-    "hideSettings": "",
-    "showSettings": "",
-    "retryIncomplete": "",
-    "download": "",
-    "downloadLabel": ""
+    "closedTitle": "Создание видео пока недоступно",
+    "closedText": "Доступные модели появятся здесь после настройки видеосервиса администратором.",
+    "noWorks": "Видео пока нет",
+    "allWorks": "Все работы",
+    "taskMeta": "{time} · {ratio}",
+    "loadMore": "Загрузить ещё",
+    "loadingMore": "Загрузка...",
+    "hideSettings": "Свернуть настройки видео",
+    "showSettings": "Развернуть настройки видео",
+    "retryIncomplete": "Параметры задачи неполные. Отправьте её заново в настройках видео",
+    "download": "Скачать",
+    "downloadLabel": "Скачать видео"
   }
 }

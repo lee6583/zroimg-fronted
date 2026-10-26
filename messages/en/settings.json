@@ -1,38 +1,38 @@
 {
-  "title": "",
+  "title": "Account Settings",
   "nav": {
-    "label": "",
-    "profile": "",
-    "security": ""
+    "label": "Account settings categories",
+    "profile": "Profile",
+    "security": "Sign-in security"
   },
   "profile": {
-    "title": "",
-    "avatar": "",
-    "changeAvatar": "",
-    "avatarHint": "",
-    "avatarUpdated": "",
-    "username": "",
-    "email": "",
-    "bio": "",
-    "bioPlaceholder": "",
-    "bioCount": "",
-    "save": "",
-    "saving": "",
-    "saved": ""
+    "title": "Profile",
+    "avatar": "Avatar",
+    "changeAvatar": "Change avatar",
+    "avatarHint": "JPG, PNG, or WebP, up to 10 MB",
+    "avatarUpdated": "Avatar updated",
+    "username": "Username",
+    "email": "Email",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself or the kinds of work you create...",
+    "bioCount": "{count, number} / {max, number}",
+    "save": "Save profile",
+    "saving": "Saving",
+    "saved": "Profile saved"
   },
   "security": {
-    "title": "",
-    "currentPassword": "",
-    "newPassword": "",
-    "confirmPassword": "",
-    "newPasswordPlaceholder": "",
-    "showField": "",
-    "hideField": "",
-    "showPassword": "",
-    "hidePassword": "",
-    "note": "",
-    "submit": "",
-    "submitting": "",
-    "updated": ""
+    "title": "Sign-in security",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "newPasswordPlaceholder": "At least 8 characters",
+    "showField": "Show {field}",
+    "hideField": "Hide {field}",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "note": "New password must be at least 8 characters and match in both fields.",
+    "submit": "Update password",
+    "submitting": "Updating",
+    "updated": "Password updated"
   }
 }

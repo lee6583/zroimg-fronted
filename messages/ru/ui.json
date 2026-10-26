@@ -1,24 +1,24 @@
 {
   "lightbox": {
-    "open": "",
-    "openTitle": "",
-    "dialog": "",
-    "close": "",
-    "closeTitle": ""
+    "open": "Увеличить изображение",
+    "openTitle": "Увеличить",
+    "dialog": "Просмотр изображения",
+    "close": "Закрыть просмотр изображения",
+    "closeTitle": "Закрыть"
   },
   "videoLightbox": {
-    "play": "",
-    "dialog": "",
-    "close": "",
-    "closeTitle": ""
+    "play": "Воспроизвести видео",
+    "dialog": "Просмотр видео",
+    "close": "Закрыть просмотр видео",
+    "closeTitle": "Закрыть"
   },
   "pagination": {
-    "total": ""
+    "total": "{count, plural, other {Всего: #}}"
   },
   "select": {
-    "placeholder": ""
+    "placeholder": "Выберите"
   },
   "avatar": {
-    "label": ""
+    "label": "Аватар пользователя {name}"
   }
 }

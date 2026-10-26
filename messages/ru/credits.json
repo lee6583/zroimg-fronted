@@ -1,54 +1,54 @@
 {
   "meta": {
-    "title": ""
+    "title": "Купить баллы"
   },
-  "title": "",
+  "title": "Купить баллы",
   "overview": {
-    "label": "",
-    "pendingOrders": "",
-    "completedOrders": "",
-    "packages": "",
-    "balance": ""
+    "label": "Заказы и баланс",
+    "pendingOrders": "Ожидают оплаты",
+    "completedOrders": "Завершённые заказы",
+    "packages": "Доступные пакеты",
+    "balance": "Текущий баланс"
   },
   "payment": {
-    "title": "",
+    "title": "Способ оплаты",
     "channels": {
-      "alipay": "",
-      "wxpay": ""
+      "alipay": "Alipay",
+      "wxpay": "WeChat Pay"
     }
   },
   "packages": {
-    "title": "",
-    "popular": "",
-    "points": "",
-    "payableWithFee": "",
-    "buy": "",
-    "creating": "",
-    "unavailable": ""
+    "title": "Покупка пакета",
+    "popular": "Самый популярный",
+    "points": "Баллов: {points, number}",
+    "payableWithFee": "Итого с комиссией: {amount}",
+    "buy": "Купить",
+    "creating": "Создание",
+    "unavailable": "Недоступно для покупки"
   },
   "enterprise": {
-    "name": "",
-    "line": "",
+    "name": "Для компаний",
+    "line": "Больше творческого лимита для команд, брендов и долгосрочных проектов.",
     "features": {
-      "points": "",
-      "materials": "",
-      "members": "",
-      "projects": ""
+      "points": "{points, number} баллов для совместной работы команды",
+      "materials": "Подходит для массовых материалов, рекламных визуалов и брендовых ресурсов",
+      "members": "Для стабильной долгосрочной работы нескольких участников",
+      "projects": "Для проработки корпоративных проектов и запуска кампаний"
     }
   },
   "custom": {
-    "title": "",
-    "amountLabel": "",
-    "currencySymbol": "",
-    "placeholder": "",
-    "credits": "",
-    "fee": "",
-    "payable": "",
-    "submit": "",
-    "submitShort": "",
-    "creating": "",
-    "summary": "",
-    "invalidAmount": "",
-    "overMax": ""
+    "title": "Своя сумма",
+    "amountLabel": "Своя сумма",
+    "currencySymbol": "¥",
+    "placeholder": "Введите сумму покупки",
+    "credits": "Зачисляемые баллы",
+    "fee": "Комиссия",
+    "payable": "Сумма к оплате",
+    "submit": "Подтвердить оплату {amount}",
+    "submitShort": "Оплатить",
+    "creating": "Создание",
+    "summary": "К оплате {amount} · Баллов: {points, number}",
+    "invalidAmount": "Введите сумму от {min} до {max}",
+    "overMax": "Сумма одной покупки не может превышать {max}"
   }
 }
