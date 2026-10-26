@@ -20,19 +20,14 @@ export type Notice = {
 
 export type ConversationGroup = {
   key: string;
-  label: string;
+  // 分组日期（Java 时间，北京时间）；无法归档时为 null，组件显示 generate.conversation.unarchived。
+  time: string | null;
   items: GenerationConversation[];
 };
 
 export const activeConversationCookieName = "zroimg-active-generation-conversation";
 
 export const imageModes: GenerationMode[] = ["text_to_image", "image_to_image"];
-
-export const modeLabels: Record<GenerationMode, string> = {
-  text_to_image: "文生图",
-  image_to_image: "图生图",
-  inpaint: "局部重绘",
-};
 
 export function isTaskPending(task: Pick<GenerationTask, "status">) {
   return task.status === "pending" || task.status === "processing";
@@ -74,7 +69,7 @@ export function findDefaultOptions(models: GenerationModel[]): GenerationOptions
 export function getDefaultOptions(models: GenerationModel[]): GenerationOptions {
   const options = findDefaultOptions(models);
   if (!options) {
-    throw new Error("暂无可用图片模型");
+    throw new Error("No usable image model");
   }
 
   return options;
@@ -93,7 +88,7 @@ export function normalizeOptions(
     model = models.find((item) => supportsMode(item, options.mode));
   }
   if (!model) {
-    throw new Error("当前生成模式没有可用模型");
+    throw new Error("No model supports the current generation mode");
   }
 
   const params = model.supportParams;
@@ -148,16 +143,10 @@ export function groupConversations(items: GenerationConversation[]) {
 
     groups.push({
       key,
-      label: key === "unknown" ? "未归档" : formatDate(time),
+      time: key === "unknown" ? null : key,
       items: [item],
     });
   }
 
   return groups;
-}
-
-function formatDate(value: string) {
-  const [date] = value.split("T");
-  const [year, month, day] = date.split("-");
-  return year && month && day ? `${year}/${Number(month)}/${Number(day)}` : "未归档";
 }

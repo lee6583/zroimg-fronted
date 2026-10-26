@@ -1,8 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { ordersApi } from "@/api/orders/purchase";
-import { getErrorMessage } from "@/utils/error";
+import { translateApiError } from "@/i18n/api-error";
 import styles from "./result.module.css";
 import { useRouter } from "@/i18n/navigation";
 
@@ -18,6 +19,8 @@ export function PaymentActions(props: PaymentActionsProps) {
   const payUrl = props.payUrl;
   const canPay = props.canPay ?? true;
   const canCancel = props.canCancel ?? true;
+  const t = useTranslations("billing.result");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isPaying, setPaying] = useState(false);
@@ -35,7 +38,7 @@ export function PaymentActions(props: PaymentActionsProps) {
 
       const data = await ordersApi.pay(orderNo);
       if (!data.payUrl) {
-        setMessage("支付地址为空，请稍后重试");
+        setMessage(t("emptyPayUrl"));
         setPaying(false);
         return;
       }
@@ -43,7 +46,7 @@ export function PaymentActions(props: PaymentActionsProps) {
       window.location.assign(data.payUrl);
     } catch (error) {
       setPaying(false);
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
       return;
     }
   }
@@ -57,7 +60,7 @@ export function PaymentActions(props: PaymentActionsProps) {
         router.replace("/billing");
         router.refresh();
       } catch (error) {
-        setMessage(getErrorMessage(error));
+        setMessage(translateApiError(error, tError));
       }
     });
   }
@@ -71,7 +74,7 @@ export function PaymentActions(props: PaymentActionsProps) {
           disabled={isPaying}
           onClick={() => void confirmPayment()}
         >
-          {isPaying ? "发起支付中" : "确认支付"}
+          {isPaying ? t("actions.paying") : t("actions.pay")}
         </button>
       ) : null}
       {canCancel ? (
@@ -81,7 +84,7 @@ export function PaymentActions(props: PaymentActionsProps) {
           disabled={isPending}
           onClick={cancelPayment}
         >
-          {isPending ? "取消中" : "取消支付"}
+          {isPending ? t("actions.cancelling") : t("actions.cancel")}
         </button>
       ) : null}
       {message ? <p className={styles.result__actionMessage}>{message}</p> : null}

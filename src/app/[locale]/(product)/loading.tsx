@@ -1,7 +1,11 @@
-export default function ProductLoading() {
+import { getTranslations } from "next-intl/server";
+
+export default async function ProductLoading() {
+  const t = await getTranslations("common.status");
+
   return (
     <div className="grid min-h-80 place-items-center px-6 py-10 text-sm text-muted">
-      页面加载中...
+      {t("loading")}
     </div>
   );
 }

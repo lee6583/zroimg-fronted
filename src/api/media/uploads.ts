@@ -1,4 +1,4 @@
-import { request } from "@/utils/request";
+import { ApiRequestError, clientErrorCodes, request } from "@/utils/request";
 import type { MediaAsset, MediaUploadPresign } from "@/types/generation";
 
 const directUploadThreshold = 5 * 1024 * 1024;
@@ -39,7 +39,15 @@ async function uploadDirectly(file: File) {
   }).catch(() => null);
   if (!response?.ok) {
     await cancelUpload(upload.assetId);
-    throw new Error("文件上传失败，请重试");
+    // 直传对象存储失败：用户端经 translateApiError 显示 errors.api.uploadFailed，message 是后台兜底
+    throw new ApiRequestError({
+      message: "文件上传失败，请重试",
+      code: response?.status ?? 0,
+      errorCode: clientErrorCodes.uploadFailed,
+      status: response?.status ?? 0,
+      url: upload.uploadUrl,
+      method: "PUT",
+    });
   }
 
   try {

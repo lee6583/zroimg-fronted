@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { ArrowLeft, ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type { FavoriteCollection } from "@/types/favorites";
+import { parseJavaDateTime } from "@/utils/java-time";
 import { userAssetUrl } from "@/utils/media";
 import styles from "../favorites.module.css";
 import { Link } from "@/i18n/navigation";
@@ -14,13 +17,6 @@ type PageParams = Promise<{ id: string }>;
 type FavoriteCollectionPageProps = {
   params: PageParams;
 };
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(value));
-}
 
 async function readCollection(id: string) {
   try {
@@ -37,6 +33,11 @@ async function readCollection(id: string) {
   }
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("favorites.meta");
+  return { title: t("detailTitle") };
+}
+
 export default async function FavoriteCollectionPage(props: FavoriteCollectionPageProps) {
   const params = props.params;
 
@@ -46,18 +47,21 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
 
   if (!collection) notFound();
 
+  const t = await getTranslations("favorites");
+  const format = await getFormatter();
+
   return (
     <main className={styles.favorites}>
       <section className={styles.favorites__detailHeader}>
         <Link href="/favorites" className={styles.favorites__backLink}>
           <ArrowLeft size={15} />
-          返回合集
+          {t("detail.back")}
         </Link>
         <h1 className="page-title">{collection.name}</h1>
       </section>
 
       {collection.items.length > 0 ? (
-        <section className={styles.favorites__imageGrid} aria-label="合集图片">
+        <section className={styles.favorites__imageGrid} aria-label={t("detail.listLabel")}>
           {collection.items.map((item) => {
             const image = item.generatedImage;
             const asset = image.thumbnailAsset || image.outputAsset;
@@ -73,8 +77,12 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
                   unoptimized
                 />
                 <div className={styles.favorites__imageBody}>
-                  <p className={styles.favorites__imagePrompt}>{image.task.prompt}</p>
-                  <p className={styles.favorites__imageMeta}>{formatDate(item.createdAt)}</p>
+                  <p className={styles.favorites__imagePrompt} title={image.task.prompt}>
+                    {image.task.prompt}
+                  </p>
+                  <p className={styles.favorites__imageMeta}>
+                    {format.dateTime(parseJavaDateTime(item.createdAt), "monthDay")}
+                  </p>
                 </div>
               </article>
             );
@@ -85,8 +93,8 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
           <span className={styles.favorites__cardIcon}>
             <ImageOff size={23} />
           </span>
-          <h2 className={styles.favorites__detailEmptyTitle}>这个合集还没有图片</h2>
-          <p className={styles.favorites__cardMeta}>后续可以从创作历史里把喜欢的作品加入这里。</p>
+          <h2 className={styles.favorites__detailEmptyTitle}>{t("detail.emptyTitle")}</h2>
+          <p className={styles.favorites__cardMeta}>{t("detail.emptyText")}</p>
         </section>
       )}
     </main>

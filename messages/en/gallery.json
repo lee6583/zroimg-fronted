@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "title": ""
+  },
+  "tabs": {
+    "label": "",
+    "all": ""
+  },
+  "category": {
+    "realistic": "",
+    "anime": "",
+    "art": "",
+    "other": ""
+  },
+  "status": {
+    "pending": "",
+    "approved": "",
+    "rejected": "",
+    "withdrawn": "",
+    "removed": ""
+  },
+  "list": {
+    "label": ""
+  },
+  "card": {
+    "untitled": "",
+    "author": "",
+    "anonymous": ""
+  },
+  "empty": {
+    "label": "",
+    "title": "",
+    "text": ""
+  },
+  "loading": "",
+  "publish": {
+    "submit": "",
+    "submitting": "",
+    "withdraw": "",
+    "unpublish": "",
+    "unpublishTitle": "",
+    "unpublishConfirm": "",
+    "cancel": "",
+    "resubmit": "",
+    "noReason": "",
+    "rejectedTitle": "",
+    "removedTitle": ""
+  }
+}

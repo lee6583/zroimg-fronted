@@ -7,7 +7,8 @@
     "retry": "Reload",
     "startCreating": "Start creating",
     "backHome": "Back to home",
-    "close": "Close"
+    "close": "Close",
+    "enterWorkspace": ""
   },
   "status": {
     "loading": "Loading...",

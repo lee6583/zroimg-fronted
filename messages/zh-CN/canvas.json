@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "无限画布"
+  },
+  "list": {
+    "title": "无限画布",
+    "create": "新建画布",
+    "disabled": "无限画布暂未开放",
+    "empty": "还没有画布",
+    "gridLabel": "画布列表",
+    "maxBoards": "{count, plural, other {最多创建 # 个画布}}",
+    "nameRequired": "画布名称不能为空",
+    "nameLabel": "画布名称",
+    "saveName": "保存名称",
+    "cancel": "取消",
+    "rename": "重命名",
+    "delete": "删除",
+    "deleteTitle": "删除画布",
+    "deleteDescription": "确定删除画布“{title}”吗？删除后无法恢复。",
+    "deleteConfirm": "确定删除",
+    "meta": "{count, plural, other {# 个节点}} · {time}"
+  },
+  "toolbar": {
+    "back": "返回画布列表",
+    "addGenerator": "添加生成节点",
+    "addNote": "添加便签",
+    "upload": "上传图片",
+    "history": "从历史添加",
+    "undo": "撤销",
+    "redo": "重做",
+    "fitView": "适应视图",
+    "reload": "重新加载",
+    "balance": "余额 {points, number} 积分",
+    "status": {
+      "saved": "已保存",
+      "dirty": "未保存",
+      "saving": "保存中…",
+      "error": "保存失败",
+      "conflict": "画布已在其他窗口修改"
+    }
+  },
+  "notices": {
+    "sceneTooLarge": "画布内容超出 {size, number} KB 上限",
+    "maxNodes": "{count, plural, other {每个画布最多 # 个节点}}",
+    "noModel": "暂无可用图片模型",
+    "modeNoModel": "{mode}暂无可用模型",
+    "promptRequired": "请输入提示词",
+    "maxPending": "{count, plural, other {每个画布最多同时进行 # 个生成任务}}",
+    "referenceNotReady": "参考图未就绪",
+    "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
+    "fileSize": "单张图片不能超过 10 MB"
+  },
+  "generator": {
+    "placeholder": "描述你想生成的画面",
+    "emptyPrompt": "点击填写提示词",
+    "reference": "参考图",
+    "mask": "蒙版",
+    "removeMask": "移除蒙版",
+    "count": "{count, plural, other {# 张}}",
+    "price": "预计 {points, number} 积分 · 余额 {balance, number}",
+    "generate": "生成",
+    "delete": "删除",
+    "edit": "编辑",
+    "model": "模型",
+    "ratio": "比例",
+    "resolution": "分辨率",
+    "countLabel": "数量"
+  },
+  "image": {
+    "generateFrom": "以此图生成",
+    "inpaint": "局部重绘",
+    "download": "下载",
+    "delete": "删除",
+    "uploading": "上传中"
+  },
+  "note": {
+    "placeholder": "便签",
+    "delete": "删除"
+  },
+  "history": {
+    "title": "从历史添加",
+    "empty": "暂无已完成的图片",
+    "previous": "上一页",
+    "next": "下一页",
+    "page": "{page, number} / {pages, number}",
+    "add": "添加",
+    "addCount": "{count, plural, other {添加 # 张}}"
+  },
+  "mask": {
+    "title": "局部重绘",
+    "close": "关闭",
+    "tools": "涂抹工具",
+    "brush": "画笔",
+    "eraser": "橡皮擦",
+    "size": "笔刷",
+    "sizeValue": "{size, number}px",
+    "undo": "撤销",
+    "clear": "清空",
+    "loadingBoard": "画板加载中",
+    "loadingImage": "图片加载中",
+    "loadFailed": "图片加载失败",
+    "paintRequired": "请先涂抹需要重绘的区域",
+    "unsupported": "当前浏览器无法生成遮罩",
+    "createFailed": "遮罩生成失败，请重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "uploading": "上传中"
+  }
+}

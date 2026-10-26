@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -9,6 +9,13 @@ import { buildSiteMetadata } from "@/lib/seo";
 
 // 只接受 routing.locales 中的语言；其他值（例如 proxy 未处理的 /foo.txt）按未匹配路由交给 global-not-found。
 export const dynamicParams = false;
+
+// viewport-fit=cover 让页面延伸到刘海/底部横条区域，底部固定元素用 env(safe-area-inset-bottom) 自行避让。
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

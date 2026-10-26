@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { PublicMenu } from "@/components/layout/public-menu";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { noindexRobots } from "@/lib/seo";
 import styles from "./auth-layout.module.css";
@@ -24,6 +25,8 @@ export default function AuthLayout(props: AuthLayoutProps) {
           <LocaleSwitcher />
           <ThemeControls />
         </div>
+        {/* 认证页只对未登录用户有意义，菜单里固定显示「开始创作 / 登录」。 */}
+        <PublicMenu isLoggedIn={false} className={styles.authLayout__menu} />
       </header>
       {props.children}
     </div>

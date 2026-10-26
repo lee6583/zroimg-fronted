@@ -95,9 +95,23 @@
   width: 5rem;
   height: 5rem;
   flex: 0 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
-.accountSettings__avatarControl > span {
+.accountSettings__avatarControl:disabled {
+  cursor: wait;
+}
+
+.accountSettings__avatarControl:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.accountSettings__avatarControl > span:first-child {
   border: 1px solid var(--line);
 }
 
@@ -139,13 +153,12 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
 }
 
-.accountSettings__cameraButton:hover:not(:disabled) {
+.accountSettings__avatarControl:hover:not(:disabled) .accountSettings__cameraButton {
   background: var(--accent-strong);
 }
 
-.accountSettings__cameraButton:disabled {
+.accountSettings__avatarControl:disabled .accountSettings__cameraButton {
   opacity: 0.65;
-  cursor: wait;
 }
 
 .accountSettings__inlineMessage,
@@ -336,21 +349,100 @@
   }
 }
 
-@media (max-width: 480px) {
-  .accountSettings__nav {
-    overflow-x: auto;
+/* 手机：分区上下堆叠、头像整块可点、保存按钮通栏放在每个分区底部 */
+@media (max-width: 767px) {
+  .accountSettings {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    gap: 1rem;
+  }
+
+  .accountSettings__sidebar {
+    display: none;
+  }
+
+  .accountSettings__content {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .accountSettings__section {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--panel);
+  }
+
+  .accountSettings__section + .accountSettings__section {
+    border-top: 1px solid var(--line);
+  }
+
+  .accountSettings__sectionHeader {
+    min-height: 3.25rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .accountSettings__sectionBody {
+    padding: 1rem;
   }
 
   .accountSettings__avatarField {
-    align-items: flex-start;
+    min-height: 6rem;
+    gap: 1.125rem;
+  }
+
+  .accountSettings__avatarControl {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .accountSettings__avatarControl > span:first-child {
+    width: 6rem !important;
+    height: 6rem !important;
+  }
+
+  .accountSettings__cameraButton {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .accountSettings__field label {
+    font-size: 0.875rem;
+  }
+
+  .accountSettings__input,
+  .accountSettings__textarea {
+    font-size: 1rem;
+  }
+
+  .accountSettings__input {
+    height: 2.875rem;
+  }
+
+  .accountSettings__visibilityButton {
+    width: 2.75rem;
+    height: 2.75rem;
+    right: 0.1rem;
   }
 
   .accountSettings__formActions {
     align-items: stretch;
-    flex-direction: column;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .accountSettings__formActions > span:empty {
+    display: none;
   }
 
   .accountSettings__formActions button {
     width: 100%;
+    min-height: 2.875rem;
+    justify-content: center;
+  }
+
+  .accountSettings__message {
+    text-align: center;
   }
 }

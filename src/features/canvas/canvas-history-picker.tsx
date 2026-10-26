@@ -1,11 +1,13 @@
 "use client";
 
 import clsx from "clsx";
-import { ChevronLeft, ChevronRight, LoaderCircle, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
+import { Sheet } from "@/components/ui/sheet";
+import { translateApiError } from "@/i18n/api-error";
 import type { GenerationResult, GenerationTask } from "@/types/generation";
-import { getErrorMessage } from "@/utils/error";
 import { userAssetUrl } from "@/utils/media";
 import styles from "./canvas-editor.module.css";
 
@@ -15,6 +17,7 @@ type PickedImage = {
 };
 
 type CanvasHistoryPickerProps = {
+  open: boolean;
   onCancel: () => void;
   onConfirm: (images: PickedImage[]) => void;
 };
@@ -22,8 +25,16 @@ type CanvasHistoryPickerProps = {
 const pageSize = 12;
 
 export function CanvasHistoryPicker(props: CanvasHistoryPickerProps) {
+  if (!props.open) return null;
+
+  return <HistoryPicker onCancel={props.onCancel} onConfirm={props.onConfirm} />;
+}
+
+function HistoryPicker(props: Omit<CanvasHistoryPickerProps, "open">) {
   const onCancel = props.onCancel;
   const onConfirm = props.onConfirm;
+  const t = useTranslations("canvas.history");
+  const tError = useTranslations("errors.api");
 
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(0);
@@ -49,7 +60,7 @@ export function CanvasHistoryPicker(props: CanvasHistoryPickerProps) {
         setPages(result.pages);
         setError("");
       } catch (loadError) {
-        if (isCurrent) setError(getErrorMessage(loadError));
+        if (isCurrent) setError(translateApiError(loadError, tError));
       } finally {
         if (isCurrent) setLoading(false);
       }
@@ -59,16 +70,7 @@ export function CanvasHistoryPicker(props: CanvasHistoryPickerProps) {
     return () => {
       isCurrent = false;
     };
-  }, [page]);
-
-  useEffect(() => {
-    function closeByEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onCancel();
-    }
-
-    document.addEventListener("keydown", closeByEscape);
-    return () => document.removeEventListener("keydown", closeByEscape);
-  }, [onCancel]);
+  }, [page, tError]);
 
   function changePage(nextPage: number) {
     setLoading(true);
@@ -94,92 +96,86 @@ export function CanvasHistoryPicker(props: CanvasHistoryPickerProps) {
     }
   }
 
-  return (
-    <div className={styles.dialogBackdrop} role="presentation" onClick={onCancel}>
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-label="从历史添加"
-        className={styles.dialog}
-        onClick={(event) => event.stopPropagation()}
+  const footer = (
+    <div className={styles.picker__footer}>
+      <div className={styles.picker__pages}>
+        <button
+          type="button"
+          aria-label={t("previous")}
+          title={t("previous")}
+          className={styles.iconButton}
+          disabled={page <= 1 || isLoading}
+          onClick={() => changePage(page - 1)}
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <span>{t("page", { page, pages: Math.max(pages, 1) })}</span>
+        <button
+          type="button"
+          aria-label={t("next")}
+          title={t("next")}
+          className={styles.iconButton}
+          disabled={page >= pages || isLoading}
+          onClick={() => changePage(page + 1)}
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+      <button
+        type="button"
+        className={clsx(styles.primaryButton, styles.picker__confirm)}
+        disabled={picked.length === 0}
+        onClick={() => onConfirm(picked)}
       >
-        <header className={styles.dialog__header}>
-          <h2 className={styles.dialog__title}>从历史添加</h2>
-          <button type="button" aria-label="关闭" className={styles.iconButton} onClick={onCancel}>
-            <X size={16} />
-          </button>
-        </header>
-
-        {error ? <p className={styles.textDanger}>{error}</p> : null}
-        {isLoading ? (
-          <div className={styles.dialog__loading}>
-            <LoaderCircle size={18} className={styles.spin} />
-          </div>
-        ) : null}
-        {!isLoading && !error && images.length === 0 ? (
-          <p className={styles.dialog__empty}>暂无已完成的图片</p>
-        ) : null}
-        {!isLoading && images.length > 0 ? (
-          <div className={styles.picker__grid}>
-            {images.map((image) => {
-              const isPicked = picked.some((item) => item.result.id === image.result.id);
-
-              return (
-                <button
-                  key={image.result.id}
-                  type="button"
-                  title={image.task.prompt}
-                  className={clsx(styles.picker__item, isPicked && styles.picker__itemActive)}
-                  onClick={() => toggle(image.task, image.result)}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className={styles.picker__image}
-                    src={userAssetUrl(image.result.mediaAssetId)}
-                    alt={image.task.prompt}
-                    loading="lazy"
-                  />
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-
-        <footer className={styles.dialog__footer}>
-          <div className={styles.picker__pages}>
-            <button
-              type="button"
-              aria-label="上一页"
-              className={styles.iconButton}
-              disabled={page <= 1 || isLoading}
-              onClick={() => changePage(page - 1)}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <span>
-              {page} / {Math.max(pages, 1)}
-            </span>
-            <button
-              type="button"
-              aria-label="下一页"
-              className={styles.iconButton}
-              disabled={page >= pages || isLoading}
-              onClick={() => changePage(page + 1)}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            disabled={picked.length === 0}
-            onClick={() => onConfirm(picked)}
-          >
-            添加{picked.length > 0 ? ` ${picked.length} 张` : ""}
-          </button>
-        </footer>
-      </section>
+        {picked.length > 0 ? t("addCount", { count: picked.length }) : t("add")}
+      </button>
     </div>
+  );
+
+  return (
+    <Sheet
+      open
+      onClose={onCancel}
+      title={t("title")}
+      footer={footer}
+      className={styles.pickerSheet}
+    >
+      {error ? <p className={styles.textDanger}>{error}</p> : null}
+      {isLoading ? (
+        <div className={styles.dialog__loading}>
+          <LoaderCircle size={18} className={styles.spin} />
+        </div>
+      ) : null}
+      {!isLoading && !error && images.length === 0 ? (
+        <p className={styles.dialog__empty}>{t("empty")}</p>
+      ) : null}
+      {!isLoading && images.length > 0 ? (
+        <div className={styles.picker__grid}>
+          {images.map((image) => {
+            const isPicked = picked.some((item) => item.result.id === image.result.id);
+
+            return (
+              <button
+                key={image.result.id}
+                type="button"
+                title={image.task.prompt}
+                aria-pressed={isPicked}
+                className={clsx(styles.picker__item, isPicked && styles.picker__itemActive)}
+                onClick={() => toggle(image.task, image.result)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className={styles.picker__image}
+                  src={userAssetUrl(image.result.mediaAssetId)}
+                  alt={image.task.prompt}
+                  loading="lazy"
+                />
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </Sheet>
   );
 }
 

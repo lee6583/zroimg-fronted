@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "title": "探索社区创作者的精彩作品"
+  },
+  "tabs": {
+    "label": "作品分类",
+    "all": "全部"
+  },
+  "category": {
+    "realistic": "写实",
+    "anime": "动漫",
+    "art": "艺术",
+    "other": "其他"
+  },
+  "status": {
+    "pending": "审核中",
+    "approved": "已公开",
+    "rejected": "未通过",
+    "withdrawn": "已撤回",
+    "removed": "已下架"
+  },
+  "list": {
+    "label": "社区作品"
+  },
+  "card": {
+    "untitled": "未命名作品",
+    "author": "by {name}",
+    "anonymous": "创作者"
+  },
+  "empty": {
+    "label": "暂无公开作品",
+    "title": "第一批社区作品，等你发布。",
+    "text": "在创作历史里点击“投稿到画廊”，审核通过后作品会出现在这里。"
+  },
+  "loading": "作品画廊加载中...",
+  "publish": {
+    "submit": "投稿到画廊",
+    "submitting": "提交中",
+    "withdraw": "撤回",
+    "unpublish": "取消公开",
+    "unpublishTitle": "取消公开",
+    "unpublishConfirm": "取消公开后需重新提交审核，确定吗？",
+    "cancel": "取消",
+    "resubmit": "重新提交",
+    "noReason": "未填写原因",
+    "rejectedTitle": "未通过：{reason}",
+    "removedTitle": "已下架：{reason}。如有疑问请通过意见反馈联系我们"
+  }
+}

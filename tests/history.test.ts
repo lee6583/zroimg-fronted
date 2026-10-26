@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  getDeleteText,
   getDownloadName,
-  getDurationText,
-  getMediaLabel,
+  getDurationSeconds,
+  getMediaKind,
   getResolutionText,
   isVideoTask,
 } from "../src/utils/history.ts";
@@ -30,34 +29,28 @@ const video = {
 test("history rows tell images and videos apart", () => {
   assert.equal(isVideoTask(image), false);
   assert.equal(isVideoTask(video), true);
-  assert.equal(getMediaLabel(image), "图片");
-  assert.equal(getMediaLabel(video), "视频");
+  assert.equal(getMediaKind(image), "image");
+  assert.equal(getMediaKind(video), "video");
 });
 
-test("resolution shows quality for images and resolution for videos", () => {
+test("resolution shows quality tier for images and resolution for videos", () => {
   assert.equal(getResolutionText(image), "2K");
-  assert.equal(getResolutionText({ ...image, quality: null }), "-");
+  assert.equal(getResolutionText({ ...image, quality: "high" }), "4K");
+  assert.equal(getResolutionText({ ...image, quality: "auto" }), "auto");
+  assert.equal(getResolutionText({ ...image, quality: null }), "");
   assert.equal(getResolutionText(video), "720p");
-  assert.equal(getResolutionText({ ...video, resolution: null }), "-");
+  assert.equal(getResolutionText({ ...video, resolution: null }), "");
 });
 
 test("duration only shows for videos with a positive length", () => {
-  assert.equal(getDurationText(video), "8s");
-  assert.equal(getDurationText({ ...video, durationSeconds: 0 }), "");
-  assert.equal(getDurationText({ ...video, durationSeconds: null }), "");
-  assert.equal(getDurationText({ ...image, durationSeconds: 8 }), "");
+  assert.equal(getDurationSeconds(video), 8);
+  assert.equal(getDurationSeconds({ ...video, durationSeconds: 0 }), null);
+  assert.equal(getDurationSeconds({ ...video, durationSeconds: null }), null);
+  assert.equal(getDurationSeconds({ ...image, durationSeconds: 8 }), null);
 });
 
 test("download names use the media extension", () => {
   assert.equal(getDownloadName(image, 0), "zroimg-GT1-1.webp");
   assert.equal(getDownloadName({ ...image, format: null }, 1), "zroimg-GT1-2.png");
   assert.equal(getDownloadName(video, 0), "zroimg-GT2-1.mp4");
-});
-
-test("delete warning names the media type", () => {
-  assert.equal(
-    getDeleteText(video),
-    "删除后视频将从存储中永久移除，且会同时从画廊和收藏中移除，无法恢复。",
-  );
-  assert.match(getDeleteText(image), /^删除后图片/);
 });

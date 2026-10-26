@@ -4,6 +4,8 @@ import clsx from "clsx";
 import { Play, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
+import { useSwipeDismiss } from "./use-swipe-dismiss";
 import lightbox from "./image-lightbox.module.css";
 import styles from "./video-lightbox.module.css";
 
@@ -18,7 +20,9 @@ export function VideoLightbox(props: VideoLightboxProps) {
   const label = props.label;
   const triggerClassName = props.triggerClassName;
 
+  const t = useTranslations("ui.videoLightbox");
   const [isOpen, setOpen] = useState(false);
+  const swipe = useSwipeDismiss(() => setOpen(false));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,7 +47,7 @@ export function VideoLightbox(props: VideoLightboxProps) {
     <>
       <button
         type="button"
-        aria-label="播放视频"
+        aria-label={t("play")}
         title={label}
         className={clsx(
           lightbox.imageLightbox__trigger,
@@ -71,6 +75,7 @@ export function VideoLightbox(props: VideoLightboxProps) {
             <div
               className={lightbox.imageLightbox__overlay}
               role="presentation"
+              {...swipe.handlers}
               onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
                   setOpen(false);
@@ -81,7 +86,8 @@ export function VideoLightbox(props: VideoLightboxProps) {
                 className={lightbox.imageLightbox__viewer}
                 role="dialog"
                 aria-modal="true"
-                aria-label="视频预览"
+                style={swipe.style}
+                aria-label={t("dialog")}
               >
                 <video
                   className={styles.videoLightbox__player}
@@ -93,12 +99,12 @@ export function VideoLightbox(props: VideoLightboxProps) {
               </div>
               <button
                 type="button"
-                aria-label="关闭视频预览"
-                title="关闭"
+                aria-label={t("close")}
+                title={t("closeTitle")}
                 className={lightbox.imageLightbox__close}
                 onClick={() => setOpen(false)}
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>,
             document.body,

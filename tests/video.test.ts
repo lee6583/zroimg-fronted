@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   formatElapsed,
-  formatVideoTime,
   getVideoStage,
   isVideoRunning,
   parseJavaTime,
@@ -59,11 +58,6 @@ test("fail reasons collapse to one readable line", () => {
     "视频下载地址不安全：上游返回了非 HTTPS 地址",
   );
   assert.equal(shortFailReason("  超时\n  stack trace"), "超时");
-  assert.equal(shortFailReason('{"error":"bad"}'), "生成未完成，请稍后重试");
-  assert.equal(shortFailReason(null), "生成未完成，请稍后重试");
-});
-
-test("video times drop seconds", () => {
-  assert.equal(formatVideoTime("2026-10-26T17:36:55"), "2026-10-26 17:36");
-  assert.equal(formatVideoTime(null), "-");
+  assert.equal(shortFailReason('{"error":"bad"}'), "");
+  assert.equal(shortFailReason(null), "");
 });

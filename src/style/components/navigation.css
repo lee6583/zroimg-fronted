@@ -12,3 +12,11 @@
 .nav-icon-button:hover {
   background: var(--soft);
 }
+
+/* 手机端点击区域不小于 44px */
+@media (max-width: 767px) {
+  .nav-icon-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}

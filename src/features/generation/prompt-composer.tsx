@@ -1,7 +1,15 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowUp, ImagePlus, MessageSquarePlus, RefreshCw, X } from "lucide-react";
+import {
+  ArrowUp,
+  ImagePlus,
+  MessageSquarePlus,
+  RefreshCw,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { GenerationMode, MediaAsset } from "@/types/generation";
 import type { Notice } from "./generation-model";
 import styles from "./generate-form.module.css";
@@ -16,6 +24,9 @@ type PromptComposerProps = {
   isBusy: boolean;
   isBlocked: boolean;
   isCreating: boolean;
+  // 手机/平板上设置入口在输入框里，显示当前模型 · 比例 · 分辨率 · 数量。
+  settingsSummary: string;
+  onOpenSettings: () => void;
   onPromptChange: (value: string) => void;
   onFiles: (files: FileList | null) => Promise<void>;
   onRemove: (id: string) => void;
@@ -38,13 +49,16 @@ export function PromptComposer(props: PromptComposerProps) {
   const onRemove = props.onRemove;
   const onNew = props.onNew;
   const onSubmit = props.onSubmit;
-  let placeholder = "描述你想要的图片...";
+  const settingsSummary = props.settingsSummary;
+  const onOpenSettings = props.onOpenSettings;
+  const t = useTranslations("generate");
+  let placeholder = t("composer.placeholder");
   if (mode === "image_to_image") {
-    placeholder = "描述你想让参考图发生什么变化...";
+    placeholder = t("composer.placeholderEdit");
   }
-  let costText = `预计 ${estimate} 积分`;
+  let costText = t("composer.cost", { points: estimate });
   if (hasCostError) {
-    costText = "积分不足";
+    costText = t("composer.insufficient");
   }
 
   return (
@@ -54,14 +68,17 @@ export function PromptComposer(props: PromptComposerProps) {
           <div className={styles.generateForm__inputChips}>
             {inputs.map((item) => (
               <span key={item.id} className={styles.generateForm__inputChip}>
-                <span className={styles.generateForm__inputChipName}>
-                  {item.originalName || `参考图 ${item.id.slice(0, 5)}`}
+                <span
+                  className={styles.generateForm__inputChipName}
+                  title={item.originalName || undefined}
+                >
+                  {item.originalName || t("composer.referenceName", { id: item.id.slice(0, 5) })}
                 </span>
                 <button
                   type="button"
                   onClick={() => onRemove(item.id)}
                   className={styles.generateForm__chipRemove}
-                  aria-label="移除参考图"
+                  aria-label={t("composer.removeReference")}
                 >
                   <X size={12} />
                 </button>
@@ -89,9 +106,13 @@ export function PromptComposer(props: PromptComposerProps) {
               )}
             >
               <MessageSquarePlus size={16} />
-              新建对话
+              {t("conversation.create")}
             </button>
-            <label className={styles.generateForm__uploadButton} aria-label="上传参考图">
+            <label
+              className={styles.generateForm__uploadButton}
+              aria-label={t("composer.upload")}
+              title={t("composer.upload")}
+            >
               <ImagePlus size={18} />
               <input
                 className={styles.generateForm__hiddenInput}
@@ -104,6 +125,16 @@ export function PromptComposer(props: PromptComposerProps) {
                 }}
               />
             </label>
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className={styles.generateForm__settingsChip}
+              aria-label={t("composer.openSettings")}
+              title={settingsSummary}
+            >
+              <SlidersHorizontal size={15} aria-hidden />
+              <span className={styles.generateForm__settingsChipText}>{settingsSummary}</span>
+            </button>
           </div>
 
           <div className={styles.generateForm__submitArea}>
@@ -120,7 +151,8 @@ export function PromptComposer(props: PromptComposerProps) {
               onClick={() => void onSubmit()}
               disabled={isBusy || isBlocked || !prompt.trim()}
               className={styles.generateForm__submitButton}
-              aria-label="生成图片"
+              aria-label={t("composer.submit")}
+              title={t("composer.submit")}
             >
               {isBusy ? (
                 <RefreshCw size={17} className={styles.generateForm__spinning} />

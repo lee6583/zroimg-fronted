@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   getRetryAttempt,
+  getRetryLabel,
   getRetryWait,
   getTaskStatusLabel,
+  getTaskStatusMessage,
   isTaskRetrying,
 } from "../src/utils/task-status.ts";
+import type { TaskTranslator } from "../src/utils/task-status.ts";
 
 const now = new Date(2026, 9, 26, 12, 0, 0).getTime();
 
@@ -59,4 +62,33 @@ test("倒计时到期、执行中或时间缺失时不显示倒计时", () => {
   assert.equal(getTaskStatusLabel(past, now), "重试中（第 3 次）");
   assert.equal(getTaskStatusLabel(running, now), "重试中（第 2 次）");
   assert.equal(getTaskStatusLabel(empty, now), "重试中（第 3 次）");
+});
+
+const fakeT = ((key: string, values?: Record<string, number>) => {
+  return values ? `${key}:${JSON.stringify(values)}` : key;
+}) as unknown as TaskTranslator;
+
+test("传入 t 时返回 task 命名空间的 key 与参数", () => {
+  assert.equal(getTaskStatusLabel({ status: "pending" }, fakeT), "status.pending");
+  assert.equal(getTaskStatusLabel({ status: "unknown" }, fakeT), "unknown");
+  const waiting = {
+    status: "pending",
+    attemptCount: 1,
+    retrying: true,
+    nextAttemptTime: "2026-10-26T12:00:11.400",
+  };
+  assert.equal(getTaskStatusLabel(waiting, fakeT, now), 'retryingWait:{"attempt":2,"seconds":12}');
+  assert.equal(getTaskStatusLabel(waiting, fakeT), 'retrying:{"attempt":2}');
+  assert.equal(getRetryLabel(waiting, fakeT, now), 'retryingWait:{"attempt":2,"seconds":12}');
+});
+
+test("描述对象可供自定义渲染", () => {
+  assert.deepEqual(getTaskStatusMessage({ status: "failed" }), { key: "status.failed" });
+  assert.deepEqual(
+    getTaskStatusMessage({ status: "processing", attemptCount: 2, retrying: true }),
+    {
+      key: "retrying",
+      values: { attempt: 2 },
+    },
+  );
 });

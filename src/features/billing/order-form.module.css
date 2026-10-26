@@ -275,3 +275,205 @@
   border-color: var(--foreground);
   background: var(--soft);
 }
+
+.orderForm__channelIndicator,
+.orderForm__submitSummary,
+.orderForm__submitShort {
+  display: none;
+}
+
+.orderForm__submitBar {
+  display: grid;
+}
+
+@media (max-width: 767px) {
+  /* antd reset 给 p 加了 margin-bottom: 1em，手机端紧凑布局统一去掉。 */
+  .orderForm p {
+    margin-bottom: 0;
+  }
+
+  .orderForm {
+    gap: 1.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .orderForm__section {
+    gap: 0.75rem;
+  }
+
+  .orderForm__sectionTitle {
+    font-size: 1rem;
+  }
+
+  .orderForm__channels {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .orderForm__channel {
+    display: flex;
+    min-width: 0;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-radius: 0.7rem;
+    padding: 0 1rem;
+    font-size: 0.95rem;
+    text-align: start;
+  }
+
+  .orderForm__channel:hover {
+    border-color: var(--line);
+    background: var(--background);
+  }
+
+  .orderForm__channelActive,
+  .orderForm__channelActive:hover {
+    border-color: var(--foreground);
+    background: var(--soft);
+  }
+
+  .orderForm__channelLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orderForm__channelIndicator {
+    display: block;
+    width: 1.2rem;
+    height: 1.2rem;
+    flex-shrink: 0;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+  }
+
+  .orderForm__channelActive .orderForm__channelIndicator {
+    border: 0.36rem solid var(--foreground);
+  }
+
+  .orderForm__packages {
+    gap: 0.65rem;
+  }
+
+  .orderForm__packageCard {
+    min-height: 0;
+    border-radius: 0.8rem;
+    padding: 1rem;
+  }
+
+  .orderForm__planName {
+    margin-top: 0.45rem;
+    padding-inline-end: 5.5rem;
+  }
+
+  .orderForm__planLine {
+    min-height: 0;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .orderForm__priceRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin-top: 0.8rem;
+  }
+
+  .orderForm__price {
+    margin-top: 0;
+    font-size: 1.85rem;
+    line-height: 1.1;
+  }
+
+  .orderForm__credits {
+    margin-top: 0;
+    color: var(--foreground);
+    font-size: 0.92rem;
+    font-weight: 650;
+  }
+
+  .orderForm__features {
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .orderForm__packageButton {
+    min-height: 2.85rem;
+    margin-top: 0.9rem;
+    border-radius: 0.55rem;
+    font-size: 0.9rem;
+  }
+
+  .orderForm__custom {
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 0.8rem;
+  }
+
+  .orderForm__quickAmounts {
+    gap: 0.45rem;
+  }
+
+  .orderForm__quickAmount {
+    min-height: 2.85rem;
+    min-width: 0;
+    padding: 0 0.25rem;
+    font-size: 0.88rem;
+  }
+
+  .orderForm__input {
+    font-size: 1rem;
+  }
+
+  .orderForm__currency {
+    font-size: 1rem;
+  }
+
+  /* 只在自定义购买卡片内吸底，滚出卡片后不再遮挡套餐区；位置让出底部标签栏。 */
+  .orderForm__submitBar {
+    position: sticky;
+    z-index: 5;
+    bottom: var(--app-tabbar-height, 0px);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 -1rem -1rem;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 0.8rem 0.8rem;
+    background: var(--panel);
+    padding: 0.7rem 1rem;
+    box-shadow: 0 -6px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  .orderForm__submitSummary {
+    display: block;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: var(--foreground);
+    font-size: 0.88rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orderForm__submitButton {
+    min-height: 2.85rem;
+    flex-shrink: 0;
+    padding-inline: 1.25rem;
+    white-space: nowrap;
+  }
+
+  .orderForm__submitLong {
+    display: none;
+  }
+
+  .orderForm__submitShort {
+    display: inline;
+  }
+}

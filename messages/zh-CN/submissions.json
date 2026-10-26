@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "我的投稿"
+  },
+  "title": "我的投稿",
+  "tabs": {
+    "label": "投稿状态",
+    "all": "全部"
+  },
+  "list": {
+    "label": "投稿列表"
+  },
+  "reason": {
+    "empty": "未填写",
+    "rejected": "原因：{reason}",
+    "removed": "原因：{reason}，如有疑问请提交<link>意见反馈</link>"
+  },
+  "times": {
+    "submit": "投稿",
+    "review": "审核"
+  },
+  "empty": {
+    "title": "暂无投稿",
+    "action": "去创作历史投稿"
+  }
+}

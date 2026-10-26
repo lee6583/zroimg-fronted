@@ -1,6 +1,7 @@
 "use client";
 
 import type Konva from "konva";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Circle, Image as KonvaImage, Layer, Line, Stage } from "react-konva";
 import { fitSize, toImagePoint } from "./mask-model";
@@ -58,6 +59,7 @@ export function MaskEditorCanvas(props: MaskEditorCanvasProps) {
   const onMove = props.onMove;
   const onLoad = props.onLoad;
   const onError = props.onError;
+  const t = useTranslations("canvas.mask");
 
   const boxRef = useRef<HTMLDivElement>(null);
   const isDrawingRef = useRef(false);
@@ -197,7 +199,7 @@ export function MaskEditorCanvas(props: MaskEditorCanvasProps) {
           </Layer>
         </Stage>
       ) : (
-        <span className={styles.maskEditor__status}>图片加载中</span>
+        <span className={styles.maskEditor__status}>{t("loadingImage")}</span>
       )}
     </div>
   );

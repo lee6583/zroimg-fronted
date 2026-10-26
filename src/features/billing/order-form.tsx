@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { getErrorMessage } from "@/utils/error";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { ordersApi } from "@/api/orders/purchase";
 import type {
@@ -13,12 +13,13 @@ import type {
 import { calculateCustomCredits } from "@/utils/credits";
 import { calculateRechargeFeeCent } from "@/utils/recharge";
 import styles from "./order-form.module.css";
+import { translateApiError } from "@/i18n/api-error";
 import { useRouter } from "@/i18n/navigation";
 
 type PackageCopy = {
   name: string;
   line: string;
-  badge?: string;
+  isPopular: boolean;
   features: string[];
 };
 
@@ -27,7 +28,6 @@ type DisplayPackage =
       kind: "package";
       id: string;
       code: string;
-      amountText: string;
       amountCent: number;
       credits: number;
       copy: PackageCopy;
@@ -35,7 +35,6 @@ type DisplayPackage =
   | {
       kind: "custom";
       code: string;
-      priceCny: string;
       amountCny: number;
       amountCent: number;
       credits: number;
@@ -48,32 +47,18 @@ type OrderFormProps = {
   allowCustomOrder: boolean;
 };
 
-const paymentChannels: { value: PaymentType; label: string }[] = [
-  { value: "alipay", label: "支付宝" },
-  { value: "wxpay", label: "微信支付" },
-];
+const paymentChannels: PaymentType[] = ["alipay", "wxpay"];
+const enterpriseFeatureKeys = ["materials", "members", "projects"] as const;
 const quickAmounts = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 const enterpriseAmount = 400;
 const amountTextPattern = /^\d*(\.\d{0,2})?$/;
 
-function getCustomPackageCopy(credits: number): PackageCopy {
-  return {
-    name: "企业协作",
-    line: "为团队、品牌和长期项目准备更充足的创作额度。",
-    features: [
-      `${credits} 积分，适合团队协同创作`,
-      "覆盖批量物料、活动视觉与品牌素材",
-      "适合多成员长期稳定产出",
-      "适合企业项目预研与正式投放",
-    ],
-  };
-}
-
+// 后台配置的套餐名称、描述、亮点原样展示，不进翻译文件。
 function getPackageCopy(item: CreditPackage): PackageCopy {
   return {
     name: item.name,
     line: item.description,
-    badge: item.recommended ? "最受欢迎" : undefined,
+    isPopular: item.recommended,
     features: item.highlights,
   };
 }
@@ -95,10 +80,6 @@ function isOverMaxAmount(value: string, maxAmountCny: number) {
   return amountValue > maxAmountCny;
 }
 
-function formatCny(amountCent: number) {
-  return `¥${(amountCent / 100).toFixed(2)}`;
-}
-
 export function OrderForm(props: OrderFormProps) {
   const packages = props.packages;
   const rules = props.rules;
@@ -108,6 +89,9 @@ export function OrderForm(props: OrderFormProps) {
   const defaultCustomAmount = Math.min(maxAmountCny, Math.max(minAmountCny, 29));
   const customPackageAmount = Math.min(maxAmountCny, Math.max(minAmountCny, enterpriseAmount));
 
+  const t = useTranslations("credits");
+  const tError = useTranslations("errors.api");
+  const format = useFormatter();
   const router = useRouter();
   const [customAmount, setCustomAmount] = useState(String(defaultCustomAmount));
   const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
@@ -115,11 +99,26 @@ export function OrderForm(props: OrderFormProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setLoading] = useState(false);
 
+  function formatCny(amountCent: number) {
+    return format.number(amountCent / 100, "currency");
+  }
+
+  function getCustomPackageCopy(credits: number): PackageCopy {
+    return {
+      name: t("enterprise.name"),
+      line: t("enterprise.line"),
+      isPopular: false,
+      features: [
+        t("enterprise.features.points", { points: credits }),
+        ...enterpriseFeatureKeys.map((key) => t(`enterprise.features.${key}`)),
+      ],
+    };
+  }
+
   const displayPackages: DisplayPackage[] = packages.map((item) => ({
     kind: "package" as const,
     id: item.id,
     code: item.code,
-    amountText: item.amountText,
     amountCent: item.amountCent,
     credits: item.credits,
     copy: getPackageCopy(item),
@@ -129,7 +128,6 @@ export function OrderForm(props: OrderFormProps) {
     displayPackages.push({
       kind: "custom",
       code: "ENTERPRISE_2000",
-      priceCny: String(customPackageAmount),
       amountCny: customPackageAmount,
       amountCent: Math.round(customPackageAmount * 100),
       credits: calculateCustomCredits(customPackageAmount, rules.creditsPerYuan),
@@ -143,6 +141,10 @@ export function OrderForm(props: OrderFormProps) {
   const customFeeCent = calculateRechargeFeeCent(customAmountCent, rules.feeRatePercent);
   const customPayableCent = customAmountCent + customFeeCent;
   const customCredits = calculateCustomCredits(amount, rules.creditsPerYuan);
+  const customSummary = t("custom.summary", {
+    amount: formatCny(customPayableCent),
+    points: customCredits,
+  });
 
   async function submitOrder(data: CreateRechargeOrderRequest) {
     setLoading(true);
@@ -153,7 +155,7 @@ export function OrderForm(props: OrderFormProps) {
       router.push(`/billing/result?order=${encodeURIComponent(order.orderNo)}`);
     } catch (error) {
       setLoading(false);
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     }
   }
 
@@ -168,7 +170,10 @@ export function OrderForm(props: OrderFormProps) {
 
     if (isInvalidAmount) {
       setMessage(
-        `请输入 ${formatCny(rules.minAmountCent)} - ${formatCny(rules.maxAmountCent)} 之间的金额`,
+        t("custom.invalidAmount", {
+          min: formatCny(rules.minAmountCent),
+          max: formatCny(rules.maxAmountCent),
+        }),
       );
       return;
     }
@@ -188,7 +193,7 @@ export function OrderForm(props: OrderFormProps) {
     }
 
     if (isOverMaxAmount(value, maxAmountCny)) {
-      setMessage(`单次购买金额不能超过 ${formatCny(rules.maxAmountCent)}`);
+      setMessage(t("custom.overMax", { max: formatCny(rules.maxAmountCent) }));
       return;
     }
 
@@ -201,23 +206,27 @@ export function OrderForm(props: OrderFormProps) {
     <div className={styles.orderForm}>
       <section className={styles.orderForm__section}>
         <div className={styles.orderForm__sectionHeader}>
-          <h2 className={styles.orderForm__sectionTitle}>支付方式</h2>
+          <h2 className={styles.orderForm__sectionTitle}>{t("payment.title")}</h2>
         </div>
         <div className={styles.orderForm__channels}>
           {paymentChannels.map((channel) => {
-            const isActive = paymentType === channel.value;
+            const isActive = paymentType === channel;
 
             return (
               <button
-                key={channel.value}
+                key={channel}
                 type="button"
-                onClick={() => setPaymentType(channel.value)}
+                aria-pressed={isActive}
+                onClick={() => setPaymentType(channel)}
                 className={clsx(
                   styles.orderForm__channel,
                   isActive && styles.orderForm__channelActive,
                 )}
               >
-                {channel.label}
+                <span className={styles.orderForm__channelLabel}>
+                  {t(`payment.channels.${channel}`)}
+                </span>
+                <span className={styles.orderForm__channelIndicator} aria-hidden="true" />
               </button>
             );
           })}
@@ -226,23 +235,23 @@ export function OrderForm(props: OrderFormProps) {
 
       <section className={styles.orderForm__section}>
         <div className={styles.orderForm__sectionHeader}>
-          <h2 className={styles.orderForm__sectionTitle}>套餐购买</h2>
+          <h2 className={styles.orderForm__sectionTitle}>{t("packages.title")}</h2>
         </div>
 
         <div className={styles.orderForm__packages}>
           {displayPackages.map((item) => {
             const copy = item.copy;
-            const isPopular = Boolean(copy.badge);
+            const isPopular = copy.isPopular;
             const feeAmountCent = calculateRechargeFeeCent(item.amountCent, rules.feeRatePercent);
             const payableAmountCent = item.amountCent + feeAmountCent;
             const canPurchase =
               item.kind === "custom" ||
               (item.amountCent >= rules.minAmountCent && item.amountCent <= rules.maxAmountCent);
-            let buttonLabel = "立即购买";
+            let buttonLabel = t("packages.buy");
             if (isLoading) {
-              buttonLabel = "创建中";
+              buttonLabel = t("packages.creating");
             } else if (!canPurchase) {
-              buttonLabel = "暂不可购买";
+              buttonLabel = t("packages.unavailable");
             }
 
             return (
@@ -253,17 +262,21 @@ export function OrderForm(props: OrderFormProps) {
                   isPopular && styles.orderForm__packageCardPopular,
                 )}
               >
-                {copy.badge ? <span className={styles.orderForm__badge}>{copy.badge}</span> : null}
+                {isPopular ? (
+                  <span className={styles.orderForm__badge}>{t("packages.popular")}</span>
+                ) : null}
                 <p className={styles.orderForm__code}>{item.code}</p>
                 <h3 className={styles.orderForm__planName}>{copy.name}</h3>
                 <p className={styles.orderForm__planLine}>{copy.line}</p>
-                <p className={styles.orderForm__price}>
-                  {item.kind === "package" ? item.amountText : `¥${item.priceCny}`}
-                </p>
-                <p className={styles.orderForm__credits}>{item.credits} 积分</p>
+                <div className={styles.orderForm__priceRow}>
+                  <p className={styles.orderForm__price}>{formatCny(item.amountCent)}</p>
+                  <p className={styles.orderForm__credits}>
+                    {t("packages.points", { points: item.credits })}
+                  </p>
+                </div>
                 {feeAmountCent > 0 ? (
                   <p className={styles.orderForm__fee}>
-                    含手续费，实付 {formatCny(payableAmountCent)}
+                    {t("packages.payableWithFee", { amount: formatCny(payableAmountCent) })}
                   </p>
                 ) : null}
                 <ul className={styles.orderForm__features}>
@@ -306,7 +319,7 @@ export function OrderForm(props: OrderFormProps) {
       {allowCustomOrder ? (
         <section className={styles.orderForm__section}>
           <div className={styles.orderForm__sectionHeader}>
-            <h2 className={styles.orderForm__sectionTitle}>自定义购买</h2>
+            <h2 className={styles.orderForm__sectionTitle}>{t("custom.title")}</h2>
           </div>
 
           <div className={styles.orderForm__custom}>
@@ -326,16 +339,16 @@ export function OrderForm(props: OrderFormProps) {
                         isActive && styles.orderForm__quickAmountActive,
                       )}
                     >
-                      {item}
+                      {format.number(item, "currency")}
                     </button>
                   );
                 })}
             </div>
 
             <label className={styles.orderForm__field}>
-              <span className="label">自定义金额</span>
+              <span className="label">{t("custom.amountLabel")}</span>
               <span className={styles.orderForm__inputWrap}>
-                <span className={styles.orderForm__currency}>¥</span>
+                <span className={styles.orderForm__currency}>{t("custom.currencySymbol")}</span>
                 <input
                   className={clsx("field", styles.orderForm__input)}
                   inputMode="decimal"
@@ -344,26 +357,41 @@ export function OrderForm(props: OrderFormProps) {
                   pattern="^\d*(\.\d{0,2})?$"
                   value={customAmount}
                   onChange={(event) => handleCustomAmountChange(event.target.value)}
-                  placeholder="输入购买金额"
+                  placeholder={t("custom.placeholder")}
                 />
               </span>
             </label>
             <div className={styles.orderForm__hint}>
-              <span>到账积分</span>
-              <strong>{customCredits}</strong>
-              <span>手续费</span>
+              <span>{t("custom.credits")}</span>
+              <strong>{format.number(customCredits, "points")}</strong>
+              <span>{t("custom.fee")}</span>
               <strong>{formatCny(customFeeCent)}</strong>
-              <span>实付金额</span>
+              <span>{t("custom.payable")}</span>
               <strong>{formatCny(customPayableCent)}</strong>
             </div>
 
-            <button
-              className="btn-primary"
-              onClick={() => createCustomOrder()}
-              disabled={isLoading}
-            >
-              {isLoading ? "创建中" : `确认支付 ${formatCny(customPayableCent)}`}
-            </button>
+            <div className={styles.orderForm__submitBar}>
+              <p className={styles.orderForm__submitSummary} title={customSummary}>
+                {customSummary}
+              </p>
+              <button
+                type="button"
+                className={clsx("btn-primary", styles.orderForm__submitButton)}
+                onClick={() => createCustomOrder()}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  t("custom.creating")
+                ) : (
+                  <>
+                    <span className={styles.orderForm__submitLong}>
+                      {t("custom.submit", { amount: formatCny(customPayableCent) })}
+                    </span>
+                    <span className={styles.orderForm__submitShort}>{t("custom.submitShort")}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </section>
       ) : null}

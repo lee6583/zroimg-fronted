@@ -24,7 +24,7 @@
 .imageLightbox__overlay {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 1100;
   display: grid;
   place-items: center;
   background: rgb(0 0 0 / 86%);
@@ -68,13 +68,32 @@
   background: rgb(255 255 255 / 16%);
 }
 
-@media (max-width: 520px) {
+.imageLightbox__viewer {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* 手机端：全屏黑底，图片铺满可视区，右上角大号关闭按钮避开刘海；支持下滑关闭（use-swipe-dismiss）。 */
+@media (max-width: 767px) {
   .imageLightbox__overlay {
-    padding: 0.75rem;
+    background: rgb(0 0 0 / 96%);
+    padding: 0;
+    touch-action: pinch-zoom;
   }
 
   .imageLightbox__image {
-    max-width: calc(100vw - 1.5rem);
-    max-height: calc(100dvh - 1.5rem);
+    max-width: 100vw;
+    max-height: 100dvh;
+  }
+
+  .imageLightbox__close {
+    top: calc(0.5rem + env(safe-area-inset-top));
+    right: calc(0.5rem + env(safe-area-inset-right));
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    border-color: rgb(255 255 255 / 24%);
+    background: rgb(0 0 0 / 56%);
   }
 }

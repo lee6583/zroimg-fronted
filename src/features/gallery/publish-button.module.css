@@ -97,3 +97,18 @@
 :global(:root[data-theme="dark"]) .publishButton__statusApproved {
   color: #4ade80;
 }
+
+@media (max-width: 767px) {
+  .publishButtonTouch .publishButton__action,
+  .publishButtonTouch .publishButton__status,
+  .publishButtonTouch .publishButton__link {
+    min-height: 2.75rem;
+    padding-inline: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .publishButtonTouch .publishButton__message {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

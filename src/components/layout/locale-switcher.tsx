@@ -15,11 +15,29 @@ import styles from "./locale-switcher.module.css";
  * 切回 zh-CN 时会先到 /zh-CN/...，再由 proxy 重定向到无前缀地址。
  * 渲染成 <Link hrefLang> 是为了无 JS 时也能切换，并让爬虫看到语言版本。
  */
-export function LocaleSwitcher() {
-  const t = useTranslations("nav.locale");
+export function useSwitchLocale() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+
+  function switchLocale(event: MouseEvent<HTMLAnchorElement>, nextLocale: AppLocale) {
+    event.preventDefault();
+
+    if (nextLocale === locale) {
+      return;
+    }
+
+    // 查询参数只在点击时读取，避免 useSearchParams 让整页退出静态渲染。
+    const href = `${pathname}${window.location.search}`;
+    router.replace(href, { locale: nextLocale });
+  }
+
+  return { locale, pathname, switchLocale };
+}
+
+export function LocaleSwitcher() {
+  const t = useTranslations("nav.locale");
+  const { locale, pathname, switchLocale } = useSwitchLocale();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
 
@@ -45,19 +63,6 @@ export function LocaleSwitcher() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
-
-  function switchLocale(event: MouseEvent<HTMLAnchorElement>, nextLocale: AppLocale) {
-    event.preventDefault();
-    setOpen(false);
-
-    if (nextLocale === locale) {
-      return;
-    }
-
-    // 查询参数只在点击时读取，避免 useSearchParams 让整页退出静态渲染。
-    const href = `${pathname}${window.location.search}`;
-    router.replace(href, { locale: nextLocale });
-  }
 
   return (
     <div ref={rootRef} className={styles.localeSwitcher}>
@@ -90,7 +95,10 @@ export function LocaleSwitcher() {
                   styles.localeSwitcher__item,
                   isActive && styles.localeSwitcher__itemActive,
                 )}
-                onClick={(event) => switchLocale(event, item)}
+                onClick={(event) => {
+                  setOpen(false);
+                  switchLocale(event, item);
+                }}
               >
                 <span>{localeNames[item]}</span>
                 {isActive ? <Check size={15} className={styles.localeSwitcher__check} /> : null}

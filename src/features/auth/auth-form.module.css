@@ -214,3 +214,73 @@
 .authForm__plainLink:hover {
   text-decoration: underline;
 }
+
+.authForm__inputWithToggle {
+  padding-inline-end: 2.75rem;
+}
+
+.authForm__toggle {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 0.25rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.authForm__toggle:hover,
+.authForm__toggle[aria-pressed="true"] {
+  color: var(--foreground);
+}
+
+/* 手机：输入框 16px 避免 iOS 自动放大，控件与按钮至少 44px 高 */
+@media (max-width: 767px) {
+  .authForm {
+    padding: 1.25rem;
+  }
+
+  .authForm__input {
+    height: 2.875rem;
+    font-size: 1rem;
+  }
+
+  .authForm__secondaryButton {
+    height: 2.875rem;
+    min-width: 5.5rem;
+    padding: 0 0.875rem;
+    white-space: nowrap;
+  }
+
+  .authForm__submit {
+    height: 3rem;
+    font-size: 1rem;
+  }
+
+  .authForm__toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .authForm__fieldLink {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    font-size: 0.8125rem;
+  }
+
+  .authForm__labelRow {
+    margin-block: -0.75rem -0.375rem;
+  }
+
+  .authForm__plainLink {
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
+  }
+}

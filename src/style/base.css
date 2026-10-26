@@ -31,3 +31,41 @@ select {
     color 0.15s ease,
     opacity 0.15s ease;
 }
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/*
+ * 手机端底部标签栏（components/layout/mobile-tab-bar.tsx）显示时的占位高度。
+ * 用户端页面里固定在底部的元素写 bottom: var(--app-tabbar-height, 0px)；应用壳已经给内容留出这段距离。
+ */
+:root {
+  --app-tabbar-height: 0px;
+}
+
+@media (max-width: 767px) {
+  body:has([data-app-tabbar="visible"]) {
+    --app-tabbar-height: calc(3.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* iOS Safari 在输入框字号小于 16px 时聚焦会自动放大页面。 */
+  input:not(
+    [type="checkbox"],
+    [type="radio"],
+    [type="range"],
+    [type="color"],
+    [type="file"],
+    [type="button"],
+    [type="submit"],
+    [type="reset"],
+    [type="image"]
+  ),
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: max(1rem, 16px) !important;
+  }
+}

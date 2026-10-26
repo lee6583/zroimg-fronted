@@ -3,21 +3,22 @@ import type { CreateVideoTaskRequest, VideoGenerationMode, VideoTask } from "@/t
 
 export type VideoTaskInput = Omit<CreateVideoTaskRequest, "priceVersion">;
 
+/** 积分不足：页面用 video.errors.insufficientPoints 展示。 */
+export class VideoPointsShortageError extends Error {
+  readonly shortagePoints: number;
+
+  constructor(shortagePoints: number) {
+    super("insufficient points");
+    this.name = "VideoPointsShortageError";
+    this.shortagePoints = shortagePoints;
+  }
+}
+
 export function isVideoMode(mode: string): mode is VideoGenerationMode {
   return mode === "text_to_video" || mode === "image_to_video";
 }
 
-export function displayMode(mode: string) {
-  if (mode === "text_to_video") {
-    return "文生视频";
-  }
-  if (mode === "image_to_video") {
-    return "图生视频";
-  }
-  return mode;
-}
-
-// 先按当前价格估算积分，不足时抛出可读错误，再创建任务
+// 先按当前价格估算积分，不足时抛出 VideoPointsShortageError，再创建任务
 export async function submitVideoTask(input: VideoTaskInput) {
   const price = await videoApi.estimate({
     model: input.model,
@@ -28,7 +29,7 @@ export async function submitVideoTask(input: VideoTaskInput) {
   });
 
   if (!price.enough) {
-    throw new Error(`积分不足，还需要 ${price.shortagePoints} 积分`);
+    throw new VideoPointsShortageError(price.shortagePoints);
   }
 
   return videoApi.createTask({ ...input, priceVersion: price.priceVersion });

@@ -436,3 +436,157 @@
     height: 1.125rem;
   }
 }
+
+/* 390px 手机：收紧纵向留白、缩小字号阶梯，主操作按钮全宽堆叠。 */
+@media (max-width: 767px) {
+  .landing__hero {
+    padding: 2.75rem 1.25rem 2.5rem;
+  }
+
+  .landing__heroTitle {
+    font-size: 2.25rem;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .landing__heroText {
+    margin-top: 1rem;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .landing__heroActions {
+    width: 100%;
+    max-width: 22rem;
+    align-items: stretch;
+    gap: 0.625rem;
+    margin-top: 1.75rem;
+  }
+
+  .landing__heroActions > a {
+    min-height: 2.875rem;
+    font-size: 0.9375rem;
+  }
+
+  .landing__statsWrap {
+    margin-top: 2.5rem;
+  }
+
+  .landing__stats {
+    gap: 0.75rem;
+    margin-top: 0.875rem;
+  }
+
+  .landing__statValue {
+    font-size: 1.5rem;
+  }
+
+  .landing__statLabel {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .landing__sectionInner,
+  .landing__advantages {
+    padding: 2.75rem 1.25rem;
+  }
+
+  .landing__sectionHeader {
+    margin-bottom: 1.75rem;
+  }
+
+  .landing__sectionTitle {
+    font-size: 1.625rem;
+    line-height: 1.25;
+  }
+
+  .landing__sectionText {
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .landing__featureGrid {
+    gap: 0.75rem;
+  }
+
+  /* 卡片改为图标在左、标题正文在右，减少纵向高度 */
+  .landing__featureCard {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.875rem;
+    padding: 1rem;
+  }
+
+  .landing__featureIcon {
+    grid-row: span 2;
+    margin-bottom: 0;
+  }
+
+  .landing__cardTitle {
+    align-self: center;
+    margin-bottom: 0;
+  }
+
+  .landing__cardText {
+    margin-top: 0.375rem;
+    margin-bottom: 0;
+  }
+
+  .landing__flow {
+    gap: 1.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .landing__advantageList {
+    width: 100%;
+    margin-top: 1.5rem;
+    transform: none;
+  }
+
+  .landing__vision {
+    margin-top: 4rem;
+  }
+
+  .landing__visionTitle {
+    font-size: 1.5rem;
+  }
+
+  .landing__visionText {
+    font-size: 0.9375rem;
+  }
+
+  .landing__visionArtwork {
+    width: calc(100vw - 2.5rem);
+    margin-top: 1rem;
+  }
+
+  .landing__footerInner {
+    padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom));
+  }
+
+  .landing__footerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .landing__footerGrid > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .landing__footerLinks {
+    gap: 0;
+    margin-top: 0.5rem;
+  }
+
+  .landing__footerLink {
+    display: flex;
+    min-height: 2.25rem;
+    align-items: center;
+  }
+
+  .landing__copyright {
+    margin-top: 1.5rem;
+  }
+}

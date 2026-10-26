@@ -108,3 +108,12 @@
   height: 1rem;
   flex-shrink: 0;
 }
+
+/* 手机端点击区域不小于 44px */
+@media (max-width: 767px) {
+  .appSelect__trigger,
+  .appSelect__option {
+    min-height: 2.75rem;
+    font-size: 0.9375rem;
+  }
+}

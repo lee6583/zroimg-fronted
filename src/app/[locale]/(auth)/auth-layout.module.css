@@ -23,3 +23,19 @@
     padding: 0 2rem;
   }
 }
+
+@media (max-width: 767px) {
+  .authLayout__topbar {
+    padding-right: 0.5rem;
+  }
+
+  .authLayout__actions {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .authLayout__topbar .authLayout__menu {
+    display: none;
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "",
+  "columns": {
+    "project": "",
+    "license": "",
+    "copyright": "",
+    "usage": ""
+  },
+  "usage": {
+    "canvasEditor": "",
+    "maskDrawing": "",
+    "canvasState": "",
+    "canvasReference": "",
+    "generationReference": "",
+    "architectureReference": ""
+  }
+}

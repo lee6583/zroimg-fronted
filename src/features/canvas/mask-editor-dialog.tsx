@@ -3,10 +3,11 @@
 import clsx from "clsx";
 import { Brush, Eraser, Trash2, Undo2, X } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
 import type { MediaAsset } from "@/types/generation";
-import { getErrorMessage } from "@/utils/error";
+import { translateApiError } from "@/i18n/api-error";
 import {
   clampBrushSize,
   defaultBrushSize,
@@ -24,7 +25,7 @@ const MaskEditorCanvas = dynamic(
   () => import("./mask-editor-canvas").then((mod) => mod.MaskEditorCanvas),
   {
     ssr: false,
-    loading: () => <span className={styles.maskEditor__status}>画板加载中</span>,
+    loading: () => <MaskEditorLoading />,
   },
 );
 
@@ -39,13 +40,20 @@ type MaskEditorDialogProps = {
 
 type MaskEditorProps = Omit<MaskEditorDialogProps, "open">;
 
+function MaskEditorLoading() {
+  const t = useTranslations("canvas.mask");
+  return <span className={styles.maskEditor__status}>{t("loadingBoard")}</span>;
+}
+
+class MaskFileError extends Error {}
+
 async function createMaskFile(strokes: MaskStroke[], size: MaskSize) {
   const canvas = document.createElement("canvas");
   canvas.width = size.width;
   canvas.height = size.height;
   const context = canvas.getContext("2d");
   if (!context) {
-    throw new Error("当前浏览器无法生成遮罩");
+    throw new MaskFileError("unsupported");
   }
 
   drawMask(context, strokes, size);
@@ -53,7 +61,7 @@ async function createMaskFile(strokes: MaskStroke[], size: MaskSize) {
     canvas.toBlob(resolve, "image/png");
   });
   if (!blob) {
-    throw new Error("遮罩生成失败，请重试");
+    throw new MaskFileError("createFailed");
   }
 
   return new File([blob], "mask.png", { type: "image/png" });
@@ -65,6 +73,8 @@ function MaskEditor(props: MaskEditorProps) {
   const height = props.height;
   const onCancel = props.onCancel;
   const onConfirm = props.onConfirm;
+  const t = useTranslations("canvas.mask");
+  const tError = useTranslations("errors.api");
 
   const [strokes, setStrokes] = useState<MaskStroke[]>([]);
   const [tool, setTool] = useState<MaskTool>("brush");
@@ -126,7 +136,7 @@ function MaskEditor(props: MaskEditorProps) {
   async function confirm() {
     if (!imageSize) return;
     if (!hasPaint(strokes)) {
-      setMessage("请先涂抹需要重绘的区域");
+      setMessage(t("paintRequired"));
       return;
     }
 
@@ -137,7 +147,11 @@ function MaskEditor(props: MaskEditorProps) {
       const asset = await uploadMediaFile(file);
       onConfirm(asset);
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      if (error instanceof MaskFileError) {
+        setMessage(error.message === "unsupported" ? t("unsupported") : t("createFailed"));
+      } else {
+        setMessage(translateApiError(error, tError));
+      }
     } finally {
       setSaving(false);
     }
@@ -162,13 +176,13 @@ function MaskEditor(props: MaskEditorProps) {
       >
         <header className={styles.maskEditor__header}>
           <h2 id="mask-editor-title" className={styles.maskEditor__title}>
-            局部重绘
+            {t("title")}
           </h2>
           <button
             type="button"
             className={styles.maskEditor__iconButton}
-            aria-label="关闭"
-            title="关闭"
+            aria-label={t("close")}
+            title={t("close")}
             disabled={isSaving}
             onClick={onCancel}
           >
@@ -177,7 +191,7 @@ function MaskEditor(props: MaskEditorProps) {
         </header>
 
         <div className={styles.maskEditor__toolbar}>
-          <div className={styles.maskEditor__tools} role="group" aria-label="涂抹工具">
+          <div className={styles.maskEditor__tools} role="group" aria-label={t("tools")}>
             <button
               type="button"
               className={clsx(
@@ -189,7 +203,7 @@ function MaskEditor(props: MaskEditorProps) {
               onClick={() => setTool("brush")}
             >
               <Brush size={15} aria-hidden="true" />
-              画笔
+              {t("brush")}
             </button>
             <button
               type="button"
@@ -202,12 +216,12 @@ function MaskEditor(props: MaskEditorProps) {
               onClick={() => setTool("eraser")}
             >
               <Eraser size={15} aria-hidden="true" />
-              橡皮擦
+              {t("eraser")}
             </button>
           </div>
 
           <label className={styles.maskEditor__size}>
-            <span>笔刷</span>
+            <span>{t("size")}</span>
             <input
               type="range"
               min={minBrushSize}
@@ -217,15 +231,15 @@ function MaskEditor(props: MaskEditorProps) {
               disabled={!canEdit}
               onChange={(event) => setSize(clampBrushSize(Number(event.target.value)))}
             />
-            <span className={styles.maskEditor__sizeValue}>{size}px</span>
+            <span className={styles.maskEditor__sizeValue}>{t("sizeValue", { size })}</span>
           </label>
 
           <div className={styles.maskEditor__tools}>
             <button
               type="button"
               className={styles.maskEditor__iconButton}
-              aria-label="撤销"
-              title="撤销"
+              aria-label={t("undo")}
+              title={t("undo")}
               disabled={!canEdit || strokes.length === 0}
               onClick={undo}
             >
@@ -234,8 +248,8 @@ function MaskEditor(props: MaskEditorProps) {
             <button
               type="button"
               className={styles.maskEditor__iconButton}
-              aria-label="清空"
-              title="清空"
+              aria-label={t("clear")}
+              title={t("clear")}
               disabled={!canEdit || strokes.length === 0}
               onClick={clear}
             >
@@ -246,7 +260,7 @@ function MaskEditor(props: MaskEditorProps) {
 
         <div className={styles.maskEditor__body}>
           {isLoadFailed ? (
-            <span className={styles.maskEditor__status}>图片加载失败</span>
+            <span className={styles.maskEditor__status}>{t("loadFailed")}</span>
           ) : (
             <MaskEditorCanvas
               imageUrl={imageUrl}
@@ -269,10 +283,10 @@ function MaskEditor(props: MaskEditorProps) {
           </p>
           <div className={styles.maskEditor__actions}>
             <button type="button" className="btn-secondary" disabled={isSaving} onClick={onCancel}>
-              取消
+              {t("cancel")}
             </button>
             <button type="button" className="btn-primary" disabled={!canConfirm} onClick={confirm}>
-              {isSaving ? "上传中" : "确认"}
+              {isSaving ? t("uploading") : t("confirm")}
             </button>
           </div>
         </footer>

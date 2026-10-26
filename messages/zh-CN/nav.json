@@ -4,7 +4,9 @@
     "home": "首页",
     "gallery": "作品画廊",
     "pricing": "定价",
-    "docs": "文档"
+    "docs": "文档",
+    "menu": "打开菜单",
+    "menuTitle": "菜单"
   },
   "account": {
     "openMenu": "打开账户菜单",
@@ -44,5 +46,19 @@
       "tickets": "意见反馈",
       "settings": "账户设置"
     }
+  },
+  "tabs": {
+    "label": "主导航",
+    "overview": "概览",
+    "generate": "生成",
+    "canvas": "画布",
+    "works": "作品",
+    "me": "我的"
+  },
+  "me": {
+    "title": "我的",
+    "points": "积分余额",
+    "language": "语言",
+    "darkMode": "深色模式"
   }
 }

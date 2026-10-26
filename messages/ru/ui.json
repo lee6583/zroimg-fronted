@@ -1,0 +1,24 @@
+{
+  "lightbox": {
+    "open": "",
+    "openTitle": "",
+    "dialog": "",
+    "close": "",
+    "closeTitle": ""
+  },
+  "videoLightbox": {
+    "play": "",
+    "dialog": "",
+    "close": "",
+    "closeTitle": ""
+  },
+  "pagination": {
+    "total": ""
+  },
+  "select": {
+    "placeholder": ""
+  },
+  "avatar": {
+    "label": ""
+  }
+}

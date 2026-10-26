@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
@@ -9,6 +11,12 @@ import styles from "./dashboard.module.css";
 export const dynamic = "force-dynamic";
 
 const recentLimit = 4;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard.meta");
+
+  return { title: t("title") };
+}
 
 // Java GenerationTaskVO 中概览页用到的字段。
 type TaskResult = {
@@ -59,6 +67,7 @@ async function listRecentCreations() {
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const t = await getTranslations("dashboard");
   const [stats, signCard, recentCreations] = await Promise.all([
     requestJava<DashboardStats>("/points/user/dashboard"),
     requestJava<SignCard>("/points/user/sign-card"),
@@ -68,7 +77,7 @@ export default async function DashboardPage() {
   return (
     <div className={styles.dashboard}>
       <section>
-        <h1 className="page-title">概览</h1>
+        <h1 className="page-title">{t("title")}</h1>
       </section>
 
       <DashboardOverview

@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "title": "",
+    "detailTitle": ""
+  },
+  "title": "",
+  "actions": {
+    "cancel": "",
+    "save": "",
+    "rename": "",
+    "delete": ""
+  },
+  "create": {
+    "open": "",
+    "title": "",
+    "nameLabel": "",
+    "placeholder": "",
+    "submit": "",
+    "submitting": ""
+  },
+  "delete": {
+    "title": "",
+    "content": "",
+    "confirm": ""
+  },
+  "card": {
+    "count": ""
+  },
+  "empty": {
+    "title": "",
+    "text": ""
+  },
+  "detail": {
+    "back": "",
+    "listLabel": "",
+    "emptyTitle": "",
+    "emptyText": ""
+  },
+  "picker": {
+    "open": "",
+    "done": "",
+    "title": "",
+    "noCollection": "",
+    "empty": "",
+    "manage": "",
+    "saving": ""
+  }
+}

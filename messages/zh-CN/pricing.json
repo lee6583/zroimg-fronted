@@ -1,0 +1,18 @@
+{
+  "title": "选择适合你的创作方案",
+  "popular": "最受欢迎",
+  "points": "{points, number} 积分",
+  "buy": "立即购买",
+  "free": {
+    "code": "Free",
+    "name": "免费体验",
+    "credits": "新用户体验额度",
+    "action": "注册体验",
+    "features": {
+      "start": "注册后即可开始体验",
+      "learn": "适合熟悉提示词与工作流",
+      "browse": "可浏览作品与创作入口",
+      "noSubscription": "不需要订阅，想用时再补充"
+    }
+  }
+}

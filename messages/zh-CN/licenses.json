@@ -1,0 +1,17 @@
+{
+  "title": "开源许可",
+  "columns": {
+    "project": "项目",
+    "license": "许可证",
+    "copyright": "版权",
+    "usage": "用途"
+  },
+  "usage": {
+    "canvasEditor": "画布节点编辑",
+    "maskDrawing": "遮罩绘制",
+    "canvasState": "画布状态",
+    "canvasReference": "画布交互参考",
+    "generationReference": "生成流程参考",
+    "architectureReference": "架构参考"
+  }
+}

@@ -12,6 +12,33 @@
   },
   "api": {
     "network": "Network error. Please check your connection and try again.",
-    "unknown": "Request failed. Please try again later."
+    "unknown": "Request failed. Please try again later.",
+    "invalidResponse": "",
+    "serviceUnavailable": "",
+    "serverError": "",
+    "requestFailed": "",
+    "uploadFailed": "",
+    "unauthorized": "",
+    "forbidden": "",
+    "notFound": "",
+    "tooManyRequests": "",
+    "invalidCredentials": "",
+    "emailAlreadyRegistered": "",
+    "verificationCodeInvalid": "",
+    "sliderVerificationFailed": "",
+    "pointsInsufficient": "",
+    "fileTooLarge": "",
+    "unsupportedFileType": ""
+  },
+  "server": {
+    "unavailable": "",
+    "invalidResponse": "",
+    "requestFailed": ""
+  },
+  "upload": {
+    "unsupportedImageType": "",
+    "imageTooLarge": "",
+    "tooManyFiles": "",
+    "failed": ""
   }
 }

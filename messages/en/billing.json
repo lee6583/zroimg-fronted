@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "title": "",
+    "resultTitle": ""
+  },
+  "title": "",
+  "status": {
+    "pending": "",
+    "paid": "",
+    "cancelled": ""
+  },
+  "payChannel": {
+    "alipay": "",
+    "wxpay": ""
+  },
+  "list": {
+    "label": "",
+    "columns": {
+      "orderNo": "",
+      "amount": "",
+      "points": "",
+      "payChannel": "",
+      "status": "",
+      "createTime": "",
+      "payTime": "",
+      "actions": ""
+    },
+    "pointsValue": "",
+    "empty": {
+      "title": "",
+      "text": "",
+      "action": ""
+    },
+    "actions": {
+      "pay": "",
+      "cancel": "",
+      "cancelling": ""
+    }
+  },
+  "result": {
+    "detailsLabel": "",
+    "created": "",
+    "notFound": {
+      "title": "",
+      "description": ""
+    },
+    "loadError": {
+      "title": ""
+    },
+    "unauthorized": {
+      "title": "",
+      "description": ""
+    },
+    "fields": {
+      "orderNo": "",
+      "package": "",
+      "amount": "",
+      "rechargeAmount": "",
+      "fee": "",
+      "points": "",
+      "payChannel": "",
+      "status": "",
+      "createTime": "",
+      "expireTime": ""
+    },
+    "pointsValue": "",
+    "actions": {
+      "viewOrders": "",
+      "buyAgain": "",
+      "pay": "",
+      "paying": "",
+      "cancel": "",
+      "cancelling": ""
+    },
+    "emptyPayUrl": ""
+  }
+}

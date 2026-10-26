@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "title": "概览"
+  },
+  "title": "概览",
+  "metrics": {
+    "generated": "生成总数",
+    "monthlyGenerated": "本月生成",
+    "favorites": "收藏总数",
+    "balance": "剩余积分"
+  },
+  "quickActions": {
+    "label": "快捷入口",
+    "generate": "图片生成",
+    "video": "视频创作",
+    "credits": "购买积分",
+    "orders": "我的订单"
+  },
+  "recent": {
+    "title": "最近创作",
+    "empty": "还没有最近创作。"
+  },
+  "checkIn": {
+    "title": "每日签到",
+    "streak": "连续 {days, number} 天",
+    "reward": "+{points, number} 积分",
+    "weekLabel": "本周签到",
+    "weekDays": "本周 {days, number} 天",
+    "dailyPoints": "每日 +{points, number} 积分",
+    "actions": {
+      "claim": "立即签到",
+      "claimed": "今日已签到",
+      "unavailable": "暂未开放",
+      "claiming": "签到中"
+    }
+  }
+}

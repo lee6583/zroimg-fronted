@@ -10,14 +10,18 @@ import {
 } from "@/constants/landing";
 import { Link } from "@/i18n/navigation";
 import { siteName } from "@/lib/seo";
+import { getCurrentUser } from "@/server/auth";
 import styles from "./landing-page.module.css";
 
 // 版权年份是静态内容，避免在渲染期间调用 Date；传字符串避免 ICU 按数字格式化成 "2,026"。
 const copyrightYear = 2026;
 
 export async function LandingPage() {
-  const t = await getTranslations("landing");
-  const tActions = await getTranslations("common.actions");
+  const [t, tActions, user] = await Promise.all([
+    getTranslations("landing"),
+    getTranslations("common.actions"),
+    getCurrentUser(),
+  ]);
 
   return (
     <div className={styles.landing}>
@@ -34,9 +38,15 @@ export async function LandingPage() {
                 {tActions("startCreating")}
                 <ArrowRight size={16} />
               </Link>
-              <Link className="btn-secondary" href="/login">
-                {tActions("login")}
-              </Link>
+              {user ? (
+                <Link className="btn-secondary" href="/dashboard">
+                  {tActions("enterWorkspace")}
+                </Link>
+              ) : (
+                <Link className="btn-secondary" href="/login">
+                  {tActions("login")}
+                </Link>
+              )}
             </div>
 
             <div className={styles.landing__statsWrap}>

@@ -1,5 +1,7 @@
 import clsx from "clsx";
 import { Clock3, ImageOff } from "lucide-react";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { AppPagination } from "@/components/ui/app-pagination";
 import table from "@/components/ui/data-table.module.css";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -15,12 +17,12 @@ import type { PageResult } from "@/types/api";
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationResult, GenerationTask, GenerationTaskQuery } from "@/types/generation";
 import {
-  getDeleteText,
   getDownloadName,
-  getDurationText,
+  getDurationSeconds,
+  getMediaKind,
   getResolutionText,
-  isVideoTask,
 } from "@/utils/history";
+import { parseJavaDateTime } from "@/utils/java-time";
 import { userAssetDownloadUrl } from "@/utils/media";
 import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { HistoryFilters } from "./history-filters";
@@ -28,6 +30,11 @@ import styles from "./history.module.css";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("history.meta");
+  return { title: t("title") };
+}
 
 type MediaFilter = "all" | "image" | "video";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -120,10 +127,6 @@ function getTimeRange(from: string, to: string) {
   };
 }
 
-function formatTime(value: string) {
-  return value.replace("T", " ").slice(0, 19);
-}
-
 function getUnitPoints(task: GenerationTask) {
   if (task.unitPoints !== null) {
     return task.unitPoints;
@@ -177,42 +180,51 @@ export default async function HistoryPage(props: HistoryPageProps) {
   const total = taskPage.total;
   const currentPage = rawPage;
 
+  const t = await getTranslations("history");
+  const tTask = await getTranslations("task");
+  const format = await getFormatter();
   const hasDateFilter = Boolean(from || to);
   const hasMediaFilter = media !== "all";
   const activeFilter = hasDateFilter || hasMediaFilter;
-  let emptyTitle = "还没有创作记录";
-  let emptyText = "写下第一句提示词，让灵感在这里留下第一张图。";
+  let emptyKey: "default" | "filtered" | "video" = "default";
   let emptyHref = "/generate";
-  let emptyAction = "去创作";
 
   if (activeFilter) {
-    emptyTitle = "当前筛选条件下没有创作记录";
-    emptyText = "可以调整时间或类型筛选，或者查看全部历史。";
+    emptyKey = "filtered";
     emptyHref = "/history";
-    emptyAction = "查看全部";
   }
 
   if (media === "video") {
-    emptyTitle = "还没有视频创作记录";
-    emptyText = "描述一个画面，生成第一段视频。";
+    emptyKey = "video";
     emptyHref = "/video";
-    emptyAction = "去创作视频";
+  }
+
+  function resolutionLabel(task: GenerationTask) {
+    const value = getResolutionText(task);
+    if (value === "auto" || value === "standard") {
+      return tTask(`quality.${value}`);
+    }
+
+    return value || "-";
   }
 
   return (
     <main className={styles.history}>
       <section className={styles.history__header}>
-        <h1 className="page-title">创作历史</h1>
+        <h1 className="page-title">{t("title")}</h1>
       </section>
 
-      <section className={styles.history__toolbar} aria-label="创作历史筛选">
+      <section className={styles.history__toolbar} aria-label={t("filters.label")}>
         <HistoryFilters from={from} to={to} media={media} />
       </section>
 
       {historyItems.length > 0 ? (
         <>
           <HistoryTable>
-            <section className={table.dataTable__card} aria-label="历史作品">
+            <section
+              className={clsx(table.dataTable__card, styles.history__list)}
+              aria-label={t("list.label")}
+            >
               <table className={clsx(table.dataTable, styles.history__table)}>
                 <colgroup>
                   <col className={styles.history__colImage} />
@@ -227,33 +239,41 @@ export default async function HistoryPage(props: HistoryPageProps) {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th>作品</th>
-                    <th className={table.dataTable__start}>提示词</th>
-                    <th>模型</th>
-                    <th>分辨率</th>
-                    <th>比例</th>
-                    <th>消耗</th>
-                    <th>状态</th>
-                    <th>时间</th>
-                    <th>操作</th>
+                    <th>{t("columns.preview")}</th>
+                    <th className={table.dataTable__start}>{t("columns.prompt")}</th>
+                    <th>{t("columns.model")}</th>
+                    <th>{t("columns.resolution")}</th>
+                    <th>{t("columns.ratio")}</th>
+                    <th>{t("columns.points")}</th>
+                    <th>{t("columns.status")}</th>
+                    <th>{t("columns.time")}</th>
+                    <th>{t("columns.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historyItems.map((item) => {
                     const task = item.task;
                     const result = item.result;
-                    const isVideo = isVideoTask(task);
+                    const kind = getMediaKind(task);
+                    const isVideo = kind === "video";
                     const fileName = getDownloadName(task, item.index);
                     const modelName = task.modelName || task.modelCode;
-                    const duration = getDurationText(task);
-                    let kind: "image" | "video" = "image";
-                    if (isVideo) {
-                      kind = "video";
-                    }
+                    const durationSeconds = getDurationSeconds(task);
+                    const duration =
+                      durationSeconds === null ? "" : t("duration", { seconds: durationSeconds });
+                    const resolution = resolutionLabel(task);
+                    const time = format.dateTime(parseJavaDateTime(task.createTime), "datetime");
+                    const metaLine = [modelName, resolution, duration, time]
+                      .filter((value) => value && value !== "-")
+                      .join(" · ");
 
                     return (
-                      <HistoryRow key={item.id} taskNo={task.taskNo}>
-                        <td>
+                      <HistoryRow
+                        key={item.id}
+                        taskNo={task.taskNo}
+                        className={styles.history__row}
+                      >
+                        <td className={styles.history__cellPreview}>
                           <div className={styles.history__preview}>
                             {result && isVideo ? (
                               <VideoLightbox src={result.resultUrl} label={task.prompt} />
@@ -274,7 +294,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             )}
                           </div>
                         </td>
-                        <td className={table.dataTable__start}>
+                        <td className={clsx(table.dataTable__start, styles.history__cellPrompt)}>
                           <h2
                             className={clsx(table.dataTable__ellipsis, styles.history__prompt)}
                             title={task.prompt}
@@ -290,15 +310,18 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             </p>
                           ) : null}
                         </td>
-                        <td className={table.dataTable__muted}>
+                        <td className={styles.history__cellMeta}>
+                          <span className={styles.history__metaLine} title={metaLine}>
+                            {metaLine}
+                          </span>
+                        </td>
+                        <td className={clsx(table.dataTable__muted, styles.history__cellDesktop)}>
                           <span className={table.dataTable__ellipsis} title={modelName}>
                             {modelName}
                           </span>
                         </td>
-                        <td className={table.dataTable__muted}>
-                          <span className={table.dataTable__ellipsis}>
-                            {getResolutionText(task)}
-                          </span>
+                        <td className={clsx(table.dataTable__muted, styles.history__cellDesktop)}>
+                          <span className={table.dataTable__ellipsis}>{resolution}</span>
                           {duration ? (
                             <span
                               className={clsx(table.dataTable__ellipsis, styles.history__duration)}
@@ -307,9 +330,13 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             </span>
                           ) : null}
                         </td>
-                        <td className={table.dataTable__muted}>{task.ratio || "-"}</td>
-                        <td className={table.dataTable__num}>{getUnitPoints(task)}</td>
-                        <td>
+                        <td className={clsx(table.dataTable__muted, styles.history__cellDesktop)}>
+                          {task.ratio || "-"}
+                        </td>
+                        <td className={clsx(table.dataTable__num, styles.history__cellDesktop)}>
+                          {getUnitPoints(task)}
+                        </td>
+                        <td className={styles.history__cellStatus}>
                           <span
                             className={clsx(
                               styles.history__status,
@@ -318,12 +345,14 @@ export default async function HistoryPage(props: HistoryPageProps) {
                               isTaskRetrying(task) && styles.history__statusWarning,
                             )}
                           >
-                            {getTaskStatusLabel(task)}
+                            {getTaskStatusLabel(task, tTask)}
                           </span>
                         </td>
-                        <td className={table.dataTable__time}>{formatTime(task.createTime)}</td>
-                        <td>
-                          <div className={table.dataTable__actions}>
+                        <td className={clsx(table.dataTable__time, styles.history__cellDesktop)}>
+                          {time}
+                        </td>
+                        <td className={styles.history__cellActions}>
+                          <div className={clsx(table.dataTable__actions, styles.history__actions)}>
                             {result ? (
                               <HistoryImageActions
                                 generatedImageId={result.id}
@@ -333,6 +362,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                                 downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
                                 downloadFileName={fileName}
                                 media={kind}
+                                size="touch"
                               />
                             ) : null}
                             {result ? null : (
@@ -349,8 +379,9 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             )}
                             <HistoryDeleteButton
                               taskNo={task.taskNo}
-                              content={getDeleteText(task)}
+                              media={kind}
                               isRunning={isTaskPending(task)}
+                              size="touch"
                             />
                           </div>
                         </td>
@@ -369,10 +400,10 @@ export default async function HistoryPage(props: HistoryPageProps) {
           <span className={styles.history__emptyIcon}>
             <Clock3 size={30} />
           </span>
-          <h2 className={styles.history__emptyTitle}>{emptyTitle}</h2>
-          <p className={styles.history__emptyText}>{emptyText}</p>
+          <h2 className={styles.history__emptyTitle}>{t(`empty.${emptyKey}.title`)}</h2>
+          <p className={styles.history__emptyText}>{t(`empty.${emptyKey}.text`)}</p>
           <Link href={emptyHref} className={styles.history__emptyAction}>
-            {emptyAction}
+            {t(`empty.${emptyKey}.action`)}
           </Link>
         </section>
       )}

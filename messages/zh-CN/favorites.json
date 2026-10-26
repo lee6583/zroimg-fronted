@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "title": "收藏合集",
+    "detailTitle": "收藏合集"
+  },
+  "title": "收藏合集",
+  "actions": {
+    "cancel": "取消",
+    "save": "保存",
+    "rename": "编辑合集名称",
+    "delete": "删除合集"
+  },
+  "create": {
+    "open": "新建合集",
+    "title": "新建合集",
+    "nameLabel": "合集名称",
+    "placeholder": "例如：头像参考",
+    "submit": "创建",
+    "submitting": "创建中"
+  },
+  "delete": {
+    "title": "删除合集",
+    "content": "确定删除合集「{name}」吗？合集里的图片不会被删除。",
+    "confirm": "删除"
+  },
+  "card": {
+    "count": "{count, plural, other {# 张图片}}"
+  },
+  "empty": {
+    "title": "还没有合集",
+    "text": "点击「新建合集」创建第一个合集"
+  },
+  "detail": {
+    "back": "返回合集",
+    "listLabel": "合集图片",
+    "emptyTitle": "这个合集还没有图片",
+    "emptyText": "后续可以从创作历史里把喜欢的作品加入这里。"
+  },
+  "picker": {
+    "open": "收藏到合集",
+    "done": "已收藏",
+    "title": "收藏到合集",
+    "noCollection": "请先创建合集",
+    "empty": "请先到收藏合集里新建合集",
+    "manage": "管理收藏合集",
+    "saving": "正在收藏..."
+  }
+}

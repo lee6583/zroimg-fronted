@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 type SliderVerificationProps = {
@@ -15,7 +16,9 @@ type SliderProof = {
   durationMs: number;
 };
 
-const KNOB_SIZE = 40;
+// 滑块按钮的默认边长（px）；实际尺寸随轨道高度变化（手机端更大，便于手指拖动），运行时从 DOM 读取。
+const DEFAULT_KNOB_SIZE = 40;
+const KNOB_INSET = 2;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -26,7 +29,11 @@ export function SliderVerification(props: SliderVerificationProps) {
   const onVerified = props.onVerified;
   const onStart = props.onStart;
 
+  const t = useTranslations("auth.slider");
   const trackRef = useRef<HTMLDivElement>(null);
+  const knobRef = useRef<HTMLDivElement>(null);
+  // 指针是否仍按着：拉取挑战是异步的，期间松手就不应再进入拖动状态。
+  const isPointerDown = useRef(false);
   const dragStartX = useRef(0);
   const dragStartOffset = useRef(0);
   const [isDragging, setDragging] = useState(false);
@@ -44,21 +51,22 @@ export function SliderVerification(props: SliderVerificationProps) {
     progress = (offset / max) * 100;
   }
 
-  let statusText = "向右滑动完成验证";
+  let statusText = t("hint");
   if (verified) {
-    statusText = "验证通过";
+    statusText = t("verified");
   } else if (isVerifying) {
-    statusText = "验证中...";
+    statusText = t("verifying");
   }
 
-  let knobLeft: number | string = offset + 2;
+  let knobLeft: number | string = offset + KNOB_INSET;
   if (isComplete) {
-    knobLeft = `calc(100% - ${KNOB_SIZE + 2}px)`;
+    knobLeft = `calc(100% - ${KNOB_INSET}px)`;
   }
 
   function getMaxOffset() {
     const width = trackRef.current?.clientWidth ?? 0;
-    return Math.max(width - KNOB_SIZE - 4, 0);
+    const knobSize = knobRef.current?.offsetWidth || DEFAULT_KNOB_SIZE;
+    return Math.max(width - knobSize - KNOB_INSET * 2, 0);
   }
 
   async function complete(nextMaxOffset: number, nextOffset: number) {
@@ -83,7 +91,7 @@ export function SliderVerification(props: SliderVerificationProps) {
 
     setVerifying(true);
     const nextTargetRatio = onStart ? await onStart() : 0.94;
-    if (nextTargetRatio === false) {
+    if (nextTargetRatio === false || !isPointerDown.current) {
       setVerifying(false);
       return;
     }
@@ -136,6 +144,7 @@ export function SliderVerification(props: SliderVerificationProps) {
     }
 
     function handlePointerUp() {
+      isPointerDown.current = false;
       handleWindowPointerUp();
     }
 
@@ -176,12 +185,12 @@ export function SliderVerification(props: SliderVerificationProps) {
     <div
       ref={trackRef}
       className={clsx(
-        "relative h-11 w-full select-none overflow-hidden rounded-lg border transition-colors touch-none",
+        "relative h-13 w-full select-none overflow-hidden rounded-lg border transition-colors touch-none md:h-11",
         verified ? "border-emerald-500 bg-emerald-50" : "border-line bg-soft",
       )}
       role="slider"
       tabIndex={0}
-      aria-label="安全滑块验证"
+      aria-label={t("label")}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(progress)}
@@ -201,25 +210,36 @@ export function SliderVerification(props: SliderVerificationProps) {
         </span>
       </div>
       <div
+        ref={knobRef}
         className={clsx(
-          "absolute top-0.5 flex aspect-square h-[calc(100%-4px)] cursor-grab items-center justify-center rounded-md border shadow-sm active:cursor-grabbing",
+          "absolute top-0.5 flex aspect-square h-[calc(100%-4px)] cursor-grab touch-none items-center justify-center rounded-md border shadow-sm active:cursor-grabbing",
           !isDragging && "transition-all duration-300",
           verified
             ? "border-emerald-500 bg-emerald-500 text-white"
             : "border-line bg-background text-muted",
         )}
-        style={{ left: knobLeft }}
+        style={{
+          left: knobLeft,
+          transform: isComplete ? "translateX(-100%)" : undefined,
+        }}
         onPointerDown={(event) => {
           event.preventDefault();
+          isPointerDown.current = true;
           event.currentTarget.setPointerCapture(event.pointerId);
           void start(event.clientX);
         }}
+        onPointerUp={() => {
+          isPointerDown.current = false;
+        }}
+        onPointerCancel={() => {
+          isPointerDown.current = false;
+        }}
       >
         {verified ? (
-          <Check size={16} />
+          <Check size={18} aria-hidden />
         ) : (
           <svg
-            className="h-4 w-4"
+            className="h-5 w-5 md:h-4 md:w-4"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

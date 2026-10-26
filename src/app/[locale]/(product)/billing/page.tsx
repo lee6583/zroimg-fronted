@@ -1,17 +1,28 @@
 import clsx from "clsx";
 import { FileClock } from "lucide-react";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { AppPagination } from "@/components/ui/app-pagination";
 import table from "@/components/ui/data-table.module.css";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { RechargeOrder } from "@/types/orders";
-import { orderDisplayStatusLabels } from "@/utils/order-status";
+import { isPaymentType } from "@/features/billing/payment-channel";
+import { normalizeOrderDisplayStatus } from "@/utils/order-status";
+import type { OrderDisplayStatus } from "@/utils/order-status";
+import { parseJavaDateTime } from "@/utils/java-time";
 import { OrderActions } from "./order-actions";
 import styles from "./billing.module.css";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("billing.meta");
+
+  return { title: t("title") };
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type BillingPageProps = {
@@ -52,42 +63,13 @@ function normalizePageSize(value?: string) {
   return defaultPageSize;
 }
 
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).format(date);
-}
-
-function formatDateText(value?: string | null) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return formatDate(date);
-}
-
-function formatCredits(value: number) {
-  return new Intl.NumberFormat("zh-CN").format(value);
-}
-
 function listOrders(pageNo: number, pageSize: number) {
   return requestJava<PageResult<RechargeOrder>>("/order/user/recharge-orders", {
     params: { pageNo, pageSize, sortBy: "create_time", isAsc: false },
   });
 }
 
-function statusClassName(status: string) {
+function statusClassName(status: OrderDisplayStatus) {
   if (status === "paid") {
     return styles.billing__statusSuccess;
   }
@@ -96,11 +78,7 @@ function statusClassName(status: string) {
     return styles.billing__statusWarning;
   }
 
-  if (status === "cancelled") {
-    return styles.billing__statusDanger;
-  }
-
-  return styles.billing__statusMuted;
+  return styles.billing__statusDanger;
 }
 
 export default async function BillingPage(props: BillingPageProps) {
@@ -108,6 +86,8 @@ export default async function BillingPage(props: BillingPageProps) {
   const rawPage = normalizePage(readParam(params, "page"));
   const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
   await requireUser();
+  const t = await getTranslations("billing");
+  const format = await getFormatter();
   let orderPage = await listOrders(rawPage, currentPageSize);
 
   let totalPages = Math.max(1, orderPage.pages);
@@ -122,16 +102,54 @@ export default async function BillingPage(props: BillingPageProps) {
   const total = orderPage.total;
   const orders = orderPage.list;
 
+  function formatDateText(value?: string | null) {
+    if (!value) {
+      return "—";
+    }
+
+    const date = parseJavaDateTime(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return format.dateTime(date, "datetime");
+  }
+
+  function formatAmount(order: RechargeOrder) {
+    return format.number(order.amountCent / 100, "currency");
+  }
+
+  function payChannelLabel(order: RechargeOrder) {
+    if (isPaymentType(order.payChannel)) {
+      return t(`payChannel.${order.payChannel}`);
+    }
+
+    return order.payChannelText || order.payChannel || "—";
+  }
+
+  function renderStatus(order: RechargeOrder) {
+    const status = normalizeOrderDisplayStatus(order.displayStatus);
+
+    return (
+      <span className={clsx(styles.billing__statusBadge, statusClassName(status))}>
+        {t(`status.${status}`)}
+      </span>
+    );
+  }
+
   return (
     <div className={styles.billing}>
       <section className={styles.billing__header}>
         <div>
-          <h1 className="page-title">我的订单</h1>
+          <h1 className="page-title">{t("title")}</h1>
         </div>
       </section>
 
       {orders.length > 0 ? (
-        <section className={table.dataTable__card} aria-label="我的订单列表">
+        <section
+          className={clsx(table.dataTable__card, styles.billing__tableCard)}
+          aria-label={t("list.label")}
+        >
           <table className={clsx(table.dataTable, styles.billing__table)}>
             <colgroup>
               <col />
@@ -145,14 +163,14 @@ export default async function BillingPage(props: BillingPageProps) {
             </colgroup>
             <thead>
               <tr>
-                <th>订单号</th>
-                <th>金额</th>
-                <th>积分</th>
-                <th>支付方式</th>
-                <th>状态</th>
-                <th>创建时间</th>
-                <th>支付时间</th>
-                <th>操作</th>
+                <th>{t("list.columns.orderNo")}</th>
+                <th>{t("list.columns.amount")}</th>
+                <th>{t("list.columns.points")}</th>
+                <th>{t("list.columns.payChannel")}</th>
+                <th>{t("list.columns.status")}</th>
+                <th>{t("list.columns.createTime")}</th>
+                <th>{t("list.columns.payTime")}</th>
+                <th>{t("list.columns.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -166,25 +184,14 @@ export default async function BillingPage(props: BillingPageProps) {
                       {order.orderNo}
                     </span>
                   </td>
-                  <td className={table.dataTable__num}>{order.amountText}</td>
+                  <td className={table.dataTable__num}>{formatAmount(order)}</td>
                   <td className={table.dataTable__num}>
-                    <span className={styles.billing__credits}>{formatCredits(order.credits)}</span>
-                  </td>
-                  <td className={table.dataTable__muted}>
-                    {order.payChannelText || order.payChannel || "—"}
-                  </td>
-                  <td>
-                    <span
-                      className={clsx(
-                        styles.billing__statusBadge,
-                        statusClassName(order.displayStatus),
-                      )}
-                    >
-                      {orderDisplayStatusLabels[
-                        order.displayStatus as keyof typeof orderDisplayStatusLabels
-                      ] ?? order.displayStatus}
+                    <span className={styles.billing__credits}>
+                      {format.number(order.credits, "points")}
                     </span>
                   </td>
+                  <td className={table.dataTable__muted}>{payChannelLabel(order)}</td>
+                  <td>{renderStatus(order)}</td>
                   <td className={table.dataTable__time}>{formatDateText(order.createTime)}</td>
                   <td className={table.dataTable__time}>{formatDateText(order.payTime)}</td>
                   <td className={table.dataTable__muted}>
@@ -199,13 +206,55 @@ export default async function BillingPage(props: BillingPageProps) {
             </tbody>
           </table>
         </section>
+      ) : null}
+
+      {orders.length > 0 ? (
+        <ul className={styles.billing__cards} aria-label={t("list.label")}>
+          {orders.map((order) => (
+            <li key={order.orderNo} className={styles.billing__orderCard}>
+              <div className={styles.billing__cardHead}>
+                <span className={styles.billing__cardOrderNo} title={order.orderNo}>
+                  {order.orderNo}
+                </span>
+                {renderStatus(order)}
+              </div>
+              <div className={styles.billing__cardAmounts}>
+                <span className={styles.billing__cardAmount}>{formatAmount(order)}</span>
+                <span className={styles.billing__credits}>
+                  {t("list.pointsValue", { points: order.credits })}
+                </span>
+              </div>
+              <dl className={styles.billing__cardMeta}>
+                <div>
+                  <dt>{t("list.columns.payChannel")}</dt>
+                  <dd>{payChannelLabel(order)}</dd>
+                </div>
+                <div>
+                  <dt>{t("list.columns.createTime")}</dt>
+                  <dd>{formatDateText(order.createTime)}</dd>
+                </div>
+                {order.payTime ? (
+                  <div>
+                    <dt>{t("list.columns.payTime")}</dt>
+                    <dd>{formatDateText(order.payTime)}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              {order.displayStatus === "pending" ? (
+                <div className={styles.billing__cardActions}>
+                  <OrderActions orderNo={order.orderNo} canCancel />
+                </div>
+              ) : null}
+            </li>
+          ))}
+        </ul>
       ) : (
         <section className={styles.billing__empty}>
           <FileClock size={24} />
-          <p className={styles.billing__emptyTitle}>还没有订单</p>
-          <p className={styles.billing__emptyText}>购买积分后，订单记录和到账状态会显示在这里。</p>
+          <p className={styles.billing__emptyTitle}>{t("list.empty.title")}</p>
+          <p className={styles.billing__emptyText}>{t("list.empty.text")}</p>
           <Link href="/credits" className={styles.billing__emptyAction}>
-            去充值
+            {t("list.empty.action")}
           </Link>
         </section>
       )}

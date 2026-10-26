@@ -300,45 +300,11 @@
   text-align: center;
 }
 
-.generateForm__dialogOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  background: rgb(15 23 42 / 0.28);
-  padding: 1rem;
-}
-
-.generateForm__confirmDialog {
-  width: min(100%, 24rem);
-  border: 1px solid var(--line);
-  border-radius: 0.625rem;
-  background: var(--panel);
-  padding: 1.25rem;
-  box-shadow: 0 1.25rem 3rem rgb(15 23 42 / 0.18);
-}
-
-.generateForm__confirmDialog h2 {
-  margin: 0;
-  color: var(--foreground);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.generateForm__confirmDialog p {
-  margin: 0.625rem 0 0;
-  color: var(--muted);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
 .generateForm__dialogActions {
   display: flex;
+  width: 100%;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 1.25rem;
 }
 
 .generateForm__dialogCancel,
@@ -478,21 +444,47 @@
 }
 
 .generateForm__mobileMenu {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 10;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.25rem 0.5rem;
+}
+
+.generateForm__mobileTitle {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .generateForm__mobileMenuButton {
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
   place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 0.375rem;
-  background: color-mix(in oklab, var(--background) 90%, transparent);
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--foreground);
   cursor: pointer;
+}
+
+.generateForm__mobileMenuButton:hover {
+  background: var(--soft);
+}
+
+.generateForm__mobileMenuButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .generateForm__settingsDock {
@@ -914,29 +906,89 @@
   color: var(--danger);
 }
 
-.generateForm__mobileOverlay {
-  position: fixed;
-  inset: 4rem 0 0;
-  z-index: 40;
-  background: color-mix(in oklab, var(--background) 70%, transparent);
+.generateForm__settingsChip {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  height: 2.25rem;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: transparent;
+  padding: 0 0.625rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.generateForm__mobileOverlaySettings {
-  z-index: 50;
+.generateForm__settingsChip:hover {
+  background: var(--soft);
+  color: var(--foreground);
 }
 
-.generateForm__mobilePanel {
-  height: 100%;
-  width: 18rem;
-  background: var(--background);
-  border-right: 1px solid var(--line);
+.generateForm__settingsChipText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.generateForm__mobileSettingsPanel {
-  height: 100%;
-  width: min(20rem, 86vw);
-  background: var(--background);
-  border-right: 1px solid var(--line);
+.generateForm__dialogText {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.generateForm__sheetDone {
+  min-height: 2.75rem;
+  flex: 1;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--foreground);
+  padding: 0 1rem;
+  color: var(--background);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 对话列表放进 Sheet 时去掉侧栏自身的边框与固定高度 */
+.generateForm__conversationSheet .generateForm__sidebar {
+  height: auto;
+  border-right: 0;
+  background: transparent;
+}
+
+.generateForm__conversationSheet .generateForm__sidebarHeader {
+  padding: 0 0 0.75rem;
+}
+
+.generateForm__conversationSheet .generateForm__conversationScroll {
+  overflow: visible;
+  padding: 0.75rem 0 0;
+}
+
+.generateForm__settingsSheet .generateForm__settingsPanel {
+  height: auto;
+  border-right: 0;
+  background: transparent;
+}
+
+.generateForm__settingsSheet .generateForm__settingGroup {
+  padding: 0.875rem 0;
+}
+
+.generateForm__settingsSheet .generateForm__settingGroup:first-child {
+  padding-top: 0.25rem;
+}
+
+.generateForm__settingsSheet .generateForm__settingGroup:last-child {
+  border-bottom: 0;
 }
 
 @keyframes generateFormSpin {
@@ -956,6 +1008,166 @@
   40% {
     opacity: 1;
     transform: translateY(-2px);
+  }
+}
+
+/* 手机（< 768px）：结果区占满，输入框固定在底部（应用壳已在标签栏上方留出空间） */
+@media (max-width: 767px) {
+  .generateForm__composerBar {
+    border-top: 1px solid var(--line);
+    /* 应用壳已为底部标签栏留出 --app-tabbar-height，这里只需处理标签栏隐藏（输入中）时的安全区 */
+    padding: 0.5rem 0.75rem
+      max(0.5rem, calc(env(safe-area-inset-bottom) - var(--app-tabbar-height, 0px)));
+  }
+
+  .generateForm__composer {
+    border-radius: 0.875rem;
+    padding: 0.5rem 0.625rem;
+  }
+
+  .generateForm__textarea {
+    min-height: 2.75rem;
+    max-height: 7.5rem;
+    font-size: 1rem;
+  }
+
+  .generateForm__composerFooter {
+    flex-wrap: nowrap;
+    margin-top: 0.25rem;
+  }
+
+  .generateForm__composerActions {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .generateForm__uploadButton,
+  .generateForm__submitButton {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+  }
+
+  .generateForm__settingsChip {
+    height: 2.75rem;
+  }
+
+  .generateForm__costLabelError {
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  .generateForm__inputChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -0.125rem 0.5rem;
+    padding: 0 0.125rem;
+    scrollbar-width: none;
+  }
+
+  .generateForm__inputChips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .generateForm__inputChip {
+    flex-shrink: 0;
+    min-height: 2rem;
+  }
+
+  .generateForm__chipRemove {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+  }
+
+  .generateForm__chatArea {
+    padding: 1rem 0.75rem;
+  }
+
+  .generateForm__messageList {
+    gap: 1.5rem;
+  }
+
+  .generateForm__taskMessages {
+    gap: 0.75rem;
+  }
+
+  .generateForm__avatar {
+    display: none;
+  }
+
+  .generateForm__userBubble {
+    max-width: 85%;
+  }
+
+  .generateForm__assistantBubble,
+  .generateForm__assistantBubbleResult {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .generateForm__chatImages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .generateForm__chatImages:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .generateForm__chatImageItem {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .generateForm__chatImageTrigger {
+    width: 100%;
+    max-height: none;
+  }
+
+  .generateForm__chatImage {
+    width: 100%;
+    max-width: 100%;
+    max-height: 70dvh;
+    object-fit: contain;
+  }
+
+  .generateForm__suggestionButton {
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .generateForm__conversationItem {
+    min-height: 3rem;
+  }
+
+  .generateForm__iconButton {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .generateForm__conversationInput {
+    height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .generateForm__compactOption {
+    height: 2.75rem;
+    font-size: 0.875rem;
+  }
+
+  .generateForm__newConversationButton,
+  .generateForm__settingsTrigger {
+    min-height: 2.75rem;
+  }
+
+  .generateForm__dialogCancel,
+  .generateForm__dialogConfirm {
+    height: 2.75rem;
+    flex: 1;
+    font-size: 0.9375rem;
   }
 }
 
@@ -995,7 +1207,7 @@
     display: none;
   }
 
-  .generateForm__mobileOverlay {
+  .generateForm__settingsChip {
     display: none;
   }
 

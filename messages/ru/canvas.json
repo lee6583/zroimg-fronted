@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "list": {
+    "title": "",
+    "create": "",
+    "disabled": "",
+    "empty": "",
+    "gridLabel": "",
+    "maxBoards": "",
+    "nameRequired": "",
+    "nameLabel": "",
+    "saveName": "",
+    "cancel": "",
+    "rename": "",
+    "delete": "",
+    "deleteTitle": "",
+    "deleteDescription": "",
+    "deleteConfirm": "",
+    "meta": ""
+  },
+  "toolbar": {
+    "back": "",
+    "addGenerator": "",
+    "addNote": "",
+    "upload": "",
+    "history": "",
+    "undo": "",
+    "redo": "",
+    "fitView": "",
+    "reload": "",
+    "balance": "",
+    "status": {
+      "saved": "",
+      "dirty": "",
+      "saving": "",
+      "error": "",
+      "conflict": ""
+    }
+  },
+  "notices": {
+    "sceneTooLarge": "",
+    "maxNodes": "",
+    "noModel": "",
+    "modeNoModel": "",
+    "promptRequired": "",
+    "maxPending": "",
+    "referenceNotReady": "",
+    "fileType": "",
+    "fileSize": ""
+  },
+  "generator": {
+    "placeholder": "",
+    "emptyPrompt": "",
+    "reference": "",
+    "mask": "",
+    "removeMask": "",
+    "count": "",
+    "price": "",
+    "generate": "",
+    "delete": "",
+    "edit": "",
+    "model": "",
+    "ratio": "",
+    "resolution": "",
+    "countLabel": ""
+  },
+  "image": {
+    "generateFrom": "",
+    "inpaint": "",
+    "download": "",
+    "delete": "",
+    "uploading": ""
+  },
+  "note": {
+    "placeholder": "",
+    "delete": ""
+  },
+  "history": {
+    "title": "",
+    "empty": "",
+    "previous": "",
+    "next": "",
+    "page": "",
+    "add": "",
+    "addCount": ""
+  },
+  "mask": {
+    "title": "",
+    "close": "",
+    "tools": "",
+    "brush": "",
+    "eraser": "",
+    "size": "",
+    "sizeValue": "",
+    "undo": "",
+    "clear": "",
+    "loadingBoard": "",
+    "loadingImage": "",
+    "loadFailed": "",
+    "paintRequired": "",
+    "unsupported": "",
+    "createFailed": "",
+    "cancel": "",
+    "confirm": "",
+    "uploading": ""
+  }
+}

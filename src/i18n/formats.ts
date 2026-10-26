@@ -20,6 +20,8 @@ export const formats = {
     },
     // 23:54
     time: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+    // 周一 / Mon / пн
+    weekday: { weekday: "short" },
   },
   number: {
     // 积分：整数，带千分位

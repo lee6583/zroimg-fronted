@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { Brush, Download, LoaderCircle, Sparkles, Trash2 } from "lucide-react";
 import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/react";
+import { useTranslations } from "next-intl";
 import { userAssetDownloadUrl, userAssetUrl } from "@/utils/media";
 import { useCanvasActions } from "../canvas-context";
 import { getImageHeight, imageNodeWidth, type ImageNode } from "../canvas-model";
@@ -23,6 +24,7 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
   const selected = props.selected;
   const actions = useCanvasActions();
   const store = useCanvasStoreApi();
+  const t = useTranslations("canvas.image");
 
   const src = getImageSrc(data);
   const hasSize = Boolean(data.width && data.height);
@@ -45,38 +47,46 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
       <NodeToolbar isVisible={selected && isReady} position={Position.Top} offset={10}>
         <div className={styles.nodeToolbar}>
           <button
+            aria-label={t("generateFrom")}
+            title={t("generateFrom")}
             type="button"
             className={styles.nodeToolbar__button}
             onClick={() => actions.generateFrom(id)}
           >
             <Sparkles size={14} />
-            以此图生成
+            <span className={styles.nodeToolbar__label}>{t("generateFrom")}</span>
           </button>
           <button
+            aria-label={t("inpaint")}
+            title={t("inpaint")}
             type="button"
             className={styles.nodeToolbar__button}
             onClick={() => actions.inpaint(id)}
           >
             <Brush size={14} />
-            局部重绘
+            <span className={styles.nodeToolbar__label}>{t("inpaint")}</span>
           </button>
           {data.mediaAssetId ? (
             <a
+              aria-label={t("download")}
+              title={t("download")}
               className={styles.nodeToolbar__button}
               href={userAssetDownloadUrl(data.mediaAssetId)}
               download={data.name ?? `canvas-${id}.png`}
             >
               <Download size={14} />
-              下载
+              <span className={styles.nodeToolbar__label}>{t("download")}</span>
             </a>
           ) : null}
           <button
+            aria-label={t("delete")}
+            title={t("delete")}
             type="button"
             className={clsx(styles.nodeToolbar__button, styles.nodeToolbar__danger)}
             onClick={() => actions.remove(id)}
           >
             <Trash2 size={14} />
-            删除
+            <span className={styles.nodeToolbar__label}>{t("delete")}</span>
           </button>
         </div>
       </NodeToolbar>
@@ -104,7 +114,7 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
         {data.isUploading ? (
           <div className={styles.imageNode__uploading}>
             <LoaderCircle size={18} className={styles.spin} />
-            上传中
+            {t("uploading")}
           </div>
         ) : null}
       </div>

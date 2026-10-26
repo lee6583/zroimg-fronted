@@ -10,6 +10,246 @@
       "submit": "Log in",
       "submitting": "Logging in...",
       "coolingDown": "Please wait..."
+    },
+    "register": {
+      "title": "",
+      "hasAccount": "",
+      "loginLink": "",
+      "username": "",
+      "email": "",
+      "code": "",
+      "password": "",
+      "passwordPlaceholder": "",
+      "verification": "",
+      "submit": "",
+      "submitting": "",
+      "rewardTitle": "",
+      "rewardText": ""
+    },
+    "forgotPassword": {
+      "title": "",
+      "email": "",
+      "code": "",
+      "newPassword": "",
+      "newPasswordPlaceholder": "",
+      "confirmPassword": "",
+      "confirmPasswordPlaceholder": "",
+      "submit": "",
+      "submitting": "",
+      "success": "",
+      "backToLogin": ""
+    },
+    "code": {
+      "send": "",
+      "sending": "",
+      "countdown": "",
+      "sent": ""
+    },
+    "password": {
+      "show": "",
+      "hide": ""
+    },
+    "slider": {
+      "label": "",
+      "hint": "",
+      "verifying": "",
+      "verified": ""
+    },
+    "validation": {
+      "emailRequired": "",
+      "emailTooLong": "",
+      "emailInvalid": "",
+      "usernameLength": "",
+      "passwordLength": "",
+      "codeInvalid": "",
+      "verificationRequired": "",
+      "passwordMismatch": ""
+    }
+  },
+  "billing": {
+    "meta": {
+      "title": "",
+      "resultTitle": ""
+    },
+    "title": "",
+    "status": {
+      "pending": "",
+      "paid": "",
+      "cancelled": ""
+    },
+    "payChannel": {
+      "alipay": "",
+      "wxpay": ""
+    },
+    "list": {
+      "label": "",
+      "columns": {
+        "orderNo": "",
+        "amount": "",
+        "points": "",
+        "payChannel": "",
+        "status": "",
+        "createTime": "",
+        "payTime": "",
+        "actions": ""
+      },
+      "pointsValue": "",
+      "empty": {
+        "title": "",
+        "text": "",
+        "action": ""
+      },
+      "actions": {
+        "pay": "",
+        "cancel": "",
+        "cancelling": ""
+      }
+    },
+    "result": {
+      "detailsLabel": "",
+      "created": "",
+      "notFound": {
+        "title": "",
+        "description": ""
+      },
+      "loadError": {
+        "title": ""
+      },
+      "unauthorized": {
+        "title": "",
+        "description": ""
+      },
+      "fields": {
+        "orderNo": "",
+        "package": "",
+        "amount": "",
+        "rechargeAmount": "",
+        "fee": "",
+        "points": "",
+        "payChannel": "",
+        "status": "",
+        "createTime": "",
+        "expireTime": ""
+      },
+      "pointsValue": "",
+      "actions": {
+        "viewOrders": "",
+        "buyAgain": "",
+        "pay": "",
+        "paying": "",
+        "cancel": "",
+        "cancelling": ""
+      },
+      "emptyPayUrl": ""
+    }
+  },
+  "canvas": {
+    "meta": {
+      "title": ""
+    },
+    "list": {
+      "title": "",
+      "create": "",
+      "disabled": "",
+      "empty": "",
+      "gridLabel": "",
+      "maxBoards": "",
+      "nameRequired": "",
+      "nameLabel": "",
+      "saveName": "",
+      "cancel": "",
+      "rename": "",
+      "delete": "",
+      "deleteTitle": "",
+      "deleteDescription": "",
+      "deleteConfirm": "",
+      "meta": ""
+    },
+    "toolbar": {
+      "back": "",
+      "addGenerator": "",
+      "addNote": "",
+      "upload": "",
+      "history": "",
+      "undo": "",
+      "redo": "",
+      "fitView": "",
+      "reload": "",
+      "balance": "",
+      "status": {
+        "saved": "",
+        "dirty": "",
+        "saving": "",
+        "error": "",
+        "conflict": ""
+      }
+    },
+    "notices": {
+      "sceneTooLarge": "",
+      "maxNodes": "",
+      "noModel": "",
+      "modeNoModel": "",
+      "promptRequired": "",
+      "maxPending": "",
+      "referenceNotReady": "",
+      "fileType": "",
+      "fileSize": ""
+    },
+    "generator": {
+      "placeholder": "",
+      "emptyPrompt": "",
+      "reference": "",
+      "mask": "",
+      "removeMask": "",
+      "count": "",
+      "price": "",
+      "generate": "",
+      "delete": "",
+      "edit": "",
+      "model": "",
+      "ratio": "",
+      "resolution": "",
+      "countLabel": ""
+    },
+    "image": {
+      "generateFrom": "",
+      "inpaint": "",
+      "download": "",
+      "delete": "",
+      "uploading": ""
+    },
+    "note": {
+      "placeholder": "",
+      "delete": ""
+    },
+    "history": {
+      "title": "",
+      "empty": "",
+      "previous": "",
+      "next": "",
+      "page": "",
+      "add": "",
+      "addCount": ""
+    },
+    "mask": {
+      "title": "",
+      "close": "",
+      "tools": "",
+      "brush": "",
+      "eraser": "",
+      "size": "",
+      "sizeValue": "",
+      "undo": "",
+      "clear": "",
+      "loadingBoard": "",
+      "loadingImage": "",
+      "loadFailed": "",
+      "paintRequired": "",
+      "unsupported": "",
+      "createFailed": "",
+      "cancel": "",
+      "confirm": "",
+      "uploading": ""
     }
   },
   "common": {
@@ -21,12 +261,110 @@
       "retry": "Reload",
       "startCreating": "Start creating",
       "backHome": "Back to home",
-      "close": "Close"
+      "close": "Close",
+      "enterWorkspace": ""
     },
     "status": {
       "loading": "Loading...",
       "pleaseWait": "Please wait..."
     }
+  },
+  "credits": {
+    "meta": {
+      "title": ""
+    },
+    "title": "",
+    "overview": {
+      "label": "",
+      "pendingOrders": "",
+      "completedOrders": "",
+      "packages": "",
+      "balance": ""
+    },
+    "payment": {
+      "title": "",
+      "channels": {
+        "alipay": "",
+        "wxpay": ""
+      }
+    },
+    "packages": {
+      "title": "",
+      "popular": "",
+      "points": "",
+      "payableWithFee": "",
+      "buy": "",
+      "creating": "",
+      "unavailable": ""
+    },
+    "enterprise": {
+      "name": "",
+      "line": "",
+      "features": {
+        "points": "",
+        "materials": "",
+        "members": "",
+        "projects": ""
+      }
+    },
+    "custom": {
+      "title": "",
+      "amountLabel": "",
+      "currencySymbol": "",
+      "placeholder": "",
+      "credits": "",
+      "fee": "",
+      "payable": "",
+      "submit": "",
+      "submitShort": "",
+      "creating": "",
+      "summary": "",
+      "invalidAmount": "",
+      "overMax": ""
+    }
+  },
+  "dashboard": {
+    "meta": {
+      "title": ""
+    },
+    "title": "",
+    "metrics": {
+      "generated": "",
+      "monthlyGenerated": "",
+      "favorites": "",
+      "balance": ""
+    },
+    "quickActions": {
+      "label": "",
+      "generate": "",
+      "video": "",
+      "credits": "",
+      "orders": ""
+    },
+    "recent": {
+      "title": "",
+      "empty": ""
+    },
+    "checkIn": {
+      "title": "",
+      "streak": "",
+      "reward": "",
+      "weekLabel": "",
+      "weekDays": "",
+      "dailyPoints": "",
+      "actions": {
+        "claim": "",
+        "claimed": "",
+        "unavailable": "",
+        "claiming": ""
+      }
+    }
+  },
+  "docs": {
+    "loading": "",
+    "empty": "",
+    "toc": "",
+    "tocLabel": ""
   },
   "errors": {
     "page": {
@@ -42,7 +380,280 @@
     },
     "api": {
       "network": "Network error. Please check your connection and try again.",
-      "unknown": "Request failed. Please try again later."
+      "unknown": "Request failed. Please try again later.",
+      "invalidResponse": "",
+      "serviceUnavailable": "",
+      "serverError": "",
+      "requestFailed": "",
+      "uploadFailed": "",
+      "unauthorized": "",
+      "forbidden": "",
+      "notFound": "",
+      "tooManyRequests": "",
+      "invalidCredentials": "",
+      "emailAlreadyRegistered": "",
+      "verificationCodeInvalid": "",
+      "sliderVerificationFailed": "",
+      "pointsInsufficient": "",
+      "fileTooLarge": "",
+      "unsupportedFileType": ""
+    },
+    "server": {
+      "unavailable": "",
+      "invalidResponse": "",
+      "requestFailed": ""
+    },
+    "upload": {
+      "unsupportedImageType": "",
+      "imageTooLarge": "",
+      "tooManyFiles": "",
+      "failed": ""
+    }
+  },
+  "favorites": {
+    "meta": {
+      "title": "",
+      "detailTitle": ""
+    },
+    "title": "",
+    "actions": {
+      "cancel": "",
+      "save": "",
+      "rename": "",
+      "delete": ""
+    },
+    "create": {
+      "open": "",
+      "title": "",
+      "nameLabel": "",
+      "placeholder": "",
+      "submit": "",
+      "submitting": ""
+    },
+    "delete": {
+      "title": "",
+      "content": "",
+      "confirm": ""
+    },
+    "card": {
+      "count": ""
+    },
+    "empty": {
+      "title": "",
+      "text": ""
+    },
+    "detail": {
+      "back": "",
+      "listLabel": "",
+      "emptyTitle": "",
+      "emptyText": ""
+    },
+    "picker": {
+      "open": "",
+      "done": "",
+      "title": "",
+      "noCollection": "",
+      "empty": "",
+      "manage": "",
+      "saving": ""
+    }
+  },
+  "gallery": {
+    "hero": {
+      "title": ""
+    },
+    "tabs": {
+      "label": "",
+      "all": ""
+    },
+    "category": {
+      "realistic": "",
+      "anime": "",
+      "art": "",
+      "other": ""
+    },
+    "status": {
+      "pending": "",
+      "approved": "",
+      "rejected": "",
+      "withdrawn": "",
+      "removed": ""
+    },
+    "list": {
+      "label": ""
+    },
+    "card": {
+      "untitled": "",
+      "author": "",
+      "anonymous": ""
+    },
+    "empty": {
+      "label": "",
+      "title": "",
+      "text": ""
+    },
+    "loading": "",
+    "publish": {
+      "submit": "",
+      "submitting": "",
+      "withdraw": "",
+      "unpublish": "",
+      "unpublishTitle": "",
+      "unpublishConfirm": "",
+      "cancel": "",
+      "resubmit": "",
+      "noReason": "",
+      "rejectedTitle": "",
+      "removedTitle": ""
+    }
+  },
+  "generate": {
+    "meta": {
+      "title": ""
+    },
+    "unavailable": {
+      "title": "",
+      "description": ""
+    },
+    "modes": {
+      "text_to_image": "",
+      "image_to_image": "",
+      "inpaint": ""
+    },
+    "workspace": {
+      "openConversations": "",
+      "collapseSidebar": "",
+      "expandSidebar": "",
+      "closeSettings": ""
+    },
+    "conversation": {
+      "listTitle": "",
+      "defaultTitle": "",
+      "create": "",
+      "empty": "",
+      "unarchived": "",
+      "editName": "",
+      "saveName": "",
+      "nameRequired": "",
+      "delete": "",
+      "deleteTitle": "",
+      "deleteDescription": "",
+      "deleteConfirm": "",
+      "cancel": ""
+    },
+    "settings": {
+      "title": "",
+      "summary": "",
+      "compactSummary": "",
+      "mode": "",
+      "model": "",
+      "ratio": "",
+      "resolution": "",
+      "count": "",
+      "estimating": "",
+      "estimate": "",
+      "done": ""
+    },
+    "composer": {
+      "placeholder": "",
+      "placeholderEdit": "",
+      "cost": "",
+      "insufficient": "",
+      "referenceName": "",
+      "removeReference": "",
+      "upload": "",
+      "submit": "",
+      "openSettings": ""
+    },
+    "errors": {
+      "noEditModel": "",
+      "maxInputs": "",
+      "fileType": "",
+      "fileSize": "",
+      "needReference": ""
+    },
+    "preview": {
+      "greeting": "",
+      "suggestionLabel": "",
+      "suggestions": {
+        "cat": "",
+        "city": "",
+        "sakura": ""
+      },
+      "detail": "",
+      "meta": "",
+      "waiting": "",
+      "retrying": "",
+      "failed": "",
+      "resultAlt": ""
+    }
+  },
+  "history": {
+    "meta": {
+      "title": ""
+    },
+    "title": "",
+    "filters": {
+      "label": "",
+      "timeRange": "",
+      "startDate": "",
+      "endDate": "",
+      "anyTime": "",
+      "rangeSummary": "",
+      "invalidRange": "",
+      "clear": "",
+      "apply": "",
+      "mediaLabel": "",
+      "media": {
+        "all": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    "list": {
+      "label": ""
+    },
+    "columns": {
+      "preview": "",
+      "prompt": "",
+      "model": "",
+      "resolution": "",
+      "ratio": "",
+      "points": "",
+      "status": "",
+      "time": "",
+      "actions": ""
+    },
+    "duration": "",
+    "actions": {
+      "downloadImage": "",
+      "downloadVideo": ""
+    },
+    "delete": {
+      "title": "",
+      "running": "",
+      "content": "",
+      "confirm": "",
+      "deleting": "",
+      "cancel": "",
+      "done": ""
+    },
+    "empty": {
+      "default": {
+        "title": "",
+        "text": "",
+        "action": ""
+      },
+      "filtered": {
+        "title": "",
+        "text": "",
+        "action": ""
+      },
+      "video": {
+        "title": "",
+        "text": "",
+        "action": ""
+      }
     }
   },
   "landing": {
@@ -141,6 +752,23 @@
       "copyright": "© {year} ZroImg"
     }
   },
+  "licenses": {
+    "title": "",
+    "columns": {
+      "project": "",
+      "license": "",
+      "copyright": "",
+      "usage": ""
+    },
+    "usage": {
+      "canvasEditor": "",
+      "maskDrawing": "",
+      "canvasState": "",
+      "canvasReference": "",
+      "generationReference": "",
+      "architectureReference": ""
+    }
+  },
   "metadata": {
     "site": {
       "title": "ZroImg - AI image generator",
@@ -195,7 +823,9 @@
       "home": "Home",
       "gallery": "Gallery",
       "pricing": "Pricing",
-      "docs": "Docs"
+      "docs": "Docs",
+      "menu": "",
+      "menuTitle": ""
     },
     "account": {
       "openMenu": "Open account menu",
@@ -235,6 +865,310 @@
         "tickets": "Feedback",
         "settings": "Account settings"
       }
+    },
+    "tabs": {
+      "label": "",
+      "overview": "",
+      "generate": "",
+      "canvas": "",
+      "works": "",
+      "me": ""
+    },
+    "me": {
+      "title": "",
+      "points": "",
+      "language": "",
+      "darkMode": ""
+    }
+  },
+  "pricing": {
+    "title": "",
+    "popular": "",
+    "points": "",
+    "buy": "",
+    "free": {
+      "code": "",
+      "name": "",
+      "credits": "",
+      "action": "",
+      "features": {
+        "start": "",
+        "learn": "",
+        "browse": "",
+        "noSubscription": ""
+      }
+    }
+  },
+  "settings": {
+    "title": "",
+    "nav": {
+      "label": "",
+      "profile": "",
+      "security": ""
+    },
+    "profile": {
+      "title": "",
+      "avatar": "",
+      "changeAvatar": "",
+      "avatarHint": "",
+      "avatarUpdated": "",
+      "username": "",
+      "email": "",
+      "bio": "",
+      "bioPlaceholder": "",
+      "bioCount": "",
+      "save": "",
+      "saving": "",
+      "saved": ""
+    },
+    "security": {
+      "title": "",
+      "currentPassword": "",
+      "newPassword": "",
+      "confirmPassword": "",
+      "newPasswordPlaceholder": "",
+      "showField": "",
+      "hideField": "",
+      "showPassword": "",
+      "hidePassword": "",
+      "note": "",
+      "submit": "",
+      "submitting": "",
+      "updated": ""
+    }
+  },
+  "submissions": {
+    "meta": {
+      "title": ""
+    },
+    "title": "",
+    "tabs": {
+      "label": "",
+      "all": ""
+    },
+    "list": {
+      "label": ""
+    },
+    "reason": {
+      "empty": "",
+      "rejected": "",
+      "removed": ""
+    },
+    "times": {
+      "submit": "",
+      "review": ""
+    },
+    "empty": {
+      "title": "",
+      "action": ""
+    }
+  },
+  "task": {
+    "status": {
+      "pending": "",
+      "processing": "",
+      "succeeded": "",
+      "failed": ""
+    },
+    "retrying": "",
+    "retryingWait": "",
+    "quality": {
+      "auto": "",
+      "standard": ""
+    }
+  },
+  "tickets": {
+    "title": "",
+    "stats": {
+      "all": "",
+      "open": "",
+      "inProgress": "",
+      "processed": ""
+    },
+    "filter": {
+      "all": "",
+      "open": "",
+      "in_progress": "",
+      "processed": ""
+    },
+    "type": {
+      "bug": "",
+      "billing": "",
+      "generation": "",
+      "account": "",
+      "suggestion": "",
+      "other": ""
+    },
+    "status": {
+      "open": "",
+      "in_progress": "",
+      "resolved": "",
+      "closed": ""
+    },
+    "create": "",
+    "view": "",
+    "empty": "",
+    "table": {
+      "type": "",
+      "subject": "",
+      "createdAt": "",
+      "updatedAt": "",
+      "status": "",
+      "actions": ""
+    },
+    "card": {
+      "updatedAt": ""
+    },
+    "form": {
+      "title": "",
+      "backToList": "",
+      "type": "",
+      "subject": "",
+      "subjectPlaceholder": "",
+      "content": "",
+      "contentPlaceholder": "",
+      "attachments": "",
+      "chooseFiles": "",
+      "attachmentsHint": "",
+      "removeFile": "",
+      "remove": "",
+      "fileSizeKb": "",
+      "fileSizeMb": "",
+      "tooManyFiles": "",
+      "submit": "",
+      "submitting": "",
+      "cancel": "",
+      "submitted": ""
+    },
+    "detail": {
+      "title": "",
+      "meta": "",
+      "currentStatus": "",
+      "process": {
+        "open": "",
+        "in_progress": "",
+        "resolved": "",
+        "closed": ""
+      },
+      "thread": "",
+      "admin": "",
+      "you": "",
+      "noAdminReply": "",
+      "attachments": "",
+      "attachmentAlt": "",
+      "attachmentFallback": "",
+      "replyLabel": "",
+      "replyPlaceholder": "",
+      "reply": "",
+      "replying": "",
+      "replyClosed": ""
+    }
+  },
+  "ui": {
+    "lightbox": {
+      "open": "",
+      "openTitle": "",
+      "dialog": "",
+      "close": "",
+      "closeTitle": ""
+    },
+    "videoLightbox": {
+      "play": "",
+      "dialog": "",
+      "close": "",
+      "closeTitle": ""
+    },
+    "pagination": {
+      "total": ""
+    },
+    "select": {
+      "placeholder": ""
+    },
+    "avatar": {
+      "label": ""
+    }
+  },
+  "video": {
+    "meta": {
+      "title": ""
+    },
+    "mode": {
+      "text_to_video": "",
+      "image_to_video": ""
+    },
+    "seconds": "",
+    "durationShort": "",
+    "settings": {
+      "label": "",
+      "title": "",
+      "open": "",
+      "done": "",
+      "model": "",
+      "prompt": "",
+      "promptPlaceholder": "",
+      "mode": "",
+      "duration": "",
+      "durationLabel": "",
+      "reference": "",
+      "referenceHint": "",
+      "upload": "",
+      "uploading": "",
+      "removeReference": "",
+      "ratio": "",
+      "resolution": "",
+      "submit": "",
+      "submitting": "",
+      "submitted": ""
+    },
+    "errors": {
+      "notConfigured": "",
+      "promptRequired": "",
+      "paramsIncomplete": "",
+      "referenceRequired": "",
+      "insufficientPoints": ""
+    },
+    "frame": {
+      "stage": {
+        "queued": "",
+        "generating": "",
+        "failed": ""
+      },
+      "hint": {
+        "queued": "",
+        "generating": "",
+        "retrying": ""
+      },
+      "failFallback": "",
+      "retry": "",
+      "retrySubmitting": "",
+      "loadFailed": "",
+      "durationShort": ""
+    },
+    "info": {
+      "toggle": "",
+      "expand": "",
+      "collapse": "",
+      "model": "",
+      "mode": "",
+      "duration": "",
+      "ratio": "",
+      "resolution": "",
+      "points": "",
+      "createdAt": ""
+    },
+    "workspace": {
+      "closedTitle": "",
+      "closedText": "",
+      "noWorks": "",
+      "allWorks": "",
+      "taskMeta": "",
+      "loadMore": "",
+      "loadingMore": "",
+      "hideSettings": "",
+      "showSettings": "",
+      "retryIncomplete": "",
+      "download": "",
+      "downloadLabel": ""
     }
   }
 }

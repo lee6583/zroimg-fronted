@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { isTaskPending } from "@/features/generation/generation-model";
@@ -30,6 +31,7 @@ function pickTask(task: PollerTask): PollerTask {
 export function TaskPoller(props: TaskPollerProps) {
   const taskNo = props.taskNo;
 
+  const tTask = useTranslations("task");
   const [task, setTask] = useState(props.initialTask);
   const status = task.status;
 
@@ -50,5 +52,5 @@ export function TaskPoller(props: TaskPollerProps) {
     return () => window.clearInterval(timer);
   }, [status, taskNo]);
 
-  return <span className={styles.taskPoller__badge}>{getTaskStatusLabel(task)}</span>;
+  return <span className={styles.taskPoller__badge}>{getTaskStatusLabel(task, tTask)}</span>;
 }

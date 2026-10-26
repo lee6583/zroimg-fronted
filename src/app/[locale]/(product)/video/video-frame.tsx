@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { CircleAlert, RotateCcw } from "lucide-react";
 import type { CSSProperties, TransitionEvent } from "react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useClock } from "@/features/generation/use-clock";
 import type { VideoTask } from "@/types/video";
@@ -14,8 +15,6 @@ import {
   parseJavaTime,
   parseRatio,
   shortFailReason,
-  videoStageHints,
-  videoStageLabels,
 } from "@/utils/video-task";
 import styles from "./video-frame.module.css";
 
@@ -44,6 +43,8 @@ export function frameStyle(ratio: string) {
 export function VideoFrame(props: VideoFrameProps) {
   const task = props.task;
   const compact = props.compact ?? false;
+  const t = useTranslations("video.frame");
+  const tTask = useTranslations("task");
   const stage = getVideoStage(task.status, isTaskRetrying(task));
   const isRunning = isVideoRunning(stage);
   const resultUrl = task.results[0]?.resultUrl ?? "";
@@ -51,10 +52,17 @@ export function VideoFrame(props: VideoFrameProps) {
   const [videoState, setVideoState] = useState<VideoState>("loading");
   const [isCoverGone, setCoverGone] = useState(false);
   const isReady = hasVideo && videoState === "ready";
-  const reason = shortFailReason(task.failReason);
-  let title = videoStageLabels[stage];
+  const reason = shortFailReason(task.failReason) || t("failFallback");
+  let title = "";
+  if (stage === "queued" || stage === "generating") {
+    title = t(`stage.${stage}`);
+  }
   if (stage === "retrying") {
-    title = getRetryLabel(task);
+    title = getRetryLabel(task, tTask);
+  }
+  let hint = "";
+  if (stage === "queued" || stage === "generating" || stage === "retrying") {
+    hint = t(`hint.${stage}`);
   }
 
   function hideCover(event: TransitionEvent<HTMLDivElement>) {
@@ -93,7 +101,7 @@ export function VideoFrame(props: VideoFrameProps) {
       {stage === "failed" ? (
         <div className={clsx(styles.frame__layer, styles.frame__failed)}>
           <CircleAlert size={compact ? 18 : 22} className={styles.frame__failIcon} />
-          <p className={styles.frame__title}>{videoStageLabels.failed}</p>
+          <p className={styles.frame__title}>{t("stage.failed")}</p>
           <p className={styles.frame__reason} title={reason}>
             {reason}
           </p>
@@ -105,7 +113,7 @@ export function VideoFrame(props: VideoFrameProps) {
               disabled={props.isRetrying}
             >
               <RotateCcw size={14} />
-              {props.isRetrying ? "提交中..." : "重新生成"}
+              {props.isRetrying ? t("retrySubmitting") : t("retry")}
             </button>
           ) : null}
           {props.retryMessage && !compact ? (
@@ -142,16 +150,22 @@ export function VideoFrame(props: VideoFrameProps) {
                   {title}
                   <Elapsed createTime={task.createTime} />
                 </p>
-                {compact ? null : <p className={styles.frame__hint}>{videoStageHints[stage]}</p>}
+                {compact ? null : <p className={styles.frame__hint}>{hint}</p>}
               </>
             ) : null}
             {!isRunning && videoState === "error" ? (
-              <p className={styles.frame__hint}>视频加载失败</p>
+              <p className={styles.frame__hint}>{t("loadFailed")}</p>
             ) : null}
           </div>
           {isRunning && !compact ? (
             <p className={styles.frame__meta}>
-              {[task.ratio, task.resolution, durationText(task.durationSeconds)]
+              {[
+                task.ratio,
+                task.resolution,
+                task.durationSeconds === null
+                  ? ""
+                  : t("durationShort", { seconds: task.durationSeconds }),
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
@@ -160,13 +174,6 @@ export function VideoFrame(props: VideoFrameProps) {
       ) : null}
     </div>
   );
-}
-
-function durationText(value: number | null) {
-  if (value === null) {
-    return "";
-  }
-  return `${value}s`;
 }
 
 function Elapsed(props: ElapsedProps) {

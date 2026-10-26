@@ -1,10 +1,13 @@
 "use client";
 
 import clsx from "clsx";
-import { getErrorMessage } from "@/utils/error";
-import { FormEvent, useState } from "react";
-import { FolderHeart, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { FormEvent, useId, useState } from "react";
+import { FolderHeart, Pencil, Plus, Trash2 } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
+import { Sheet } from "@/components/ui/sheet";
+import { ConfirmSheet } from "@/features/history/confirm-sheet";
+import { translateApiError } from "@/i18n/api-error";
 import type { FavoriteCollection } from "@/types/favorites";
 import styles from "./favorites.module.css";
 import { useRouter } from "@/i18n/navigation";
@@ -16,7 +19,11 @@ type FavoriteCollectionsViewProps = {
 export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
   const collections = props.collections;
 
+  const t = useTranslations("favorites");
+  const tError = useTranslations("errors.api");
+  const createFormId = useId();
   const router = useRouter();
+  const [deleteTarget, setDeleteTarget] = useState<FavoriteCollection | null>(null);
   const [isCreating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [isLoading, setLoading] = useState(false);
@@ -34,7 +41,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
     try {
       await favoriteCollectionsApi.createCollection({ name });
     } catch (error) {
-      setError(getErrorMessage(error));
+      setError(translateApiError(error, tError));
       setLoading(false);
       return;
     }
@@ -79,7 +86,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
         name: editName,
       });
     } catch (error) {
-      setError(getErrorMessage(error));
+      setError(translateApiError(error, tError));
       setPendingId("");
       return;
     }
@@ -91,20 +98,19 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
   }
 
   async function deleteCollection(collectionId: string) {
-    const confirmed = window.confirm("确定删除这个合集吗？合集里的图片不会被删除。");
-    if (!confirmed) return;
-
     setPendingId(collectionId);
     setError("");
 
     try {
       await favoriteCollectionsApi.deleteCollection(collectionId);
     } catch (error) {
-      setError(getErrorMessage(error));
+      setError(translateApiError(error, tError));
       setPendingId("");
+      setDeleteTarget(null);
       return;
     }
 
+    setDeleteTarget(null);
     router.refresh();
     setPendingId("");
   }
@@ -113,7 +119,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
     <main className={styles.favorites}>
       <section className={styles.favorites__header}>
         <div>
-          <h1 className="page-title">收藏合集</h1>
+          <h1 className="page-title">{t("title")}</h1>
         </div>
         <button
           type="button"
@@ -124,75 +130,66 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
           className={styles.favorites__createButton}
         >
           <Plus size={17} />
-          新建合集
+          {t("create.open")}
         </button>
       </section>
 
-      {isCreating ? (
-        <div
-          className={styles.favorites__modalBackdrop}
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              cancelCreate();
-            }
-          }}
+      <Sheet
+        open={isCreating}
+        onClose={cancelCreate}
+        title={t("create.title")}
+        isLocked={isLoading}
+        className={styles.favorites__sheet}
+        footer={
+          <div className={styles.favorites__modalActions}>
+            <button type="button" onClick={cancelCreate} className={styles.favorites__cancelButton}>
+              {t("actions.cancel")}
+            </button>
+            <button
+              type="submit"
+              form={createFormId}
+              disabled={isLoading}
+              className={styles.favorites__submitButton}
+            >
+              {isLoading ? t("create.submitting") : t("create.submit")}
+            </button>
+          </div>
+        }
+      >
+        <form
+          id={createFormId}
+          className={styles.favorites__createPanel}
+          onSubmit={createCollection}
         >
-          <section
-            className={styles.favorites__modal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="create-collection-title"
-          >
-            <div className={styles.favorites__modalHeader}>
-              <div>
-                <h2 id="create-collection-title" className={styles.favorites__modalTitle}>
-                  新建合集
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={cancelCreate}
-                className={styles.favorites__modalClose}
-                aria-label="关闭弹窗"
-              >
-                <X size={16} />
-              </button>
-            </div>
+          <label className={styles.favorites__field}>
+            <span className={styles.favorites__srOnly}>{t("create.nameLabel")}</span>
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className={styles.favorites__input}
+              placeholder={t("create.placeholder")}
+              autoFocus
+            />
+          </label>
 
-            <form className={styles.favorites__createPanel} onSubmit={createCollection}>
-              <label className={styles.favorites__field}>
-                <input
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className={styles.favorites__input}
-                  placeholder="例如：头像参考"
-                  autoFocus
-                />
-              </label>
+          {error ? <p className={styles.favorites__error}>{error}</p> : null}
+        </form>
+      </Sheet>
 
-              {error ? <p className={styles.favorites__error}>{error}</p> : null}
-
-              <div className={styles.favorites__modalActions}>
-                <button
-                  type="button"
-                  onClick={cancelCreate}
-                  className={styles.favorites__cancelButton}
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={styles.favorites__submitButton}
-                >
-                  {isLoading ? "创建中" : "创建"}
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-      ) : null}
+      <ConfirmSheet
+        open={deleteTarget !== null}
+        title={t("delete.title")}
+        confirmLabel={t("delete.confirm")}
+        cancelLabel={t("actions.cancel")}
+        isDanger
+        isLoading={Boolean(deleteTarget && pendingId === deleteTarget.id)}
+        onConfirm={() => {
+          if (deleteTarget) void deleteCollection(deleteTarget.id);
+        }}
+        onClose={() => setDeleteTarget(null)}
+      >
+        {t("delete.content", { name: deleteTarget?.name ?? "" })}
+      </ConfirmSheet>
 
       <section
         className={clsx(
@@ -225,6 +222,7 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
                     value={editName}
                     onChange={(event) => setEditName(event.target.value)}
                     className={styles.favorites__renameInput}
+                    aria-label={t("create.nameLabel")}
                     autoFocus
                   />
                   <button
@@ -232,26 +230,31 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
                     disabled={pendingId === collection.id}
                     className={styles.favorites__smallButton}
                   >
-                    保存
+                    {t("actions.save")}
                   </button>
                   <button
                     type="button"
                     onClick={cancelEdit}
                     className={styles.favorites__smallButton}
                   >
-                    取消
+                    {t("actions.cancel")}
                   </button>
                 </form>
               ) : (
-                <h2 className={styles.favorites__cardTitle}>{collection.name}</h2>
+                <h2 className={styles.favorites__cardTitle} title={collection.name}>
+                  {collection.name}
+                </h2>
               )}
-              <p className={styles.favorites__cardMeta}>{collection.count.items} 张图片</p>
+              <p className={styles.favorites__cardMeta}>
+                {t("card.count", { count: collection.count.items })}
+              </p>
             </div>
             {editId !== collection.id ? (
               <div className={styles.favorites__cardActions}>
                 <button
                   type="button"
-                  aria-label="编辑合集名称"
+                  aria-label={t("actions.rename")}
+                  title={t("actions.rename")}
                   className={styles.favorites__iconButton}
                   onClick={(event) => {
                     event.stopPropagation();
@@ -262,12 +265,14 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
                 </button>
                 <button
                   type="button"
-                  aria-label="删除合集"
+                  aria-label={t("actions.delete")}
+                  title={t("actions.delete")}
                   disabled={pendingId === collection.id}
                   className={styles.favorites__iconButton}
                   onClick={(event) => {
                     event.stopPropagation();
-                    deleteCollection(collection.id);
+                    setError("");
+                    setDeleteTarget(collection);
                   }}
                 >
                   <Trash2 size={17} />
@@ -287,8 +292,8 @@ export function FavoriteCollectionsView(props: FavoriteCollectionsViewProps) {
               <FolderHeart size={23} />
             </span>
             <div className={styles.favorites__emptyText}>
-              <h2 className={styles.favorites__emptyTitle}>还没有合集</h2>
-              <p className={styles.favorites__emptyMeta}>点击右上角新建一个合集</p>
+              <h2 className={styles.favorites__emptyTitle}>{t("empty.title")}</h2>
+              <p className={styles.favorites__emptyMeta}>{t("empty.text")}</p>
             </div>
           </div>
         ) : null}

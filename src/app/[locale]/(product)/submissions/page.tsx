@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { Send } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -7,16 +9,17 @@ import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { GalleryStatus, GallerySubmission, GallerySubmissionQuery } from "@/types/gallery";
-import {
-  formatGalleryTime,
-  galleryCategoryLabels,
-  galleryStatusLabels,
-  isGalleryStatus,
-} from "@/utils/gallery";
+import { isGalleryStatus } from "@/utils/gallery";
+import { parseJavaDateTime } from "@/utils/java-time";
 import styles from "./submissions.module.css";
 import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("submissions.meta");
+  return { title: t("title") };
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type SubmissionsPageProps = {
@@ -77,19 +80,31 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
     { params: query },
   );
   const submissions = submissionPage.list;
+  const t = await getTranslations("submissions");
+  const tGallery = await getTranslations("gallery");
+  const format = await getFormatter();
+
+  function formatTime(value: string | null) {
+    if (!value) {
+      return "-";
+    }
+
+    return format.dateTime(parseJavaDateTime(value), "datetime");
+  }
 
   return (
     <main className={styles.submissions}>
       <section className={styles.submissions__header}>
-        <h1 className="page-title">我的投稿</h1>
+        <h1 className="page-title">{t("title")}</h1>
       </section>
 
-      <nav className={styles.submissions__tabs} aria-label="投稿状态">
+      <nav className={styles.submissions__tabs} aria-label={t("tabs.label")}>
         <Link
           href={statusHref()}
           className={clsx(styles.submissions__tab, !status && styles.submissions__tabActive)}
+          aria-current={!status ? "page" : undefined}
         >
-          全部
+          {t("tabs.all")}
         </Link>
         {statusTabs.map((item) => {
           return (
@@ -100,8 +115,9 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
                 styles.submissions__tab,
                 status === item && styles.submissions__tabActive,
               )}
+              aria-current={status === item ? "page" : undefined}
             >
-              {galleryStatusLabels[item]}
+              {tGallery(`status.${item}`)}
             </Link>
           );
         })}
@@ -109,7 +125,7 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
 
       {submissions.length > 0 ? (
         <>
-          <section className={styles.submissions__grid} aria-label="投稿列表">
+          <section className={styles.submissions__grid} aria-label={t("list.label")}>
             {submissions.map((item) => {
               const hasReason = item.status === "rejected" || item.status === "removed";
 
@@ -134,9 +150,9 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
                           hasReason && styles.submissions__statusDanger,
                         )}
                       >
-                        {galleryStatusLabels[item.status]}
+                        {tGallery(`status.${item.status}`)}
                       </span>
-                      <span>{galleryCategoryLabels[item.category]}</span>
+                      <span>{tGallery(`category.${item.category}`)}</span>
                     </div>
 
                     <p className={styles.submissions__prompt} title={item.prompt}>
@@ -145,26 +161,29 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
 
                     {hasReason ? (
                       <p className={styles.submissions__reason}>
-                        原因：{item.rejectReason || "未填写"}
-                        {item.status === "removed" ? (
-                          <>
-                            ，如有疑问请提交
-                            <Link href="/tickets" className={styles.submissions__reasonLink}>
-                              意见反馈
-                            </Link>
-                          </>
-                        ) : null}
+                        {item.status === "removed"
+                          ? t.rich("reason.removed", {
+                              reason: item.rejectReason || t("reason.empty"),
+                              link: (chunks) => (
+                                <Link href="/tickets" className={styles.submissions__reasonLink}>
+                                  {chunks}
+                                </Link>
+                              ),
+                            })
+                          : t("reason.rejected", {
+                              reason: item.rejectReason || t("reason.empty"),
+                            })}
                       </p>
                     ) : null}
 
                     <dl className={styles.submissions__times}>
                       <div>
-                        <dt>投稿</dt>
-                        <dd>{formatGalleryTime(item.submitTime)}</dd>
+                        <dt>{t("times.submit")}</dt>
+                        <dd>{formatTime(item.submitTime)}</dd>
                       </div>
                       <div>
-                        <dt>审核</dt>
-                        <dd>{formatGalleryTime(item.reviewTime)}</dd>
+                        <dt>{t("times.review")}</dt>
+                        <dd>{formatTime(item.reviewTime)}</dd>
                       </div>
                     </dl>
 
@@ -184,9 +203,9 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
           <span className={styles.submissions__emptyIcon}>
             <Send size={26} />
           </span>
-          <h2 className={styles.submissions__emptyTitle}>暂无投稿</h2>
+          <h2 className={styles.submissions__emptyTitle}>{t("empty.title")}</h2>
           <Link href="/history" className={styles.submissions__emptyAction}>
-            去创作历史投稿
+            {t("empty.action")}
           </Link>
         </section>
       )}

@@ -1,5 +1,3 @@
-import { getImageResolutionLabel } from "./generation-quality.ts";
-
 type HistoryMediaTask = {
   modelType: string;
   quality: string | null;
@@ -8,33 +6,44 @@ type HistoryMediaTask = {
   format: string | null;
 };
 
+type HistoryMedia = "image" | "video";
+
+// 图片画质 -> 分辨率档位；auto / standard 等无档位的值由页面按 history.quality.* 翻译
+const imageResolutionLabels: Record<string, string> = {
+  low: "1K",
+  medium: "2K",
+  high: "4K",
+};
+
 function isVideoTask(task: Pick<HistoryMediaTask, "modelType">) {
   return task.modelType === "video";
 }
 
-function getMediaLabel(task: Pick<HistoryMediaTask, "modelType">) {
+function getMediaKind(task: Pick<HistoryMediaTask, "modelType">): HistoryMedia {
   if (isVideoTask(task)) {
-    return "视频";
+    return "video";
   }
 
-  return "图片";
+  return "image";
 }
 
+/** 视频返回分辨率（720p），图片返回 1K/2K/4K；其余画质原样返回，没有值时返回空字符串。 */
 function getResolutionText(task: HistoryMediaTask) {
   if (isVideoTask(task)) {
-    return task.resolution || "-";
+    return task.resolution || "";
   }
 
-  return getImageResolutionLabel(task.quality ?? "-");
+  const quality = task.quality ?? "";
+  return imageResolutionLabels[quality] ?? quality;
 }
 
-function getDurationText(task: HistoryMediaTask) {
+function getDurationSeconds(task: HistoryMediaTask) {
   const seconds = task.durationSeconds;
   if (!isVideoTask(task) || !seconds || seconds <= 0) {
-    return "";
+    return null;
   }
 
-  return `${seconds}s`;
+  return seconds;
 }
 
 function getDownloadName(task: HistoryMediaTask & { taskNo: string }, index: number) {
@@ -46,16 +55,5 @@ function getDownloadName(task: HistoryMediaTask & { taskNo: string }, index: num
   return `zroimg-${task.taskNo}-${index + 1}.${extension}`;
 }
 
-function getDeleteText(task: Pick<HistoryMediaTask, "modelType">) {
-  const label = getMediaLabel(task);
-  return `删除后${label}将从存储中永久移除，且会同时从画廊和收藏中移除，无法恢复。`;
-}
-
-export {
-  getDeleteText,
-  getDownloadName,
-  getDurationText,
-  getMediaLabel,
-  getResolutionText,
-  isVideoTask,
-};
+export type { HistoryMedia };
+export { getDownloadName, getDurationSeconds, getMediaKind, getResolutionText, isVideoTask };

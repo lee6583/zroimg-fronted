@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": "图片生成"
+  },
+  "unavailable": {
+    "title": "图片生成暂未开放",
+    "description": "管理员配置图片模型后即可使用。"
+  },
+  "modes": {
+    "text_to_image": "文生图",
+    "image_to_image": "图生图",
+    "inpaint": "局部重绘"
+  },
+  "workspace": {
+    "openConversations": "打开对话列表",
+    "collapseSidebar": "收起对话侧栏",
+    "expandSidebar": "展开对话侧栏",
+    "closeSettings": "关闭生图设置"
+  },
+  "conversation": {
+    "listTitle": "对话列表",
+    "defaultTitle": "新对话",
+    "create": "新建对话",
+    "empty": "还没有对话",
+    "unarchived": "未归档",
+    "editName": "编辑对话名称",
+    "saveName": "保存对话名称",
+    "nameRequired": "对话名称不能为空",
+    "delete": "删除对话",
+    "deleteTitle": "删除对话",
+    "deleteDescription": "确定删除“{title}”吗？删除后无法恢复。",
+    "deleteConfirm": "确定删除",
+    "cancel": "取消"
+  },
+  "settings": {
+    "title": "生图设置",
+    "summary": "{ratio} · 预计 {points, number} 积分",
+    "compactSummary": "{model} · {ratio} · {quality} · {count, plural, other {# 张}}",
+    "mode": "模式",
+    "model": "模型",
+    "ratio": "比例",
+    "resolution": "分辨率",
+    "count": "生成数量",
+    "estimating": "正在计算积分",
+    "estimate": "预计消耗 {points, number} 积分",
+    "done": "完成"
+  },
+  "composer": {
+    "placeholder": "描述你想要的图片...",
+    "placeholderEdit": "描述你想让参考图发生什么变化...",
+    "cost": "预计 {points, number} 积分",
+    "insufficient": "积分不足",
+    "referenceName": "参考图 {id}",
+    "removeReference": "移除参考图",
+    "upload": "上传参考图",
+    "submit": "生成图片",
+    "openSettings": "打开生图设置"
+  },
+  "errors": {
+    "noEditModel": "暂无可用图生图模型",
+    "maxInputs": "{count, plural, other {最多上传 # 张参考图}}",
+    "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
+    "fileSize": "单张图片不能超过 10 MB",
+    "needReference": "图生图需要先上传至少 1 张参考图"
+  },
+  "preview": {
+    "greeting": "你好！描述你想要的图片，我来为你生成。",
+    "suggestionLabel": "试试这些提示词：",
+    "suggestions": {
+      "cat": "一只在星空下弹吉他的猫",
+      "city": "未来城市的日落景色",
+      "sakura": "水彩风格的樱花园"
+    },
+    "detail": "{quality} · {ratio} · {count, plural, other {# 张}} · {points, number} 积分",
+    "meta": "{status} · {detail}",
+    "waiting": "正在生成画面",
+    "retrying": "上次请求未成功，正在自动重试",
+    "failed": "生成失败了，请调整描述后再试。",
+    "resultAlt": "{prompt}，生成结果 {index, number}"
+  }
+}

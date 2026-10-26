@@ -14,25 +14,6 @@ const stageByStatus: Record<VideoTaskStatus, VideoStage> = {
   failed: "failed",
 };
 
-export const videoStageLabels: Record<VideoStage, string> = {
-  idle: "",
-  queued: "排队中",
-  generating: "正在生成视频",
-  retrying: "重试中",
-  completed: "已完成",
-  failed: "视频生成失败",
-};
-
-export const videoStageHints: Record<VideoStage, string> = {
-  idle: "",
-  queued: "任务已提交，等待开始生成",
-  generating: "AI 正在构建画面与运动",
-  retrying: "上次请求未成功，正在自动重试",
-  completed: "",
-  failed: "",
-};
-
-const defaultFailReason = "生成未完成，请稍后重试";
 const javaTimePattern = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/;
 
 export function getVideoStage(status: string | null | undefined, retrying = false): VideoStage {
@@ -112,17 +93,11 @@ export function parseRatio(value: string | null | undefined): VideoRatio | null 
   return { width, height };
 }
 
-export function formatVideoTime(value: string | null | undefined) {
-  if (!value) {
-    return "-";
-  }
-  return value.slice(0, 16).replace("T", " ");
-}
-
+/** 失败原因取第一行；为空或是原始 JSON 时返回空字符串，由页面显示 video.frame.failFallback。 */
 export function shortFailReason(value: string | null | undefined) {
   const line = (value ?? "").trim().split("\n")[0]?.replace(/\s+/g, " ") ?? "";
   if (!line || line.startsWith("{") || line.startsWith("[")) {
-    return defaultFailReason;
+    return "";
   }
   return line;
 }

@@ -1,0 +1,44 @@
+.confirmSheet__text {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.confirmSheet__actions {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.confirmSheet__button {
+  min-width: 5rem;
+  white-space: nowrap;
+}
+
+.confirmSheet__danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.confirmSheet__danger:hover {
+  background: color-mix(in oklab, var(--danger) 86%, #000);
+}
+
+@media (min-width: 768px) {
+  .confirmSheet[role="dialog"] {
+    width: min(100%, 25rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .confirmSheet__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .confirmSheet__button {
+    min-height: 2.75rem;
+  }
+}

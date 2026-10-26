@@ -17,18 +17,20 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const t = await getTranslations("auth.register");
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-24">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="page-title">开启创作之旅</h1>
+          <h1 className="page-title">{t("title")}</h1>
         </div>
         <RegisterForm />
         <p className="mt-6 text-center text-sm text-muted">
-          已有账号？{" "}
+          {t("hasAccount")}{" "}
           <Link href="/login" className="font-medium text-foreground hover:underline">
-            欢迎回来
+            {t("loginLink")}
           </Link>
         </p>
       </div>

@@ -11,7 +11,7 @@ import { imageGallery } from "@/lib/structured-data";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { GalleryCategory, GalleryImage } from "@/types/gallery";
-import { galleryCategoryLabels, isGalleryCategory } from "@/utils/gallery";
+import { isGalleryCategory } from "@/utils/gallery";
 import { parseJavaDateTime } from "@/utils/java-time";
 import { publicAssetUrl } from "@/utils/media";
 import styles from "./gallery.module.css";
@@ -30,13 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const categoryTabs = [
-  { label: "全部", href: "/gallery", value: undefined },
-  { label: "写实", href: "/gallery?category=realistic", value: "realistic" },
-  { label: "动漫", href: "/gallery?category=anime", value: "anime" },
-  { label: "艺术", href: "/gallery?category=art", value: "art" },
-  { label: "其他", href: "/gallery?category=other", value: "other" },
-] as const;
+const categoryTabs: GalleryCategory[] = ["realistic", "anime", "art", "other"];
 
 type GalleryPageProps = {
   searchParams: Promise<{
@@ -96,6 +90,8 @@ export default async function GalleryPage(props: GalleryPageProps) {
   const images = galleryPage.list;
   const locale = await getLocale();
   const tMeta = await getTranslations("metadata.gallery");
+  const t = await getTranslations("gallery");
+  const tCommon = await getTranslations("common");
   const format = await getFormatter();
 
   const galleryItems = images.map((item) => {
@@ -125,31 +121,41 @@ export default async function GalleryPage(props: GalleryPageProps) {
       <ProductTopNav />
       <main className={styles.gallery}>
         <section className={styles.gallery__hero}>
-          <h1 className="page-title">探索社区创作者的精彩作品</h1>
+          <h1 className="page-title">{t("hero.title")}</h1>
         </section>
 
-        <nav className={styles.gallery__tabs} aria-label="作品分类">
-          {categoryTabs.map((tab) => {
-            const active = category === tab.value || (!category && !tab.value);
-            return (
-              <Link
-                key={tab.label}
-                href={tab.href}
-                className={clsx(styles.gallery__tab, active && styles.gallery__tabActive)}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
+        <nav className={styles.gallery__tabs} aria-label={t("tabs.label")}>
+          <div className={styles.gallery__tabsTrack}>
+            <Link
+              href="/gallery"
+              className={clsx(styles.gallery__tab, !category && styles.gallery__tabActive)}
+              aria-current={!category ? "page" : undefined}
+            >
+              {t("tabs.all")}
+            </Link>
+            {categoryTabs.map((tab) => {
+              const active = category === tab;
+              return (
+                <Link
+                  key={tab}
+                  href={`/gallery?category=${tab}`}
+                  className={clsx(styles.gallery__tab, active && styles.gallery__tabActive)}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {t(`category.${tab}`)}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         {images.length > 0 ? (
           <>
-            <section className={styles.gallery__masonry} aria-label="社区作品">
+            <section className={styles.gallery__masonry} aria-label={t("list.label")}>
               {images.map((item) => {
                 const asset = item.generatedImage.thumbnailAsset || item.generatedImage.outputAsset;
                 const authorName =
-                  item.userProfile.username || item.userProfile.user?.name || "创作者";
+                  item.userProfile.username || item.userProfile.user?.name || t("card.anonymous");
 
                 return (
                   <article key={item.id} className={styles.gallery__card}>
@@ -164,14 +170,18 @@ export default async function GalleryPage(props: GalleryPageProps) {
 
                     <div className={styles.gallery__cardBody}>
                       <div className={styles.gallery__cardMeta}>
-                        <span>{galleryCategoryLabels[item.category]}</span>
+                        <span>{t(`category.${item.category}`)}</span>
                         <span>
                           {format.dateTime(parseJavaDateTime(item.createdAt), "monthDay")}
                         </span>
                       </div>
-                      <h2 className={styles.gallery__cardTitle}>{item.title || "未命名作品"}</h2>
+                      <h2 className={styles.gallery__cardTitle}>
+                        {item.title || t("card.untitled")}
+                      </h2>
                       <p className={styles.gallery__prompt}>{item.prompt}</p>
-                      <p className={styles.gallery__author}>by {authorName}</p>
+                      <p className={styles.gallery__author} title={authorName}>
+                        {t("card.author", { name: authorName })}
+                      </p>
                     </div>
                   </article>
                 );
@@ -181,13 +191,11 @@ export default async function GalleryPage(props: GalleryPageProps) {
           </>
         ) : (
           <section className={styles.gallery__empty}>
-            <p className={styles.gallery__emptyLabel}>暂无公开作品</p>
-            <h2 className={styles.gallery__emptyTitle}>第一批社区作品，等你发布。</h2>
-            <p className={styles.gallery__emptyText}>
-              在创作历史里点击“投稿到画廊”，审核通过后作品会出现在这里。
-            </p>
+            <p className={styles.gallery__emptyLabel}>{t("empty.label")}</p>
+            <h2 className={styles.gallery__emptyTitle}>{t("empty.title")}</h2>
+            <p className={styles.gallery__emptyText}>{t("empty.text")}</p>
             <Link href="/generate" className={styles.gallery__emptyAction}>
-              开始创作
+              {tCommon("actions.startCreating")}
             </Link>
           </section>
         )}

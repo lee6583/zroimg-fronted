@@ -3,10 +3,11 @@
 import clsx from "clsx";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
+import { useFormatter } from "next-intl";
 import { useState } from "react";
 import type { VideoTask } from "@/types/video";
-import { formatVideoTime } from "@/utils/video-task";
-import { displayMode } from "./video-submit";
+import { parseJavaDateTime } from "@/utils/java-time";
+import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
 type VideoInfoProps = {
@@ -18,17 +19,28 @@ const longPrompt = 120;
 
 export function VideoInfo(props: VideoInfoProps) {
   const task = props.task;
+  const text = useVideoText();
+  const t = text.t;
+  const format = useFormatter();
   const [isOpen, setOpen] = useState(false);
   const [isPromptOpen, setPromptOpen] = useState(false);
   const canExpand = task.prompt.length > longPrompt || task.prompt.includes("\n");
+  let duration = "-";
+  if (task.durationSeconds !== null) {
+    duration = t("seconds", { seconds: task.durationSeconds });
+  }
+  let createdAt = "-";
+  if (task.createTime) {
+    createdAt = format.dateTime(parseJavaDateTime(task.createTime), "datetime");
+  }
   const rows = [
-    { label: "模型", value: task.modelName || task.modelCode },
-    { label: "模式", value: displayMode(task.mode) },
-    { label: "时长", value: task.durationSeconds === null ? "-" : `${task.durationSeconds} 秒` },
-    { label: "比例", value: task.ratio || "-" },
-    { label: "分辨率", value: task.resolution || "-" },
-    { label: "消耗积分", value: String(task.requiredPoints) },
-    { label: "创建时间", value: formatVideoTime(task.createTime) },
+    { key: "model", label: t("info.model"), value: task.modelName || task.modelCode },
+    { key: "mode", label: t("info.mode"), value: text.modeLabel(task.mode) },
+    { key: "duration", label: t("info.duration"), value: duration },
+    { key: "ratio", label: t("info.ratio"), value: task.ratio || "-" },
+    { key: "resolution", label: t("info.resolution"), value: task.resolution || "-" },
+    { key: "points", label: t("info.points"), value: format.number(task.requiredPoints, "points") },
+    { key: "createdAt", label: t("info.createdAt"), value: createdAt },
   ];
 
   return (
@@ -40,7 +52,7 @@ export function VideoInfo(props: VideoInfoProps) {
           onClick={() => setOpen((value) => !value)}
           aria-expanded={isOpen}
         >
-          生成信息
+          {t("info.toggle")}
           <ChevronDown
             size={15}
             className={clsx(styles.videoPage__chevron, isOpen && styles.videoPage__chevronOpen)}
@@ -66,15 +78,15 @@ export function VideoInfo(props: VideoInfoProps) {
                 className={styles.videoPage__textButton}
                 onClick={() => setPromptOpen((value) => !value)}
               >
-                {isPromptOpen ? "收起" : "展开"}
+                {isPromptOpen ? t("info.collapse") : t("info.expand")}
               </button>
             ) : null}
           </div>
           <dl className={styles.videoPage__infoGrid}>
             {rows.map((row) => (
-              <div key={row.label} className={styles.videoPage__infoItem}>
+              <div key={row.key} className={styles.videoPage__infoItem}>
                 <dt>{row.label}</dt>
-                <dd>{row.value}</dd>
+                <dd title={row.value}>{row.value}</dd>
               </div>
             ))}
           </dl>

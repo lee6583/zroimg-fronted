@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "mode": {
+    "text_to_video": "",
+    "image_to_video": ""
+  },
+  "seconds": "",
+  "durationShort": "",
+  "settings": {
+    "label": "",
+    "title": "",
+    "open": "",
+    "done": "",
+    "model": "",
+    "prompt": "",
+    "promptPlaceholder": "",
+    "mode": "",
+    "duration": "",
+    "durationLabel": "",
+    "reference": "",
+    "referenceHint": "",
+    "upload": "",
+    "uploading": "",
+    "removeReference": "",
+    "ratio": "",
+    "resolution": "",
+    "submit": "",
+    "submitting": "",
+    "submitted": ""
+  },
+  "errors": {
+    "notConfigured": "",
+    "promptRequired": "",
+    "paramsIncomplete": "",
+    "referenceRequired": "",
+    "insufficientPoints": ""
+  },
+  "frame": {
+    "stage": {
+      "queued": "",
+      "generating": "",
+      "failed": ""
+    },
+    "hint": {
+      "queued": "",
+      "generating": "",
+      "retrying": ""
+    },
+    "failFallback": "",
+    "retry": "",
+    "retrySubmitting": "",
+    "loadFailed": "",
+    "durationShort": ""
+  },
+  "info": {
+    "toggle": "",
+    "expand": "",
+    "collapse": "",
+    "model": "",
+    "mode": "",
+    "duration": "",
+    "ratio": "",
+    "resolution": "",
+    "points": "",
+    "createdAt": ""
+  },
+  "workspace": {
+    "closedTitle": "",
+    "closedText": "",
+    "noWorks": "",
+    "allWorks": "",
+    "taskMeta": "",
+    "loadMore": "",
+    "loadingMore": "",
+    "hideSettings": "",
+    "showSettings": "",
+    "retryIncomplete": "",
+    "download": "",
+    "downloadLabel": ""
+  }
+}

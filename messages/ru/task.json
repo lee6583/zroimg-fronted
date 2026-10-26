@@ -1,0 +1,14 @@
+{
+  "status": {
+    "pending": "",
+    "processing": "",
+    "succeeded": "",
+    "failed": ""
+  },
+  "retrying": "",
+  "retryingWait": "",
+  "quality": {
+    "auto": "",
+    "standard": ""
+  }
+}

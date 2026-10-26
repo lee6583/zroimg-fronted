@@ -23,17 +23,22 @@
 }
 
 .gallery__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem;
   margin-top: 2rem;
   border-bottom: 1px solid var(--line);
   padding-bottom: 1rem;
 }
 
+.gallery__tabsTrack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
 .gallery__tab {
   display: inline-flex;
+  flex-shrink: 0;
+  white-space: nowrap;
   min-height: 2rem;
   align-items: center;
   justify-content: center;
@@ -62,8 +67,9 @@
   margin-top: 1.5rem;
 }
 
+/* block（不是 inline-block）：多张卡片共处一个行框时，widows/orphans 会阻止分栏，作品全挤在第一列 */
 .gallery__card {
-  display: inline-block;
+  display: block;
   width: 100%;
   overflow: hidden;
   break-inside: avoid;
@@ -177,7 +183,93 @@
   background: color-mix(in oklab, var(--foreground) 86%, var(--background));
 }
 
-@media (min-width: 640px) {
+@media (max-width: 767px) {
+  .gallery {
+    padding: 1.5rem 0.75rem calc(2rem + env(safe-area-inset-bottom));
+  }
+
+  .gallery__hero {
+    padding-inline: 0.25rem;
+  }
+
+  .gallery__tabs {
+    margin: 1.25rem -0.75rem 0;
+    padding-bottom: 0.75rem;
+  }
+
+  .gallery__tabsTrack {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-inline: 0.75rem;
+    scroll-padding-inline: 0.75rem;
+    scrollbar-width: none;
+  }
+
+  .gallery__tabsTrack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gallery__tab {
+    min-height: 2.5rem;
+    border-color: var(--line);
+    border-radius: 999px;
+    padding: 0 1rem;
+    font-size: 0.85rem;
+  }
+
+  .gallery__masonry {
+    column-count: 2;
+    column-gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .gallery__card {
+    margin-bottom: 0.5rem;
+    border-radius: 0.625rem;
+  }
+
+  .gallery__cardBody {
+    gap: 0.3rem;
+    padding: 0.55rem 0.6rem 0.65rem;
+  }
+
+  .gallery__cardMeta {
+    font-size: 0.66rem;
+  }
+
+  .gallery__cardTitle {
+    font-size: 0.8rem;
+  }
+
+  .gallery__prompt {
+    font-size: 0.72rem;
+    line-height: 1.5;
+    -webkit-line-clamp: 2;
+  }
+
+  .gallery__author {
+    overflow: hidden;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gallery__empty {
+    padding: 3rem 1rem;
+  }
+
+  .gallery__emptyTitle {
+    font-size: 1.4rem;
+  }
+
+  .gallery__emptyAction {
+    min-height: 2.75rem;
+  }
+}
+
+@media (min-width: 768px) {
   .gallery__masonry {
     column-count: 2;
   }

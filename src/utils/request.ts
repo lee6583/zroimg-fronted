@@ -1,6 +1,17 @@
 import { getErrorMessage } from "@/utils/error";
 import type { ApiErrorInfo, JavaResult, RequestOptions } from "@/types/api";
 
+/**
+ * 前端网络层自己产生的错误码（不是 Java 返回的）。用户端用 translateApiError 映射到 errors.api.*；
+ * message 里的中文只是后台 /admin（只有中文、直接展示 message）的兜底文案。
+ */
+export const clientErrorCodes = {
+  invalidResponse: "CLIENT_INVALID_RESPONSE",
+  serviceUnavailable: "CLIENT_SERVICE_UNAVAILABLE",
+  requestFailed: "CLIENT_REQUEST_FAILED",
+  uploadFailed: "CLIENT_UPLOAD_FAILED",
+} as const;
+
 export class ApiRequestError extends Error implements ApiErrorInfo {
   code: number;
   errorCode?: string;
@@ -65,6 +76,15 @@ function readPageLocale() {
   return document.documentElement.lang;
 }
 
+function readErrorCode(result: JavaResult<unknown>) {
+  if (typeof result.errorCode === "string") {
+    return result.errorCode;
+  }
+
+  // 后端既没有 errorCode 也没有 message 时，由前端给出本地化的通用提示
+  return result.message ? undefined : clientErrorCodes.requestFailed;
+}
+
 async function parsePayload(response: Response) {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -125,6 +145,9 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     throw new ApiRequestError({
       message: response.ok ? "服务端返回格式不正确" : "服务暂时不可用，请稍后重试",
       code: response.status,
+      errorCode: response.ok
+        ? clientErrorCodes.invalidResponse
+        : clientErrorCodes.serviceUnavailable,
       status: response.status,
       url,
       method,
@@ -135,7 +158,7 @@ export async function request<T>(options: RequestOptions): Promise<T> {
     throw new ApiRequestError({
       message: result.message || "请求失败",
       code: result.code,
-      errorCode: typeof result.errorCode === "string" ? result.errorCode : undefined,
+      errorCode: readErrorCode(result),
       status: response.ok ? result.code : response.status,
       url,
       method,

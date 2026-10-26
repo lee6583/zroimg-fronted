@@ -250,7 +250,7 @@ export const CanvasStoreContext = createContext<CanvasStore | null>(null);
 export function useCanvasStoreApi() {
   const store = useContext(CanvasStoreContext);
   if (!store) {
-    throw new Error("CanvasStoreContext 未初始化");
+    throw new Error("CanvasStoreContext is not provided");
   }
 
   return store;

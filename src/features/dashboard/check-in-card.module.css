@@ -156,3 +156,45 @@
     transform: translateY(-2rem) scale(0.98);
   }
 }
+
+@media (max-width: 767px) {
+  .checkInCard p {
+    margin-bottom: 0;
+  }
+
+  .checkInCard {
+    padding: 0.9rem;
+  }
+
+  .checkInCard__week {
+    gap: 0.25rem;
+    margin-top: 0.75rem;
+  }
+
+  .checkInCard__weekDay {
+    gap: 0.3rem;
+  }
+
+  .checkInCard__weekday {
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  .checkInCard__dayText {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .checkInCard__meta {
+    margin-top: 0.65rem;
+  }
+
+  .checkInCard__actions {
+    padding-top: 0.75rem;
+  }
+
+  .checkInCard__button {
+    height: 2.75rem;
+    font-size: 0.9rem;
+  }
+}

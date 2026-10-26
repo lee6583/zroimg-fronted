@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "title": "创作历史"
+  },
+  "title": "创作历史",
+  "filters": {
+    "label": "创作历史筛选",
+    "timeRange": "时间范围",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "anyTime": "全部时间",
+    "rangeSummary": "{from} – {to}",
+    "invalidRange": "开始时间不能晚于结束时间",
+    "clear": "清除",
+    "apply": "确定",
+    "mediaLabel": "创作类型",
+    "media": {
+      "all": "全部类型",
+      "image": "图片",
+      "video": "视频"
+    }
+  },
+  "list": {
+    "label": "历史作品"
+  },
+  "columns": {
+    "preview": "作品",
+    "prompt": "提示词",
+    "model": "模型",
+    "resolution": "分辨率",
+    "ratio": "比例",
+    "points": "消耗",
+    "status": "状态",
+    "time": "时间",
+    "actions": "操作"
+  },
+  "duration": "{seconds, number}s",
+  "actions": {
+    "downloadImage": "下载图片",
+    "downloadVideo": "下载视频"
+  },
+  "delete": {
+    "title": "删除作品",
+    "running": "任务进行中，暂不能删除",
+    "content": "删除后{media, select, video {视频} other {图片}}将从存储中永久移除，且会同时从画廊和收藏中移除，无法恢复。",
+    "confirm": "删除",
+    "deleting": "删除中...",
+    "cancel": "取消",
+    "done": "已删除"
+  },
+  "empty": {
+    "default": {
+      "title": "还没有创作记录",
+      "text": "写下第一句提示词，让灵感在这里留下第一张图。",
+      "action": "去创作"
+    },
+    "filtered": {
+      "title": "当前筛选条件下没有创作记录",
+      "text": "可以调整时间或类型筛选，或者查看全部历史。",
+      "action": "查看全部"
+    },
+    "video": {
+      "title": "还没有视频创作记录",
+      "text": "描述一个画面，生成第一段视频。",
+      "action": "去创作视频"
+    }
+  }
+}

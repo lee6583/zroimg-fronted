@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import { Link } from "@/i18n/navigation";
 import { buildMetadata } from "@/lib/seo";
@@ -22,15 +22,12 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const freeFeatures = [
-  "注册后即可开始体验",
-  "适合熟悉提示词与工作流",
-  "可浏览作品与创作入口",
-  "不需要订阅，想用时再补充",
-];
+const freeFeatureKeys = ["start", "learn", "browse", "noSubscription"] as const;
 
 export default async function PricingPage() {
   const packages = await requestJava<CreditPackage[]>("/order/user/packages");
+  const t = await getTranslations("pricing");
+  const format = await getFormatter();
   return (
     <>
       <ProductTopNav />
@@ -38,31 +35,33 @@ export default async function PricingPage() {
         <section className={styles.pricing__hero}>
           <div className={styles.pricing__inner}>
             <div className={styles.pricing__header}>
-              <h1 className="page-title">选择适合你的创作方案</h1>
+              <h1 className="page-title">{t("title")}</h1>
             </div>
 
             <div className={styles.pricing__grid}>
               <article className={styles.pricing__card}>
-                <p className={styles.pricing__code}>Free</p>
-                <h2 className={styles.pricing__planName}>免费体验</h2>
-                <p className={styles.pricing__price}>¥0</p>
-                <p className={styles.pricing__credits}>新用户体验额度</p>
+                <p className={styles.pricing__code}>{t("free.code")}</p>
+                <h2 className={styles.pricing__planName}>{t("free.name")}</h2>
+                <div className={styles.pricing__priceRow}>
+                  <p className={styles.pricing__price}>{format.number(0, "currency")}</p>
+                  <p className={styles.pricing__credits}>{t("free.credits")}</p>
+                </div>
                 <ul className={styles.pricing__features}>
-                  {freeFeatures.map((feature) => (
-                    <li key={feature} className={styles.pricing__feature}>
+                  {freeFeatureKeys.map((key) => (
+                    <li key={key} className={styles.pricing__feature}>
                       <span className={styles.pricing__featureDot} />
-                      <span>{feature}</span>
+                      <span>{t(`free.features.${key}`)}</span>
                     </li>
                   ))}
                 </ul>
                 <Link href="/register" className={styles.pricing__action}>
-                  注册体验
+                  {t("free.action")}
                 </Link>
               </article>
 
               {packages.map((item) => {
                 const highlighted = item.recommended;
-                const badge = highlighted ? "最受欢迎" : "";
+                const badge = highlighted ? t("popular") : "";
 
                 return (
                   <article
@@ -83,15 +82,19 @@ export default async function PricingPage() {
                     >
                       {item.description}
                     </p>
-                    <p className={styles.pricing__price}>{item.amountText}</p>
-                    <p
-                      className={clsx(
-                        styles.pricing__credits,
-                        highlighted && styles.pricing__creditsHighlighted,
-                      )}
-                    >
-                      {item.credits} 积分
-                    </p>
+                    <div className={styles.pricing__priceRow}>
+                      <p className={styles.pricing__price}>
+                        {format.number(item.amountCent / 100, "currency")}
+                      </p>
+                      <p
+                        className={clsx(
+                          styles.pricing__credits,
+                          highlighted && styles.pricing__creditsHighlighted,
+                        )}
+                      >
+                        {t("points", { points: item.credits })}
+                      </p>
+                    </div>
                     <ul
                       className={clsx(
                         styles.pricing__features,
@@ -117,7 +120,7 @@ export default async function PricingPage() {
                         highlighted && styles.pricing__actionHighlighted,
                       )}
                     >
-                      立即购买
+                      {t("buy")}
                     </Link>
                   </article>
                 );

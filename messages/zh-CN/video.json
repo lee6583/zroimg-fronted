@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "title": "视频创作"
+  },
+  "mode": {
+    "text_to_video": "文生视频",
+    "image_to_video": "图生视频"
+  },
+  "seconds": "{seconds, number} 秒",
+  "durationShort": "{seconds, number}s",
+  "settings": {
+    "label": "视频生成参数",
+    "title": "视频设置",
+    "open": "设置",
+    "done": "完成",
+    "model": "模型",
+    "prompt": "提示词",
+    "promptPlaceholder": "描述你想生成的视频画面，例如：雨夜霓虹街道上，一辆黑色跑车缓慢驶过，电影感镜头。",
+    "mode": "生成模式",
+    "duration": "时长",
+    "durationLabel": "视频时长",
+    "reference": "参考图",
+    "referenceHint": "仅支持 PNG、JPEG、WebP，最大 10 MB",
+    "upload": "上传参考图",
+    "uploading": "上传中...",
+    "removeReference": "移除参考图",
+    "ratio": "画面比例",
+    "resolution": "分辨率",
+    "submit": "生成视频",
+    "submitting": "提交中...",
+    "submitted": "任务已提交"
+  },
+  "errors": {
+    "notConfigured": "视频服务暂未配置",
+    "promptRequired": "请输入视频提示词",
+    "paramsIncomplete": "视频参数尚未配置完整",
+    "referenceRequired": "图生视频需要上传参考图片",
+    "insufficientPoints": "积分不足，还需要 {points, number} 积分"
+  },
+  "frame": {
+    "stage": {
+      "queued": "排队中",
+      "generating": "正在生成视频",
+      "failed": "视频生成失败"
+    },
+    "hint": {
+      "queued": "任务已提交，等待开始生成",
+      "generating": "AI 正在构建画面与运动",
+      "retrying": "上次请求未成功，正在自动重试"
+    },
+    "failFallback": "生成未完成，请稍后重试",
+    "retry": "重新生成",
+    "retrySubmitting": "提交中...",
+    "loadFailed": "视频加载失败",
+    "durationShort": "{seconds, number}s"
+  },
+  "info": {
+    "toggle": "生成信息",
+    "expand": "展开",
+    "collapse": "收起",
+    "model": "模型",
+    "mode": "模式",
+    "duration": "时长",
+    "ratio": "比例",
+    "resolution": "分辨率",
+    "points": "消耗积分",
+    "createdAt": "创建时间"
+  },
+  "workspace": {
+    "closedTitle": "视频创作暂未开放",
+    "closedText": "管理员配置视频服务后，这里会显示可用模型。",
+    "noWorks": "还没有视频作品",
+    "allWorks": "全部作品",
+    "taskMeta": "{time} · {ratio}",
+    "loadMore": "加载更多",
+    "loadingMore": "加载中...",
+    "hideSettings": "收起视频设置",
+    "showSettings": "展开视频设置",
+    "retryIncomplete": "任务参数不完整，请在视频设置中重新提交",
+    "download": "下载",
+    "downloadLabel": "下载视频"
+  }
+}

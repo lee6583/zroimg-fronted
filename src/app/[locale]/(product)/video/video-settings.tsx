@@ -1,14 +1,15 @@
 "use client";
 
 import clsx from "clsx";
-import { ImagePlus, Sparkles, X } from "lucide-react";
+import { ImagePlus, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
 import { AppSelect } from "@/components/ui/app-select";
-import { getErrorMessage } from "@/utils/error";
+import { Sheet, useIsMobile } from "@/components/ui/sheet";
 import type { VideoGenerationMode, VideoModel } from "@/types/video";
-import { displayMode, isVideoMode, submitVideoTask } from "./video-submit";
+import { isVideoMode, submitVideoTask } from "./video-submit";
+import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
 type VideoForm = {
@@ -93,6 +94,10 @@ function createForm(model: VideoModel | null, prompt = ""): VideoForm {
 }
 
 export function VideoSettings(props: VideoSettingsProps) {
+  const text = useVideoText();
+  const t = text.t;
+  const isMobile = useIsMobile();
+  const [isSheetOpen, setSheetOpen] = useState(false);
   const firstModel = props.models[0] || null;
   const [form, setForm] = useState(() => createForm(firstModel));
   const [message, setMessage] = useState("");
@@ -145,7 +150,7 @@ export function VideoSettings(props: VideoSettingsProps) {
         referenceFileName: asset.originalName || file.name,
       });
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(text.errorText(error));
     } finally {
       setUploading(false);
     }
@@ -153,19 +158,22 @@ export function VideoSettings(props: VideoSettingsProps) {
 
   async function submit() {
     if (!model || !params) {
-      setMessage("视频服务暂未配置");
+      setMessage(t("errors.notConfigured"));
       return;
     }
     if (!form.prompt.trim()) {
-      setMessage("请输入视频提示词");
+      setMessage(t("errors.promptRequired"));
       return;
     }
     if (!form.mode || !form.ratio || !form.resolution || form.duration === null) {
-      setMessage("视频参数尚未配置完整");
+      setMessage(t("errors.paramsIncomplete"));
       return;
     }
     if (canUseReferenceImage && !form.referenceMediaId) {
-      setMessage("图生视频需要上传参考图片");
+      setMessage(t("errors.referenceRequired"));
+      if (isMobile) {
+        setSheetOpen(true);
+      }
       return;
     }
 
@@ -183,61 +191,54 @@ export function VideoSettings(props: VideoSettingsProps) {
         referenceMediaId: canUseReferenceImage ? form.referenceMediaId : undefined,
       });
       await props.onCreated();
-      setMessage("任务已提交");
+      setMessage(t("settings.submitted"));
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(text.errorText(error));
     } finally {
       setSubmitting(false);
     }
   }
 
-  return (
-    <aside className={styles.videoPage__settings} aria-label="视频生成参数">
-      <SettingGroup title="模型">
-        <AppSelect
-          value={form.model}
-          onChange={selectModel}
-          options={props.models.map((item) => ({ value: item.modelCode, label: item.modelName }))}
-        />
-      </SettingGroup>
+  const modelGroup = (
+    <SettingGroup title={t("settings.model")}>
+      <AppSelect
+        value={form.model}
+        onChange={selectModel}
+        options={props.models.map((item) => ({ value: item.modelCode, label: item.modelName }))}
+      />
+    </SettingGroup>
+  );
 
-      <SettingGroup title="提示词">
-        <textarea
-          className={styles.videoPage__textarea}
-          rows={5}
-          value={form.prompt}
-          onChange={(event) => updateForm({ prompt: event.target.value })}
-          placeholder="描述你想生成的视频画面，例如：雨夜霓虹街道上，一辆黑色跑车缓慢驶过，电影感镜头。"
-        />
-      </SettingGroup>
-
-      <SettingGroup title="生成模式">
+  const durationValue = form.duration ?? params?.durationMin ?? 1;
+  const optionGroups = (
+    <>
+      <SettingGroup title={t("settings.mode")}>
         <div className={styles.videoPage__optionGridThree}>
           {modes.map((mode) => (
             <Option key={mode} active={form.mode === mode} onClick={() => selectMode(mode)}>
-              {displayMode(mode)}
+              {text.modeLabel(mode)}
             </Option>
           ))}
         </div>
       </SettingGroup>
 
-      <SettingGroup title="时长">
+      <SettingGroup title={t("settings.duration")}>
         <div className={styles.videoPage__durationControl}>
           <input
             type="range"
             min={params?.durationMin ?? 1}
             max={params?.durationMax ?? 15}
             step={1}
-            value={form.duration ?? params?.durationMin ?? 1}
+            value={durationValue}
             onChange={(event) => updateForm({ duration: Number(event.target.value) })}
-            aria-label="视频时长"
+            aria-label={t("settings.durationLabel")}
           />
-          <output>{form.duration ?? params?.durationMin ?? 1} 秒</output>
+          <output>{t("seconds", { seconds: durationValue })}</output>
         </div>
       </SettingGroup>
 
       {canUseReferenceImage ? (
-        <SettingGroup title="参考图" hint="仅支持 PNG、JPEG、WebP，最大 10 MB">
+        <SettingGroup title={t("settings.reference")} hint={t("settings.referenceHint")}>
           <div className={styles.videoPage__uploadGrid}>
             <label
               className={clsx(
@@ -253,14 +254,19 @@ export function VideoSettings(props: VideoSettingsProps) {
                 disabled={isUploading}
               />
               <ImagePlus size={18} />
-              <span>{isUploading ? "上传中..." : form.referenceFileName || "上传参考图"}</span>
+              <span title={form.referenceFileName || undefined}>
+                {isUploading
+                  ? t("settings.uploading")
+                  : form.referenceFileName || t("settings.upload")}
+              </span>
             </label>
             {form.referenceMediaId ? (
               <button
                 type="button"
                 className={styles.videoPage__clearUpload}
                 onClick={() => updateForm({ referenceMediaId: "", referenceFileName: "" })}
-                aria-label="移除参考图"
+                aria-label={t("settings.removeReference")}
+                title={t("settings.removeReference")}
               >
                 <X size={16} />
               </button>
@@ -269,7 +275,7 @@ export function VideoSettings(props: VideoSettingsProps) {
         </SettingGroup>
       ) : null}
 
-      <SettingGroup title="画面比例">
+      <SettingGroup title={t("settings.ratio")}>
         <div className={styles.videoPage__optionGridThree}>
           {params?.ratios.map((ratio) => (
             <Option key={ratio} active={form.ratio === ratio} onClick={() => updateForm({ ratio })}>
@@ -279,7 +285,7 @@ export function VideoSettings(props: VideoSettingsProps) {
         </div>
       </SettingGroup>
 
-      <SettingGroup title="分辨率">
+      <SettingGroup title={t("settings.resolution")}>
         <div className={styles.videoPage__optionGridTwo}>
           {resolutions.map((resolution) => (
             <Option
@@ -292,17 +298,102 @@ export function VideoSettings(props: VideoSettingsProps) {
           ))}
         </div>
       </SettingGroup>
+    </>
+  );
+
+  const submitButton = (
+    <button
+      type="button"
+      className={styles.videoPage__submitButton}
+      disabled={isSubmitting || isUploading}
+      onClick={submit}
+    >
+      <Sparkles size={16} />
+      {isSubmitting ? t("settings.submitting") : t("settings.submit")}
+    </button>
+  );
+
+  if (isMobile) {
+    const summary = [
+      model?.modelName,
+      form.mode === "image_to_video" ? text.modeLabel(form.mode) : "",
+      form.ratio,
+      form.resolution,
+      form.duration === null ? "" : t("durationShort", { seconds: form.duration }),
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    return (
+      <section className={styles.videoPage__composer} aria-label={t("settings.label")}>
+        <textarea
+          className={clsx(styles.videoPage__textarea, styles.videoPage__composerPrompt)}
+          rows={2}
+          value={form.prompt}
+          onChange={(event) => updateForm({ prompt: event.target.value })}
+          placeholder={t("settings.promptPlaceholder")}
+          aria-label={t("settings.prompt")}
+        />
+        <div className={styles.videoPage__composerBar}>
+          <button
+            type="button"
+            className={styles.videoPage__composerSettings}
+            onClick={() => setSheetOpen(true)}
+            aria-haspopup="dialog"
+            title={summary}
+          >
+            <SlidersHorizontal size={16} />
+            <span className={styles.videoPage__composerSummary}>
+              <span className={styles.videoPage__composerLabel}>{t("settings.open")}</span>
+              <span className={styles.videoPage__composerValue}>{summary}</span>
+            </span>
+          </button>
+          {submitButton}
+        </div>
+        {message ? <p className={styles.videoPage__composerMessage}>{message}</p> : null}
+
+        <Sheet
+          open={isSheetOpen}
+          onClose={() => setSheetOpen(false)}
+          title={t("settings.title")}
+          className={styles.videoPage__sheet}
+          footer={
+            <button
+              type="button"
+              className={clsx("btn-primary", styles.videoPage__sheetDone)}
+              onClick={() => setSheetOpen(false)}
+            >
+              {t("settings.done")}
+            </button>
+          }
+        >
+          <div className={styles.videoPage__sheetBody}>
+            {modelGroup}
+            {optionGroups}
+          </div>
+        </Sheet>
+      </section>
+    );
+  }
+
+  return (
+    <aside className={styles.videoPage__settings} aria-label={t("settings.label")}>
+      {modelGroup}
+
+      <SettingGroup title={t("settings.prompt")}>
+        <textarea
+          className={styles.videoPage__textarea}
+          rows={5}
+          value={form.prompt}
+          onChange={(event) => updateForm({ prompt: event.target.value })}
+          placeholder={t("settings.promptPlaceholder")}
+        />
+      </SettingGroup>
+
+      {optionGroups}
 
       <section className={styles.videoPage__submitBlock}>
-        <button
-          type="button"
-          className={styles.videoPage__submitButton}
-          disabled={isSubmitting || isUploading}
-          onClick={submit}
-        >
-          <Sparkles size={16} />
-          {isSubmitting ? "提交中..." : "生成视频"}
-        </button>
+        {submitButton}
         {message ? <p className={styles.videoPage__settingHint}>{message}</p> : null}
       </section>
     </aside>
@@ -334,6 +425,7 @@ function Option(props: OptionProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={clsx(styles.videoPage__option, active && styles.videoPage__optionActive)}
     >
       {children}

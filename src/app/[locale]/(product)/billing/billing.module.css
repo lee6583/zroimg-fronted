@@ -224,3 +224,118 @@
     width: fit-content;
   }
 }
+
+.billing__cards {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .billing__tableCard {
+    display: none;
+  }
+
+  .billing__cards {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .billing__orderCard {
+    display: grid;
+    gap: 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 0.8rem;
+    background: var(--panel);
+    padding: 0.9rem;
+  }
+
+  .billing__cardHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .billing__cardOrderNo {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .billing__cardAmounts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .billing__cardAmount {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  .billing__cardAmounts .billing__credits {
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  .billing__cardMeta {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+    font-size: 0.8rem;
+  }
+
+  .billing__cardMeta > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .billing__cardMeta dt {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .billing__cardMeta dd {
+    min-width: 0;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  .billing__cardActions {
+    border-top: 1px solid var(--line);
+    padding-top: 0.7rem;
+  }
+
+  .billing__cardActions .billing__orderActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .billing__cardActions .billing__payButton,
+  .billing__cardActions .billing__cancelButton {
+    min-height: 2.75rem;
+    font-size: 0.88rem;
+  }
+
+  .billing__cardActions .billing__actionMessage {
+    grid-column: 1 / -1;
+  }
+
+  .billing__pagination {
+    padding-bottom: 0.5rem;
+  }
+}

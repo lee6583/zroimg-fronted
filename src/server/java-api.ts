@@ -2,6 +2,7 @@ import "server-only";
 
 import { getErrorMessage } from "@/utils/error";
 import { headers } from "next/headers";
+import { getLocale, getTranslations } from "next-intl/server";
 import { serverEnv } from "@/server/env";
 import type { JavaResult, RequestMethod, RequestParams } from "@/types/api";
 
@@ -21,20 +22,35 @@ type RequestJavaOptions = {
   data?: unknown;
 };
 
+/** SSR 侧自己产生的错误码；Java 返回的 errorCode 原样透传。 */
+export const javaApiErrorCodes = {
+  unavailable: "SERVER_UNAVAILABLE",
+  invalidResponse: "SERVER_INVALID_RESPONSE",
+  requestFailed: "SERVER_REQUEST_FAILED",
+} as const;
+
 export class JavaApiError extends Error {
   status: number;
+  errorCode?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, errorCode?: string) {
     super(message);
     this.name = "JavaApiError";
     this.status = status;
+    this.errorCode = errorCode;
   }
+}
+
+// 兜底文案按当前语言给出（/admin 下 next-intl 回退为 zh-CN，所以后台仍是中文）。
+async function translateServerError(key: "unavailable" | "invalidResponse" | "requestFailed") {
+  const t = await getTranslations("errors.server");
+  return t(key);
 }
 
 function buildUrl(path: string, params: RequestParams | undefined) {
   const baseUrl = serverEnv.javaApiBaseUrl.replace(/\/+$/, "");
   if (!baseUrl) {
-    throw new Error("JAVA_API_BASE_URL 未配置");
+    throw new Error("JAVA_API_BASE_URL is not configured");
   }
 
   const searchParams = new URLSearchParams();
@@ -66,6 +82,9 @@ async function buildHeaders(hasBody: boolean) {
     requestHeaders.set("content-type", "application/json");
   }
 
+  // 让 Java 按页面语言返回 message（/admin 为 zh-CN）
+  requestHeaders.set("accept-language", await getLocale());
+
   return requestHeaders;
 }
 
@@ -90,17 +109,33 @@ export async function requestJava<T>(path: string, options: RequestJavaOptions =
     });
   } catch (error) {
     console.error("Java API request failed", { method, path, message: getErrorMessage(error) });
-    throw new JavaApiError("Java 后端暂时不可用，请稍后重试", 502);
+    throw new JavaApiError(
+      await translateServerError("unavailable"),
+      502,
+      javaApiErrorCodes.unavailable,
+    );
   }
 
   const payload = (await response.json().catch(() => null)) as JavaResult<T> | null;
   if (!payload || typeof payload.code !== "number") {
-    throw new JavaApiError("Java 后端返回格式不正确", 502);
+    throw new JavaApiError(
+      await translateServerError("invalidResponse"),
+      502,
+      javaApiErrorCodes.invalidResponse,
+    );
   }
 
   if (!response.ok || payload.code !== 200) {
     const status = response.ok ? payload.code : response.status;
-    throw new JavaApiError(payload.message || "读取 Java 后端数据失败", status);
+    if (payload.message) {
+      throw new JavaApiError(payload.message, status, payload.errorCode);
+    }
+
+    throw new JavaApiError(
+      await translateServerError("requestFailed"),
+      status,
+      payload.errorCode ?? javaApiErrorCodes.requestFailed,
+    );
   }
 
   return payload.data as T;

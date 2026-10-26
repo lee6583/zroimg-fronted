@@ -1,0 +1,24 @@
+{
+  "lightbox": {
+    "open": "放大查看图片",
+    "openTitle": "放大查看",
+    "dialog": "图片预览",
+    "close": "关闭图片预览",
+    "closeTitle": "关闭"
+  },
+  "videoLightbox": {
+    "play": "播放视频",
+    "dialog": "视频预览",
+    "close": "关闭视频预览",
+    "closeTitle": "关闭"
+  },
+  "pagination": {
+    "total": "{count, plural, other {共 # 条}}"
+  },
+  "select": {
+    "placeholder": "请选择"
+  },
+  "avatar": {
+    "label": "{name} 的头像"
+  }
+}

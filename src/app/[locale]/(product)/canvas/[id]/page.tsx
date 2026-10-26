@@ -13,7 +13,7 @@ import type { GenerationMode, GenerationModel } from "@/types/generation";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata.canvas");
+  const t = await getTranslations("canvas.meta");
 
   return { title: t("title") };
 }

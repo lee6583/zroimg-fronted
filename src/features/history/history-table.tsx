@@ -2,7 +2,7 @@
 
 import { ConfigProvider, message } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
-import zhCN from "antd/locale/zh_CN";
+import { useTranslations } from "next-intl";
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
@@ -19,6 +19,7 @@ type HistoryTableProps = {
 
 type HistoryRowProps = {
   taskNo: string;
+  className?: string;
   children: ReactNode;
 };
 
@@ -27,7 +28,7 @@ const HistoryTableContext = createContext<HistoryTableContextValue | null>(null)
 export function useHistoryTable() {
   const value = useContext(HistoryTableContext);
   if (!value) {
-    throw new Error("useHistoryTable 必须在 HistoryTable 内使用");
+    throw new Error("useHistoryTable must be used inside HistoryTable");
   }
 
   return value;
@@ -36,6 +37,7 @@ export function useHistoryTable() {
 export function HistoryTable(props: HistoryTableProps) {
   const children = props.children;
 
+  const t = useTranslations("history");
   const router = useRouter();
   const [notice, contextHolder] = message.useMessage();
   const [removedTaskNos, setRemovedTaskNos] = useState<string[]>([]);
@@ -43,13 +45,12 @@ export function HistoryTable(props: HistoryTableProps) {
   // 删除成功后先隐藏同一任务的所有行，再刷新服务端分页和总数
   function remove(taskNo: string) {
     setRemovedTaskNos((current) => [...current, taskNo]);
-    notice.success("已删除");
+    notice.success(t("delete.done"));
     router.refresh();
   }
 
   return (
     <ConfigProvider
-      locale={zhCN}
       button={{ autoInsertSpace: false }}
       theme={{
         token: {
@@ -62,13 +63,6 @@ export function HistoryTable(props: HistoryTableProps) {
           colorBgElevated: "var(--panel)",
           colorBorder: "var(--line)",
           colorError: "#dc2626",
-        },
-        components: {
-          Modal: {
-            contentBg: "var(--panel)",
-            headerBg: "var(--panel)",
-            titleColor: "var(--foreground)",
-          },
         },
       }}
     >
@@ -89,5 +83,5 @@ export function HistoryRow(props: HistoryRowProps) {
     return null;
   }
 
-  return <tr>{children}</tr>;
+  return <tr className={props.className}>{children}</tr>;
 }

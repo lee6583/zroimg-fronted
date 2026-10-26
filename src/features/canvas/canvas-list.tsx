@@ -1,10 +1,14 @@
 "use client";
 
+import clsx from "clsx";
 import { Check, Frame, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { canvasBoardsApi } from "@/api/canvas/boards";
+import { Sheet } from "@/components/ui/sheet";
+import { translateApiError } from "@/i18n/api-error";
 import type { CanvasBoard, CanvasConfig } from "@/types/canvas";
-import { getErrorMessage } from "@/utils/error";
+import { parseJavaDateTime } from "@/utils/java-time";
 import { userAssetUrl } from "@/utils/media";
 import styles from "./canvas-list.module.css";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -21,10 +25,6 @@ type BoardCardProps = {
   onDelete: (board: CanvasBoard) => void;
 };
 
-function formatTime(value: string) {
-  return value.replace("T", " ").slice(0, 16);
-}
-
 function getCover(board: CanvasBoard) {
   if (board.coverMediaId) {
     return userAssetUrl(board.coverMediaId);
@@ -34,11 +34,13 @@ function getCover(board: CanvasBoard) {
 }
 
 export function CanvasDisabled() {
+  const t = useTranslations("canvas.list");
+
   return (
     <main className={styles.canvasList}>
       <section className={styles.canvasList__empty}>
         <Frame size={24} />
-        <p>无限画布暂未开放</p>
+        <p>{t("disabled")}</p>
       </section>
     </main>
   );
@@ -49,10 +51,13 @@ export function CanvasList(props: CanvasListProps) {
   const config = props.config;
 
   const router = useRouter();
+  const t = useTranslations("canvas.list");
+  const tError = useTranslations("errors.api");
   const [boards, setBoards] = useState(initialBoards);
   const [error, setError] = useState("");
   const [isCreating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState<CanvasBoard | null>(null);
 
   if (!config.enabled) {
     return <CanvasDisabled />;
@@ -60,7 +65,7 @@ export function CanvasList(props: CanvasListProps) {
 
   async function create() {
     if (boards.length >= config.maxBoardsPerUser) {
-      setError(`最多创建 ${config.maxBoardsPerUser} 个画布`);
+      setError(t("maxBoards", { count: config.maxBoardsPerUser }));
       return;
     }
 
@@ -70,14 +75,14 @@ export function CanvasList(props: CanvasListProps) {
       const board = await canvasBoardsApi.create({});
       router.push(`/canvas/${board.id}`);
     } catch (createError) {
-      setError(getErrorMessage(createError));
+      setError(translateApiError(createError, tError));
       setCreating(false);
     }
   }
 
   async function rename(id: string, title: string) {
     if (!title) {
-      setError("画布名称不能为空");
+      setError(t("nameRequired"));
       return false;
     }
 
@@ -88,7 +93,7 @@ export function CanvasList(props: CanvasListProps) {
       setBoards((current) => current.map((item) => (item.id === id ? updated : item)));
       return true;
     } catch (renameError) {
-      setError(getErrorMessage(renameError));
+      setError(translateApiError(renameError, tError));
       return false;
     } finally {
       setBusyId("");
@@ -96,16 +101,14 @@ export function CanvasList(props: CanvasListProps) {
   }
 
   async function remove(board: CanvasBoard) {
-    const shouldDelete = window.confirm(`确定删除画布“${board.title}”吗？删除后无法恢复。`);
-    if (!shouldDelete) return;
-
+    setDeleteCandidate(null);
     setBusyId(board.id);
     setError("");
     try {
       await canvasBoardsApi.remove(board.id);
       setBoards((current) => current.filter((item) => item.id !== board.id));
     } catch (removeError) {
-      setError(getErrorMessage(removeError));
+      setError(translateApiError(removeError, tError));
     } finally {
       setBusyId("");
     }
@@ -114,7 +117,7 @@ export function CanvasList(props: CanvasListProps) {
   return (
     <main className={styles.canvasList}>
       <header className={styles.canvasList__header}>
-        <h1 className="page-title">无限画布</h1>
+        <h1 className="page-title">{t("title")}</h1>
         <button
           type="button"
           className={styles.canvasList__createButton}
@@ -122,30 +125,60 @@ export function CanvasList(props: CanvasListProps) {
           onClick={create}
         >
           <Plus size={15} />
-          新建画布
+          {t("create")}
         </button>
       </header>
 
       {error ? <p className={styles.canvasList__error}>{error}</p> : null}
 
       {boards.length > 0 ? (
-        <section className={styles.canvasList__grid} aria-label="画布列表">
+        <section className={styles.canvasList__grid} aria-label={t("gridLabel")}>
           {boards.map((board) => (
             <BoardCard
               key={board.id}
               board={board}
               isBusy={busyId === board.id}
               onRename={rename}
-              onDelete={remove}
+              onDelete={setDeleteCandidate}
             />
           ))}
         </section>
       ) : (
         <section className={styles.canvasList__empty}>
           <Frame size={24} />
-          <p>还没有画布</p>
+          <p>{t("empty")}</p>
         </section>
       )}
+
+      <Sheet
+        open={deleteCandidate !== null}
+        onClose={() => setDeleteCandidate(null)}
+        title={t("deleteTitle")}
+        footer={
+          <>
+            <button
+              type="button"
+              className={styles.canvasList__dialogButton}
+              onClick={() => setDeleteCandidate(null)}
+            >
+              {t("cancel")}
+            </button>
+            <button
+              type="button"
+              className={clsx(styles.canvasList__dialogButton, styles.canvasList__dialogDanger)}
+              onClick={() => {
+                if (deleteCandidate) void remove(deleteCandidate);
+              }}
+            >
+              {t("deleteConfirm")}
+            </button>
+          </>
+        }
+      >
+        <p className={styles.canvasList__dialogText}>
+          {t("deleteDescription", { title: deleteCandidate?.title ?? "" })}
+        </p>
+      </Sheet>
     </main>
   );
 }
@@ -155,6 +188,8 @@ function BoardCard(props: BoardCardProps) {
   const isBusy = props.isBusy;
   const onRename = props.onRename;
   const onDelete = props.onDelete;
+  const t = useTranslations("canvas.list");
+  const format = useFormatter();
 
   const [isEditing, setEditing] = useState(false);
   const [title, setTitle] = useState(board.title);
@@ -190,12 +225,13 @@ function BoardCard(props: BoardCardProps) {
               value={title}
               maxLength={60}
               autoFocus
-              aria-label="画布名称"
+              aria-label={t("nameLabel")}
               onChange={(event) => setTitle(event.target.value)}
             />
             <button
               type="submit"
-              aria-label="保存名称"
+              aria-label={t("saveName")}
+              title={t("saveName")}
               className={styles.canvasList__iconButton}
               disabled={isBusy}
             >
@@ -203,7 +239,8 @@ function BoardCard(props: BoardCardProps) {
             </button>
             <button
               type="button"
-              aria-label="取消"
+              aria-label={t("cancel")}
+              title={t("cancel")}
               className={styles.canvasList__iconButton}
               onClick={() => setEditing(false)}
             >
@@ -212,13 +249,17 @@ function BoardCard(props: BoardCardProps) {
           </form>
         ) : (
           <div className={styles.canvasList__titleRow}>
-            <Link href={`/canvas/${board.id}`} className={styles.canvasList__title}>
+            <Link
+              href={`/canvas/${board.id}`}
+              className={styles.canvasList__title}
+              title={board.title}
+            >
               {board.title}
             </Link>
             <button
               type="button"
-              aria-label="重命名"
-              title="重命名"
+              aria-label={t("rename")}
+              title={t("rename")}
               className={styles.canvasList__iconButton}
               disabled={isBusy}
               onClick={startEdit}
@@ -227,8 +268,8 @@ function BoardCard(props: BoardCardProps) {
             </button>
             <button
               type="button"
-              aria-label="删除"
-              title="删除"
+              aria-label={t("delete")}
+              title={t("delete")}
               className={styles.canvasList__iconButton}
               disabled={isBusy}
               onClick={() => onDelete(board)}
@@ -238,7 +279,10 @@ function BoardCard(props: BoardCardProps) {
           </div>
         )}
         <p className={styles.canvasList__meta}>
-          {board.nodeCount} 个节点 · {formatTime(board.updateTime)}
+          {t("meta", {
+            count: board.nodeCount,
+            time: format.dateTime(parseJavaDateTime(board.updateTime), "datetime"),
+          })}
         </p>
       </div>
     </article>

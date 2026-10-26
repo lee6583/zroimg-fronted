@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import styles from "./app-select.module.css";
 
 export type AppSelectOption<T extends string> = {
@@ -28,7 +29,8 @@ export function AppSelect<T extends string>(props: AppSelectProps<T>) {
   const value = props.value;
   const options = props.options;
   const onChange = props.onChange;
-  const placeholder = props.placeholder ?? "请选择";
+  const t = useTranslations("ui.select");
+  const placeholder = props.placeholder ?? t("placeholder");
   const disabled = props.disabled ?? false;
   const className = props.className;
   const triggerClassName = props.triggerClassName;

@@ -1,0 +1,207 @@
+.mobileMenu__section + .mobileMenu__section {
+  margin-top: 1rem;
+}
+
+.mobileMenu__sectionTitle {
+  margin: 0 0 0.25rem;
+  padding: 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mobileMenu__list {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.mobileMenu__row {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.mobileMenu__row:active,
+button.mobileMenu__row:active {
+  background: var(--soft);
+}
+
+.mobileMenu__rowActive {
+  background: var(--soft);
+}
+
+.mobileMenu__icon {
+  display: grid;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.mobileMenu__rowActive .mobileMenu__icon {
+  background: var(--background);
+}
+
+.mobileMenu__label {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.mobileMenu__chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.mobileMenu__segments {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.mobileMenu__segment {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  padding: 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.mobileMenu__segmentActive {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.mobileMenu__switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background-color 0.15s ease;
+}
+
+.mobileMenu__switch::after {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  content: "";
+  transition: transform 0.15s ease;
+}
+
+.mobileMenu__switchOn {
+  background: var(--foreground);
+}
+
+.mobileMenu__switchOn::after {
+  transform: translateX(1.125rem);
+}
+
+/* 账户卡片（「我的」顶部） */
+.mobileMenu__account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.mobileMenu__accountText {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.125rem;
+}
+
+.mobileMenu__accountName {
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileMenu__accountEmail {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileMenu__points {
+  display: grid;
+  flex-shrink: 0;
+  justify-items: end;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.mobileMenu__points:active {
+  background: var(--soft);
+}
+
+.mobileMenu__pointsValue {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mobileMenu__pointsLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.mobileMenu__actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.mobileMenu__actions > * {
+  width: 100%;
+  min-height: 2.875rem;
+}
+
+.mobileMenu__logout {
+  color: var(--danger);
+}
+
+.mobileMenu__logout .mobileMenu__icon {
+  color: var(--danger);
+}

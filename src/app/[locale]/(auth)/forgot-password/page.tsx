@@ -16,12 +16,14 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const t = await getTranslations("auth.forgotPassword");
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-24">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="page-title">重置密码</h1>
+          <h1 className="page-title">{t("title")}</h1>
         </div>
         <ForgotPasswordForm />
       </div>

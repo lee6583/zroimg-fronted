@@ -355,3 +355,228 @@
     padding: 0 0.65rem;
   }
 }
+
+.history__cellMeta {
+  display: none;
+}
+
+.history__metaLine {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 手机：同一份表格标记改为卡片（缩略图在左，提示词 / 元信息 / 状态在右，操作在底部） */
+@media (max-width: 767px) {
+  .history__toolbar {
+    margin-bottom: 0.875rem;
+  }
+
+  .history__list {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .history__table {
+    display: block;
+    min-width: 0;
+  }
+
+  .history__table colgroup,
+  .history__table thead {
+    display: none;
+  }
+
+  .history__table tbody {
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  .history__table .history__row {
+    display: grid;
+    grid-template-areas:
+      "preview prompt"
+      "preview meta"
+      "preview status"
+      "actions actions";
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--panel);
+    padding: 0.75rem;
+  }
+
+  .history__table .history__row > td {
+    display: block;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    text-align: start;
+  }
+
+  .history__table .history__row > .history__cellDesktop {
+    display: none;
+  }
+
+  .history__table .history__row > .history__cellPreview {
+    grid-area: preview;
+  }
+
+  .history__preview {
+    width: 5.5rem;
+    height: 5.5rem;
+    margin: 0;
+    border-radius: 0.5rem;
+  }
+
+  .history__table .history__row > .history__cellPrompt {
+    grid-area: prompt;
+  }
+
+  .history__table .history__prompt {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    text-overflow: clip;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .history__table .history__row > .history__cellMeta {
+    display: block;
+    grid-area: meta;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .history__table .history__row > .history__cellStatus {
+    grid-area: status;
+    align-self: start;
+    padding-top: 0.15rem;
+  }
+
+  .history__table .history__row > .history__cellActions {
+    grid-area: actions;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.5rem;
+  }
+
+  .history__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.4rem;
+    white-space: normal;
+  }
+
+  .history__actions > :last-child {
+    margin-inline-start: auto;
+  }
+
+  .history__emptyAction {
+    min-height: 2.75rem;
+  }
+}
+
+.history__rangeButton {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 2.75rem;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history__rangeButtonActive {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.history__rangeText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history__sheetFields {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.history__sheetField {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.history__sheetInput {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0 0.75rem;
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.history__sheetError {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.history__sheetActions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.history__sheetActions button {
+  min-height: 2.75rem;
+}
+
+@media (max-width: 767px) {
+  .history__toolbar {
+    display: block;
+  }
+
+  .history__filters {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .history__filters > .history__filterField:last-child {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .history__typeSelect {
+    width: 7.75rem;
+  }
+
+  .history__typeTrigger {
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+  }
+}

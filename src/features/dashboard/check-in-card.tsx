@@ -1,12 +1,14 @@
 "use client";
 
 import clsx from "clsx";
-import { getErrorMessage } from "@/utils/error";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { checkInApi } from "@/api/rewards/checkin";
 import type { SignCard } from "@/types/checkin";
 import styles from "./check-in-card.module.css";
+import { translateApiError } from "@/i18n/api-error";
 import { useRouter } from "@/i18n/navigation";
+import { parseJavaDateTime } from "@/utils/java-time";
 
 type CheckInCardProps = {
   signCard: SignCard;
@@ -17,6 +19,9 @@ export function CheckInCard(props: CheckInCardProps) {
   const signCard = props.signCard;
   const onClaimed = props.onClaimed;
 
+  const t = useTranslations("dashboard.checkIn");
+  const tError = useTranslations("errors.api");
+  const format = useFormatter();
   const router = useRouter();
   const [card, setCard] = useState(signCard);
   const [message, setMessage] = useState("");
@@ -25,13 +30,13 @@ export function CheckInCard(props: CheckInCardProps) {
   const [reward, setReward] = useState(0);
   const canCheckIn = card.dailySignPoints > 0;
 
-  let buttonLabel = "立即签到";
+  let buttonLabel = t("actions.claim");
   if (!canCheckIn) {
-    buttonLabel = "暂未开放";
+    buttonLabel = t("actions.unavailable");
   } else if (card.todaySigned) {
-    buttonLabel = "今日已签到";
+    buttonLabel = t("actions.claimed");
   } else if (isLoading) {
-    buttonLabel = "签到中";
+    buttonLabel = t("actions.claiming");
   }
 
   async function claim() {
@@ -46,7 +51,7 @@ export function CheckInCard(props: CheckInCardProps) {
       onClaimed?.(result.totalPoints);
       router.refresh();
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setLoading(false);
     }
@@ -56,18 +61,20 @@ export function CheckInCard(props: CheckInCardProps) {
     <section className={styles.checkInCard}>
       <div className={styles.checkInCard__header}>
         <div>
-          <h2 className={styles.checkInCard__title}>每日签到</h2>
+          <h2 className={styles.checkInCard__title}>{t("title")}</h2>
         </div>
-        <p className={styles.checkInCard__streak}>连续 {card.continuousSignDays} 天</p>
+        <p className={styles.checkInCard__streak}>
+          {t("streak", { days: card.continuousSignDays })}
+        </p>
       </div>
 
       <div className={styles.checkInCard__calendarWrap}>
         {reward > 0 ? (
           <span key={animationKey} className={styles.checkInCard__rewardBurst}>
-            +{reward} 积分
+            {t("reward", { points: reward })}
           </span>
         ) : null}
-        <div className={styles.checkInCard__week} aria-label="本周签到">
+        <div className={styles.checkInCard__week} aria-label={t("weekLabel")}>
           {card.weekDays.map((day) => (
             <div
               key={day.date}
@@ -77,9 +84,11 @@ export function CheckInCard(props: CheckInCardProps) {
                 day.today && !day.signed && styles.checkInCard__weekDayToday,
               )}
               aria-current={day.today ? "date" : undefined}
-              title={day.date}
+              title={format.dateTime(parseJavaDateTime(day.date), "short")}
             >
-              <span className={styles.checkInCard__weekday}>{day.dayOfWeek}</span>
+              <span className={styles.checkInCard__weekday}>
+                {format.dateTime(parseJavaDateTime(day.date), "weekday")}
+              </span>
               <span className={styles.checkInCard__dayText}>
                 {String(day.day).padStart(2, "0")}
               </span>
@@ -89,8 +98,8 @@ export function CheckInCard(props: CheckInCardProps) {
       </div>
 
       <div className={styles.checkInCard__meta}>
-        <span>本周 {card.weekSignDays} 天</span>
-        <span>每日 +{card.dailySignPoints} 积分</span>
+        <span>{t("weekDays", { days: card.weekSignDays })}</span>
+        <span>{t("dailyPoints", { points: card.dailySignPoints })}</span>
       </div>
 
       <div className={styles.checkInCard__actions}>

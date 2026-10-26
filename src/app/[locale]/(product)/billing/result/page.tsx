@@ -1,10 +1,21 @@
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
+import { CircleAlert, ReceiptText } from "lucide-react";
+import { isPaymentType } from "@/features/billing/payment-channel";
 import { requireUser } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type { RechargeOrder } from "@/types/orders";
-import { orderDisplayStatusLabels } from "@/utils/order-status";
+import { parseJavaDateTime } from "@/utils/java-time";
+import { normalizeOrderDisplayStatus } from "@/utils/order-status";
 import { PaymentActions } from "./payment-actions";
 import styles from "./result.module.css";
 import { Link } from "@/i18n/navigation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("billing.meta");
+
+  return { title: t("resultTitle") };
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -30,51 +41,23 @@ function readOrderNo(params: Record<string, string | string[] | undefined>) {
   return readParam(params, "out_trade_no");
 }
 
-function formatAmount(value: number) {
-  return `¥${value.toFixed(2)}`;
-}
+async function OrderNotFoundCard() {
+  const t = await getTranslations("billing.result");
 
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatDateText(value?: string | null) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return formatDate(date);
-}
-
-function readStatusLabel(status: string) {
-  return orderDisplayStatusLabels[status as keyof typeof orderDisplayStatusLabels] ?? status;
-}
-
-function OrderNotFoundCard() {
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <h1 className={styles.result__title}>订单不存在</h1>
-        <p className={styles.result__description}>
-          没有找到当前账号下的这笔订单，请返回订单列表查看最新记录。
-        </p>
+        <span className={styles.result__icon} aria-hidden="true">
+          <CircleAlert size={22} />
+        </span>
+        <h1 className={styles.result__title}>{t("notFound.title")}</h1>
+        <p className={styles.result__description}>{t("notFound.description")}</p>
         <div className={styles.result__actions}>
           <Link href="/billing" className={styles.result__payButton}>
-            查看我的订单
+            {t("actions.viewOrders")}
           </Link>
           <Link href="/credits" className={styles.result__secondaryButton}>
-            重新购买积分
+            {t("actions.buyAgain")}
           </Link>
         </div>
       </section>
@@ -87,24 +70,28 @@ type OrderLoadErrorCardProps = {
   message: string;
 };
 
-function OrderLoadErrorCard(props: OrderLoadErrorCardProps) {
+async function OrderLoadErrorCard(props: OrderLoadErrorCardProps) {
   const status = props.status;
-  let title = "订单暂时无法加载";
+  const t = await getTranslations("billing.result");
+  let title = t("loadError.title");
   let description = props.message;
 
   if (status === 401) {
-    title = "登录状态已失效";
-    description = "请重新登录后再查看订单。";
+    title = t("unauthorized.title");
+    description = t("unauthorized.description");
   }
 
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
+        <span className={styles.result__icon} aria-hidden="true">
+          <CircleAlert size={22} />
+        </span>
         <h1 className={styles.result__title}>{title}</h1>
         <p className={styles.result__description}>{description}</p>
         <div className={styles.result__actions}>
           <Link href="/billing" className={styles.result__payButton}>
-            查看我的订单
+            {t("actions.viewOrders")}
           </Link>
         </div>
       </section>
@@ -116,66 +103,97 @@ type RechargeOrderCardProps = {
   order: RechargeOrder;
 };
 
-function RechargeOrderCard(props: RechargeOrderCardProps) {
+async function RechargeOrderCard(props: RechargeOrderCardProps) {
   const order = props.order;
-  const paymentLabel = order.payChannelText || order.payChannel || "—";
+  const t = await getTranslations("billing");
+  const format = await getFormatter();
+  const status = normalizeOrderDisplayStatus(order.displayStatus);
+  let paymentLabel = order.payChannelText || order.payChannel || "—";
+  if (isPaymentType(order.payChannel)) {
+    paymentLabel = t(`payChannel.${order.payChannel}`);
+  }
+
+  function formatAmount(amountCent: number) {
+    return format.number(amountCent / 100, "currency");
+  }
+
+  function formatDateText(value?: string | null) {
+    if (!value) {
+      return "—";
+    }
+
+    const date = parseJavaDateTime(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return format.dateTime(date, "datetime");
+  }
+
   const canPay = order.displayStatus === "pending";
   const isCancellable = order.displayStatus === "pending";
 
   return (
     <main className={styles.result}>
       <section className={styles.result__card}>
-        <h1 className={styles.result__title}>订单已创建</h1>
+        <span className={styles.result__icon} aria-hidden="true">
+          <ReceiptText size={22} />
+        </span>
+        <h1 className={styles.result__title}>{t("result.created")}</h1>
+        <p className={styles.result__amount}>{formatAmount(order.amountCent)}</p>
 
-        <div className={styles.result__details} aria-label="订单信息">
+        <div className={styles.result__details} aria-label={t("result.detailsLabel")}>
           <div className={styles.result__row}>
-            <span>订单号</span>
-            <span className={`${styles.result__value} ${styles.result__orderNo}`}>
+            <span>{t("result.fields.orderNo")}</span>
+            <span
+              className={`${styles.result__value} ${styles.result__orderNo}`}
+              title={order.orderNo}
+            >
               {order.orderNo}
             </span>
           </div>
           <div className={styles.result__row}>
-            <span>购买内容</span>
+            <span>{t("result.fields.package")}</span>
             <span className={styles.result__value}>{order.packageName}</span>
           </div>
           <div className={styles.result__row}>
-            <span>支付金额</span>
-            <span className={styles.result__value}>{order.amountText}</span>
+            <span>{t("result.fields.amount")}</span>
+            <span className={styles.result__value}>{formatAmount(order.amountCent)}</span>
           </div>
           {order.feeAmountCent > 0 ? (
             <>
               <div className={styles.result__row}>
-                <span>充值本金</span>
+                <span>{t("result.fields.rechargeAmount")}</span>
                 <span className={styles.result__value}>
-                  {formatAmount(order.rechargeAmountCent / 100)}
+                  {formatAmount(order.rechargeAmountCent)}
                 </span>
               </div>
               <div className={styles.result__row}>
-                <span>充值手续费</span>
-                <span className={styles.result__value}>
-                  {formatAmount(order.feeAmountCent / 100)}
-                </span>
+                <span>{t("result.fields.fee")}</span>
+                <span className={styles.result__value}>{formatAmount(order.feeAmountCent)}</span>
               </div>
             </>
           ) : null}
           <div className={styles.result__row}>
-            <span>到账积分</span>
-            <span className={styles.result__value}>{order.credits} 积分</span>
+            <span>{t("result.fields.points")}</span>
+            <span className={styles.result__value}>
+              {t("result.pointsValue", { points: order.credits })}
+            </span>
           </div>
           <div className={styles.result__row}>
-            <span>支付方式</span>
+            <span>{t("result.fields.payChannel")}</span>
             <span className={styles.result__value}>{paymentLabel}</span>
           </div>
           <div className={styles.result__row}>
-            <span>订单状态</span>
-            <span className={styles.result__value}>{readStatusLabel(order.displayStatus)}</span>
+            <span>{t("result.fields.status")}</span>
+            <span className={styles.result__value}>{t(`status.${status}`)}</span>
           </div>
           <div className={styles.result__row}>
-            <span>创建时间</span>
+            <span>{t("result.fields.createTime")}</span>
             <span className={styles.result__value}>{formatDateText(order.createTime)}</span>
           </div>
           <div className={styles.result__row}>
-            <span>过期时间</span>
+            <span>{t("result.fields.expireTime")}</span>
             <span className={styles.result__value}>{formatDateText(order.expireTime)}</span>
           </div>
         </div>
@@ -216,7 +234,8 @@ export default async function BillingResultPage(props: BillingResultPageProps) {
 
   const result = await fetchOrder(orderNo);
 
-  if (result.status === 404) {
+  // Java 对不存在或不属于当前用户的订单号返回 400/404。
+  if (result.status === 400 || result.status === 404) {
     return <OrderNotFoundCard />;
   }
 

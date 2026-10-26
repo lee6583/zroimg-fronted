@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { GenerateForm } from "@/features/generation/generate-form";
 import {
@@ -17,6 +19,13 @@ import type {
 } from "@/types/generation";
 
 export const dynamic = "force-dynamic";
+
+// robots（noindex）继承自 (product) 布局。
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("generate.meta");
+
+  return { title: t("title") };
+}
 
 export default async function GeneratePage() {
   await requireUser();

@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Gift, Hash, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { Gift, Hash, Mail, ShieldCheck, UserRound } from "lucide-react";
+import type { Messages } from "next-intl";
+import { useTranslations } from "next-intl";
 import { authApi } from "@/api/auth/email-auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
-import { getErrorMessage } from "@/utils/error";
-import styles from "./auth-form.module.css";
+import { translateApiError } from "@/i18n/api-error";
 import { useRouter } from "@/i18n/navigation";
+import styles from "./auth-form.module.css";
+import { PasswordInput } from "./password-input";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const codePattern = /^[0-9]{6}$/;
@@ -19,33 +22,35 @@ type RegisterFields = {
   code: string;
 };
 
+type ValidationKey = keyof Messages["auth"]["validation"];
+
 type SliderChallenge = {
   challengeId: string;
   targetRatio: number;
 };
 
-function getEmailError(value: string) {
+function getEmailError(value: string): ValidationKey | "" {
   const email = value.trim();
 
   if (!email) {
-    return "请输入邮箱";
+    return "emailRequired";
   }
 
   if (email.length > 254) {
-    return "邮箱最多 254 位";
+    return "emailTooLong";
   }
 
   if (!emailPattern.test(email)) {
-    return "邮箱格式不正确";
+    return "emailInvalid";
   }
 
   return "";
 }
 
-function getFormError(fields: RegisterFields) {
+function getFormError(fields: RegisterFields): ValidationKey | "" {
   const username = fields.username.trim();
   if (username.length < 2 || username.length > 32) {
-    return "用户名需要 2 到 32 位";
+    return "usernameLength";
   }
 
   const emailError = getEmailError(fields.email);
@@ -55,18 +60,22 @@ function getFormError(fields: RegisterFields) {
 
   const passwordLength = fields.password.length;
   if (passwordLength < 8 || passwordLength > 128) {
-    return "密码需要 8 到 128 位";
+    return "passwordLength";
   }
 
   const code = fields.code.trim();
   if (!codePattern.test(code)) {
-    return "验证码必须是 6 位数字";
+    return "codeInvalid";
   }
 
   return "";
 }
 
 export function RegisterForm() {
+  const t = useTranslations("auth.register");
+  const tCode = useTranslations("auth.code");
+  const tValidation = useTranslations("auth.validation");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
   const emailRef = useRef("");
   const [username, setUsername] = useState("");
@@ -106,7 +115,7 @@ export function RegisterForm() {
     const emailError = getEmailError(email);
     if (emailError) {
       setMessageType("error");
-      setMessage(emailError);
+      setMessage(tValidation(emailError));
       return false;
     }
 
@@ -129,7 +138,7 @@ export function RegisterForm() {
       }
 
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
       resetSliderVerification();
       return false;
     }
@@ -160,7 +169,7 @@ export function RegisterForm() {
       return true;
     } catch (error) {
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
       resetSliderVerification();
       return false;
     }
@@ -174,13 +183,13 @@ export function RegisterForm() {
     const emailError = getEmailError(email);
     if (emailError) {
       setMessageType("error");
-      setMessage(emailError);
+      setMessage(tValidation(emailError));
       return;
     }
 
     if (!isVerified || !sliderToken) {
       setMessageType("error");
-      setMessage("请先完成安全验证");
+      setMessage(tValidation("verificationRequired"));
       return;
     }
 
@@ -191,10 +200,10 @@ export function RegisterForm() {
       const data = await authApi.sendRegisterCode({ email: normalizedEmail, sliderToken });
       setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
-      setMessage("验证码已发送到您的邮箱");
+      setMessage(tCode("sent"));
     } catch (error) {
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setSendingCode(false);
     }
@@ -206,13 +215,13 @@ export function RegisterForm() {
     const formError = getFormError({ username, email, password, code });
     if (formError) {
       setMessageType("error");
-      setMessage(formError);
+      setMessage(tValidation(formError));
       return;
     }
 
     if (!isVerified || !sliderToken) {
       setMessageType("error");
-      setMessage("请先完成安全验证");
+      setMessage(tValidation("verificationRequired"));
       return;
     }
 
@@ -228,24 +237,24 @@ export function RegisterForm() {
       router.push("/login");
     } catch (error) {
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setLoading(false);
     }
   }
 
-  let sendCodeText = "发码";
+  let sendCodeText = tCode("send");
   if (isSendingCode) {
-    sendCodeText = "发送中";
+    sendCodeText = tCode("sending");
   } else if (codeCountdown > 0) {
-    sendCodeText = `${codeCountdown}s`;
+    sendCodeText = tCode("countdown", { seconds: codeCountdown });
   }
 
   return (
     <form onSubmit={onSubmit} className={styles.authForm}>
       <div className={styles.authForm__fields}>
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>用户名</span>
+          <span className={styles.authForm__fieldLabel}>{t("username")}</span>
           <span className={styles.authForm__control}>
             <UserRound className={styles.authForm__icon} />
             <input
@@ -263,7 +272,7 @@ export function RegisterForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>邮箱</span>
+          <span className={styles.authForm__fieldLabel}>{t("email")}</span>
           <span className={styles.authForm__control}>
             <Mail className={styles.authForm__icon} />
             <input
@@ -290,7 +299,7 @@ export function RegisterForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>验证码</span>
+          <span className={styles.authForm__fieldLabel}>{t("code")}</span>
           <span className={styles.authForm__inlineRow}>
             <span className={`${styles.authForm__control} ${styles.authForm__controlGrow}`}>
               <Hash className={styles.authForm__icon} />
@@ -299,7 +308,7 @@ export function RegisterForm() {
                 name="code"
                 type="text"
                 value={code}
-                onChange={(event) => setCode(event.target.value)}
+                onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                 inputMode="numeric"
                 pattern="[0-9]{6}"
                 minLength={6}
@@ -320,28 +329,23 @@ export function RegisterForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>设置密码</span>
-          <span className={styles.authForm__control}>
-            <Lock className={styles.authForm__icon} />
-            <input
-              className={styles.authForm__input}
-              name="password"
-              type="password"
-              placeholder="至少 8 位"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={8}
-              maxLength={128}
-              autoComplete="new-password"
-            />
-          </span>
+          <span className={styles.authForm__fieldLabel}>{t("password")}</span>
+          <PasswordInput
+            name="password"
+            placeholder={t("passwordPlaceholder")}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            minLength={8}
+            maxLength={128}
+            autoComplete="new-password"
+          />
         </label>
 
         <div>
           <div className={styles.authForm__verificationTitle}>
             <ShieldCheck className={styles.authForm__verificationIcon} />
-            <span>安全验证</span>
+            <span>{t("verification")}</span>
           </div>
           <SliderVerification
             key={email}
@@ -361,14 +365,14 @@ export function RegisterForm() {
       </div>
 
       <button className={styles.authForm__submit} disabled={isLoading || !isVerified}>
-        {isLoading ? "注册中" : "注册"}
+        {isLoading ? t("submitting") : t("submit")}
       </button>
 
       <div className={styles.authForm__reward}>
         <Gift className={styles.authForm__rewardIcon} />
         <div>
-          <p className={styles.authForm__rewardTitle}>注册即送 10 积分</p>
-          <p className={styles.authForm__rewardText}>首次注册自动到账，立即开始创作。</p>
+          <p className={styles.authForm__rewardTitle}>{t("rewardTitle")}</p>
+          <p className={styles.authForm__rewardText}>{t("rewardText")}</p>
         </div>
       </div>
     </form>

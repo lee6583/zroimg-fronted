@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "title": "",
+  "tabs": {
+    "label": "",
+    "all": ""
+  },
+  "list": {
+    "label": ""
+  },
+  "reason": {
+    "empty": "",
+    "rejected": "",
+    "removed": ""
+  },
+  "times": {
+    "submit": "",
+    "review": ""
+  },
+  "empty": {
+    "title": "",
+    "action": ""
+  }
+}

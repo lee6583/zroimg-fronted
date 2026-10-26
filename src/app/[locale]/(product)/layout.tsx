@@ -24,7 +24,17 @@ type ProductLayoutProps = {
 export default async function ProductLayout(props: ProductLayoutProps) {
   const children = props.children;
 
-  await requireUser();
+  const user = await requireUser();
+  const account = {
+    username: user.username,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    totalPoints: user.totalPoints,
+  };
 
-  return <ProductFrame topNav={<ProductTopNav autoOpenAnnouncement />}>{children}</ProductFrame>;
+  return (
+    <ProductFrame topNav={<ProductTopNav variant="app" autoOpenAnnouncement />} account={account}>
+      {children}
+    </ProductFrame>
+  );
 }

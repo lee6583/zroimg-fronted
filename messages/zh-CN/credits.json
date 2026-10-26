@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "title": "购买积分"
+  },
+  "title": "购买积分",
+  "overview": {
+    "label": "订单与余额概况",
+    "pendingOrders": "待支付订单",
+    "completedOrders": "已完成订单",
+    "packages": "可购买套餐",
+    "balance": "当前余额"
+  },
+  "payment": {
+    "title": "支付方式",
+    "channels": {
+      "alipay": "支付宝",
+      "wxpay": "微信支付"
+    }
+  },
+  "packages": {
+    "title": "套餐购买",
+    "popular": "最受欢迎",
+    "points": "{points, number} 积分",
+    "payableWithFee": "含手续费，实付 {amount}",
+    "buy": "立即购买",
+    "creating": "创建中",
+    "unavailable": "暂不可购买"
+  },
+  "enterprise": {
+    "name": "企业协作",
+    "line": "为团队、品牌和长期项目准备更充足的创作额度。",
+    "features": {
+      "points": "{points, number} 积分，适合团队协同创作",
+      "materials": "覆盖批量物料、活动视觉与品牌素材",
+      "members": "适合多成员长期稳定产出",
+      "projects": "适合企业项目预研与正式投放"
+    }
+  },
+  "custom": {
+    "title": "自定义购买",
+    "amountLabel": "自定义金额",
+    "currencySymbol": "¥",
+    "placeholder": "输入购买金额",
+    "credits": "到账积分",
+    "fee": "手续费",
+    "payable": "实付金额",
+    "submit": "确认支付 {amount}",
+    "submitShort": "立即支付",
+    "creating": "创建中",
+    "summary": "实付 {amount} · {points, number} 积分",
+    "invalidAmount": "请输入 {min} - {max} 之间的金额",
+    "overMax": "单次购买金额不能超过 {max}"
+  }
+}

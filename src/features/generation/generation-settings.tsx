@@ -1,13 +1,13 @@
 "use client";
 
 import clsx from "clsx";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { AppSelect } from "@/components/ui/app-select";
 import type { GenerationModel } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
 import {
   imageModes,
-  modeLabels,
   normalizeOptions,
   supportsMode,
   type GenerationOptions,
@@ -40,6 +40,8 @@ export function GenerationSettings(props: GenerationSettingsProps) {
   const isEstimating = props.isEstimating;
   const modelOptions = props.modelOptions;
   const onChange = props.onChange;
+  const t = useTranslations("generate");
+  const tTask = useTranslations("task");
   const model = modelOptions.find((item) => item.modelCode === value.modelCode);
   const params = model?.supportParams;
   const availableModels = modelOptions.filter((item) => supportsMode(item, value.mode));
@@ -61,17 +63,17 @@ export function GenerationSettings(props: GenerationSettingsProps) {
 
   return (
     <aside className={styles.generateForm__settingsPanel}>
-      <SettingGroup title="模式">
+      <SettingGroup title={t("settings.mode")}>
         <div className={styles.generateForm__optionGridTwo}>
           {availableModes.map((mode) => (
             <Option key={mode} active={value.mode === mode} onClick={() => update("mode", mode)}>
-              {modeLabels[mode]}
+              {t(`modes.${mode}`)}
             </Option>
           ))}
         </div>
       </SettingGroup>
 
-      <SettingGroup title="模型">
+      <SettingGroup title={t("settings.model")}>
         <AppSelect
           value={value.modelCode}
           onChange={(modelCode) => update("modelCode", modelCode)}
@@ -82,7 +84,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         />
       </SettingGroup>
 
-      <SettingGroup title="比例">
+      <SettingGroup title={t("settings.ratio")}>
         <div className={styles.generateForm__optionGridThree}>
           {params.ratios.map((ratio) => (
             <Option
@@ -96,7 +98,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
         </div>
       </SettingGroup>
 
-      <SettingGroup title="分辨率">
+      <SettingGroup title={t("settings.resolution")}>
         <div className={styles.generateForm__optionGridFour}>
           {params.qualities.map((quality) => (
             <Option
@@ -104,15 +106,17 @@ export function GenerationSettings(props: GenerationSettingsProps) {
               active={value.quality === quality}
               onClick={() => update("quality", quality)}
             >
-              {getImageResolutionLabel(quality)}
+              {getImageResolutionLabel(quality, tTask)}
             </Option>
           ))}
         </div>
       </SettingGroup>
 
       <SettingGroup
-        title="生成数量"
-        hint={isEstimating ? "正在计算积分" : `预计消耗 ${estimate} 积分`}
+        title={t("settings.count")}
+        hint={
+          isEstimating ? t("settings.estimating") : t("settings.estimate", { points: estimate })
+        }
       >
         <div className={styles.generateForm__optionGridThree}>
           {params.counts.map((count) => (

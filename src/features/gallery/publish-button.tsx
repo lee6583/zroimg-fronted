@@ -3,10 +3,11 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { galleryApi } from "@/api/generation/gallery";
+import { ConfirmSheet } from "@/features/history/confirm-sheet";
+import { translateApiError } from "@/i18n/api-error";
 import type { GalleryStatus } from "@/types/gallery";
-import { getErrorMessage } from "@/utils/error";
-import { galleryStatusLabels } from "@/utils/gallery";
 import styles from "./publish-button.module.css";
 
 type PublishGalleryButtonProps = {
@@ -14,31 +15,25 @@ type PublishGalleryButtonProps = {
   initialStatus: GalleryStatus | null;
   initialReason: string | null;
   hideStatus?: boolean;
+  // touch：手机端放大点击区域（≥ 44px），用于列表卡片
+  size?: "compact" | "touch";
   onChange?: (status: GalleryStatus) => void;
 };
-
-function getStatusTitle(status: GalleryStatus | null, reason: string | null) {
-  if (status === "rejected") {
-    return `未通过：${reason || "未填写原因"}`;
-  }
-
-  if (status === "removed") {
-    return `已下架：${reason || "未填写原因"}。如有疑问请通过意见反馈联系我们`;
-  }
-
-  return undefined;
-}
 
 export function PublishGalleryButton(props: PublishGalleryButtonProps) {
   const generatedImageId = props.generatedImageId;
   const initialStatus = props.initialStatus;
   const initialReason = props.initialReason;
   const hideStatus = props.hideStatus ?? false;
+  const isTouch = props.size === "touch";
   const onChange = props.onChange;
 
+  const t = useTranslations("gallery");
+  const tError = useTranslations("errors.api");
   const [status, setStatus] = useState(initialStatus);
   const [reason, setReason] = useState(initialReason);
   const [isLoading, setLoading] = useState(false);
+  const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [message, setMessage] = useState("");
 
   function applyStatus(nextStatus: GalleryStatus, nextReason: string | null) {
@@ -55,28 +50,49 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
       const image = await galleryApi.publishImage({ generatedImageId });
       applyStatus(image.status, image.rejectReason);
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setLoading(false);
     }
   }
 
   async function withdraw() {
-    if (status === "approved" && !window.confirm("取消公开后需重新提交审核，确定吗？")) {
-      return;
-    }
-
     setLoading(true);
     setMessage("");
 
     try {
       await galleryApi.withdrawImage(generatedImageId);
       applyStatus("withdrawn", null);
+      setConfirmOpen(false);
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
+      setConfirmOpen(false);
     } finally {
       setLoading(false);
     }
+  }
+
+  function requestWithdraw() {
+    // 已公开的作品取消后需要重新审核，先确认；审核中的直接撤回
+    if (status === "approved") {
+      setConfirmOpen(true);
+      return;
+    }
+
+    void withdraw();
+  }
+
+  function getStatusTitle() {
+    const visibleReason = reason || t("publish.noReason");
+    if (status === "rejected") {
+      return t("publish.rejectedTitle", { reason: visibleReason });
+    }
+
+    if (status === "removed") {
+      return t("publish.removedTitle", { reason: visibleReason });
+    }
+
+    return undefined;
   }
 
   const isIdle = status === null || status === "withdrawn";
@@ -85,14 +101,14 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
     visibleStatus = status;
   }
   const canWithdraw = status === "pending" || status === "approved";
-  const title = getStatusTitle(status, reason);
-  let withdrawLabel = "撤回";
+  const title = getStatusTitle();
+  let withdrawLabel = t("publish.withdraw");
   if (status === "approved") {
-    withdrawLabel = "取消公开";
+    withdrawLabel = t("publish.unpublish");
   }
 
   return (
-    <div className={styles.publishButton}>
+    <div className={clsx(styles.publishButton, isTouch && styles.publishButtonTouch)}>
       {isIdle ? (
         <button
           type="button"
@@ -101,7 +117,7 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
           className={styles.publishButton__action}
         >
           <Send size={12} />
-          {isLoading ? "提交中" : "投稿到画廊"}
+          {isLoading ? t("publish.submitting") : t("publish.submit")}
         </button>
       ) : null}
 
@@ -116,14 +132,14 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
             status === "removed" && styles.publishButton__statusMuted,
           )}
         >
-          {galleryStatusLabels[visibleStatus]}
+          {t(`status.${visibleStatus}`)}
         </span>
       ) : null}
 
       {canWithdraw ? (
         <button
           type="button"
-          onClick={withdraw}
+          onClick={requestWithdraw}
           disabled={isLoading}
           className={styles.publishButton__link}
         >
@@ -138,7 +154,7 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
           disabled={isLoading}
           className={styles.publishButton__link}
         >
-          重新提交
+          {t("publish.resubmit")}
         </button>
       ) : null}
 
@@ -147,6 +163,18 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
           {message}
         </span>
       ) : null}
+
+      <ConfirmSheet
+        open={isConfirmOpen}
+        title={t("publish.unpublishTitle")}
+        confirmLabel={t("publish.unpublish")}
+        cancelLabel={t("publish.cancel")}
+        isLoading={isLoading}
+        onConfirm={withdraw}
+        onClose={() => setConfirmOpen(false)}
+      >
+        {t("publish.unpublishConfirm")}
+      </ConfirmSheet>
     </div>
   );
 }

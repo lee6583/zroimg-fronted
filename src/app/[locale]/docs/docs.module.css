@@ -1,5 +1,6 @@
 .docs {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   width: min(100%, 82rem);
   min-height: calc(100dvh - 4rem);
   margin: 0 auto;
@@ -70,11 +71,13 @@
 
 .docs__contentInner {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   max-width: 48rem;
   gap: 4rem;
 }
 
 .docs__article {
+  min-width: 0;
   scroll-margin-top: 7rem;
 }
 
@@ -231,5 +234,135 @@
 
   .docs__content {
     padding: 2rem 1rem 4rem 0;
+  }
+}
+
+/* 手机端目录（下拉），≥ 768px 隐藏 */
+.docs__mobileToc {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .docs {
+    align-content: start;
+  }
+
+  .docs__sidebar:not(:has(.docs__mobileToc)) {
+    display: none;
+  }
+
+  .docs__sidebar {
+    position: sticky;
+    top: calc(3.5rem + 1px);
+    z-index: 30;
+    background: color-mix(in oklab, var(--background) 94%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .docs__sidebarInner {
+    display: none;
+  }
+
+  .docs__mobileToc {
+    display: block;
+  }
+
+  .docs__mobileTocSummary {
+    display: flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .docs__mobileTocSummary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs__mobileTocIcon {
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+
+  .docs__mobileToc[open] .docs__mobileTocIcon {
+    transform: rotate(180deg);
+  }
+
+  .docs__mobileTocPanel {
+    display: grid;
+    max-height: min(60dvh, 28rem);
+    gap: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--line);
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .docs__mobileTocItems {
+    display: grid;
+    margin-top: 0.25rem;
+  }
+
+  .docs__mobileTocLink {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    border-radius: 0.375rem;
+    color: var(--muted);
+    padding: 0 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .docs__mobileTocLink:active {
+    background: var(--soft);
+    color: var(--foreground);
+  }
+
+  .docs__content {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .docs__contentInner {
+    gap: 3rem;
+  }
+
+  .docs__article {
+    scroll-margin-top: 7.5rem;
+  }
+
+  .docs__paragraph,
+  .docs__list,
+  .docs__stepText {
+    font-size: 1rem;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+  }
+
+  .docs__quote {
+    font-size: 0.9375rem;
+  }
+
+  .docs__listBullet {
+    margin-top: 0.75rem;
+  }
+
+  .docs__codeBlock {
+    margin-inline: -1rem;
+    border-radius: 0;
+    border-inline: 0;
+    font-size: 0.8125rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .docs__code {
+    white-space: pre;
   }
 }

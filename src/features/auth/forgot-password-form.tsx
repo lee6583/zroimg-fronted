@@ -1,15 +1,21 @@
 "use client";
 
-import { Hash, Lock, Mail } from "lucide-react";
+import { Hash, Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { authApi } from "@/api/auth/email-auth";
-import { getErrorMessage } from "@/utils/error";
+import { translateApiError } from "@/i18n/api-error";
+import { Link, useRouter } from "@/i18n/navigation";
 import styles from "./auth-form.module.css";
-import { useRouter } from "@/i18n/navigation";
+import { PasswordInput } from "./password-input";
 
 const defaultCodeCooldownSeconds = 60;
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("auth.forgotPassword");
+  const tCode = useTranslations("auth.code");
+  const tValidation = useTranslations("auth.validation");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -46,10 +52,10 @@ export function ForgotPasswordForm() {
       const data = await authApi.sendPasswordResetCode({ email });
       setCodeCountdown(data.cooldownSeconds || defaultCodeCooldownSeconds);
       setMessageType("success");
-      setMessage("验证码已发送到您的邮箱");
+      setMessage(tCode("sent"));
     } catch (error) {
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setSending(false);
     }
@@ -59,43 +65,43 @@ export function ForgotPasswordForm() {
     event.preventDefault();
     if (password !== confirmPassword) {
       setMessageType("error");
-      setMessage("两次输入的新密码不一致");
+      setMessage(tValidation("passwordMismatch"));
       return;
     }
 
     try {
       setLoading(true);
       setMessage("");
-      const data = await authApi.resetPassword({
+      await authApi.resetPassword({
         email,
         code,
         password,
         confirmPassword,
       });
       setMessageType("success");
-      setMessage(data.message);
+      setMessage(t("success"));
       router.push("/login");
       router.refresh();
     } catch (error) {
       setMessageType("error");
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setLoading(false);
     }
   }
 
-  let sendCodeText = "发码";
+  let sendCodeText = tCode("send");
   if (isSending) {
-    sendCodeText = "发送中";
+    sendCodeText = tCode("sending");
   } else if (codeCountdown > 0) {
-    sendCodeText = `${codeCountdown}s`;
+    sendCodeText = tCode("countdown", { seconds: codeCountdown });
   }
 
   return (
     <form onSubmit={onSubmit} className={styles.authForm}>
       <div className={styles.authForm__fields}>
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>邮箱</span>
+          <span className={styles.authForm__fieldLabel}>{t("email")}</span>
           <span className={styles.authForm__control}>
             <Mail className={styles.authForm__icon} />
             <input
@@ -107,21 +113,26 @@ export function ForgotPasswordForm() {
                 setEmail(event.target.value);
                 setCodeCountdown(0);
               }}
+              autoComplete="email"
+              autoCapitalize="none"
               required
             />
           </span>
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>验证码</span>
+          <span className={styles.authForm__fieldLabel}>{t("code")}</span>
           <span className={styles.authForm__inlineRow}>
             <span className={`${styles.authForm__control} ${styles.authForm__controlGrow}`}>
               <Hash className={styles.authForm__icon} />
               <input
                 className={styles.authForm__input}
+                name="code"
                 value={code}
-                onChange={(event) => setCode(event.target.value)}
+                onChange={(event) => setCode(event.target.value.trim())}
                 inputMode="numeric"
+                maxLength={12}
+                autoComplete="one-time-code"
                 required
               />
             </span>
@@ -137,37 +148,29 @@ export function ForgotPasswordForm() {
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>新密码</span>
-          <span className={styles.authForm__control}>
-            <Lock className={styles.authForm__icon} />
-            <input
-              className={styles.authForm__input}
-              type="password"
-              placeholder="请输入密码"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={8}
-              maxLength={128}
-            />
-          </span>
+          <span className={styles.authForm__fieldLabel}>{t("newPassword")}</span>
+          <PasswordInput
+            placeholder={t("newPasswordPlaceholder")}
+            autoComplete="new-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            minLength={8}
+            maxLength={128}
+          />
         </label>
 
         <label className={styles.authForm__field}>
-          <span className={styles.authForm__fieldLabel}>确认新密码</span>
-          <span className={styles.authForm__control}>
-            <Lock className={styles.authForm__icon} />
-            <input
-              className={styles.authForm__input}
-              type="password"
-              placeholder="再次输入新密码"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-              minLength={8}
-              maxLength={128}
-            />
-          </span>
+          <span className={styles.authForm__fieldLabel}>{t("confirmPassword")}</span>
+          <PasswordInput
+            placeholder={t("confirmPasswordPlaceholder")}
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+            minLength={8}
+            maxLength={128}
+          />
         </label>
 
         {message ? (
@@ -180,8 +183,12 @@ export function ForgotPasswordForm() {
       </div>
 
       <button className={styles.authForm__submit} disabled={isLoading}>
-        {isLoading ? "重置中" : "重置密码"}
+        {isLoading ? t("submitting") : t("submit")}
       </button>
+
+      <Link href="/login" className={styles.authForm__plainLink}>
+        {t("backToLogin")}
+      </Link>
     </form>
   );
 }

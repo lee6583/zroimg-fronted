@@ -1,31 +1,36 @@
 "use client";
 
-import { Modal } from "antd";
+import clsx from "clsx";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
+import { ConfirmSheet } from "@/features/history/confirm-sheet";
 import { useHistoryTable } from "@/features/history/history-table";
-import { getErrorMessage } from "@/utils/error";
+import { translateApiError } from "@/i18n/api-error";
+import type { HistoryMedia } from "@/utils/history";
 import styles from "./history-delete-button.module.css";
 
 type HistoryDeleteButtonProps = {
   taskNo: string;
-  content: string;
+  media: HistoryMedia;
   isRunning: boolean;
+  size?: "compact" | "touch";
 };
 
 export function HistoryDeleteButton(props: HistoryDeleteButtonProps) {
   const taskNo = props.taskNo;
-  const content = props.content;
   const isRunning = props.isRunning;
 
+  const t = useTranslations("history.delete");
+  const tError = useTranslations("errors.api");
   const table = useHistoryTable();
   const [isOpen, setOpen] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
-  let title = "删除作品";
+  let title = t("title");
   if (isRunning) {
-    title = "任务进行中，暂不能删除";
+    title = t("running");
   }
 
   async function confirm() {
@@ -34,7 +39,7 @@ export function HistoryDeleteButton(props: HistoryDeleteButtonProps) {
     try {
       await generationTasksApi.deleteTask(taskNo);
     } catch (error) {
-      table.notice.error(getErrorMessage(error));
+      table.notice.error(translateApiError(error, tError));
       setLoading(false);
       return;
     }
@@ -45,10 +50,13 @@ export function HistoryDeleteButton(props: HistoryDeleteButtonProps) {
   }
 
   return (
-    <span className={styles.historyDelete} title={title}>
+    <span
+      className={clsx(styles.historyDelete, props.size === "touch" && styles.historyDeleteTouch)}
+      title={title}
+    >
       <button
         type="button"
-        aria-label="删除作品"
+        aria-label={title}
         disabled={isRunning}
         onClick={() => setOpen(true)}
         className={styles.historyDelete__button}
@@ -56,24 +64,18 @@ export function HistoryDeleteButton(props: HistoryDeleteButtonProps) {
         <Trash2 size={13} />
       </button>
 
-      <Modal
+      <ConfirmSheet
         open={isOpen}
-        title="删除作品"
-        okText="删除"
-        cancelText="取消"
-        okButtonProps={{ danger: true }}
-        confirmLoading={isLoading}
-        mask={{ closable: !isLoading }}
-        closable={!isLoading}
-        cancelButtonProps={{ disabled: isLoading }}
-        width={400}
-        classNames={{ container: styles.historyDelete__modal }}
-        centered
-        onOk={confirm}
-        onCancel={() => setOpen(false)}
+        title={t("title")}
+        confirmLabel={isLoading ? t("deleting") : t("confirm")}
+        cancelLabel={t("cancel")}
+        isDanger
+        isLoading={isLoading}
+        onConfirm={confirm}
+        onClose={() => setOpen(false)}
       >
-        <p className={styles.historyDelete__text}>{content}</p>
-      </Modal>
+        {t("content", { media: props.media })}
+      </ConfirmSheet>
     </span>
   );
 }

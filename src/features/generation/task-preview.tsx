@@ -1,5 +1,6 @@
 import { Bot, User } from "lucide-react";
 import clsx from "clsx";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
@@ -28,12 +29,13 @@ type TaskMetaProps = {
   detail: string;
 };
 
-const promptSuggestions = ["一只在星空下弹吉他的猫", "未来城市的日落景色", "水彩风格的樱花园"];
+const promptSuggestions = ["cat", "city", "sakura"] as const;
 
 export function TaskPreview(props: TaskPreviewProps) {
   const tasks = props.tasks;
   const collections = props.collections;
   const onPromptChange = props.onPromptChange;
+  const t = useTranslations("generate.preview");
   const chatTasks = [...tasks].reverse();
   const chatRef = useRef<HTMLDivElement>(null);
   const scrollKey = tasks
@@ -62,21 +64,22 @@ export function TaskPreview(props: TaskPreviewProps) {
         ) : (
           <div className={styles.generateForm__emptyChat}>
             <div className={styles.generateForm__emptyInner}>
-              <h1 className={styles.generateForm__headline}>
-                你好！描述你想要的图片，我来为你生成。
-              </h1>
-              <p className={styles.generateForm__suggestionLabel}>试试这些提示词：</p>
+              <h1 className={styles.generateForm__headline}>{t("greeting")}</h1>
+              <p className={styles.generateForm__suggestionLabel}>{t("suggestionLabel")}</p>
               <div className={styles.generateForm__suggestions}>
-                {promptSuggestions.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => onPromptChange(item)}
-                    className={styles.generateForm__suggestionButton}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {promptSuggestions.map((key) => {
+                  const text = t(`suggestions.${key}`);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => onPromptChange(text)}
+                      className={styles.generateForm__suggestionButton}
+                    >
+                      {text}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -89,15 +92,22 @@ export function TaskPreview(props: TaskPreviewProps) {
 function TaskMessage(props: TaskMessageProps) {
   const task = props.task;
   const collections = props.collections;
+  const t = useTranslations("generate.preview");
+  const tTask = useTranslations("task");
   const results = task.results ?? [];
   const hasImages = results.length > 0;
   const isWaiting = isTaskPending(task);
   const isRetrying = isTaskRetrying(task);
-  const quality = getImageResolutionLabel(task.quality ?? "");
-  const detail = `${quality} · ${task.ratio} · ${task.count} 张 · ${task.requiredPoints} 积分`;
-  let waitText = "正在生成画面";
+  const quality = getImageResolutionLabel(task.quality ?? "", tTask);
+  const detail = t("detail", {
+    quality,
+    ratio: task.ratio ?? "",
+    count: task.count,
+    points: task.requiredPoints,
+  });
+  let waitText = t("waiting");
   if (isRetrying) {
-    waitText = "上次请求未成功，正在自动重试";
+    waitText = t("retrying");
   }
   const extension = task.format || "png";
 
@@ -129,7 +139,7 @@ function TaskMessage(props: TaskMessageProps) {
                 <div key={result.id} className={styles.generateForm__chatImageItem}>
                   <ImageLightbox
                     src={result.resultUrl}
-                    alt={`${task.prompt}，生成结果 ${index + 1}`}
+                    alt={t("resultAlt", { prompt: task.prompt, index: index + 1 })}
                     width={768}
                     height={768}
                     fit="intrinsic"
@@ -155,7 +165,7 @@ function TaskMessage(props: TaskMessageProps) {
                 <RetryMeta task={task} detail={detail} />
               ) : (
                 <p className={styles.generateForm__assistantMeta}>
-                  {`${getTaskStatusLabel(task)} · ${detail}`}
+                  {t("meta", { status: getTaskStatusLabel(task, tTask), detail })}
                 </p>
               )}
               {isWaiting || task.status === "failed" ? (
@@ -168,7 +178,7 @@ function TaskMessage(props: TaskMessageProps) {
                     </>
                   ) : null}
                   <p className={styles.generateForm__assistantText}>
-                    {isWaiting ? waitText : "生成失败了，请调整描述后再试。"}
+                    {isWaiting ? waitText : t("failed")}
                   </p>
                 </div>
               ) : null}
@@ -182,10 +192,16 @@ function TaskMessage(props: TaskMessageProps) {
 
 // 重试等待期间每秒刷新倒计时
 function RetryMeta(props: TaskMetaProps) {
+  const t = useTranslations("generate.preview");
+  const tTask = useTranslations("task");
   const now = useClock();
-  const label = getTaskStatusLabel(props.task, now || undefined);
+  const label = getTaskStatusLabel(props.task, tTask, now || undefined);
 
-  return <p className={styles.generateForm__assistantMeta}>{`${label} · ${props.detail}`}</p>;
+  return (
+    <p className={styles.generateForm__assistantMeta}>
+      {t("meta", { status: label, detail: props.detail })}
+    </p>
+  );
 }
 
 function Avatar({ type }: { type: "bot" | "user" }) {

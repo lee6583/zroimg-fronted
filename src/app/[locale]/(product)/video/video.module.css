@@ -622,3 +622,189 @@
     display: none;
   }
 }
+
+/* 手机：主视频在上，作品横向滑动，底部固定输入框 + 设置面板（Sheet） */
+.videoPage__composer {
+  display: none;
+}
+
+.videoPage__sheetBody {
+  display: grid;
+  margin-inline: -1.25rem;
+}
+
+.videoPage__sheetBody > .videoPage__settingBlock {
+  padding: 1rem 1.25rem;
+}
+
+.videoPage__sheetBody > .videoPage__settingBlock:last-child {
+  border-bottom: 0;
+}
+
+.videoPage__sheetDone {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 767px) {
+  .videoPageComposer {
+    padding-bottom: calc(
+      var(--video-composer-height, 8.5rem) + var(--mobile-tabbar-height, 3.5rem) +
+        env(safe-area-inset-bottom)
+    );
+  }
+
+  .videoPage__settings,
+  .videoPage__toolbar {
+    display: none;
+  }
+
+  .videoPage__stage {
+    --frame-max-h: 52dvh;
+    gap: 0.5rem;
+    padding: 0.75rem 0.75rem 0.5rem;
+  }
+
+  .videoPage__info {
+    width: 100%;
+  }
+
+  .videoPage__infoBar {
+    min-height: 2.75rem;
+  }
+
+  .videoPage__infoToggle,
+  .videoPage__download {
+    min-height: 2.75rem;
+    font-size: 0.85rem;
+  }
+
+  .videoPage__infoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .videoPage__rail {
+    gap: 0.5rem;
+    padding: 0.75rem 0 1rem;
+  }
+
+  .videoPage__railTitle {
+    padding-inline: 0.75rem;
+  }
+
+  .videoPage__railList {
+    grid-auto-columns: 8.5rem;
+    padding-inline: 0.75rem;
+    scroll-padding-inline: 0.75rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .videoPage__railList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .videoPage__loadMore {
+    min-height: 2.75rem;
+    align-self: stretch;
+    min-width: 6rem;
+  }
+
+  .videoPage__composer {
+    position: fixed;
+    right: 0;
+    bottom: calc(var(--mobile-tabbar-height, 3.5rem) + env(safe-area-inset-bottom));
+    left: 0;
+    z-index: 30;
+    display: grid;
+    gap: 0.5rem;
+    border-top: 1px solid var(--line);
+    background: color-mix(in oklab, var(--background) 94%, transparent);
+    padding: 0.625rem 0.75rem 0.625rem;
+    backdrop-filter: blur(12px);
+  }
+
+  .videoPage__composerPrompt {
+    min-height: 2.75rem;
+    max-height: 7rem;
+    font-size: 1rem;
+    line-height: 1.45;
+    field-sizing: content;
+  }
+
+  .videoPage__composerBar {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .videoPage__composerSettings {
+    display: flex;
+    min-width: 0;
+    min-height: 2.75rem;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--panel);
+    padding: 0 0.6rem;
+    color: var(--foreground);
+    font-family: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .videoPage__composerSettings > svg {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .videoPage__composerSummary {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    line-height: 1.2;
+  }
+
+  .videoPage__composerLabel {
+    color: var(--muted);
+    font-size: 0.68rem;
+  }
+
+  .videoPage__composerValue {
+    overflow: hidden;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .videoPage__composer .videoPage__submitButton {
+    min-height: 2.75rem;
+    flex: 0 0 auto;
+    border-radius: 0.5rem;
+    padding: 0 1rem;
+    white-space: nowrap;
+  }
+
+  .videoPage__composerMessage {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .videoPage__sheetBody .videoPage__option {
+    height: 2.75rem;
+    font-size: 0.85rem;
+  }
+
+  .videoPage__sheetBody .videoPage__clearUpload {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .videoPage__sheetBody .videoPage__durationControl {
+    min-height: 2.75rem;
+  }
+}

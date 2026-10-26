@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "title": "",
+  "overview": {
+    "label": "",
+    "pendingOrders": "",
+    "completedOrders": "",
+    "packages": "",
+    "balance": ""
+  },
+  "payment": {
+    "title": "",
+    "channels": {
+      "alipay": "",
+      "wxpay": ""
+    }
+  },
+  "packages": {
+    "title": "",
+    "popular": "",
+    "points": "",
+    "payableWithFee": "",
+    "buy": "",
+    "creating": "",
+    "unavailable": ""
+  },
+  "enterprise": {
+    "name": "",
+    "line": "",
+    "features": {
+      "points": "",
+      "materials": "",
+      "members": "",
+      "projects": ""
+    }
+  },
+  "custom": {
+    "title": "",
+    "amountLabel": "",
+    "currencySymbol": "",
+    "placeholder": "",
+    "credits": "",
+    "fee": "",
+    "payable": "",
+    "submit": "",
+    "submitShort": "",
+    "creating": "",
+    "summary": "",
+    "invalidAmount": "",
+    "overMax": ""
+  }
+}

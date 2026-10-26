@@ -28,6 +28,13 @@
   animation: sheetUp 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.sheet__grab {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  touch-action: none;
+}
+
 .sheet__handle {
   align-self: center;
   width: 2.25rem;

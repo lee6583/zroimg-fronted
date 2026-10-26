@@ -1,73 +1,86 @@
+import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, Coins, ReceiptText, WalletCards } from "lucide-react";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { OrderForm } from "@/features/billing/order-form";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { CreditPackage, RechargeOverview } from "@/types/orders";
+import styles from "./credits.module.css";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("credits.meta");
+
+  return { title: t("title") };
+}
+
+type StatCardProps = {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+};
+
+function StatCard(props: StatCardProps) {
+  const Icon = props.icon;
+
+  return (
+    <div className={`surface ${styles.credits__stat}`}>
+      <span className={styles.credits__statIcon}>
+        <Icon size={18} />
+      </span>
+      <div className={styles.credits__statText}>
+        <p className={`label ${styles.credits__statLabel}`} title={props.label}>
+          {props.label}
+        </p>
+        <p className={styles.credits__statValue}>{props.value}</p>
+      </div>
+    </div>
+  );
+}
+
 export default async function CreditsPage() {
   await requireUser();
+  const t = await getTranslations("credits");
+  const format = await getFormatter();
   const [packages, overview] = await Promise.all([
     requestJava<CreditPackage[]>("/order/user/packages"),
     requestJava<RechargeOverview>("/order/user/recharge-orders/overview"),
   ]);
 
+  function formatCount(value: number) {
+    return format.number(value, "points");
+  }
+
   return (
     <div className="page-stack">
       <section>
-        <h1 className="page-title">购买积分</h1>
+        <h1 className="page-title">{t("title")}</h1>
       </section>
 
-      <div className="grid gap-6">
-        <section className="grid gap-3 md:grid-cols-4">
-          <div className="surface flex items-start justify-between gap-3 rounded-xl p-4">
-            <span className="grid h-10 w-10 place-items-center rounded-md bg-soft">
-              <ReceiptText size={18} />
-            </span>
-            <div className="grid min-w-20 justify-items-center text-center">
-              <p className="label">待支付订单</p>
-              <p className="mt-1.5 font-serif text-2xl font-medium tracking-tight">
-                {overview.pendingOrderCount}
-              </p>
-            </div>
-          </div>
-
-          <div className="surface flex items-start justify-between gap-3 rounded-xl p-4">
-            <span className="grid h-10 w-10 place-items-center rounded-md bg-soft">
-              <CheckCircle2 size={18} />
-            </span>
-            <div className="grid min-w-20 justify-items-center text-center">
-              <p className="label">已完成订单</p>
-              <p className="mt-1.5 font-serif text-2xl font-medium tracking-tight">
-                {overview.completedOrderCount}
-              </p>
-            </div>
-          </div>
-
-          <div className="surface flex items-start justify-between gap-3 rounded-xl p-4">
-            <span className="grid h-10 w-10 place-items-center rounded-md bg-soft">
-              <Coins size={18} />
-            </span>
-            <div className="grid min-w-20 justify-items-center text-center">
-              <p className="label">可购买套餐</p>
-              <p className="mt-1.5 font-serif text-2xl font-medium tracking-tight">
-                {overview.enabledPackageCount}
-              </p>
-            </div>
-          </div>
-
-          <div className="surface flex items-start justify-between gap-3 rounded-xl p-4">
-            <span className="grid h-10 w-10 place-items-center rounded-md bg-soft">
-              <WalletCards size={18} />
-            </span>
-            <div className="grid min-w-20 justify-items-center text-center">
-              <p className="label">当前余额</p>
-              <p className="mt-1.5 font-serif text-2xl font-medium tracking-tight">
-                {overview.totalPoints}
-              </p>
-            </div>
-          </div>
+      <div className={styles.credits__body}>
+        <section className={styles.credits__stats} aria-label={t("overview.label")}>
+          <StatCard
+            label={t("overview.pendingOrders")}
+            value={formatCount(overview.pendingOrderCount)}
+            icon={ReceiptText}
+          />
+          <StatCard
+            label={t("overview.completedOrders")}
+            value={formatCount(overview.completedOrderCount)}
+            icon={CheckCircle2}
+          />
+          <StatCard
+            label={t("overview.packages")}
+            value={formatCount(overview.enabledPackageCount)}
+            icon={Coins}
+          />
+          <StatCard
+            label={t("overview.balance")}
+            value={formatCount(overview.totalPoints)}
+            icon={WalletCards}
+          />
         </section>
 
         <section>

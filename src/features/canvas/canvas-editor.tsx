@@ -13,16 +13,17 @@ import {
   type Edge,
   type XYPosition,
 } from "@xyflow/react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import type { DragEvent } from "react";
 import { canvasBoardsApi } from "@/api/canvas/boards";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { uploadMediaFile } from "@/api/media/uploads";
-import { modeLabels } from "@/features/generation/generation-model";
+import { useIsMobile } from "@/components/ui/sheet";
+import { translateApiError } from "@/i18n/api-error";
 import type { CanvasBoardDetail, CanvasConfig, SaveCanvasSceneRequest } from "@/types/canvas";
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationModel, GenerationTask, MediaAsset } from "@/types/generation";
-import { getErrorMessage } from "@/utils/error";
 import { ApiRequestError } from "@/utils/request";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import { CanvasContext, type CanvasActions } from "./canvas-context";
@@ -64,6 +65,7 @@ import {
   type CanvasStore,
 } from "./canvas-store";
 import { CanvasToolbar, type SaveStatus } from "./canvas-toolbar";
+import { GeneratorSheet } from "./generator-sheet";
 import { MaskEditorDialog } from "./mask-editor-dialog";
 import { CanvasGeneratorNode } from "./nodes/generator-node";
 import { CanvasImageNode, getImageSrc } from "./nodes/image-node";
@@ -163,6 +165,10 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const models = props.models;
   const collections = props.collections;
   const defaults = props.defaults;
+  const t = useTranslations("canvas");
+  const tMode = useTranslations("generate.modes");
+  const tError = useTranslations("errors.api");
+  const isMobile = useIsMobile();
 
   const flow = useReactFlow<CanvasNode, Edge>();
   const store = useCanvasStoreApi();
@@ -193,6 +199,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const [notice, setNotice] = useState("");
   const [isHistoryOpen, setHistoryOpen] = useState(false);
   const [maskNode, setMaskNode] = useState<ImageNode | null>(null);
+  const [sheetNodeId, setSheetNodeId] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isSavingRef = useRef(false);
   const isConflictRef = useRef(false);
@@ -229,7 +236,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
     const sceneKb = new Blob([JSON.stringify(scene)]).size / 1024;
     if (sceneKb > config.maxSceneKb) {
       setSaveState("error");
-      setNotice(`画布内容超出 ${config.maxSceneKb} KB 上限`);
+      setNotice(t("notices.sceneTooLarge", { size: config.maxSceneKb }));
       return;
     }
 
@@ -246,12 +253,12 @@ function CanvasWorkspace(props: CanvasEditorProps) {
         setSaveState("conflict");
       } else {
         setSaveState("error");
-        setNotice(getErrorMessage(error));
+        setNotice(translateApiError(error, tError));
       }
     } finally {
       isSavingRef.current = false;
     }
-  }, [board.id, config.maxSceneKb, store]);
+  }, [board.id, config.maxSceneKb, store, t, tError]);
 
   useEffect(() => {
     if (revision === savedRevision) return;
@@ -317,13 +324,13 @@ function CanvasWorkspace(props: CanvasEditorProps) {
     (extra: number) => {
       const total = store.getState().nodes.length + extra;
       if (total > config.maxNodesPerBoard) {
-        setNotice(`每个画布最多 ${config.maxNodesPerBoard} 个节点`);
+        setNotice(t("notices.maxNodes", { count: config.maxNodesPerBoard }));
         return false;
       }
 
       return true;
     },
-    [config.maxNodesPerBoard, store],
+    [config.maxNodesPerBoard, store, t],
   );
 
   const getCenter = useCallback(
@@ -347,7 +354,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const addGeneratorFor = useCallback(
     (image: ImageNode, mask: MediaAsset | null) => {
       if (!defaults) {
-        setNotice("暂无可用图片模型");
+        setNotice(t("notices.noModel"));
         return;
       }
       if (!hasRoom(1)) return;
@@ -368,7 +375,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       state.addNodes([generator], [createEdge(image.id, generator.id)]);
       state.setFocus(generator.id);
     },
-    [defaults, hasRoom, models, store],
+    [defaults, hasRoom, models, store, t],
   );
 
   const generate = useCallback(
@@ -382,24 +389,24 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       const mode = getMode(node.data, upstream);
       const options = resolveOptions(node.data, models, mode);
       if (!options) {
-        setNotice(`${modeLabels[mode]}暂无可用模型`);
+        setNotice(t("notices.modeNoModel", { mode: tMode(mode) }));
         return;
       }
 
       // 第二步：前端先做数量限制提示，Java 仍会兜底校验。
       if (!node.data.prompt.trim()) {
-        setNotice("请输入提示词");
+        setNotice(t("notices.promptRequired"));
         return;
       }
       if (countPending(state.nodes) >= config.maxPendingTasksPerBoard) {
-        setNotice(`每个画布最多同时进行 ${config.maxPendingTasksPerBoard} 个生成任务`);
+        setNotice(t("notices.maxPending", { count: config.maxPendingTasksPerBoard }));
         return;
       }
       if (!hasRoom(options.count)) return;
 
       const request = buildTaskRequest(board.id, { ...node.data, ...options }, upstream);
       if (mode !== "text_to_image" && !request.referenceMediaId) {
-        setNotice("参考图未就绪");
+        setNotice(t("notices.referenceNotReady"));
         return;
       }
 
@@ -418,10 +425,10 @@ function CanvasWorkspace(props: CanvasEditorProps) {
         setBalance((current) => Math.max(0, current - task.requiredPoints));
         void save();
       } catch (error) {
-        setNotice(getErrorMessage(error));
+        setNotice(translateApiError(error, tError));
       }
     },
-    [board.id, config.maxPendingTasksPerBoard, hasRoom, models, save, store],
+    [board.id, config.maxPendingTasksPerBoard, hasRoom, models, save, store, t, tError, tMode],
   );
 
   const actions = useMemo<CanvasActions>(() => {
@@ -443,6 +450,9 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       remove(nodeId) {
         store.getState().removeNode(nodeId);
       },
+      openGenerator(nodeId) {
+        setSheetNodeId(nodeId);
+      },
     };
   }, [addGeneratorFor, balance, board.id, collections, generate, models, store]);
 
@@ -452,12 +462,12 @@ function CanvasWorkspace(props: CanvasEditorProps) {
     // 第一步：校验格式、大小和节点数量。
     const invalid = files.find((file) => !isSupportedImageType(file.type));
     if (invalid) {
-      setNotice("仅支持 PNG、JPEG 和 WebP 图片");
+      setNotice(t("notices.fileType"));
       return;
     }
     const oversized = files.find((file) => file.size > maxImageBytes);
     if (oversized) {
-      setNotice("单张图片不能超过 10 MB");
+      setNotice(t("notices.fileSize"));
       return;
     }
     if (!hasRoom(files.length)) return;
@@ -485,7 +495,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
           });
         } catch (error) {
           store.getState().changeNodes([{ type: "remove", id }]);
-          setNotice(getErrorMessage(error));
+          setNotice(translateApiError(error, tError));
         }
       }),
     );
@@ -493,7 +503,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
 
   function addGenerator() {
     if (!defaults) {
-      setNotice("暂无可用图片模型");
+      setNotice(t("notices.noModel"));
       return;
     }
     if (!hasRoom(1)) return;
@@ -601,6 +611,23 @@ function CanvasWorkspace(props: CanvasEditorProps) {
     return isValidConnection(connection, state.nodes, state.edges);
   }
 
+  const toolbarProps = {
+    title: board.title,
+    balance,
+    saveStatus,
+    canUndo,
+    canRedo,
+    onAddGenerator: addGenerator,
+    onAddNote: addNote,
+    onUpload: (files: File[]) => void uploadFiles(files),
+    onOpenHistory: () => setHistoryOpen(true),
+    onUndo: () => store.getState().undo(),
+    onRedo: () => store.getState().redo(),
+    onFitView: () => void flow.fitView({ maxZoom: 1, duration: 200 }),
+    onReload: () => window.location.reload(),
+  };
+  const sheetNode = nodes.find((node) => node.id === sheetNodeId && node.type === "generator");
+
   let maskUrl = "";
   if (maskNode) {
     maskUrl = getImageSrc(maskNode.data) ?? "";
@@ -630,29 +657,26 @@ function CanvasWorkspace(props: CanvasEditorProps) {
           maxZoom={2}
           deleteKeyCode={["Backspace", "Delete"]}
           multiSelectionKeyCode={["Meta", "Control"]}
+          // 手机：单指拖动画布、双指缩放；点生成节点在 Sheet 中编辑（节点缩小后表单太小）。
+          panOnDrag
+          zoomOnPinch
+          onNodeClick={(_, node) => {
+            if (isMobile && node.type === "generator") setSheetNodeId(node.id);
+          }}
         >
           <Background gap={24} />
-          <MiniMap pannable zoomable />
-          <Controls showInteractive={false} />
-          <Panel position="top-left">
-            <CanvasToolbar
-              title={board.title}
-              balance={balance}
-              saveStatus={saveStatus}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onAddGenerator={addGenerator}
-              onAddNote={addNote}
-              onUpload={(files) => void uploadFiles(files)}
-              onOpenHistory={() => setHistoryOpen(true)}
-              onUndo={() => store.getState().undo()}
-              onRedo={() => store.getState().redo()}
-              onFitView={() => void flow.fitView({ maxZoom: 1, duration: 200 })}
-              onReload={() => window.location.reload()}
-            />
+          {isMobile ? null : <MiniMap pannable zoomable />}
+          {isMobile ? null : <Controls showInteractive={false} />}
+          <Panel position="top-left" className={styles.toolbarPanel}>
+            <CanvasToolbar variant={isMobile ? "header" : "full"} {...toolbarProps} />
           </Panel>
+          {isMobile ? (
+            <Panel position="bottom-center" className={styles.toolsPanel}>
+              <CanvasToolbar variant="tools" {...toolbarProps} />
+            </Panel>
+          ) : null}
           {selectedResult?.data.resultId && selectedResult.data.mediaAssetId ? (
-            <Panel position="top-right">
+            <Panel position="top-right" className={styles.resultActionsPanel}>
               <div className={styles.resultActions}>
                 <CanvasResultActions
                   key={selectedResult.data.resultId}
@@ -664,7 +688,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
             </Panel>
           ) : null}
           {notice ? (
-            <Panel position="bottom-center">
+            <Panel position="bottom-center" className={styles.noticePanel}>
               <p className={styles.notice} role="status">
                 {notice}
               </p>
@@ -673,9 +697,15 @@ function CanvasWorkspace(props: CanvasEditorProps) {
         </ReactFlow>
       </div>
 
-      {isHistoryOpen ? (
-        <CanvasHistoryPicker onCancel={() => setHistoryOpen(false)} onConfirm={addPicked} />
-      ) : null}
+      <CanvasHistoryPicker
+        open={isHistoryOpen}
+        onCancel={() => setHistoryOpen(false)}
+        onConfirm={addPicked}
+      />
+      <GeneratorSheet
+        nodeId={isMobile && sheetNode ? sheetNode.id : null}
+        onClose={() => setSheetNodeId(null)}
+      />
       {maskNode ? (
         <MaskEditorDialog
           open

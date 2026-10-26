@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import styles from "./sheet.module.css";
+import { useSwipeDismiss } from "./use-swipe-dismiss";
 
 type SheetProps = {
   open: boolean;
@@ -66,6 +67,12 @@ export function Sheet(props: SheetProps) {
   const isClient = useIsClient();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  // 手机端按住拖拽条/标题栏下滑关闭；正文区域保留正常滚动。
+  const swipe = useSwipeDismiss(() => {
+    if (!isLocked) onClose();
+  });
+  const swipeHandlers = isMobile && !isLocked ? swipe.handlers : undefined;
 
   useEffect(() => {
     if (!open) {
@@ -111,26 +118,29 @@ export function Sheet(props: SheetProps) {
         aria-labelledby={props.title ? titleId : undefined}
         tabIndex={-1}
         className={clsx(styles.sheet__panel, props.className)}
+        style={swipe.style}
       >
-        <span className={styles.sheet__handle} aria-hidden />
-        <header className={styles.sheet__header}>
-          {props.title ? (
-            <h2 id={titleId} className={styles.sheet__title}>
-              {props.title}
-            </h2>
-          ) : (
-            <span />
-          )}
-          <button
-            type="button"
-            className={styles.sheet__close}
-            onClick={onClose}
-            disabled={isLocked}
-            aria-label={t("actions.close")}
-          >
-            <X size={18} />
-          </button>
-        </header>
+        <div className={styles.sheet__grab} {...swipeHandlers}>
+          <span className={styles.sheet__handle} aria-hidden />
+          <header className={styles.sheet__header}>
+            {props.title ? (
+              <h2 id={titleId} className={styles.sheet__title}>
+                {props.title}
+              </h2>
+            ) : (
+              <span />
+            )}
+            <button
+              type="button"
+              className={styles.sheet__close}
+              onClick={onClose}
+              disabled={isLocked}
+              aria-label={t("actions.close")}
+            >
+              <X size={18} />
+            </button>
+          </header>
+        </div>
         <div className={styles.sheet__body}>{props.children}</div>
         {props.footer ? <footer className={styles.sheet__footer}>{props.footer}</footer> : null}
       </div>

@@ -17,6 +17,7 @@ export function SubmissionActions(props: SubmissionActionsProps) {
       generatedImageId={submission.generatedImageId}
       initialStatus={submission.status}
       initialReason={submission.rejectReason}
+      size="touch"
       hideStatus
       onChange={() => router.refresh()}
     />

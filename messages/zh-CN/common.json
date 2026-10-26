@@ -7,7 +7,8 @@
     "retry": "重新加载",
     "startCreating": "开始创作",
     "backHome": "返回首页",
-    "close": "关闭"
+    "close": "关闭",
+    "enterWorkspace": "进入工作台"
   },
   "status": {
     "loading": "加载中...",

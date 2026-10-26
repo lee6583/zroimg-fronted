@@ -1,0 +1,87 @@
+{
+  "title": "",
+  "stats": {
+    "all": "",
+    "open": "",
+    "inProgress": "",
+    "processed": ""
+  },
+  "filter": {
+    "all": "",
+    "open": "",
+    "in_progress": "",
+    "processed": ""
+  },
+  "type": {
+    "bug": "",
+    "billing": "",
+    "generation": "",
+    "account": "",
+    "suggestion": "",
+    "other": ""
+  },
+  "status": {
+    "open": "",
+    "in_progress": "",
+    "resolved": "",
+    "closed": ""
+  },
+  "create": "",
+  "view": "",
+  "empty": "",
+  "table": {
+    "type": "",
+    "subject": "",
+    "createdAt": "",
+    "updatedAt": "",
+    "status": "",
+    "actions": ""
+  },
+  "card": {
+    "updatedAt": ""
+  },
+  "form": {
+    "title": "",
+    "backToList": "",
+    "type": "",
+    "subject": "",
+    "subjectPlaceholder": "",
+    "content": "",
+    "contentPlaceholder": "",
+    "attachments": "",
+    "chooseFiles": "",
+    "attachmentsHint": "",
+    "removeFile": "",
+    "remove": "",
+    "fileSizeKb": "",
+    "fileSizeMb": "",
+    "tooManyFiles": "",
+    "submit": "",
+    "submitting": "",
+    "cancel": "",
+    "submitted": ""
+  },
+  "detail": {
+    "title": "",
+    "meta": "",
+    "currentStatus": "",
+    "process": {
+      "open": "",
+      "in_progress": "",
+      "resolved": "",
+      "closed": ""
+    },
+    "thread": "",
+    "admin": "",
+    "you": "",
+    "noAdminReply": "",
+    "attachments": "",
+    "attachmentAlt": "",
+    "attachmentFallback": "",
+    "replyLabel": "",
+    "replyPlaceholder": "",
+    "reply": "",
+    "replying": "",
+    "replyClosed": ""
+  }
+}

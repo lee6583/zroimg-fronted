@@ -1,0 +1,38 @@
+{
+  "title": "账户设置",
+  "nav": {
+    "label": "账户设置分类",
+    "profile": "个人资料",
+    "security": "登录安全"
+  },
+  "profile": {
+    "title": "个人资料",
+    "avatar": "头像",
+    "changeAvatar": "更换头像",
+    "avatarHint": "支持 JPG、PNG、WebP 格式，文件不超过 10 MB",
+    "avatarUpdated": "头像已更新",
+    "username": "用户名",
+    "email": "邮箱",
+    "bio": "个人简介",
+    "bioPlaceholder": "介绍一下你自己，或者写下常用的创作方向...",
+    "bioCount": "{count, number} / {max, number}",
+    "save": "保存资料",
+    "saving": "保存中",
+    "saved": "资料已保存"
+  },
+  "security": {
+    "title": "登录安全",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "newPasswordPlaceholder": "至少 8 位字符",
+    "showField": "显示{field}",
+    "hideField": "隐藏{field}",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "note": "新密码至少 8 位，且两次输入必须一致。",
+    "submit": "更新密码",
+    "submitting": "更新中",
+    "updated": "密码已更新"
+  }
+}

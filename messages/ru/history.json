@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "title": "",
+  "filters": {
+    "label": "",
+    "timeRange": "",
+    "startDate": "",
+    "endDate": "",
+    "anyTime": "",
+    "rangeSummary": "",
+    "invalidRange": "",
+    "clear": "",
+    "apply": "",
+    "mediaLabel": "",
+    "media": {
+      "all": "",
+      "image": "",
+      "video": ""
+    }
+  },
+  "list": {
+    "label": ""
+  },
+  "columns": {
+    "preview": "",
+    "prompt": "",
+    "model": "",
+    "resolution": "",
+    "ratio": "",
+    "points": "",
+    "status": "",
+    "time": "",
+    "actions": ""
+  },
+  "duration": "",
+  "actions": {
+    "downloadImage": "",
+    "downloadVideo": ""
+  },
+  "delete": {
+    "title": "",
+    "running": "",
+    "content": "",
+    "confirm": "",
+    "deleting": "",
+    "cancel": "",
+    "done": ""
+  },
+  "empty": {
+    "default": {
+      "title": "",
+      "text": "",
+      "action": ""
+    },
+    "filtered": {
+      "title": "",
+      "text": "",
+      "action": ""
+    },
+    "video": {
+      "title": "",
+      "text": "",
+      "action": ""
+    }
+  }
+}

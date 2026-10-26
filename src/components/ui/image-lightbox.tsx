@@ -5,6 +5,8 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
+import { useSwipeDismiss } from "./use-swipe-dismiss";
 import styles from "./image-lightbox.module.css";
 
 type ImageLightboxProps = {
@@ -28,7 +30,9 @@ export function ImageLightbox(props: ImageLightboxProps) {
   const triggerClassName = props.triggerClassName;
   const imageClassName = props.imageClassName;
 
+  const t = useTranslations("ui.lightbox");
   const [isOpen, setOpen] = useState(false);
+  const swipe = useSwipeDismiss(() => setOpen(false));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -53,8 +57,8 @@ export function ImageLightbox(props: ImageLightboxProps) {
     <>
       <button
         type="button"
-        aria-label="放大查看图片"
-        title="放大查看"
+        aria-label={t("open")}
+        title={t("openTitle")}
         className={clsx(
           styles.imageLightbox__trigger,
           fit === "intrinsic" && styles.imageLightbox__triggerIntrinsic,
@@ -77,6 +81,7 @@ export function ImageLightbox(props: ImageLightboxProps) {
             <div
               className={styles.imageLightbox__overlay}
               role="presentation"
+              {...swipe.handlers}
               onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
                   setOpen(false);
@@ -87,7 +92,8 @@ export function ImageLightbox(props: ImageLightboxProps) {
                 className={styles.imageLightbox__viewer}
                 role="dialog"
                 aria-modal="true"
-                aria-label="图片预览"
+                style={swipe.style}
+                aria-label={t("dialog")}
               >
                 <Image
                   className={styles.imageLightbox__image}
@@ -100,12 +106,12 @@ export function ImageLightbox(props: ImageLightboxProps) {
               </div>
               <button
                 type="button"
-                aria-label="关闭图片预览"
-                title="关闭"
+                aria-label={t("close")}
+                title={t("closeTitle")}
                 className={styles.imageLightbox__close}
                 onClick={() => setOpen(false)}
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>,
             document.body,

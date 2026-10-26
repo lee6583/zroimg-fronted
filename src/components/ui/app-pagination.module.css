@@ -93,9 +93,25 @@
   color: var(--foreground) !important;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .appPagination {
     justify-content: center;
-    overflow-x: auto;
+  }
+
+  .appPagination :global(.ant-pagination-simple .ant-pagination-prev),
+  .appPagination :global(.ant-pagination-simple .ant-pagination-next),
+  .appPagination :global(.ant-pagination-simple .ant-pagination-prev button),
+  .appPagination :global(.ant-pagination-simple .ant-pagination-next button) {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    line-height: 2.75rem;
+  }
+
+  .appPagination :global(.ant-pagination-simple .ant-pagination-simple-pager) {
+    height: 2.75rem;
+    margin-inline: 0.75rem;
+    color: var(--foreground);
+    font-size: 0.9375rem;
+    line-height: 2.75rem;
   }
 }

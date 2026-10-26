@@ -3,11 +3,12 @@
 import { authApi } from "@/api/auth/email-auth";
 import { translateApiError } from "@/i18n/api-error";
 import { Link, useRouter } from "@/i18n/navigation";
-import { Lock, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter as useAppRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./auth-form.module.css";
+import { PasswordInput } from "./password-input";
 
 const LOGIN_COOLDOWN_MS = 1500;
 
@@ -96,6 +97,8 @@ export function LoginForm() {
               placeholder="name@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              autoCapitalize="none"
               required
             />
           </span>
@@ -108,16 +111,12 @@ export function LoginForm() {
               {t("forgotPassword")}
             </Link>
           </span>
-          <span className={styles.authForm__control}>
-            <Lock className={styles.authForm__icon} />
-            <input
-              className={styles.authForm__input}
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </span>
+          <PasswordInput
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            required
+          />
         </label>
 
         {message ? (

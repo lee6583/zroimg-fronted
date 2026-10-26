@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "title": "",
+  "metrics": {
+    "generated": "",
+    "monthlyGenerated": "",
+    "favorites": "",
+    "balance": ""
+  },
+  "quickActions": {
+    "label": "",
+    "generate": "",
+    "video": "",
+    "credits": "",
+    "orders": ""
+  },
+  "recent": {
+    "title": "",
+    "empty": ""
+  },
+  "checkIn": {
+    "title": "",
+    "streak": "",
+    "reward": "",
+    "weekLabel": "",
+    "weekDays": "",
+    "dailyPoints": "",
+    "actions": {
+      "claim": "",
+      "claimed": "",
+      "unavailable": "",
+      "claiming": ""
+    }
+  }
+}

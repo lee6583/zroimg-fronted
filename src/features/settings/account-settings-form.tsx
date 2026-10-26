@@ -16,10 +16,11 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { accountApi } from "@/api/account/settings";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { getErrorMessage } from "@/utils/error";
+import { useTranslations } from "next-intl";
+import { translateApiError } from "@/i18n/api-error";
+import { useRouter } from "@/i18n/navigation";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import styles from "./account-settings-form.module.css";
-import { useRouter } from "@/i18n/navigation";
 
 type AccountSettingsFormProps = {
   username: string;
@@ -30,18 +31,23 @@ type AccountSettingsFormProps = {
 
 type PasswordFieldKey = "current" | "next" | "confirm";
 
+const maxImageMb = Math.round(maxImageBytes / 1024 / 1024);
+const maxBioLength = 200;
+
 export function AccountSettingsForm(props: AccountSettingsFormProps) {
+  const t = useTranslations("settings.nav");
+
   return (
     <section className={styles.accountSettings}>
       <aside className={styles.accountSettings__sidebar}>
-        <nav className={styles.accountSettings__nav} aria-label="账户设置分类">
+        <nav className={styles.accountSettings__nav} aria-label={t("label")}>
           <a href="#profile">
             <UserRound size={16} />
-            <span>个人资料</span>
+            <span>{t("profile")}</span>
           </a>
           <a href="#security">
             <ShieldCheck size={16} />
-            <span>登录安全</span>
+            <span>{t("security")}</span>
           </a>
         </nav>
       </aside>
@@ -60,6 +66,9 @@ function ProfileForm(props: AccountSettingsFormProps) {
   const bio = props.bio;
   const initialAvatarUrl = props.avatarUrl;
 
+  const t = useTranslations("settings.profile");
+  const tUpload = useTranslations("errors.upload");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(username);
@@ -85,11 +94,11 @@ function ProfileForm(props: AccountSettingsFormProps) {
     if (!file) return;
 
     if (!isSupportedImageType(file.type)) {
-      setAvatarMessage("仅支持 PNG、JPEG 和 WebP 图片");
+      setAvatarMessage(tUpload("unsupportedImageType"));
       return;
     }
     if (file.size <= 0 || file.size > maxImageBytes) {
-      setAvatarMessage("头像图片必须小于 10 MB");
+      setAvatarMessage(tUpload("imageTooLarge", { maxMb: maxImageMb }));
       return;
     }
 
@@ -104,11 +113,11 @@ function ProfileForm(props: AccountSettingsFormProps) {
       const asset = await accountApi.updateAvatar(data);
       setAvatarUrl(asset.contentUrl);
       setAvatarPreviewUrl(null);
-      setAvatarMessage("头像已更新");
+      setAvatarMessage(t("avatarUpdated"));
       router.refresh();
     } catch (error) {
       setAvatarPreviewUrl(null);
-      setAvatarMessage(getErrorMessage(error));
+      setAvatarMessage(translateApiError(error, tError));
     } finally {
       setUploadingAvatar(false);
     }
@@ -119,16 +128,12 @@ function ProfileForm(props: AccountSettingsFormProps) {
     setSaving(true);
     setMessage("");
 
-    const data = new FormData();
-    data.set("username", name);
-    data.set("bio", intro);
-
     try {
       await accountApi.updateProfile({ username: name, bio: intro });
-      setMessage("资料已保存");
+      setMessage(t("saved"));
       router.refresh();
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setSaving(false);
     }
@@ -140,13 +145,34 @@ function ProfileForm(props: AccountSettingsFormProps) {
         <span className={styles.accountSettings__sectionIcon}>
           <UserRound size={18} />
         </span>
-        <h2>个人资料</h2>
+        <h2>{t("title")}</h2>
       </header>
 
       <div className={styles.accountSettings__sectionBody}>
         <div className={styles.accountSettings__avatarField}>
-          <div className={styles.accountSettings__avatarControl}>
-            <UserAvatar name={name || username} src={avatarPreviewUrl || avatarUrl} size={80} />
+          <button
+            type="button"
+            className={styles.accountSettings__avatarControl}
+            disabled={isUploadingAvatar}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label={t("changeAvatar")}
+            title={t("changeAvatar")}
+          >
+            <UserAvatar
+              name={name || username}
+              src={avatarPreviewUrl || avatarUrl}
+              size={80}
+              decorative
+            />
+            <span className={styles.accountSettings__cameraButton} aria-hidden>
+              {isUploadingAvatar ? (
+                <LoaderCircle size={15} className={styles.accountSettings__spinner} />
+              ) : (
+                <Camera size={15} />
+              )}
+            </span>
+          </button>
+          <div className={styles.accountSettings__avatarCopy}>
             <input
               ref={fileInputRef}
               className={styles.accountSettings__fileInput}
@@ -154,24 +180,8 @@ function ProfileForm(props: AccountSettingsFormProps) {
               accept="image/png,image/jpeg,image/webp"
               onChange={uploadAvatar}
             />
-            <button
-              type="button"
-              className={styles.accountSettings__cameraButton}
-              disabled={isUploadingAvatar}
-              onClick={() => fileInputRef.current?.click()}
-              aria-label="更换头像"
-              title="更换头像"
-            >
-              {isUploadingAvatar ? (
-                <LoaderCircle size={15} className={styles.accountSettings__spinner} />
-              ) : (
-                <Camera size={15} />
-              )}
-            </button>
-          </div>
-          <div className={styles.accountSettings__avatarCopy}>
-            <strong>头像</strong>
-            <span>支持 JPG、PNG、WebP 格式，文件不超过 10 MB</span>
+            <strong>{t("avatar")}</strong>
+            <span>{t("avatarHint")}</span>
             {avatarMessage ? (
               <p className={styles.accountSettings__inlineMessage} aria-live="polite">
                 {avatarMessage}
@@ -182,7 +192,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
 
         <div className={styles.accountSettings__fieldGrid}>
           <div className={styles.accountSettings__field}>
-            <label htmlFor="account-username">用户名</label>
+            <label htmlFor="account-username">{t("username")}</label>
             <input
               id="account-username"
               className={styles.accountSettings__input}
@@ -196,7 +206,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
           </div>
 
           <div className={styles.accountSettings__field}>
-            <label htmlFor="account-email">邮箱</label>
+            <label htmlFor="account-email">{t("email")}</label>
             <input
               id="account-email"
               className={styles.accountSettings__input}
@@ -208,16 +218,18 @@ function ProfileForm(props: AccountSettingsFormProps) {
         </div>
 
         <div className={styles.accountSettings__field}>
-          <label htmlFor="account-bio">个人简介</label>
+          <label htmlFor="account-bio">{t("bio")}</label>
           <textarea
             id="account-bio"
             className={styles.accountSettings__textarea}
             value={intro}
             onChange={(event) => setIntro(event.target.value)}
-            maxLength={200}
-            placeholder="介绍一下你自己，或者写下常用的创作方向..."
+            maxLength={maxBioLength}
+            placeholder={t("bioPlaceholder")}
           />
-          <span className={styles.accountSettings__characterCount}>{intro.length} / 200</span>
+          <span className={styles.accountSettings__characterCount}>
+            {t("bioCount", { count: intro.length, max: maxBioLength })}
+          </span>
         </div>
 
         <div className={styles.accountSettings__formActions}>
@@ -234,7 +246,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
             ) : (
               <Save size={16} />
             )}
-            {isSaving ? "保存中" : "保存资料"}
+            {isSaving ? t("saving") : t("save")}
           </button>
         </div>
       </div>
@@ -243,6 +255,8 @@ function ProfileForm(props: AccountSettingsFormProps) {
 }
 
 function PasswordForm() {
+  const t = useTranslations("settings.security");
+  const tError = useTranslations("errors.api");
   const router = useRouter();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -269,10 +283,10 @@ function PasswordForm() {
       setCurrent("");
       setNext("");
       setConfirm("");
-      setMessage("密码已更新");
+      setMessage(t("updated"));
       router.refresh();
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(translateApiError(error, tError));
     } finally {
       setSaving(false);
     }
@@ -286,7 +300,7 @@ function PasswordForm() {
     {
       key: "current" as const,
       id: "current-password",
-      label: "当前密码",
+      label: t("currentPassword"),
       value: current,
       setValue: setCurrent,
       autoComplete: "current-password",
@@ -294,7 +308,7 @@ function PasswordForm() {
     {
       key: "next" as const,
       id: "new-password",
-      label: "新密码",
+      label: t("newPassword"),
       value: next,
       setValue: setNext,
       autoComplete: "new-password",
@@ -302,7 +316,7 @@ function PasswordForm() {
     {
       key: "confirm" as const,
       id: "confirm-password",
-      label: "确认新密码",
+      label: t("confirmPassword"),
       value: confirm,
       setValue: setConfirm,
       autoComplete: "new-password",
@@ -315,7 +329,7 @@ function PasswordForm() {
         <span className={styles.accountSettings__sectionIcon}>
           <LockKeyhole size={18} />
         </span>
-        <h2>登录安全</h2>
+        <h2>{t("title")}</h2>
       </header>
 
       <div className={styles.accountSettings__sectionBody}>
@@ -331,19 +345,23 @@ function PasswordForm() {
                   value={field.value}
                   onChange={(event) => field.setValue(event.target.value)}
                   autoComplete={field.autoComplete}
-                  placeholder={field.key === "next" ? "至少 8 位字符" : ""}
+                  placeholder={field.key === "next" ? t("newPasswordPlaceholder") : ""}
                   required
                   minLength={field.key === "next" ? 8 : undefined}
                 />
                 <button
                   type="button"
-                  title={visibility[field.key] ? "隐藏密码" : "显示密码"}
+                  title={visibility[field.key] ? t("hidePassword") : t("showPassword")}
                   onClick={() => toggleVisibility(field.key)}
                   className={clsx(
                     styles.accountSettings__visibilityButton,
                     visibility[field.key] && styles.accountSettings__visibilityButtonActive,
                   )}
-                  aria-label={visibility[field.key] ? `隐藏${field.label}` : `显示${field.label}`}
+                  aria-label={
+                    visibility[field.key]
+                      ? t("hideField", { field: field.label })
+                      : t("showField", { field: field.label })
+                  }
                 >
                   {visibility[field.key] ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -354,7 +372,7 @@ function PasswordForm() {
 
         <div className={styles.accountSettings__note}>
           <ShieldCheck size={16} />
-          <span>新密码至少 8 位，且两次输入必须一致。</span>
+          <span>{t("note")}</span>
         </div>
 
         <div className={styles.accountSettings__formActions}>
@@ -371,7 +389,7 @@ function PasswordForm() {
             ) : (
               <KeyRound size={16} />
             )}
-            {isSaving ? "更新中" : "更新密码"}
+            {isSaving ? t("submitting") : t("submit")}
           </button>
         </div>
       </div>

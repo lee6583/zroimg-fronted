@@ -7,7 +7,8 @@
     "retry": "Перезагрузить",
     "startCreating": "Начать творить",
     "backHome": "На главную",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "enterWorkspace": ""
   },
   "status": {
     "loading": "Загрузка...",

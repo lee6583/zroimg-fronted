@@ -1,0 +1,87 @@
+{
+  "title": "意见反馈",
+  "stats": {
+    "all": "全部意见",
+    "open": "待处理",
+    "inProgress": "处理中",
+    "processed": "已处理"
+  },
+  "filter": {
+    "all": "全部状态",
+    "open": "待处理",
+    "in_progress": "处理中",
+    "processed": "已处理"
+  },
+  "type": {
+    "bug": "问题反馈",
+    "billing": "订单与积分",
+    "generation": "图片生成",
+    "account": "账户问题",
+    "suggestion": "功能建议",
+    "other": "其他"
+  },
+  "status": {
+    "open": "待处理",
+    "in_progress": "处理中",
+    "resolved": "已处理",
+    "closed": "已处理"
+  },
+  "create": "提交意见",
+  "view": "查看",
+  "empty": "还没有匹配的反馈记录。",
+  "table": {
+    "type": "意见类型",
+    "subject": "意见",
+    "createdAt": "创建时间",
+    "updatedAt": "更新时间",
+    "status": "状态",
+    "actions": "操作"
+  },
+  "card": {
+    "updatedAt": "更新于 {time}"
+  },
+  "form": {
+    "title": "提交意见",
+    "backToList": "返回列表",
+    "type": "类型",
+    "subject": "标题",
+    "subjectPlaceholder": "例如：图片生成任务一直显示排队中",
+    "content": "内容",
+    "contentPlaceholder": "请描述问题现象、出现时间、任务编号、订单号或必要截图信息。",
+    "attachments": "附件",
+    "chooseFiles": "选择截图",
+    "attachmentsHint": "PNG、JPEG、WebP，最多 {max, number} 张，单张不超过 {maxMb, number} MB",
+    "removeFile": "移除附件 {name}",
+    "remove": "移除附件",
+    "fileSizeKb": "{size, number} KB",
+    "fileSizeMb": "{size} MB",
+    "tooManyFiles": "最多上传 {max, number} 张附件。",
+    "submit": "提交意见",
+    "submitting": "提交中",
+    "cancel": "取消",
+    "submitted": "反馈已提交，我们会尽快查看。"
+  },
+  "detail": {
+    "title": "处理情况",
+    "meta": "{type} / 更新于 {time}",
+    "currentStatus": "当前状态",
+    "process": {
+      "open": "反馈已收到，等待管理员查看。",
+      "in_progress": "管理员正在处理这条反馈，请留意状态更新。",
+      "resolved": "这条反馈已处理完成。",
+      "closed": "这条反馈已处理完成。"
+    },
+    "thread": "沟通记录",
+    "admin": "管理员",
+    "you": "我",
+    "noAdminReply": "暂无管理员回复，请留意后续处理结果。",
+    "attachments": "附件",
+    "attachmentAlt": "反馈附件 {name}",
+    "attachmentFallback": "附件 {index, number}",
+    "replyLabel": "回复",
+    "replyPlaceholder": "补充说明或回复管理员",
+    "reply": "发送",
+    "replying": "发送中",
+    "replyClosed": "这条反馈已关闭，如有新问题请重新提交。"
+  }
+}

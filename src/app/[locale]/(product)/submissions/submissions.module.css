@@ -207,3 +207,84 @@
 :global(:root[data-theme="dark"]) .submissions__statusApproved {
   color: #4ade80;
 }
+
+@media (max-width: 767px) {
+  .submissions__tabs {
+    display: flex;
+    align-self: stretch;
+    margin-bottom: 0.875rem;
+    scrollbar-width: none;
+  }
+
+  .submissions__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .submissions__tab {
+    display: inline-flex;
+    min-height: 2.5rem;
+    flex: 1 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 0.85rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .submissions__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .submissions__card {
+    border-radius: 0.625rem;
+  }
+
+  .submissions__body {
+    gap: 0.45rem;
+    padding: 0.6rem;
+  }
+
+  .submissions__meta {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .submissions__prompt {
+    font-size: 0.76rem;
+  }
+
+  .submissions__reason {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .submissions__times {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+    font-size: 0.66rem;
+  }
+
+  .submissions__times div {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.35rem;
+  }
+
+  .submissions__times dd {
+    overflow: hidden;
+    margin-top: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .submissions__actions {
+    min-height: 2.75rem;
+  }
+
+  .submissions__emptyAction {
+    min-height: 2.75rem;
+  }
+}

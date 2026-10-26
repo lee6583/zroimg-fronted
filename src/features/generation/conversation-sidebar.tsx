@@ -2,8 +2,11 @@
 
 import clsx from "clsx";
 import { Archive, Check, Pencil, Plus, Settings, Trash2 } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
+import { Sheet } from "@/components/ui/sheet";
+import { parseJavaDateTime } from "@/utils/java-time";
 import type { GenerationConversation } from "@/types/generation";
 import type { ConversationGroup } from "./generation-model";
 import styles from "./generate-form.module.css";
@@ -39,6 +42,8 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
   const onSelect = props.onSelect;
   const onRename = props.onRename;
   const onDelete = props.onDelete;
+  const t = useTranslations("generate");
+  const format = useFormatter();
 
   const [editId, setEditId] = useState("");
   const [title, setTitle] = useState("");
@@ -104,8 +109,10 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
             <Settings size={15} />
           </span>
           <span className={styles.generateForm__settingsCopy}>
-            <span className={styles.generateForm__settingsTitle}>生图设置</span>
-            <span className={styles.generateForm__settingsMeta}>{summary}</span>
+            <span className={styles.generateForm__settingsTitle}>{t("settings.title")}</span>
+            <span className={styles.generateForm__settingsMeta} title={summary}>
+              {summary}
+            </span>
           </span>
         </button>
         <button
@@ -115,7 +122,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
           className={styles.generateForm__newConversationButton}
         >
           <Plus size={15} />
-          新建对话
+          {t("conversation.create")}
         </button>
       </div>
 
@@ -123,7 +130,11 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
         {groups.length ? (
           groups.map((group) => (
             <section key={group.key} className={styles.generateForm__conversationGroup}>
-              <p className={styles.generateForm__conversationDate}>{group.label}</p>
+              <p className={styles.generateForm__conversationDate}>
+                {group.time
+                  ? format.dateTime(parseJavaDateTime(group.time), "short")
+                  : t("conversation.unarchived")}
+              </p>
               <div className={styles.generateForm__conversationList}>
                 {group.items.map((item) => {
                   const isActive = item.id === activeId;
@@ -162,7 +173,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                             onChange={(event) => setTitle(event.target.value)}
                             onKeyDown={(event) => onEditKeyDown(event, item.id)}
                             className={styles.generateForm__conversationInput}
-                            aria-label="编辑对话名称"
+                            aria-label={t("conversation.editName")}
                           />
                         ) : (
                           <>
@@ -192,7 +203,9 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                             }
                           }}
                           className={styles.generateForm__iconButton}
-                          aria-label={isEditing ? "保存对话名称" : "编辑对话名称"}
+                          aria-label={
+                            isEditing ? t("conversation.saveName") : t("conversation.editName")
+                          }
                         >
                           {isEditing ? <Check size={13} /> : <Pencil size={13} />}
                         </button>
@@ -206,7 +219,7 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
                             styles.generateForm__iconButton,
                             styles.generateForm__iconButtonDanger,
                           )}
-                          aria-label="删除对话"
+                          aria-label={t("conversation.delete")}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -218,49 +231,37 @@ export function ConversationSidebar(props: ConversationSidebarProps) {
             </section>
           ))
         ) : (
-          <div className={styles.generateForm__emptyConversations}>还没有对话</div>
+          <div className={styles.generateForm__emptyConversations}>{t("conversation.empty")}</div>
         )}
       </div>
-      {deleteCandidate ? (
-        <div
-          className={styles.generateForm__dialogOverlay}
-          role="presentation"
-          onClick={(event) => {
-            if (event.target === event.currentTarget && !pendingId) {
-              setDeleteCandidate(null);
-            }
-          }}
-        >
-          <div
-            className={styles.generateForm__confirmDialog}
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="delete-conversation-title"
-            aria-describedby="delete-conversation-description"
-          >
-            <h2 id="delete-conversation-title">删除对话</h2>
-            <p id="delete-conversation-description">
-              确定删除“{deleteCandidate.title}”吗？删除后无法恢复。
-            </p>
-            <div className={styles.generateForm__dialogActions}>
-              <button
-                type="button"
-                className={styles.generateForm__dialogCancel}
-                onClick={() => setDeleteCandidate(null)}
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                className={styles.generateForm__dialogConfirm}
-                onClick={confirmDelete}
-              >
-                确定删除
-              </button>
-            </div>
+      <Sheet
+        open={deleteCandidate !== null}
+        onClose={() => setDeleteCandidate(null)}
+        title={t("conversation.deleteTitle")}
+        isLocked={Boolean(pendingId)}
+        footer={
+          <div className={styles.generateForm__dialogActions}>
+            <button
+              type="button"
+              className={styles.generateForm__dialogCancel}
+              onClick={() => setDeleteCandidate(null)}
+            >
+              {t("conversation.cancel")}
+            </button>
+            <button
+              type="button"
+              className={styles.generateForm__dialogConfirm}
+              onClick={confirmDelete}
+            >
+              {t("conversation.deleteConfirm")}
+            </button>
           </div>
-        </div>
-      ) : null}
+        }
+      >
+        <p className={styles.generateForm__dialogText}>
+          {t("conversation.deleteDescription", { title: deleteCandidate?.title ?? "" })}
+        </p>
+      </Sheet>
     </aside>
   );
 }

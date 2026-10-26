@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": ""
+  },
+  "unavailable": {
+    "title": "",
+    "description": ""
+  },
+  "modes": {
+    "text_to_image": "",
+    "image_to_image": "",
+    "inpaint": ""
+  },
+  "workspace": {
+    "openConversations": "",
+    "collapseSidebar": "",
+    "expandSidebar": "",
+    "closeSettings": ""
+  },
+  "conversation": {
+    "listTitle": "",
+    "defaultTitle": "",
+    "create": "",
+    "empty": "",
+    "unarchived": "",
+    "editName": "",
+    "saveName": "",
+    "nameRequired": "",
+    "delete": "",
+    "deleteTitle": "",
+    "deleteDescription": "",
+    "deleteConfirm": "",
+    "cancel": ""
+  },
+  "settings": {
+    "title": "",
+    "summary": "",
+    "compactSummary": "",
+    "mode": "",
+    "model": "",
+    "ratio": "",
+    "resolution": "",
+    "count": "",
+    "estimating": "",
+    "estimate": "",
+    "done": ""
+  },
+  "composer": {
+    "placeholder": "",
+    "placeholderEdit": "",
+    "cost": "",
+    "insufficient": "",
+    "referenceName": "",
+    "removeReference": "",
+    "upload": "",
+    "submit": "",
+    "openSettings": ""
+  },
+  "errors": {
+    "noEditModel": "",
+    "maxInputs": "",
+    "fileType": "",
+    "fileSize": "",
+    "needReference": ""
+  },
+  "preview": {
+    "greeting": "",
+    "suggestionLabel": "",
+    "suggestions": {
+      "cat": "",
+      "city": "",
+      "sakura": ""
+    },
+    "detail": "",
+    "meta": "",
+    "waiting": "",
+    "retrying": "",
+    "failed": "",
+    "resultAlt": ""
+  }
+}

@@ -8,6 +8,7 @@ import { AccountMenu } from "@/components/layout/account-menu";
 import { AnnouncementCenter } from "@/components/layout/announcement-center";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { PublicMenu } from "@/components/layout/public-menu";
 import { ThemeControls } from "@/components/layout/theme-controls";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import styles from "./product-top-nav.module.css";
@@ -24,6 +25,7 @@ type ProductTopNavClientProps = {
   isLoggedIn: boolean;
   autoOpenAnnouncement: boolean;
   canSwitchLocale: boolean;
+  variant: "public" | "app" | "admin";
   links: TopNavLink[];
 };
 
@@ -56,6 +58,11 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
   const autoOpenAnnouncement = props.autoOpenAnnouncement;
   const canSwitchLocale = props.canSwitchLocale;
   const links = props.links;
+  const variant = props.variant;
+  const isPublic = variant === "public";
+  // 手机端：公开页只留菜单按钮；应用页的语言/主题在底部「我的」里；后台保持原样。
+  const desktopOnlyPrefs = variant === "admin" ? undefined : styles.productTopNav__desktopOnly;
+  const desktopOnlyAccount = isPublic ? styles.productTopNav__desktopOnly : undefined;
   const t = useTranslations("common.actions");
   const pathname = usePathname();
   const router = useRouter();
@@ -102,28 +109,31 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
         </nav>
 
         <div className={styles.productTopNav__actions}>
-          <AnnouncementCenter announcement={announcement} shouldAutoOpen={autoOpenAnnouncement} />
-          {canSwitchLocale ? <LocaleSwitcher /> : null}
-          <ThemeControls />
-          {isLoggedIn ? (
-            <AccountMenu name={username} avatarUrl={avatarUrl} />
-          ) : (
-            <Link href="/login" className={styles.productTopNav__login}>
-              {t("login")}
-            </Link>
-          )}
+          <span className={clsx(styles.productTopNav__slot, desktopOnlyAccount)}>
+            <AnnouncementCenter announcement={announcement} shouldAutoOpen={autoOpenAnnouncement} />
+          </span>
+          {canSwitchLocale ? (
+            <span className={clsx(styles.productTopNav__slot, desktopOnlyPrefs)}>
+              <LocaleSwitcher />
+            </span>
+          ) : null}
+          <span className={clsx(styles.productTopNav__slot, desktopOnlyPrefs)}>
+            <ThemeControls />
+          </span>
+          <span className={clsx(styles.productTopNav__slot, desktopOnlyAccount)}>
+            {isLoggedIn ? (
+              <AccountMenu name={username} avatarUrl={avatarUrl} />
+            ) : (
+              <Link href="/login" className={styles.productTopNav__login}>
+                {t("login")}
+              </Link>
+            )}
+          </span>
+          {isPublic ? (
+            <PublicMenu isLoggedIn={isLoggedIn} className={styles.productTopNav__mobileOnly} />
+          ) : null}
         </div>
       </div>
-
-      <nav className={styles.productTopNav__mobileNav}>
-        {links.map((item) => {
-          return renderLink(
-            item,
-            styles.productTopNav__mobileLink,
-            styles.productTopNav__mobileLinkActive,
-          );
-        })}
-      </nav>
     </header>
   );
 }

@@ -59,9 +59,8 @@ function saveCookie(name: string, value: string) {
   document.cookie = `${name}=${value};path=/;max-age=31536000;samesite=lax`;
 }
 
-// 语言切换在 LocaleSwitcher；<html lang> 由根布局按路由语言输出，这里不再改动。
-export function ThemeControls() {
-  const t = useTranslations("nav.theme");
+/** 当前主题与切换函数；顶栏按钮和手机端菜单里的开关共用。 */
+export function useTheme() {
   const theme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerThemeSnapshot);
 
   useEffect(() => {
@@ -75,6 +74,14 @@ export function ThemeControls() {
     applyTheme(nextTheme);
     emitSettingsChange();
   }
+
+  return { theme, toggleTheme };
+}
+
+// 语言切换在 LocaleSwitcher；<html lang> 由根布局按路由语言输出，这里不再改动。
+export function ThemeControls() {
+  const t = useTranslations("nav.theme");
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button

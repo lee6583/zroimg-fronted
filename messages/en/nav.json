@@ -4,7 +4,9 @@
     "home": "Home",
     "gallery": "Gallery",
     "pricing": "Pricing",
-    "docs": "Docs"
+    "docs": "Docs",
+    "menu": "",
+    "menuTitle": ""
   },
   "account": {
     "openMenu": "Open account menu",
@@ -44,5 +46,19 @@
       "tickets": "Feedback",
       "settings": "Account settings"
     }
+  },
+  "tabs": {
+    "label": "",
+    "overview": "",
+    "generate": "",
+    "canvas": "",
+    "works": "",
+    "me": ""
+  },
+  "me": {
+    "title": "",
+    "points": "",
+    "language": "",
+    "darkMode": ""
   }
 }

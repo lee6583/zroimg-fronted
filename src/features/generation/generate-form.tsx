@@ -1,12 +1,15 @@
 "use client";
 
 import clsx from "clsx";
-import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Menu, MessageSquarePlus, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { uploadMediaFile } from "@/api/media/uploads";
-import { getErrorMessage } from "@/utils/error";
+import { Sheet } from "@/components/ui/sheet";
+import { translateApiError } from "@/i18n/api-error";
+import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import type { FavoriteCollection } from "@/types/favorites";
 import type {
@@ -29,6 +32,7 @@ import {
 } from "./generation-model";
 import { PromptComposer } from "./prompt-composer";
 import { TaskPreview } from "./task-preview";
+import { useCompactLayout } from "./use-compact-layout";
 import styles from "./generate-form.module.css";
 
 type GenerateFormProps = {
@@ -43,6 +47,8 @@ type GenerateFormProps = {
 };
 
 const maxGenerationInputs = 1;
+// Java 积分不足时返回的固定 message（尚无 errorCode），只用于判断，不直接展示。
+const insufficientPointsMessage = "积分不足";
 
 export function GenerateForm(props: GenerateFormProps) {
   const initialChats = props.initialChats;
@@ -53,6 +59,11 @@ export function GenerateForm(props: GenerateFormProps) {
   const initialEstimate = props.initialEstimate;
   const initialCollections = props.initialCollections;
   const modelOptions = props.modelOptions;
+  const t = useTranslations("generate");
+  const tTask = useTranslations("task");
+  const tError = useTranslations("errors.api");
+  const isCompact = useCompactLayout();
+  const defaultTitle = t("conversation.defaultTitle");
 
   const [chats, setChats] = useState(initialChats);
   const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
@@ -81,7 +92,15 @@ export function GenerateForm(props: GenerateFormProps) {
     .filter(isTaskPending)
     .map((task) => `${task.id}:${task.status}`)
     .join("|");
-  const summary = `${options.ratio} · 预计 ${estimate} 积分`;
+  const summary = t("settings.summary", { ratio: options.ratio, points: estimate });
+  const activeModel = modelOptions.find((item) => item.modelCode === options.modelCode);
+  const compactSummary = t("settings.compactSummary", {
+    model: activeModel?.modelName ?? options.modelCode,
+    ratio: options.ratio,
+    quality: getImageResolutionLabel(options.quality, tTask),
+    count: options.count,
+  });
+  const activeTitle = chats.find((item) => item.id === activeId)?.title || defaultTitle;
 
   useEffect(() => {
     let disposed = false;
@@ -142,7 +161,7 @@ export function GenerateForm(props: GenerateFormProps) {
       } catch (error) {
         if (isCurrent) {
           setEstimateError(true);
-          setNotice({ text: getErrorMessage(error), tone: "error" });
+          setNotice({ text: translateApiError(error, tError), tone: "error" });
         }
       } finally {
         if (isCurrent) {
@@ -155,7 +174,7 @@ export function GenerateForm(props: GenerateFormProps) {
       isCurrent = false;
       window.clearTimeout(timer);
     };
-  }, [options.count, options.mode, options.modelCode, options.quality, options.ratio]);
+  }, [options.count, options.mode, options.modelCode, options.quality, options.ratio, tError]);
 
   useEffect(() => {
     if (!activeId || !pendingKey) return;
@@ -216,7 +235,7 @@ export function GenerateForm(props: GenerateFormProps) {
 
     try {
       const item = await generationConversationsApi.createConversation({
-        title: "新对话",
+        title: defaultTitle,
       });
 
       selectionVersionRef.current += 1;
@@ -252,7 +271,7 @@ export function GenerateForm(props: GenerateFormProps) {
 
   async function renameChat(id: string, title: string) {
     if (!title) {
-      setNotice({ text: "对话名称不能为空", tone: "error" });
+      setNotice({ text: t("conversation.nameRequired"), tone: "error" });
       return false;
     }
 
@@ -296,6 +315,11 @@ export function GenerateForm(props: GenerateFormProps) {
     setMenuOpen(false);
   }
 
+  function openSettings() {
+    setSettingsOpen(true);
+    setMenuOpen(false);
+  }
+
   function changeOptions(nextOptions: GenerationOptions) {
     setEstimating(true);
     setEstimateError(false);
@@ -307,14 +331,14 @@ export function GenerateForm(props: GenerateFormProps) {
 
     const supportsEdit = modelOptions.some((model) => supportsMode(model, "image_to_image"));
     if (!supportsEdit) {
-      setNotice({ text: "暂无可用图生图模型", tone: "error" });
+      setNotice({ text: t("errors.noEditModel"), tone: "error" });
       return;
     }
 
     const slots = maxGenerationInputs - inputs.length;
     if (slots <= 0) {
       setNotice({
-        text: `最多上传 ${maxGenerationInputs} 张参考图`,
+        text: t("errors.maxInputs", { count: maxGenerationInputs }),
         tone: "error",
       });
       return;
@@ -325,11 +349,11 @@ export function GenerateForm(props: GenerateFormProps) {
     const oversized = selected.find((file) => file.size > maxImageBytes);
 
     if (invalidType) {
-      setNotice({ text: "仅支持 PNG、JPEG 和 WebP 图片", tone: "error" });
+      setNotice({ text: t("errors.fileType"), tone: "error" });
       return;
     }
     if (oversized) {
-      setNotice({ text: "单张图片不能超过 10 MB", tone: "error" });
+      setNotice({ text: t("errors.fileSize"), tone: "error" });
       return;
     }
 
@@ -365,7 +389,7 @@ export function GenerateForm(props: GenerateFormProps) {
     }
     if (options.mode === "image_to_image" && !inputs.length) {
       setNotice({
-        text: "图生图需要先上传至少 1 张参考图",
+        text: t("errors.needReference"),
         tone: "error",
       });
       return;
@@ -416,7 +440,7 @@ export function GenerateForm(props: GenerateFormProps) {
           if (item.id !== conversationId) return item;
 
           let title = item.title;
-          if (title === "新对话") title = getTitle(text);
+          if (title === defaultTitle) title = getTitle(text) || defaultTitle;
 
           return {
             ...item,
@@ -447,14 +471,13 @@ export function GenerateForm(props: GenerateFormProps) {
   }
 
   function showError(error: unknown) {
-    const message = getErrorMessage(error);
-    if (message === "积分不足") {
+    if (error instanceof Error && error.message === insufficientPointsMessage) {
       setErrorCost(estimate);
       setNotice(null);
       return;
     }
 
-    setNotice({ text: message, tone: "error" });
+    setNotice({ text: translateApiError(error, tError), tone: "error" });
   }
 
   const sidebar = (
@@ -463,7 +486,7 @@ export function GenerateForm(props: GenerateFormProps) {
       activeId={activeId}
       summary={summary}
       isCreating={isCreatingChat}
-      onOpenSettings={toggleSettings}
+      onOpenSettings={isCompact ? openSettings : toggleSettings}
       onCreate={createChat}
       onSelect={selectChat}
       onRename={renameChat}
@@ -496,7 +519,12 @@ export function GenerateForm(props: GenerateFormProps) {
           )}
         </div>
 
-        <section className={styles.generateForm__workspace} onClick={() => setSettingsOpen(false)}>
+        <section
+          className={styles.generateForm__workspace}
+          onClick={() => {
+            if (!isCompact) setSettingsOpen(false);
+          }}
+        >
           <div className={styles.generateForm__desktopToolbar}>
             {!isSettingsOpen ? (
               <button
@@ -506,7 +534,9 @@ export function GenerateForm(props: GenerateFormProps) {
                   setCollapsed((value) => !value);
                 }}
                 className={styles.generateForm__collapseButton}
-                aria-label={isCollapsed ? "展开对话侧栏" : "收起对话侧栏"}
+                aria-label={
+                  isCollapsed ? t("workspace.expandSidebar") : t("workspace.collapseSidebar")
+                }
               >
                 {isCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
               </button>
@@ -518,13 +548,27 @@ export function GenerateForm(props: GenerateFormProps) {
               type="button"
               onClick={() => setMenuOpen(true)}
               className={styles.generateForm__mobileMenuButton}
-              aria-label="打开对话列表"
+              aria-label={t("workspace.openConversations")}
+              title={t("workspace.openConversations")}
             >
-              <Menu size={17} />
+              <Menu size={18} />
+            </button>
+            <span className={styles.generateForm__mobileTitle} title={activeTitle}>
+              {activeTitle}
+            </span>
+            <button
+              type="button"
+              onClick={() => void createChat()}
+              disabled={isCreatingChat || isSubmitting}
+              className={styles.generateForm__mobileMenuButton}
+              aria-label={t("conversation.create")}
+              title={t("conversation.create")}
+            >
+              <MessageSquarePlus size={18} />
             </button>
           </div>
 
-          {isSettingsOpen ? (
+          {isSettingsOpen && !isCompact ? (
             <div
               className={styles.generateForm__settingsDock}
               onClick={(event) => event.stopPropagation()}
@@ -541,7 +585,7 @@ export function GenerateForm(props: GenerateFormProps) {
                   styles.generateForm__collapseButton,
                   styles.generateForm__settingsClose,
                 )}
-                aria-label="关闭生图设置"
+                aria-label={t("workspace.closeSettings")}
               >
                 <PanelLeftClose size={16} />
               </button>
@@ -559,6 +603,8 @@ export function GenerateForm(props: GenerateFormProps) {
             isBusy={isSubmitting || isUploading || isEstimating}
             isBlocked={hasEstimateError}
             isCreating={isCreatingChat}
+            settingsSummary={compactSummary}
+            onOpenSettings={openSettings}
             onPromptChange={setPrompt}
             onFiles={addFiles}
             onRemove={removeInput}
@@ -568,40 +614,40 @@ export function GenerateForm(props: GenerateFormProps) {
         </section>
       </div>
 
-      {isMenuOpen ? (
-        <div className={styles.generateForm__mobileOverlay} onClick={() => setMenuOpen(false)}>
-          <div
-            className={styles.generateForm__mobilePanel}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {sidebar}
-          </div>
-        </div>
-      ) : null}
+      <Sheet
+        open={isCompact && isMenuOpen}
+        onClose={() => setMenuOpen(false)}
+        title={t("conversation.listTitle")}
+        desktop="drawer"
+        className={styles.generateForm__conversationSheet}
+      >
+        {sidebar}
+      </Sheet>
 
-      {isSettingsOpen ? (
-        <div
-          className={clsx(
-            styles.generateForm__mobileOverlay,
-            styles.generateForm__mobileOverlaySettings,
-          )}
-          onClick={() => setSettingsOpen(false)}
-        >
-          <div
-            className={styles.generateForm__mobileSettingsPanel}
-            onClick={(event) => event.stopPropagation()}
+      <Sheet
+        open={isCompact && isSettingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title={t("settings.title")}
+        className={styles.generateForm__settingsSheet}
+        footer={
+          <button
+            type="button"
+            className={styles.generateForm__sheetDone}
+            onClick={() => setSettingsOpen(false)}
           >
-            {settingsPanel}
-          </div>
-        </div>
-      ) : null}
+            {t("settings.done")}
+          </button>
+        }
+      >
+        {settingsPanel}
+      </Sheet>
     </div>
   );
 }
 
 function getTitle(prompt: string) {
   const text = prompt.replace(/\s+/g, " ").trim();
-  return text.length > 24 ? `${text.slice(0, 24)}...` : text || "新对话";
+  return text.length > 24 ? `${text.slice(0, 24)}...` : text;
 }
 
 function isReusableDraftChat(chat: GenerationConversation, tasks: GenerationTask[]) {

@@ -12,6 +12,33 @@
   },
   "api": {
     "network": "Ошибка сети. Проверьте подключение и попробуйте снова.",
-    "unknown": "Запрос не выполнен. Попробуйте позже."
+    "unknown": "Запрос не выполнен. Попробуйте позже.",
+    "invalidResponse": "",
+    "serviceUnavailable": "",
+    "serverError": "",
+    "requestFailed": "",
+    "uploadFailed": "",
+    "unauthorized": "",
+    "forbidden": "",
+    "notFound": "",
+    "tooManyRequests": "",
+    "invalidCredentials": "",
+    "emailAlreadyRegistered": "",
+    "verificationCodeInvalid": "",
+    "sliderVerificationFailed": "",
+    "pointsInsufficient": "",
+    "fileTooLarge": "",
+    "unsupportedFileType": ""
+  },
+  "server": {
+    "unavailable": "",
+    "invalidResponse": "",
+    "requestFailed": ""
+  },
+  "upload": {
+    "unsupportedImageType": "",
+    "imageTooLarge": "",
+    "tooManyFiles": "",
+    "failed": ""
   }
 }

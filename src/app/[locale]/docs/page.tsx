@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { buildMetadata } from "@/lib/seo";
 import { requestJava } from "@/server/java-api";
 import type { DocsConfig } from "@/types/content";
+import { DocsMobileToc } from "./docs-mobile-toc";
 import styles from "./docs.module.css";
 
 export const dynamic = "force-dynamic";
@@ -168,19 +169,25 @@ export default async function DocsPage() {
   // 后台尚未保存文档时 Java 返回空对象 {}
   const docs = await requestJava<Partial<DocsConfig>>("/content/public/docs");
   const groups = docs.groups ?? [];
+  const t = await getTranslations("docs");
+  const tocGroups = groups.map((group) => ({
+    title: group.title,
+    items: group.items.map((item) => ({ id: item.id, title: item.title })),
+  }));
 
   return (
     <>
       <ProductTopNav />
       <main className={styles.docs}>
         <aside className={styles.docs__sidebar}>
+          <DocsMobileToc groups={tocGroups} />
           <div className={styles.docs__sidebarInner}>
-            <nav className={styles.docs__nav}>
+            <nav className={styles.docs__nav} aria-label={t("tocLabel")}>
               {groups.map((group) => (
                 <section key={group.title}>
                   <div className={styles.docs__navGroupHeader}>
                     <h2 className={styles.docs__navGroupTitle}>{group.title}</h2>
-                    <ChevronDown size={14} className={styles.docs__navGroupIcon} />
+                    <ChevronDown size={14} className={styles.docs__navGroupIcon} aria-hidden />
                   </div>
                   <div className={styles.docs__navItems}>
                     {group.items.map((item) => (
@@ -197,7 +204,7 @@ export default async function DocsPage() {
 
         <section className={styles.docs__content}>
           <div className={styles.docs__contentInner}>
-            {groups.length === 0 ? <p className={styles.docs__paragraph}>暂无文档</p> : null}
+            {groups.length === 0 ? <p className={styles.docs__paragraph}>{t("empty")}</p> : null}
             {groups.map((group) =>
               group.items.map((item) => (
                 <article key={item.id} id={item.id} className={styles.docs__article}>

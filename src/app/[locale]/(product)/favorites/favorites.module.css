@@ -471,3 +471,128 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.favorites__srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.favorites__sheet[role="dialog"] .favorites__modalActions {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .favorites__sheet[role="dialog"] {
+    width: min(100%, 27rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .favorites__header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .favorites__createButton {
+    min-height: 2.75rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .favorites__input {
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  .favorites__submitButton,
+  .favorites__cancelButton {
+    min-height: 2.75rem;
+  }
+
+  .favorites__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .favorites__card {
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.75rem 0.25rem;
+  }
+
+  .favorites__cardIcon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .favorites__cardText {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .favorites__cardTitle {
+    font-size: 0.88rem;
+  }
+
+  .favorites__cardMeta {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+  }
+
+  .favorites__cardActions {
+    position: static;
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0;
+    margin-top: -0.25rem;
+  }
+
+  .favorites__iconButton {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .favorites__renameForm {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .favorites__renameInput {
+    grid-column: 1 / -1;
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  .favorites__smallButton {
+    min-height: 2.75rem;
+  }
+
+  .favorites__imageGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .favorites__imageCard {
+    border-radius: 0.625rem;
+  }
+
+  .favorites__imageBody {
+    gap: 0.25rem;
+    padding: 0.55rem 0.6rem;
+  }
+
+  .favorites__imagePrompt {
+    font-size: 0.76rem;
+  }
+
+  .favorites__backLink {
+    min-height: 2.75rem;
+  }
+}

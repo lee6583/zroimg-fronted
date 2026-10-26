@@ -166,18 +166,87 @@
   gap: 0.5rem;
 }
 
-@media (max-width: 640px) {
+/* 手机：全屏编辑，工具和确认按钮加大，确认 / 取消固定在底部 */
+@media (max-width: 767px) {
   .maskEditor__overlay {
     padding: 0;
   }
 
   .maskEditor {
+    width: 100%;
     height: 100dvh;
+    border: 0;
     border-radius: 0;
+  }
+
+  .maskEditor__header {
+    padding: calc(0.25rem + env(safe-area-inset-top)) 0.5rem 0.25rem 1rem;
+  }
+
+  .maskEditor__header .maskEditor__iconButton {
+    border: 0;
+  }
+
+  .maskEditor__toolbar {
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .maskEditor__tool,
+  .maskEditor__iconButton {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    font-size: 0.875rem;
+  }
+
+  .maskEditor__tool {
+    padding: 0 0.875rem;
   }
 
   .maskEditor__size {
     order: 3;
+    flex-basis: 100%;
     max-width: none;
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+  }
+
+  .maskEditor__size input {
+    height: 2.75rem;
+  }
+
+  .maskEditor__size input::-webkit-slider-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .maskEditor__size input::-moz-range-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .maskEditor__body {
+    padding: 0.5rem;
+  }
+
+  .maskEditor__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem calc(0.625rem + env(safe-area-inset-bottom));
+  }
+
+  .maskEditor__message:empty {
+    display: none;
+  }
+
+  .maskEditor__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .maskEditor__actions button {
+    min-height: 2.75rem;
+    font-size: 0.9375rem;
   }
 }

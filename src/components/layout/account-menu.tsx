@@ -13,15 +13,32 @@ type AccountMenuProps = {
   avatarUrl: string | null;
 };
 
+/** 退出登录并回到登录页；顶栏账户菜单和手机端「我的」共用。 */
+export function useLogout() {
+  const router = useRouter();
+  const [isLoggingOut, setLoggingOut] = useState(false);
+
+  async function logout() {
+    try {
+      setLoggingOut(true);
+      await authApi.logoutAccount();
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  }
+
+  return { isLoggingOut, logout };
+}
+
 export function AccountMenu(props: AccountMenuProps) {
   const name = props.name;
   const avatarUrl = props.avatarUrl;
 
   const t = useTranslations("nav.account");
-  const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
-  const [isLoggingOut, setLoggingOut] = useState(false);
+  const { isLoggingOut, logout } = useLogout();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -45,16 +62,6 @@ export function AccountMenu(props: AccountMenuProps) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
-
-  async function logout() {
-    try {
-      setLoggingOut(true);
-      await authApi.logoutAccount();
-    } finally {
-      router.push("/login");
-      router.refresh();
-    }
-  }
 
   return (
     <div ref={rootRef} className={styles.productTopNav__account}>

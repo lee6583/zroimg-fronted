@@ -1,0 +1,38 @@
+{
+  "title": "",
+  "nav": {
+    "label": "",
+    "profile": "",
+    "security": ""
+  },
+  "profile": {
+    "title": "",
+    "avatar": "",
+    "changeAvatar": "",
+    "avatarHint": "",
+    "avatarUpdated": "",
+    "username": "",
+    "email": "",
+    "bio": "",
+    "bioPlaceholder": "",
+    "bioCount": "",
+    "save": "",
+    "saving": "",
+    "saved": ""
+  },
+  "security": {
+    "title": "",
+    "currentPassword": "",
+    "newPassword": "",
+    "confirmPassword": "",
+    "newPasswordPlaceholder": "",
+    "showField": "",
+    "hideField": "",
+    "showPassword": "",
+    "hidePassword": "",
+    "note": "",
+    "submit": "",
+    "submitting": "",
+    "updated": ""
+  }
+}

@@ -26,14 +26,15 @@
   opacity: 0.45;
 }
 
-.historyDelete__modal {
-  border: 1px solid var(--line);
-}
+@media (max-width: 767px) {
+  .historyDeleteTouch .historyDelete__button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.5rem;
+  }
 
-.historyDelete__text {
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.6;
-  white-space: normal;
-  text-align: left;
+  .historyDeleteTouch .historyDelete__button svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
 }

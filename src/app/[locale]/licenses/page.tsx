@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
 import table from "@/components/ui/data-table.module.css";
 import { buildMetadata } from "@/lib/seo";
+import type { Messages } from "next-intl";
 import styles from "./licenses.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,7 +24,7 @@ type LicenseItem = {
   url: string;
   license: string;
   copyright: string;
-  usage: string;
+  usage: keyof Messages["licenses"]["usage"];
 };
 
 const items: LicenseItem[] = [
@@ -32,61 +33,63 @@ const items: LicenseItem[] = [
     url: "https://github.com/xyflow/xyflow",
     license: "MIT",
     copyright: "© 2019-2025 webkid GmbH",
-    usage: "画布节点编辑",
+    usage: "canvasEditor",
   },
   {
     name: "Konva",
     url: "https://github.com/konvajs/konva",
     license: "MIT",
-    copyright: "© 2011-2013 Eric Rowell，© 2014-present Anton Lavrenov",
-    usage: "遮罩绘制",
+    copyright: "© 2011-2013 Eric Rowell, © 2014-present Anton Lavrenov",
+    usage: "maskDrawing",
   },
   {
     name: "react-konva",
     url: "https://github.com/konvajs/react-konva",
     license: "MIT",
     copyright: "© 2017 Anton Lavrenov",
-    usage: "遮罩绘制",
+    usage: "maskDrawing",
   },
   {
     name: "Zustand",
     url: "https://github.com/pmndrs/zustand",
     license: "MIT",
     copyright: "© 2019 Paul Henschel",
-    usage: "画布状态",
+    usage: "canvasState",
   },
   {
     name: "infinite-canvas",
     url: "https://github.com/basketikun/infinite-canvas",
     license: "MIT",
     copyright: "© 2026 basketikun",
-    usage: "画布交互参考",
+    usage: "canvasReference",
   },
   {
     name: "ANORA-Labs",
     url: "https://github.com/yapsgg/ANORA-Labs",
     license: "MIT",
     copyright: "© 2026 ANORA Labs",
-    usage: "生成流程参考",
+    usage: "generationReference",
   },
   {
     name: "Loomic",
     url: "https://github.com/fancyboi999/Loomic",
     license: "MIT",
     copyright: "© 2026 Xinmin Zeng",
-    usage: "架构参考",
+    usage: "architectureReference",
   },
 ];
 
-export default function LicensesPage() {
+export default async function LicensesPage() {
+  const t = await getTranslations("licenses");
+
   return (
     <>
       <ProductTopNav />
       <main className={styles.licenses}>
         <div className={styles.licenses__inner}>
-          <h1 className="page-title">开源许可</h1>
+          <h1 className="page-title">{t("title")}</h1>
 
-          <div className={table.dataTable__card}>
+          <div className={clsx(table.dataTable__card, styles.licenses__tableCard)}>
             <table className={clsx(table.dataTable, styles.licenses__table)}>
               <colgroup>
                 <col className={styles.licenses__colName} />
@@ -96,10 +99,10 @@ export default function LicensesPage() {
               </colgroup>
               <thead>
                 <tr>
-                  <th className={table.dataTable__start}>项目</th>
-                  <th className={table.dataTable__start}>许可证</th>
-                  <th className={table.dataTable__start}>版权</th>
-                  <th className={table.dataTable__start}>用途</th>
+                  <th className={table.dataTable__start}>{t("columns.project")}</th>
+                  <th className={table.dataTable__start}>{t("columns.license")}</th>
+                  <th className={table.dataTable__start}>{t("columns.copyright")}</th>
+                  <th className={table.dataTable__start}>{t("columns.usage")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,12 +125,35 @@ export default function LicensesPage() {
                         {item.copyright}
                       </span>
                     </td>
-                    <td className={table.dataTable__start}>{item.usage}</td>
+                    <td className={table.dataTable__start}>{t(`usage.${item.usage}`)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          <ul className={styles.licenses__cards}>
+            {items.map((item) => (
+              <li key={item.url} className={styles.licenses__card}>
+                <div className={styles.licenses__cardHead}>
+                  <a href={item.url} target="_blank" rel="noreferrer">
+                    {item.name}
+                  </a>
+                  <span className={styles.licenses__badge}>{item.license}</span>
+                </div>
+                <dl className={styles.licenses__cardBody}>
+                  <div>
+                    <dt>{t("columns.copyright")}</dt>
+                    <dd>{item.copyright}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("columns.usage")}</dt>
+                    <dd>{t(`usage.${item.usage}`)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
         </div>
       </main>
     </>

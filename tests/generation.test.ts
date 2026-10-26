@@ -30,6 +30,18 @@ test("图片 quality 使用分辨率档位显示", () => {
   assert.equal(getImageResolutionLabel("medium"), "2K");
   assert.equal(getImageResolutionLabel("high"), "4K");
   assert.equal(getImageResolutionLabel("auto"), "自动");
+  assert.equal(
+    getImageResolutionLabel("auto", (key) => key),
+    "quality.auto",
+  );
+  assert.equal(
+    getImageResolutionLabel("high", (key) => key),
+    "4K",
+  );
+  assert.equal(
+    getImageResolutionLabel("ultra", (key) => key),
+    "ultra",
+  );
 });
 
 const model: GenerationModel = {
@@ -87,5 +99,5 @@ test("no usable image model yields no default options instead of throwing", () =
   assert.equal(findDefaultOptions([]), null);
   const inpaintOnly = { ...model, supportModes: ["inpaint" as const] };
   assert.equal(findDefaultOptions([inpaintOnly]), null);
-  assert.throws(() => getDefaultOptions([]), /暂无可用图片模型/);
+  assert.throws(() => getDefaultOptions([]), /No usable image model/);
 });

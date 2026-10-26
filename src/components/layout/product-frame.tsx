@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { usePathname } from "@/i18n/navigation";
+import { MobileTabBar, type MobileAccount, type MobileTabKey } from "./mobile-tab-bar";
 import { SideNav, type NavGroup, type NavItem } from "./side-nav";
 import styles from "./shell.module.css";
 
@@ -42,6 +43,7 @@ type AppSection =
 type ProductFrameProps = {
   children: ReactNode;
   topNav: ReactNode;
+  account: MobileAccount;
 };
 
 type PendingNav = {
@@ -118,14 +120,31 @@ function getActiveSection(pathname: string): AppSection {
   return "overview";
 }
 
+// 手机底部标签：创作类归「生成」，内容类归「作品」，交易与帮助类归「我的」。
+function getTab(section: AppSection): MobileTabKey {
+  if (section === "overview") return "overview";
+  if (section === "generate" || section === "video") return "generate";
+  if (section === "canvas") return "canvas";
+  if (section === "history" || section === "favorites" || section === "submissions") {
+    return "works";
+  }
+
+  return "me";
+}
+
+// 画布编辑器（/canvas/<id>）是全屏工具界面，底部标签栏会挡住画布控件；编辑器工具栏自带返回列表按钮，所以这里不显示标签栏。
+function isEditor(pathname: string) {
+  return pathname.startsWith("/canvas/");
+}
+
 function getFlush(pathname: string) {
-  const isEditor = pathname.startsWith("/canvas/");
-  return pathname.startsWith("/generate") || pathname.startsWith("/video") || isEditor;
+  return pathname.startsWith("/generate") || pathname.startsWith("/video") || isEditor(pathname);
 }
 
 export function ProductFrame(props: ProductFrameProps) {
   const children = props.children;
   const topNav = props.topNav;
+  const account = props.account;
   const t = useTranslations("nav.sidebar");
   const pathname = usePathname();
   const active = useMemo(() => getActiveSection(pathname), [pathname]);
@@ -153,17 +172,18 @@ export function ProductFrame(props: ProductFrameProps) {
     pendingNav !== null &&
     (pathname === pendingNav.href || pathname.startsWith(`${pendingNav.href}/`));
   const visibleActive = pendingNav && !isPendingCurrent ? pendingNav.key : active;
+  const hasTabBar = !isEditor(pathname);
   let mainClass = styles.shell__main;
   if (flush) {
     mainClass = styles.shell__mainFlush;
   }
 
   return (
-    <div className={clsx(styles.shellPage, flush && styles.shellPageFlush)}>
+    <div className={clsx(styles.shellPage, styles.shellPageApp, flush && styles.shellPageFlush)}>
       {topNav}
       <div className={clsx(styles.shell, flush && styles.shellFlush)}>
         <div className={clsx(styles.shell__grid, flush && styles.shell__gridFlush)}>
-          <aside className={styles.shell__sidebar}>
+          <aside className={clsx(styles.shell__sidebar, styles.shell__sidebarDesktop)}>
             <div className={styles.shell__sidebarInner}>
               <SideNav
                 storageKey="zroimg.nav.user"
@@ -178,6 +198,15 @@ export function ProductFrame(props: ProductFrameProps) {
           <main className={mainClass}>{children}</main>
         </div>
       </div>
+      {hasTabBar ? (
+        <MobileTabBar
+          activeTab={getTab(visibleActive)}
+          activeKey={visibleActive}
+          groups={appNavGroups}
+          account={account}
+          onNavigate={(item) => setPendingNav({ href: item.href, key: item.key })}
+        />
+      ) : null}
     </div>
   );
 }

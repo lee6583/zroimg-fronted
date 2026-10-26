@@ -2,16 +2,18 @@
 
 import clsx from "clsx";
 import { Download, Film, PanelLeftClose } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { videoApi } from "@/api/video";
 import type { VideoModel, VideoTask, VideoTaskPage, VideoTaskStatus } from "@/types/video";
-import { getErrorMessage } from "@/utils/error";
+import { parseJavaDateTime } from "@/utils/java-time";
 import { userAssetDownloadUrl } from "@/utils/media";
-import { formatVideoTime } from "@/utils/video-task";
 import { frameStyle, VideoFrame } from "./video-frame";
 import { VideoInfo } from "./video-info";
+import { useIsMobile } from "@/components/ui/sheet";
 import { VideoSettings } from "./video-settings";
 import { retryInput, submitVideoTask } from "./video-submit";
+import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
 const pageSize = 20;
@@ -59,6 +61,9 @@ function replaceTasks(tasks: VideoTask[], nextTask: VideoTask) {
 }
 
 export function VideoWorkspace(props: VideoWorkspaceProps) {
+  const text = useVideoText();
+  const t = text.t;
+  const format = useFormatter();
   const [isSettingsOpen, setSettingsOpen] = useState(true);
   const [tasks, setTasks] = useState(props.initialPage.list);
   const [pageNo, setPageNo] = useState(1);
@@ -68,6 +73,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   const [retry, setRetry] = useState<RetryState | null>(null);
   const [retryingNo, setRetryingNo] = useState<string | null>(null);
 
+  const isMobile = useIsMobile();
   const selected = tasks.find((task) => task.taskNo === selectedNo) ?? tasks[0] ?? null;
   const hasModels = props.initialModels.length > 0;
   const hasPendingTask = tasks.some((task) => isTaskRunning(task.status));
@@ -134,7 +140,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   async function retryTask(task: VideoTask) {
     const input = retryInput(task);
     if (!input) {
-      setRetry({ taskNo: task.taskNo, message: "任务参数不完整，请在左侧重新提交" });
+      setRetry({ taskNo: task.taskNo, message: t("workspace.retryIncomplete") });
       return;
     }
 
@@ -144,7 +150,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
       await submitVideoTask(input);
       await refreshTasks();
     } catch (error) {
-      setRetry({ taskNo: task.taskNo, message: getErrorMessage(error) });
+      setRetry({ taskNo: task.taskNo, message: text.errorText(error) });
     } finally {
       setRetryingNo(null);
     }
@@ -177,8 +183,8 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
       <span className={styles.videoPage__emptyIcon}>
         <Film size={30} />
       </span>
-      <h2 className={styles.videoPage__emptyTitle}>视频创作暂未开放</h2>
-      <p className={styles.videoPage__emptyText}>管理员配置视频服务后，这里会显示可用模型。</p>
+      <h2 className={styles.videoPage__emptyTitle}>{t("workspace.closedTitle")}</h2>
+      <p className={styles.videoPage__emptyText}>{t("workspace.closedText")}</p>
     </div>
   );
   if (props.initialModels.length > 0 && !selected) {
@@ -187,7 +193,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
         <span className={styles.videoPage__emptyIcon}>
           <Film size={30} />
         </span>
-        <h2 className={styles.videoPage__emptyTitle}>还没有视频作品</h2>
+        <h2 className={styles.videoPage__emptyTitle}>{t("workspace.noWorks")}</h2>
       </div>
     );
   }
@@ -209,9 +215,9 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
           <VideoInfo task={selected} actions={<DownloadLink task={selected} />} />
         </section>
 
-        <aside className={styles.videoPage__rail} aria-label="全部作品">
+        <aside className={styles.videoPage__rail} aria-label={t("workspace.allWorks")}>
           <h2 className={styles.videoPage__railTitle}>
-            全部作品
+            {t("workspace.allWorks")}
             <span className={styles.videoPage__railCount}>{tasks.length}</span>
           </h2>
           <div className={styles.videoPage__railList}>
@@ -228,7 +234,10 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
               >
                 <VideoFrame task={task} compact />
                 <span className={styles.videoPage__taskMeta}>
-                  {formatVideoTime(task.createTime)} · {task.ratio}
+                  {t("workspace.taskMeta", {
+                    time: format.dateTime(parseJavaDateTime(task.createTime), "datetime"),
+                    ratio: task.ratio || "-",
+                  })}
                 </span>
               </button>
             ))}
@@ -239,7 +248,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
                 onClick={loadMore}
                 disabled={isLoadingMore}
               >
-                {isLoadingMore ? "加载中..." : "加载更多"}
+                {isLoadingMore ? t("workspace.loadingMore") : t("workspace.loadMore")}
               </button>
             ) : null}
           </div>
@@ -249,8 +258,14 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   }
 
   return (
-    <main className={clsx(styles.videoPage, !isSettingsOpen && styles.videoPageCollapsed)}>
-      {isSettingsOpen ? (
+    <main
+      className={clsx(
+        styles.videoPage,
+        !isSettingsOpen && styles.videoPageCollapsed,
+        hasModels && styles.videoPageComposer,
+      )}
+    >
+      {(isMobile ? hasModels : isSettingsOpen) ? (
         <VideoSettings models={props.initialModels} onCreated={refreshTasks} />
       ) : null}
 
@@ -260,7 +275,8 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
             type="button"
             onClick={() => setSettingsOpen((isOpen) => !isOpen)}
             className={styles.videoPage__collapseButton}
-            aria-label={isSettingsOpen ? "收起视频设置" : "展开视频设置"}
+            aria-label={isSettingsOpen ? t("workspace.hideSettings") : t("workspace.showSettings")}
+            title={isSettingsOpen ? t("workspace.hideSettings") : t("workspace.showSettings")}
           >
             <PanelLeftClose size={16} />
           </button>
@@ -274,15 +290,22 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
 
 function DownloadLink(props: DownloadLinkProps) {
   const task = props.task;
+  const t = useTranslations("video.workspace");
   const url = getDownloadUrl(task);
   if (!url || task.status !== "succeeded") {
     return null;
   }
 
   return (
-    <a href={url} download className={styles.videoPage__download} aria-label="下载视频">
+    <a
+      href={url}
+      download
+      className={styles.videoPage__download}
+      aria-label={t("downloadLabel")}
+      title={t("downloadLabel")}
+    >
       <Download size={15} />
-      下载
+      {t("download")}
     </a>
   );
 }
