@@ -155,7 +155,8 @@
 }
 
 .ticketItem:hover,
-.quickLink:hover {
+.quickLink:hover,
+a.attentionItem:hover {
   background: color-mix(in oklab, var(--soft) 60%, var(--panel));
 }
 

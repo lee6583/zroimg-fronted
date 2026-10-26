@@ -1,8 +1,11 @@
 import clsx from "clsx";
-import { CreditCard, Gift, Mail, Megaphone } from "lucide-react";
+import { CreditCard, Frame, Gauge, Gift, Mail, Megaphone } from "lucide-react";
 import Link from "next/link";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { AnnouncementSettingsForm } from "@/features/admin/announcement-settings-form";
+import { CanvasSettingsForm } from "@/features/admin/canvas-settings-form";
+import type { CanvasModelOption } from "@/features/admin/canvas-settings-form";
+import { GenerationSettingsForm } from "@/features/admin/generation-settings-form";
 import {
   CheckInSettingsForm,
   EasyPaySettingsForm,
@@ -10,9 +13,12 @@ import {
 } from "@/features/admin/service-settings-forms";
 import { requestJava } from "@/server/java-api";
 import type {
+  AdminGenerationModel,
   AnnouncementSettingsConfig,
+  CanvasSettingsConfig,
   CheckInSettingsConfig,
   EasyPayAdminConfig,
+  GenerationSettingsConfig,
   SmtpAdminConfig,
 } from "@/types/admin";
 import styles from "./settings.module.css";
@@ -24,12 +30,26 @@ type AdminSettingsPageProps = {
   searchParams: SearchParams;
 };
 
-const sectionIds = ["payment", "smtp", "checkin", "announcement"] as const;
+const sectionIds = ["payment", "smtp", "checkin", "announcement", "canvas", "generation"] as const;
 type SettingsSection = (typeof sectionIds)[number];
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
+}
+
+async function readCanvasModels() {
+  const models = await requestJava<AdminGenerationModel[]>("/generation/admin/models");
+  const imageModels = models.filter((model) => model.modelType === "image");
+  const options: CanvasModelOption[] = imageModels.map((model) => {
+    return {
+      modelCode: model.modelCode,
+      modelName: model.modelName,
+      isEnabled: model.status === "enabled",
+    };
+  });
+
+  return options;
 }
 
 export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
@@ -38,12 +58,22 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
   const section = sectionIds.includes(requestedSection as SettingsSection)
     ? (requestedSection as SettingsSection)
     : "payment";
-  const [smtpSettings, easyPaySettings, checkInSettings, announcementSettings] = await Promise.all([
+  const [
+    smtpSettings,
+    easyPaySettings,
+    checkInSettings,
+    announcementSettings,
+    canvasSettings,
+    generationSettings,
+  ] = await Promise.all([
     requestJava<SmtpAdminConfig>("/admin/settings/smtp"),
     requestJava<EasyPayAdminConfig>("/admin/settings/easypay"),
     requestJava<CheckInSettingsConfig>("/admin/settings/checkin"),
     requestJava<AnnouncementSettingsConfig>("/admin/settings/announcement"),
+    requestJava<CanvasSettingsConfig>("/admin/settings/canvas"),
+    requestJava<GenerationSettingsConfig>("/admin/settings/generation"),
   ]);
+  const canvasModels = section === "canvas" ? await readCanvasModels() : [];
 
   const sections = [
     {
@@ -69,6 +99,18 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
       label: "站内公告",
       description: announcementSettings.enabled ? "当前已启用" : "当前已停用",
       icon: Megaphone,
+    },
+    {
+      id: "canvas" as const,
+      label: "无限画布",
+      description: canvasSettings.enabled ? "当前已启用" : "当前已停用",
+      icon: Frame,
+    },
+    {
+      id: "generation" as const,
+      label: "生成并发",
+      description: `图片 ${generationSettings.maxActiveImageTasksPerUser} / 视频 ${generationSettings.maxActiveVideoTasksPerUser}`,
+      icon: Gauge,
     },
   ];
 
@@ -114,6 +156,12 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
           {section === "checkin" ? <CheckInSettingsForm initialSettings={checkInSettings} /> : null}
           {section === "announcement" ? (
             <AnnouncementSettingsForm initialSettings={announcementSettings} />
+          ) : null}
+          {section === "canvas" ? (
+            <CanvasSettingsForm initialSettings={canvasSettings} models={canvasModels} />
+          ) : null}
+          {section === "generation" ? (
+            <GenerationSettingsForm initialSettings={generationSettings} />
           ) : null}
         </section>
       </div>

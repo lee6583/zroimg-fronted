@@ -13,14 +13,31 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { requestJava } from "@/server/java-api";
-import type { AdminOverview } from "@/types/admin";
+import type { AdminOverview, GenerationQueueStats } from "@/types/admin";
 import { feedbackStatusLabels } from "@/utils/feedback";
 import styles from "./admin.module.css";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const overview = await requestJava<AdminOverview>("/dashboard/admin/overview");
+  const [overview, queue] = await Promise.all([
+    requestJava<AdminOverview>("/dashboard/admin/overview"),
+    requestJava<GenerationQueueStats>("/generation/admin/queue/stats"),
+  ]);
+  const queueRows = [
+    {
+      label: "图片",
+      pending: queue.imagePending,
+      processing: queue.imageProcessing,
+      concurrency: queue.imageConcurrency,
+    },
+    {
+      label: "视频",
+      pending: queue.videoPending,
+      processing: queue.videoProcessing,
+      concurrency: queue.videoConcurrency,
+    },
+  ];
   const metrics = [
     {
       label: "用户总量",
@@ -144,12 +161,35 @@ export default async function AdminPage() {
                 <span className={styles.attentionLabel}>待处理反馈</span>
                 <span className={styles.attentionValue}>{overview.openTickets}</span>
               </div>
+              <Link href="/admin/gallery" className={styles.attentionItem}>
+                <span className={styles.attentionLabel}>待审核投稿</span>
+                <span className={styles.attentionValue}>{overview.pendingGalleryCount}</span>
+              </Link>
               <div className={styles.attentionItem}>
                 <span className={styles.attentionLabel}>失败生成任务</span>
                 <span className={clsx(styles.attentionValue, styles.attentionDanger)}>
                   {overview.failedTasks}
                 </span>
               </div>
+            </div>
+          </section>
+
+          <section className={styles.panel}>
+            <header className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>生成队列</h2>
+              <Link href="/admin/settings?section=generation" className={styles.panelLink}>
+                并发设置 <ArrowUpRight size={13} />
+              </Link>
+            </header>
+            <div className={styles.attentionList}>
+              {queueRows.map((row) => (
+                <div key={row.label} className={styles.attentionItem}>
+                  <span className={styles.attentionLabel}>{row.label}</span>
+                  <span className={styles.attentionValue}>
+                    排队 {row.pending} / 运行中 {row.processing} / 并发 {row.concurrency}
+                  </span>
+                </div>
+              ))}
             </div>
           </section>
 

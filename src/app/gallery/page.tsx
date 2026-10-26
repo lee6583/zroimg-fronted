@@ -7,6 +7,7 @@ import { AppPagination } from "@/components/ui/app-pagination";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { GalleryCategory, GalleryImage } from "@/types/gallery";
+import { galleryCategoryLabels, isGalleryCategory } from "@/utils/gallery";
 import { publicAssetUrl } from "@/utils/media";
 import styles from "./gallery.module.css";
 
@@ -31,13 +32,6 @@ const categoryTabs = [
   { label: "其他", href: "/gallery?category=other", value: "other" },
 ] as const;
 
-const categoryLabels: Record<GalleryCategory, string> = {
-  realistic: "写实",
-  anime: "动漫",
-  art: "艺术",
-  other: "其他",
-};
-
 type GalleryPageProps = {
   searchParams: Promise<{
     category?: string | string[];
@@ -59,8 +53,8 @@ function readParam(value?: string | string[]) {
 
 function normalizeCategory(value?: string | string[]): GalleryCategory | undefined {
   const category = readParam(value);
-  if (category && Object.hasOwn(categoryLabels, category)) {
-    return category as GalleryCategory;
+  if (isGalleryCategory(category)) {
+    return category;
   }
 
   return undefined;
@@ -146,7 +140,7 @@ export default async function GalleryPage(props: GalleryPageProps) {
 
                     <div className={styles.gallery__cardBody}>
                       <div className={styles.gallery__cardMeta}>
-                        <span>{categoryLabels[item.category]}</span>
+                        <span>{galleryCategoryLabels[item.category]}</span>
                         <span>{formatDate(item.createdAt)}</span>
                       </div>
                       <h2 className={styles.gallery__cardTitle}>{item.title || "未命名作品"}</h2>
@@ -164,7 +158,7 @@ export default async function GalleryPage(props: GalleryPageProps) {
             <p className={styles.gallery__emptyLabel}>暂无公开作品</p>
             <h2 className={styles.gallery__emptyTitle}>第一批社区作品，等你发布。</h2>
             <p className={styles.gallery__emptyText}>
-              完成生成后，在创作历史里选择作品并点击“发布到画廊”，它就会出现在这里。
+              在创作历史里点击“投稿到画廊”，审核通过后作品会出现在这里。
             </p>
             <Link href="/generate" className={styles.gallery__emptyAction}>
               开始创作

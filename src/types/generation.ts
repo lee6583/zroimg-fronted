@@ -1,4 +1,6 @@
-type GenerationMode = "text_to_image" | "image_to_image";
+import type { GalleryStatus } from "@/types/gallery";
+
+type GenerationMode = "text_to_image" | "image_to_image" | "inpaint";
 
 type GenerationTaskStatus = "pending" | "processing" | "succeeded" | "failed";
 
@@ -56,6 +58,8 @@ type GenerationResult = {
   mediaAssetId: string;
   resultUrl: string;
   sortOrder: number;
+  galleryStatus: GalleryStatus | null;
+  galleryRejectReason: string | null;
 };
 
 type GenerationTask = {
@@ -71,6 +75,8 @@ type GenerationTask = {
   prompt: string;
   referenceImageUrl: string | null;
   referenceMediaId: string | null;
+  maskMediaId: string | null;
+  canvasId: string | null;
   ratio: string | null;
   resolution: string | null;
   quality: string | null;
@@ -105,10 +111,12 @@ type GenerationTaskQuery = {
 
 type CreateGenerationTaskRequest = {
   modelCode: string;
-  conversationId: string;
+  conversationId?: string;
+  canvasId?: string;
   mode: string;
   prompt: string;
   referenceMediaId?: string;
+  maskMediaId?: string;
   ratio: string;
   quality: string;
   count: number;
@@ -160,6 +168,13 @@ type MediaUploadPresign = {
   originalName: string;
 };
 
+type GenerationUserLimits = {
+  maxActiveImageTasks: number;
+  maxActiveVideoTasks: number;
+  activeImageTasks: number;
+  activeVideoTasks: number;
+};
+
 export type {
   GenerationMode,
   GenerationTaskStatus,
@@ -177,4 +192,5 @@ export type {
   MediaAsset,
   MediaUploadPresignRequest,
   MediaUploadPresign,
+  GenerationUserLimits,
 };

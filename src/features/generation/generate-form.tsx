@@ -627,6 +627,8 @@ function createPendingTask(
     prompt,
     referenceImageUrl: null,
     referenceMediaId: null,
+    maskMediaId: null,
+    canvasId: null,
     ratio: options.ratio,
     resolution: null,
     quality: options.quality,

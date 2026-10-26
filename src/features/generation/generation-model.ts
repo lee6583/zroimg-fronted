@@ -32,6 +32,7 @@ export const imageModes: GenerationMode[] = ["text_to_image", "image_to_image"];
 export const modeLabels: Record<GenerationMode, string> = {
   text_to_image: "文生图",
   image_to_image: "图生图",
+  inpaint: "局部重绘",
 };
 
 export const taskStatusLabels: Record<GenerationTaskStatus, string> = {

@@ -1,0 +1,183 @@
+.maskEditor__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 52%);
+  padding: 1rem;
+}
+
+.maskEditor {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(72rem, 100%);
+  height: min(52rem, calc(100dvh - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--foreground);
+  box-shadow: 0 24px 72px rgb(0 0 0 / 26%);
+}
+
+.maskEditor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+}
+
+.maskEditor__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.maskEditor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.6rem 1rem;
+}
+
+.maskEditor__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.maskEditor__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--foreground);
+  padding: 0 0.7rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.maskEditor__tool:hover:not(:disabled),
+.maskEditor__iconButton:hover:not(:disabled) {
+  background: var(--soft);
+}
+
+.maskEditor__toolActive,
+.maskEditor__toolActive:hover:not(:disabled) {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.maskEditor__iconButton {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.maskEditor__tool:disabled,
+.maskEditor__iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.maskEditor__size {
+  display: flex;
+  flex: 1 1 14rem;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 22rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.maskEditor__size input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--foreground);
+}
+
+.maskEditor__sizeValue {
+  min-width: 3.2rem;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.maskEditor__body {
+  display: grid;
+  min-height: 0;
+  background: var(--soft);
+  padding: 1rem;
+}
+
+.maskEditor__stageBox {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.maskEditor__stage {
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.maskEditor__status {
+  place-self: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.maskEditor__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+}
+
+.maskEditor__message {
+  min-width: 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.maskEditor__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .maskEditor__overlay {
+    padding: 0;
+  }
+
+  .maskEditor {
+    height: 100dvh;
+    border-radius: 0;
+  }
+
+  .maskEditor__size {
+    order: 3;
+    max-width: none;
+  }
+}

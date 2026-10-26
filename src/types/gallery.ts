@@ -1,5 +1,7 @@
 type GalleryCategory = "realistic" | "anime" | "art" | "other";
 
+type GalleryStatus = "pending" | "approved" | "rejected" | "withdrawn" | "removed";
+
 type GalleryImageAsset = {
   id: string;
   fileName: string;
@@ -16,6 +18,10 @@ type GalleryImage = {
   title: string;
   category: GalleryCategory;
   isPublic: boolean;
+  status: GalleryStatus;
+  rejectReason: string | null;
+  submitTime: string | null;
+  reviewTime: string | null;
   createdAt: string;
   generatedImage: {
     id: string;
@@ -44,8 +50,31 @@ type PublishGalleryRequest = {
   generatedImageId: string;
 };
 
+/** Java GallerySubmissionVO */
+type GallerySubmission = {
+  id: string;
+  generatedImageId: string;
+  prompt: string;
+  category: GalleryCategory;
+  status: GalleryStatus;
+  rejectReason: string | null;
+  submitTime: string | null;
+  reviewTime: string | null;
+  imageUrl: string;
+};
+
+/** Java GallerySubmissionQuery */
+type GallerySubmissionQuery = {
+  pageNo?: number;
+  pageSize?: number;
+  status?: GalleryStatus;
+};
+
 export type {
   GalleryCategory,
+  GalleryStatus,
+  GallerySubmission,
+  GallerySubmissionQuery,
   GalleryImageAsset,
   GalleryImage,
   GalleryImageQuery,

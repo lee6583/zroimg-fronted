@@ -7,6 +7,7 @@ import {
   isTaskRunning,
   readTaskModel,
   readTaskOutputCount,
+  readTaskSource,
   readTaskSpec,
   readTaskType,
   taskStatusLabels,
@@ -17,6 +18,11 @@ import type { AdminGenerationTaskPage } from "@/types/admin";
 export const dynamic = "force-dynamic";
 
 const generationStatuses = ["processing", "succeeded", "failed"] as const;
+const taskSources = ["conversation", "canvas"] as const;
+const sourceLabels: Record<(typeof taskSources)[number], string> = {
+  conversation: "对话",
+  canvas: "画布",
+};
 const pageSizeOptions = [10, 20, 50];
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type AdminGenerationsPageProps = {
@@ -32,10 +38,19 @@ function formatDate(value: string) {
   return value.slice(0, 16).replace("T", " ");
 }
 
-function href(input: { q?: string; status?: string; page?: number; pageSize?: number }) {
+type HrefInput = {
+  q?: string;
+  status?: string;
+  source?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+function href(input: HrefInput) {
   const params = new URLSearchParams();
   if (input.q) params.set("q", input.q);
   if (input.status) params.set("status", input.status);
+  if (input.source) params.set("source", input.source);
   if (input.page && input.page > 1) params.set("page", String(input.page));
   if (input.pageSize && input.pageSize !== 20) params.set("pageSize", String(input.pageSize));
   const query = params.toString();
@@ -59,12 +74,16 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
   const requestedPageSize = Number(readParam(params, "pageSize") || 20);
   const pageSize = pageSizeOptions.includes(requestedPageSize) ? requestedPageSize : 20;
   const isKnownStatus = generationStatuses.includes(status as (typeof generationStatuses)[number]);
+  const requestedSource = readParam(params, "source");
+  const source = taskSources.find((item) => item === requestedSource);
+  const statusFilter = isKnownStatus ? status : undefined;
   const taskPage = await requestJava<AdminGenerationTaskPage>("/generation/admin/tasks", {
     params: {
       pageNo: page,
       pageSize,
       q,
-      status: isKnownStatus ? status : undefined,
+      status: statusFilter,
+      source,
       sortBy: "create_time",
       isAsc: false,
     },
@@ -86,6 +105,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
             <Search size={15} aria-hidden="true" />
             <input name="q" defaultValue={q || ""} placeholder="搜索提示词、模型或用户名" />
             {isKnownStatus ? <input type="hidden" name="status" value={status} /> : null}
+            {source ? <input type="hidden" name="source" value={source} /> : null}
             {pageSize !== 20 ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
             <button type="submit">搜索</button>
           </form>
@@ -93,7 +113,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
           <nav className={workspace.filters} aria-label="任务状态筛选">
             <Link
               className={!isKnownStatus ? workspace.filterActive : undefined}
-              href={href({ q, pageSize })}
+              href={href({ q, source, pageSize })}
             >
               全部
             </Link>
@@ -101,9 +121,27 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
               <Link
                 key={item}
                 className={status === item ? workspace.filterActive : undefined}
-                href={href({ q, status: item, page: 1, pageSize })}
+                href={href({ q, status: item, source, page: 1, pageSize })}
               >
                 {taskStatusLabels[item]}
+              </Link>
+            ))}
+          </nav>
+
+          <nav className={workspace.filters} aria-label="任务来源筛选">
+            <Link
+              className={!source ? workspace.filterActive : undefined}
+              href={href({ q, status: statusFilter, pageSize })}
+            >
+              全部
+            </Link>
+            {taskSources.map((item) => (
+              <Link
+                key={item}
+                className={source === item ? workspace.filterActive : undefined}
+                href={href({ q, status: statusFilter, source: item, page: 1, pageSize })}
+              >
+                {sourceLabels[item]}
               </Link>
             ))}
           </nav>
@@ -117,6 +155,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                   <th>用户</th>
                   <th>提示词</th>
                   <th>类型</th>
+                  <th>来源</th>
                   <th>模型配置</th>
                   <th>消耗 / 输出</th>
                   <th>状态</th>
@@ -149,6 +188,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                       </div>
                     </td>
                     <td data-label="类型">{readTaskType(task)}</td>
+                    <td data-label="来源">{readTaskSource(task)}</td>
                     <td data-label="模型配置">
                       <div className={workspace.primaryCell}>
                         <span>{readTaskModel(task)}</span>

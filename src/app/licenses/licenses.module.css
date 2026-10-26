@@ -1,0 +1,53 @@
+.licenses {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  background: var(--background);
+  padding: 3rem 1rem;
+  color: var(--foreground);
+}
+
+.licenses__inner {
+  display: grid;
+  gap: 1.5rem;
+  width: min(100%, 64rem);
+  margin: 0 auto;
+}
+
+.licenses__tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+
+.licenses__table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.licenses__table th,
+.licenses__table td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.licenses__table th {
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.licenses__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.licenses__table a {
+  color: var(--foreground);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}

@@ -126,7 +126,8 @@ function TaskMessage(props: TaskMessageProps) {
                   />
                   <HistoryImageActions
                     generatedImageId={result.id}
-                    initialPublished={false}
+                    galleryStatus={result.galleryStatus}
+                    galleryReason={result.galleryRejectReason}
                     collections={collections}
                     downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
                     downloadFileName={`zroimg-${task.taskNo}-${index + 1}.${extension}`}

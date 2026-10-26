@@ -1,4 +1,5 @@
 import type { PageResult } from "@/types/api";
+import type { GalleryCategory, GalleryStatus } from "@/types/gallery";
 
 type SecretSource = "database" | "env" | "none";
 
@@ -41,6 +42,15 @@ type AnnouncementSettingsConfig = {
   title: string;
   content: string;
   updatedAt: string;
+};
+
+type CanvasSettingsConfig = {
+  enabled: boolean;
+  maxBoardsPerUser: number;
+  maxNodesPerBoard: number;
+  maxSceneKb: number;
+  maxPendingTasksPerBoard: number;
+  allowedModelCodes: string[];
 };
 
 type DocsItem = {
@@ -102,6 +112,20 @@ type SaveAnnouncementSettingsRequest = {
   content: string;
 };
 
+type SaveCanvasSettingsRequest = CanvasSettingsConfig;
+
+type GenerationSettingsConfig = {
+  maxActiveImageTasksPerUser: number;
+  maxActiveVideoTasksPerUser: number;
+  imageConcurrency: number;
+  videoConcurrency: number;
+};
+
+type SaveGenerationSettingsRequest = {
+  maxActiveImageTasksPerUser: number;
+  maxActiveVideoTasksPerUser: number;
+};
+
 // auth AdminUserVO
 type AdminUser = {
   id: string;
@@ -113,6 +137,18 @@ type AdminUser = {
   status: "active" | "banned";
   totalPoints: number;
   createdAt: string;
+};
+
+type AdminUserDetail = AdminUser & {
+  maxActiveImageTasks: number | null;
+  maxActiveVideoTasks: number | null;
+  effectiveMaxActiveImageTasks: number;
+  effectiveMaxActiveVideoTasks: number;
+};
+
+type UpdateGenerationLimitsRequest = {
+  maxActiveImageTasks: number | null;
+  maxActiveVideoTasks: number | null;
 };
 
 type UpdateUserStatusRequest = {
@@ -268,6 +304,8 @@ type AdminGenerationTask = {
   prompt: string;
   referenceImageUrl: string | null;
   referenceMediaId: string | null;
+  maskMediaId?: string | null;
+  canvasId?: string | null;
   ratio: string | null;
   resolution: string | null;
   quality: string | null;
@@ -297,14 +335,75 @@ type AdminOverviewTicket = {
   createdAt: string;
 };
 
+type GenerationQueueStats = {
+  imagePending: number;
+  imageProcessing: number;
+  videoPending: number;
+  videoProcessing: number;
+  imageConcurrency: number;
+  videoConcurrency: number;
+};
+
 type AdminOverview = {
   users: number;
   tasks: number;
   orders: number;
   failedTasks: number;
   openTickets: number;
+  pendingGalleryCount: number;
   latestTickets: AdminOverviewTicket[];
 };
+
+// gallery AdminGallerySubmissionVO
+type AdminGallerySubmission = {
+  id: string;
+  generatedImageId: string;
+  userId: string;
+  username: string | null;
+  email: string | null;
+  prompt: string;
+  title: string | null;
+  category: GalleryCategory;
+  status: GalleryStatus;
+  rejectReason: string | null;
+  submitTime: string | null;
+  reviewTime: string | null;
+  reviewerId: string | null;
+  modelCode: string | null;
+  modelName: string | null;
+  width: number | null;
+  height: number | null;
+  imageUrl: string;
+};
+
+type AdminGallerySubmissionQuery = {
+  pageNo?: number;
+  pageSize?: number;
+  status?: GalleryStatus;
+  category?: GalleryCategory;
+  userId?: string;
+  keyword?: string;
+};
+
+type ApproveGallerySubmissionRequest = {
+  category?: GalleryCategory;
+  title?: string;
+};
+
+type GalleryReviewReasonRequest = {
+  reason: string;
+};
+
+type BatchApproveGalleryRequest = {
+  ids: string[];
+};
+
+type BatchApproveGalleryResult = {
+  approved: number;
+  skipped: number;
+};
+
+type GalleryReviewStats = Record<GalleryStatus, number>;
 
 // generation models / provider connections
 type GenerationModelAdapter = "openai" | "grok";
@@ -322,6 +421,7 @@ type GenerationModelCatalogItem = {
   defaultApiBaseUrl: string;
   imageToImageSupported: boolean;
   imageToVideoSupported: boolean;
+  inpaintSupported: boolean;
   ratios: string[];
   qualities: string[];
   resolutions: string[];
@@ -388,6 +488,7 @@ type AdminGenerationModel = {
   sortOrder: number;
   imageToImageEnabled: boolean;
   imageToVideoEnabled: boolean;
+  inpaintEnabled: boolean;
   supportedRatios: string[];
   supportedQualities: string[];
   supportedResolutions: string[];
@@ -437,6 +538,7 @@ type SaveModelLegacyBase = SaveModelCommon & {
 type ImageModelFields = {
   modelType: "image";
   imageToImageEnabled: boolean;
+  inpaintEnabled: boolean;
   qualities: string[];
   maxCount: number;
   qualityPrices: ImageQualityPrice[];
@@ -469,6 +571,7 @@ export type {
   EasyPayAdminConfig,
   CheckInSettingsConfig,
   AnnouncementSettingsConfig,
+  CanvasSettingsConfig,
   DocsItem,
   DocsGroup,
   DocsConfig,
@@ -477,7 +580,12 @@ export type {
   SaveEasyPaySettingsRequest,
   SaveCheckInSettingsRequest,
   SaveAnnouncementSettingsRequest,
+  SaveCanvasSettingsRequest,
+  GenerationSettingsConfig,
+  SaveGenerationSettingsRequest,
   AdminUser,
+  AdminUserDetail,
+  UpdateGenerationLimitsRequest,
   AdminUserPage,
   UpdateUserStatusRequest,
   UpdateUserPasswordRequest,
@@ -501,7 +609,15 @@ export type {
   AdminGenerationTask,
   AdminGenerationTaskPage,
   AdminOverviewTicket,
+  GenerationQueueStats,
   AdminOverview,
+  AdminGallerySubmission,
+  AdminGallerySubmissionQuery,
+  ApproveGallerySubmissionRequest,
+  GalleryReviewReasonRequest,
+  BatchApproveGalleryRequest,
+  BatchApproveGalleryResult,
+  GalleryReviewStats,
   GenerationModelAdapter,
   LegacyGenerationModelAdapter,
   GenerationModelType,

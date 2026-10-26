@@ -11,12 +11,13 @@ import {
   taskStatusLabels,
 } from "@/features/admin/generation-task";
 import { UserActions } from "@/features/admin/user-actions";
+import { UserGenerationLimits } from "@/features/admin/user-generation-limits";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type {
   AdminGenerationTaskPage,
   AdminPointsFlowPage,
   AdminRechargeOrderPage,
-  AdminUser,
+  AdminUserDetail,
 } from "@/types/admin";
 import { normalizeOrderDisplayStatus, orderDisplayStatusLabels } from "@/utils/order-status";
 import styles from "./user-detail.module.css";
@@ -53,7 +54,7 @@ function orderStatusClass(status: string) {
 
 async function loadUser(id: string) {
   try {
-    return await requestJava<AdminUser>(`/auth/admin/users/${id}`);
+    return await requestJava<AdminUserDetail>(`/auth/admin/users/${id}`);
   } catch (error) {
     // Java 对不存在的用户返回 400，而不是 404。
     if (error instanceof JavaApiError && error.status === 400) {
@@ -239,6 +240,8 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
         </section>
 
         <aside className={styles.userDetail__aside}>
+          <UserGenerationLimits user={profile} />
+
           <section className={styles.userDetail__panel} aria-labelledby="orders-title">
             <header className={styles.userDetail__panelHeader}>
               <h2 id="orders-title">最近订单</h2>

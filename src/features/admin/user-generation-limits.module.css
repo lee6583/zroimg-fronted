@@ -1,0 +1,121 @@
+.limits {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.limits__header {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+}
+
+.limits__header h2 {
+  color: var(--foreground);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.limits__editButton {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.limits__editButton:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.limits__list {
+  display: grid;
+}
+
+.limits__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.limits__row + .limits__row {
+  border-top: 1px solid var(--line);
+}
+
+.limits__row dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.limits__row dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.limits__source {
+  border-radius: 0.25rem;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.limits__sourceCustom {
+  background: color-mix(in oklab, #1d4ed8 12%, var(--panel));
+  color: #1d4ed8;
+}
+
+.limits__form {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.limits__field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.limits__field > span:first-child {
+  color: var(--foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.limits__hint {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.limits__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.limits__message {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 0.6rem 1rem;
+}
+
+.limits__messageError {
+  color: var(--danger);
+}

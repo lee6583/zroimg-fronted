@@ -77,6 +77,7 @@ src/
     layout/            页面壳、导航和账户菜单
     ui/                业务无关 UI
   features/            按业务域组织的交互组件
+    canvas/            无限画布编辑器（React Flow）和局部重绘遮罩（Konva）
   server/
     auth.ts            SSR 会话入口
     env.ts             服务端环境配置
@@ -121,6 +122,19 @@ public/assets/         实际被页面引用的静态资源
 - `GenerationSettings`：模型、比例、分辨率、画质和数量。
 - `PromptComposer`：提示词、参考图和提交。
 - `TaskPreview`：最近任务及结果预览。
+
+无限画布（`features/canvas`）：
+
+- 画布场景 JSON（`{nodes, edges, viewport}`）保存在 Java `canvas_board`，前端只负责编辑和提交。
+- 节点类型为 `image`、`generator`、`note`；生成节点保存任务 `taskNo`，前端轮询任务结果后在客户端把结果图放到画布上。
+- 局部重绘遮罩是与原图原始分辨率一致的 PNG：透明（alpha 0）为重绘区域，其余为不透明黑色。
+- 改编自第三方开源项目的文件必须保留原 MIT 版权头；新增或移除第三方来源时同步更新 `THIRD_PARTY_NOTICES.md` 和 `/licenses` 页面。
+
+画廊投稿（`features/gallery`、`/submissions`、`/admin/gallery`）：
+
+- 用户只能投稿自己的生成结果，投稿后进入 `pending`，管理员通过后才出现在公开画廊；`rejected`、`withdrawn` 可重新提交，`removed` 不可重新提交，需通过意见反馈申诉。
+- 生成结果自带 `galleryStatus`、`galleryRejectReason`，`PublishGalleryButton` 用它们作为初始状态；画布结果节点只保存 `resultId`，选中时通过 `/gallery/user/submissions` 查询状态。
+- 拒绝、下架原因由管理员填写，1 到 200 字，用户可见。
 
 不得重新加入浏览器直连生成供应商、API Key `localStorage` 或 IndexedDB 任务分支。生成密钥和资产必须留在服务端。
 

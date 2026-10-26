@@ -10,10 +10,12 @@ import {
   Clapperboard,
   Coins,
   FolderHeart,
+  Frame,
   ImagePlus,
   LayoutDashboard,
   PencilLine,
   ReceiptText,
+  Send,
   Settings,
 } from "lucide-react";
 import styles from "./shell.module.css";
@@ -21,9 +23,11 @@ import styles from "./shell.module.css";
 type AppSection =
   | "overview"
   | "generate"
+  | "canvas"
   | "video"
   | "history"
   | "favorites"
+  | "submissions"
   | "credits"
   | "billing"
   | "tickets"
@@ -58,6 +62,12 @@ const appNavItems: Array<{
     icon: ImagePlus,
   },
   {
+    key: "canvas",
+    label: "无限画布",
+    href: "/canvas",
+    icon: Frame,
+  },
+  {
     key: "video",
     label: "视频创作",
     href: "/video",
@@ -74,6 +84,12 @@ const appNavItems: Array<{
     label: "收藏合集",
     href: "/favorites",
     icon: FolderHeart,
+  },
+  {
+    key: "submissions",
+    label: "我的投稿",
+    href: "/submissions",
+    icon: Send,
   },
   {
     key: "credits",
@@ -103,9 +119,11 @@ const appNavItems: Array<{
 
 function getActiveSection(pathname: string): AppSection {
   if (pathname.startsWith("/generate")) return "generate";
+  if (pathname.startsWith("/canvas")) return "canvas";
   if (pathname.startsWith("/video")) return "video";
   if (pathname.startsWith("/history")) return "history";
   if (pathname.startsWith("/favorites")) return "favorites";
+  if (pathname.startsWith("/submissions")) return "submissions";
   if (pathname.startsWith("/credits")) return "credits";
   if (pathname.startsWith("/billing")) return "billing";
   if (pathname.startsWith("/tickets")) return "tickets";
@@ -115,7 +133,8 @@ function getActiveSection(pathname: string): AppSection {
 }
 
 function getFlush(pathname: string) {
-  return pathname.startsWith("/generate") || pathname.startsWith("/video");
+  const isEditor = pathname.startsWith("/canvas/");
+  return pathname.startsWith("/generate") || pathname.startsWith("/video") || isEditor;
 }
 
 export function ProductFrame(props: ProductFrameProps) {

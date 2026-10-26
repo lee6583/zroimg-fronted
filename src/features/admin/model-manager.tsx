@@ -51,6 +51,7 @@ type FormState = {
   sortOrder: string;
   imageToImageEnabled: boolean;
   imageToVideoEnabled: boolean;
+  inpaintEnabled: boolean;
   ratios: string[];
   qualities: string[];
   resolutions: string[];
@@ -81,6 +82,7 @@ type ConnectionPanelMode = "list" | "edit";
 type CapabilityView = {
   imageToImageSupported: boolean;
   imageToVideoSupported: boolean;
+  inpaintSupported: boolean;
   ratios: string[];
   qualities: string[];
   resolutions: string[];
@@ -159,6 +161,7 @@ function createForm(item: GenerationModelCatalogItem | undefined): FormState {
     sortOrder: "10",
     imageToImageEnabled: item?.imageToImageSupported ?? false,
     imageToVideoEnabled: item?.imageToVideoSupported ?? false,
+    inpaintEnabled: false,
     ratios: [...(item?.ratios ?? [])],
     qualities: [...(item?.qualities ?? [])],
     resolutions: [...(item?.resolutions ?? [])],
@@ -192,6 +195,7 @@ function formFromModel(
     sortOrder: String(model.sortOrder),
     imageToImageEnabled: model.imageToImageEnabled,
     imageToVideoEnabled: model.imageToVideoEnabled,
+    inpaintEnabled: model.inpaintEnabled,
     ratios: [...model.supportedRatios],
     qualities: [...model.supportedQualities],
     resolutions: [...model.supportedResolutions],
@@ -214,6 +218,7 @@ function applyProfile(form: FormState, profile: GenerationModelCatalogItem): For
     capabilityProfile: profile.capabilityProfile,
     imageToImageEnabled: profile.imageToImageSupported,
     imageToVideoEnabled: profile.imageToVideoSupported,
+    inpaintEnabled: false,
     ratios: [...profile.ratios],
     qualities: [...profile.qualities],
     resolutions: [...profile.resolutions],
@@ -258,7 +263,14 @@ function capabilitiesText(model: AdminGenerationModel) {
   if (model.modelType === "video") {
     return model.imageToVideoEnabled ? "文生视频 / 图生视频" : "文生视频";
   }
-  return model.imageToImageEnabled ? "文生图 / 图生图" : "文生图";
+  const labels = ["文生图"];
+  if (model.imageToImageEnabled) {
+    labels.push("图生图");
+  }
+  if (model.inpaintEnabled) {
+    labels.push("局部重绘");
+  }
+  return labels.join(" / ");
 }
 
 function pricingText(model: AdminGenerationModel) {
@@ -305,6 +317,7 @@ function capabilityView(
   return {
     imageToImageSupported: form.imageToImageEnabled,
     imageToVideoSupported: form.imageToVideoEnabled,
+    inpaintSupported: form.adapter === "openai",
     ratios: form.ratios,
     qualities: form.qualities,
     resolutions: form.resolutions,
@@ -576,6 +589,7 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
           clearApiKey: false,
           modelType: "image",
           imageToImageEnabled: form.imageToImageEnabled,
+          inpaintEnabled: form.inpaintEnabled,
           qualities: form.qualities,
           maxCount: readInteger(form.maxCount, "最大生成数量"),
           qualityPrices,
@@ -653,6 +667,7 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
         ...base,
         modelType: "image",
         imageToImageEnabled: form.imageToImageEnabled,
+        inpaintEnabled: form.inpaintEnabled,
         qualities: form.qualities,
         maxCount: readInteger(form.maxCount, "最大生成数量"),
         qualityPrices,
@@ -1358,6 +1373,17 @@ export function ModelManager({ initialModels, catalog, initialConnections }: Mod
                   }
                 />
               </label>
+              {isVideo ? null : (
+                <label className={workspace.switchRow}>
+                  <span>局部重绘</span>
+                  <input
+                    type="checkbox"
+                    disabled={profileView?.inpaintSupported !== true}
+                    checked={form.inpaintEnabled}
+                    onChange={(event) => updateForm({ inpaintEnabled: event.target.checked })}
+                  />
+                </label>
+              )}
               <OptionFieldset
                 label="支持比例"
                 values={profileView?.ratios ?? []}

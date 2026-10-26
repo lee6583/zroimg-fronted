@@ -14,7 +14,13 @@ function isTaskRunning(status: string) {
 function readTaskType(task: AdminGenerationTask) {
   if (task.modelType === "video") return "视频";
   if (task.mode === "image_to_image") return "图生图";
+  if (task.mode === "inpaint") return "局部重绘";
   return "文生图";
+}
+
+function readTaskSource(task: AdminGenerationTask) {
+  if (task.canvasId) return "画布";
+  return "对话";
 }
 
 function readTaskModel(task: AdminGenerationTask) {
@@ -35,6 +41,7 @@ export {
   isTaskRunning,
   readTaskModel,
   readTaskOutputCount,
+  readTaskSource,
   readTaskSpec,
   readTaskType,
   taskStatusLabels,

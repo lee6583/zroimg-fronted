@@ -302,11 +302,11 @@
 }
 
 .tasksTable th:nth-child(4) {
-  width: 14rem;
+  width: 5rem;
 }
 
 .tasksTable th:nth-child(5) {
-  width: 8rem;
+  width: 14rem;
 }
 
 .tasksTable th:nth-child(6) {
@@ -314,6 +314,10 @@
 }
 
 .tasksTable th:nth-child(7) {
+  width: 8rem;
+}
+
+.tasksTable th:nth-child(8) {
   width: 11rem;
 }
 

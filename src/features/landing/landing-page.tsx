@@ -178,6 +178,9 @@ export function LandingPage() {
                   <Link href="/cookies" className={styles.landing__footerLink}>
                     Cookie 政策
                   </Link>
+                  <Link href="/licenses" className={styles.landing__footerLink}>
+                    开源许可
+                  </Link>
                 </div>
               </div>
             </div>

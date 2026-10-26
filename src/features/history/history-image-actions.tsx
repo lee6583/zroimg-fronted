@@ -7,11 +7,13 @@ import { Download, Star, X } from "lucide-react";
 import { favoriteCollectionsApi } from "@/api/generation/favorites";
 import { PublishGalleryButton } from "@/features/gallery/publish-button";
 import type { FavoriteCollection } from "@/types/favorites";
+import type { GalleryStatus } from "@/types/gallery";
 import styles from "./history-image-actions.module.css";
 
 type HistoryImageActionsProps = {
   generatedImageId: string;
-  initialPublished: boolean;
+  galleryStatus: GalleryStatus | null;
+  galleryReason: string | null;
   collections: FavoriteCollection[];
   downloadUrl: string;
   downloadFileName: string;
@@ -21,7 +23,8 @@ type HistoryImageActionsProps = {
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
   const generatedImageId = props.generatedImageId;
-  const initialPublished = props.initialPublished;
+  const galleryStatus = props.galleryStatus;
+  const galleryReason = props.galleryReason;
   const collections = props.collections;
   const downloadUrl = props.downloadUrl;
   const downloadFileName = props.downloadFileName;
@@ -87,7 +90,8 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
         {showPublish ? (
           <PublishGalleryButton
             generatedImageId={generatedImageId}
-            initialPublished={initialPublished}
+            initialStatus={galleryStatus}
+            initialReason={galleryReason}
           />
         ) : null}
 

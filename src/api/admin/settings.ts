@@ -1,12 +1,16 @@
 import { request } from "@/utils/request";
 import type {
   AnnouncementSettingsConfig,
+  CanvasSettingsConfig,
   CheckInSettingsConfig,
   DocsConfig,
   EasyPayAdminConfig,
+  GenerationSettingsConfig,
   SaveAnnouncementSettingsRequest,
+  SaveCanvasSettingsRequest,
   SaveCheckInSettingsRequest,
   SaveEasyPaySettingsRequest,
+  SaveGenerationSettingsRequest,
   SaveSmtpSettingsRequest,
   SmtpAdminConfig,
   TestSmtpSettingsRequest,
@@ -52,6 +56,22 @@ function saveAnnouncement(data: SaveAnnouncementSettingsRequest) {
   });
 }
 
+function saveCanvas(data: SaveCanvasSettingsRequest) {
+  return request<CanvasSettingsConfig>({
+    url: "/api/admin/settings/canvas",
+    method: "POST",
+    data,
+  });
+}
+
+function saveGeneration(data: SaveGenerationSettingsRequest) {
+  return request<GenerationSettingsConfig>({
+    url: "/api/admin/settings/generation",
+    method: "POST",
+    data,
+  });
+}
+
 function saveDocs(data: DocsConfig) {
   return request<DocsConfig>({
     url: "/api/admin/settings/docs",
@@ -66,5 +86,7 @@ export const adminSettingsApi = {
   saveEasyPay,
   saveCheckIn,
   saveAnnouncement,
+  saveCanvas,
+  saveGeneration,
   saveDocs,
 };
