@@ -1,12 +1,12 @@
 "use client";
 
-import clsx from "clsx";
-import { Check } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
 import type { CanvasSettingsConfig } from "@/types/admin";
 import { getErrorMessage } from "@/utils/error";
-import styles from "./admin-forms.module.css";
+import { Advanced, Affix, ChipGroup, Field, FormCard, SwitchRow } from "./admin-form";
+import workspace from "./admin-workspace.module.css";
 
 type CanvasModelOption = {
   modelCode: string;
@@ -30,10 +30,10 @@ type LimitInput = {
 };
 
 const limitInputs: LimitInput[] = [
-  { field: "maxBoards", label: "每位用户画布上限", unit: "个", min: 1, max: 1000 },
-  { field: "maxNodes", label: "单个画布节点上限", unit: "个", min: 10, max: 5000 },
+  { field: "maxBoards", label: "每位用户画布上限", unit: "个画布", min: 1, max: 1000 },
+  { field: "maxNodes", label: "单个画布节点上限", unit: "个节点", min: 10, max: 5000 },
   { field: "maxSceneKb", label: "画布数据上限", unit: "KB", min: 64, max: 10240 },
-  { field: "maxPendingTasks", label: "单个画布并发任务", unit: "个", min: 1, max: 20 },
+  { field: "maxPendingTasks", label: "单个画布并发任务", unit: "个任务", min: 1, max: 20 },
 ];
 
 function readForm(settings: CanvasSettingsConfig) {
@@ -63,8 +63,8 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
   const initialSettings = props.initialSettings;
   const models = props.models;
 
+  const router = useRouter();
   const [form, setForm] = useState(() => readForm(initialSettings));
-  const [isEnabled, setEnabled] = useState(initialSettings.enabled);
   const [message, setMessage] = useState("");
   const [isSaving, setSaving] = useState(false);
 
@@ -82,6 +82,11 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
   }
 
   function toggleModel(modelCode: string) {
+    if (!modelCode) {
+      updateForm({ modelCodes: [] });
+      return;
+    }
+
     const isSelected = form.modelCodes.includes(modelCode);
     if (isSelected) {
       const modelCodes = form.modelCodes.filter((code) => code !== modelCode);
@@ -92,8 +97,7 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
     updateForm({ modelCodes: [...form.modelCodes, modelCode] });
   }
 
-  async function saveSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function saveSettings() {
     setSaving(true);
     setMessage("");
 
@@ -107,8 +111,8 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
         allowedModelCodes: form.modelCodes,
       });
       setForm(readForm(nextSettings));
-      setEnabled(nextSettings.enabled);
-      setMessage("画布设置已保存。");
+      setMessage("已保存");
+      router.refresh();
     } catch (error) {
       setMessage(getErrorMessage(error));
     } finally {
@@ -116,51 +120,45 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
     }
   }
 
+  const modelOptions = [
+    { value: "", label: "全部图片模型" },
+    ...options.map((model) => {
+      const suffix = model.isEnabled ? "" : "（已停用）";
+      return { value: model.modelCode, label: `${model.modelName}${suffix}` };
+    }),
+  ];
+  const selectedCodes = isAllModels ? [""] : form.modelCodes;
+
   return (
-    <form className={styles.adminForms__form} onSubmit={saveSettings}>
-      <div className={styles.adminForms__header}>
-        <div>
-          <h2 className={styles.adminForms__title}>无限画布设置</h2>
-        </div>
-        <span className="rounded-md bg-soft px-3 py-2 text-xs font-medium text-muted">
-          {isEnabled ? "已启用" : "已停用"}
-        </span>
+    <FormCard
+      title="无限画布"
+      message={message}
+      saveLabel="保存"
+      isSaving={isSaving}
+      canSave={!hasEmptyLimit}
+      onSubmit={saveSettings}
+    >
+      <div className={workspace.switchList}>
+        <SwitchRow
+          label="启用无限画布"
+          checked={form.isEnabled}
+          onChange={(nextEnabled) => updateForm({ isEnabled: nextEnabled })}
+        />
       </div>
 
-      <button
-        type="button"
-        onClick={() => updateForm({ isEnabled: !form.isEnabled })}
-        className={styles.adminForms__toggle}
-        aria-pressed={form.isEnabled}
-      >
-        <span>
-          <span className={styles.adminForms__toggleLabel}>启用无限画布</span>
-        </span>
-        <span
-          className={clsx(
-            styles.adminForms__switch,
-            form.isEnabled && styles.adminForms__switchChecked,
-          )}
-          aria-hidden="true"
-        >
-          <span
-            className={clsx(
-              styles.adminForms__switchThumb,
-              form.isEnabled && styles.adminForms__switchThumbChecked,
-            )}
-          />
-        </span>
-      </button>
+      <ChipGroup
+        label="可用模型"
+        options={modelOptions}
+        selected={selectedCodes}
+        onToggle={toggleModel}
+      />
 
-      <section className={styles.adminForms__section}>
-        <h3 className={styles.adminForms__sectionTitle}>使用限制</h3>
-        <div className={styles.adminForms__fieldGrid}>
+      <Advanced id="canvas">
+        <div className={workspace.formGrid}>
           {limitInputs.map((input) => (
-            <label key={input.field} className="grid gap-2">
-              <span className="label">{input.label}</span>
-              <span className={styles.adminForms__inputWithUnit}>
+            <Field key={input.field} label={input.label} hint={`${input.min} – ${input.max}`}>
+              <Affix suffix={input.unit}>
                 <input
-                  className="field"
                   type="number"
                   inputMode="numeric"
                   min={input.min}
@@ -169,62 +167,12 @@ export function CanvasSettingsForm(props: CanvasSettingsFormProps) {
                   value={form[input.field]}
                   onChange={(event) => updateForm({ [input.field]: event.target.value })}
                 />
-                <span className={styles.adminForms__unit}>{input.unit}</span>
-              </span>
-              <span className="text-xs text-muted">
-                {input.min} - {input.max}
-              </span>
-            </label>
+              </Affix>
+            </Field>
           ))}
         </div>
-      </section>
-
-      <section className={styles.adminForms__section}>
-        <h3 className={styles.adminForms__sectionTitle}>可用模型</h3>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="可用模型">
-          <button
-            type="button"
-            className={clsx(
-              "inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs",
-              isAllModels && "border-foreground bg-foreground text-background",
-              !isAllModels && "border-line text-foreground hover:bg-soft",
-            )}
-            aria-pressed={isAllModels}
-            onClick={() => updateForm({ modelCodes: [] })}
-          >
-            {isAllModels ? <Check size={13} aria-hidden="true" /> : null}
-            全部图片模型
-          </button>
-          {options.map((model) => {
-            const isSelected = form.modelCodes.includes(model.modelCode);
-            return (
-              <button
-                key={model.modelCode}
-                type="button"
-                className={clsx(
-                  "inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs",
-                  isSelected && "border-foreground bg-foreground text-background",
-                  !isSelected && "border-line text-foreground hover:bg-soft",
-                )}
-                aria-pressed={isSelected}
-                onClick={() => toggleModel(model.modelCode)}
-              >
-                {isSelected ? <Check size={13} aria-hidden="true" /> : null}
-                {model.modelName} ({model.modelCode})
-                {model.isEnabled ? null : <span className="opacity-70">已停用</span>}
-              </button>
-            );
-          })}
-        </div>
-        {options.length === 0 ? <p className="text-sm text-muted">暂无图片模型</p> : null}
-      </section>
-
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-
-      <button className="btn-primary w-full md:w-fit" disabled={isSaving || hasEmptyLimit}>
-        {isSaving ? "保存中" : "保存画布设置"}
-      </button>
-    </form>
+      </Advanced>
+    </FormCard>
   );
 }
 

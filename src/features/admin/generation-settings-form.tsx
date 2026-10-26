@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { adminSettingsApi } from "@/api/admin/settings";
 import type { GenerationSettingsConfig } from "@/types/admin";
 import { getErrorMessage } from "@/utils/error";
-import styles from "./admin-forms.module.css";
+import { Advanced, Affix, Field, FormCard } from "./admin-form";
+import workspace from "./admin-workspace.module.css";
 
 type GenerationSettingsFormProps = {
   initialSettings: GenerationSettingsConfig;
@@ -34,6 +36,7 @@ function readForm(settings: GenerationSettingsConfig) {
 export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
   const initialSettings = props.initialSettings;
 
+  const router = useRouter();
   const [form, setForm] = useState(() => readForm(initialSettings));
   const [settings, setSettings] = useState(initialSettings);
   const [message, setMessage] = useState("");
@@ -50,8 +53,7 @@ export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
     });
   }
 
-  async function saveSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function saveSettings() {
     setSaving(true);
     setMessage("");
 
@@ -62,7 +64,8 @@ export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
       });
       setForm(readForm(nextSettings));
       setSettings(nextSettings);
-      setMessage("生成并发设置已保存。");
+      setMessage("已保存");
+      router.refresh();
     } catch (error) {
       setMessage(getErrorMessage(error));
     } finally {
@@ -71,56 +74,42 @@ export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
   }
 
   return (
-    <form className={styles.adminForms__form} onSubmit={saveSettings}>
-      <div className={styles.adminForms__header}>
-        <div>
-          <h2 className={styles.adminForms__title}>生成并发设置</h2>
-        </div>
+    <FormCard
+      title="生成并发"
+      message={message}
+      saveLabel="保存"
+      isSaving={isSaving}
+      canSave={!hasEmptyLimit}
+      onSubmit={saveSettings}
+    >
+      <div className={workspace.formGrid}>
+        {limitInputs.map((input) => (
+          <Field key={input.field} label={input.label} hint={`${input.min} – ${input.max}`}>
+            <Affix suffix="个任务">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={input.min}
+                max={input.max}
+                step={1}
+                value={form[input.field]}
+                onChange={(event) => updateField(input.field, event.target.value)}
+              />
+            </Affix>
+          </Field>
+        ))}
       </div>
 
-      <section className={styles.adminForms__section}>
-        <h3 className={styles.adminForms__sectionTitle}>用户并发上限</h3>
-        <div className={styles.adminForms__fieldGrid}>
-          {limitInputs.map((input) => (
-            <label key={input.field} className="grid gap-2">
-              <span className="label">{input.label}</span>
-              <span className={styles.adminForms__inputWithUnit}>
-                <input
-                  className="field"
-                  type="number"
-                  inputMode="numeric"
-                  min={input.min}
-                  max={input.max}
-                  step={1}
-                  value={form[input.field]}
-                  onChange={(event) => updateField(input.field, event.target.value)}
-                />
-                <span className={styles.adminForms__unit}>个</span>
-              </span>
-              <span className="text-xs text-muted">
-                {input.min} - {input.max}
-              </span>
-            </label>
-          ))}
+      <Advanced id="generation">
+        <div className={workspace.formGrid}>
+          <Field label="服务器图片并发" hint="由 GENERATION_IMAGE_CONCURRENCY 配置" isGroup>
+            <span className={workspace.readonlyValue}>{settings.imageConcurrency}</span>
+          </Field>
+          <Field label="服务器视频并发" hint="由 GENERATION_VIDEO_CONCURRENCY 配置" isGroup>
+            <span className={workspace.readonlyValue}>{settings.videoConcurrency}</span>
+          </Field>
         </div>
-      </section>
-
-      <section className={styles.adminForms__section}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-sm">
-            服务器并发：图片 {settings.imageConcurrency} / 视频 {settings.videoConcurrency}
-          </span>
-          <span className="text-xs text-muted">
-            通过服务器配置 GENERATION_IMAGE_CONCURRENCY / GENERATION_VIDEO_CONCURRENCY 修改
-          </span>
-        </div>
-      </section>
-
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-
-      <button className="btn-primary w-full md:w-fit" disabled={isSaving || hasEmptyLimit}>
-        {isSaving ? "保存中" : "保存生成并发设置"}
-      </button>
-    </form>
+      </Advanced>
+    </FormCard>
   );
 }

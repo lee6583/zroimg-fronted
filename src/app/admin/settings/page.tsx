@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { CreditCard, Frame, Gauge, Gift, Mail, Megaphone } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { AnnouncementSettingsForm } from "@/features/admin/announcement-settings-form";
@@ -11,6 +12,7 @@ import {
   EasyPaySettingsForm,
   SmtpSettingsForm,
 } from "@/features/admin/service-settings-forms";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type {
   AdminGenerationModel,
@@ -33,6 +35,59 @@ type AdminSettingsPageProps = {
 const sectionIds = ["payment", "smtp", "checkin", "announcement", "canvas", "generation"] as const;
 type SettingsSection = (typeof sectionIds)[number];
 
+type SectionStatus = "configured" | "missing" | "default" | "off";
+
+type SectionItem = {
+  id: SettingsSection;
+  label: string;
+  status: SectionStatus;
+  icon: LucideIcon;
+};
+
+type SectionGroup = {
+  title: string;
+  items: SectionItem[];
+};
+
+const statusLabels: Record<SectionStatus, string> = {
+  configured: "已配置",
+  missing: "未配置",
+  default: "默认",
+  off: "未启用",
+};
+
+const statusClasses: Record<SectionStatus, string | undefined> = {
+  configured: styles.navStatusOk,
+  missing: styles.navStatusMissing,
+  default: undefined,
+  off: undefined,
+};
+
+// 与 Java AdminSettingsService 的默认值保持一致，仅用于展示“默认”状态。
+const canvasDefaults = {
+  enabled: true,
+  maxBoardsPerUser: 50,
+  maxNodesPerBoard: 500,
+  maxSceneKb: 2048,
+  maxPendingTasksPerBoard: 4,
+};
+
+const generationDefaults = {
+  image: 3,
+  video: 1,
+};
+
+function isSameCanvas(settings: CanvasSettingsConfig) {
+  return (
+    settings.enabled === canvasDefaults.enabled &&
+    settings.maxBoardsPerUser === canvasDefaults.maxBoardsPerUser &&
+    settings.maxNodesPerBoard === canvasDefaults.maxNodesPerBoard &&
+    settings.maxSceneKb === canvasDefaults.maxSceneKb &&
+    settings.maxPendingTasksPerBoard === canvasDefaults.maxPendingTasksPerBoard &&
+    settings.allowedModelCodes.length === 0
+  );
+}
+
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
@@ -53,6 +108,7 @@ async function readCanvasModels() {
 }
 
 export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
+  await requireAdmin();
   const params = await props.searchParams;
   const requestedSection = readParam(params, "section");
   const section = sectionIds.includes(requestedSection as SettingsSection)
@@ -75,42 +131,63 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
   ]);
   const canvasModels = section === "canvas" ? await readCanvasModels() : [];
 
-  const sections = [
+  // 第一步：按已加载的配置推导每个分类的状态。
+  const isPaymentReady =
+    easyPaySettings.enabled && Boolean(easyPaySettings.pid?.trim()) && easyPaySettings.hasKey;
+  const isMailReady =
+    smtpSettings.enabled && Boolean(smtpSettings.user?.trim()) && smtpSettings.hasPassword;
+  const isCanvasDefault = isSameCanvas(canvasSettings);
+  const isGenerationDefault =
+    generationSettings.maxActiveImageTasksPerUser === generationDefaults.image &&
+    generationSettings.maxActiveVideoTasksPerUser === generationDefaults.video;
+
+  // 第二步：组装分组导航。
+  const groups: SectionGroup[] = [
     {
-      id: "payment" as const,
-      label: "支付服务",
-      description: easyPaySettings.enabled ? "当前已启用" : "当前已停用",
-      icon: CreditCard,
+      title: "上线必填",
+      items: [
+        {
+          id: "payment",
+          label: "支付服务",
+          status: isPaymentReady ? "configured" : "missing",
+          icon: CreditCard,
+        },
+        {
+          id: "smtp",
+          label: "邮件服务",
+          status: isMailReady ? "configured" : "missing",
+          icon: Mail,
+        },
+      ],
     },
     {
-      id: "smtp" as const,
-      label: "邮件服务",
-      description: smtpSettings.enabled ? "当前已启用" : "当前已停用",
-      icon: Mail,
+      title: "运营",
+      items: [
+        {
+          id: "announcement",
+          label: "站内公告",
+          status: announcementSettings.enabled ? "configured" : "off",
+          icon: Megaphone,
+        },
+        { id: "checkin", label: "签到奖励", status: "configured", icon: Gift },
+      ],
     },
     {
-      id: "checkin" as const,
-      label: "签到奖励",
-      description: `每日 +${checkInSettings.dailyCredits} 积分`,
-      icon: Gift,
-    },
-    {
-      id: "announcement" as const,
-      label: "站内公告",
-      description: announcementSettings.enabled ? "当前已启用" : "当前已停用",
-      icon: Megaphone,
-    },
-    {
-      id: "canvas" as const,
-      label: "无限画布",
-      description: canvasSettings.enabled ? "当前已启用" : "当前已停用",
-      icon: Frame,
-    },
-    {
-      id: "generation" as const,
-      label: "生成并发",
-      description: `图片 ${generationSettings.maxActiveImageTasksPerUser} / 视频 ${generationSettings.maxActiveVideoTasksPerUser}`,
-      icon: Gauge,
+      title: "容量与限制",
+      items: [
+        {
+          id: "generation",
+          label: "生成并发",
+          status: isGenerationDefault ? "default" : "configured",
+          icon: Gauge,
+        },
+        {
+          id: "canvas",
+          label: "无限画布",
+          status: isCanvasDefault ? "default" : "configured",
+          icon: Frame,
+        },
+      ],
     },
   ];
 
@@ -123,32 +200,31 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
       </header>
 
       <div className={styles.layout}>
-        <aside className={styles.nav}>
-          <header className={styles.navHeader}>
-            <h2 className={styles.navTitle}>设置分类</h2>
-          </header>
-          <nav className={styles.navList} aria-label="系统设置分类">
-            {sections.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  href={`/admin/settings?section=${item.id}`}
-                  className={clsx(styles.navLink, section === item.id && styles.navLinkActive)}
-                  aria-current={section === item.id ? "page" : undefined}
-                >
-                  <span className={styles.navIcon}>
+        <nav className={styles.nav} aria-label="系统设置分类">
+          {groups.map((group) => (
+            <div key={group.title} className={styles.navGroup}>
+              <h2 className={styles.navTitle}>{group.title}</h2>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = section === item.id;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/admin/settings?section=${item.id}`}
+                    className={clsx(styles.navLink, isActive && styles.navLinkActive)}
+                    aria-current={isActive ? "page" : undefined}
+                  >
                     <Icon size={15} aria-hidden="true" />
-                  </span>
-                  <span className={styles.navCopy}>
-                    <strong>{item.label}</strong>
-                    <span>{item.description}</span>
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
+                    <span className={styles.navLabel}>{item.label}</span>
+                    <span className={clsx(styles.navStatus, statusClasses[item.status])}>
+                      {statusLabels[item.status]}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
 
         <section className={styles.content}>
           {section === "payment" ? <EasyPaySettingsForm initialSettings={easyPaySettings} /> : null}

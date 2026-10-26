@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { DocsSettingsForm } from "@/features/admin/docs-settings-form";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { DocsConfig } from "@/types/admin";
 import { defaultDocs } from "./default-docs";
@@ -9,6 +10,7 @@ import { defaultDocs } from "./default-docs";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDocsPage() {
+  await requireAdmin();
   // Java 未保存过文档时返回空对象，此时用默认模板。
   const savedDocs = await requestJava<Partial<DocsConfig>>("/admin/settings/docs");
   const hasSavedDocs = Boolean(savedDocs.title) && Array.isArray(savedDocs.groups);

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { GalleryReview } from "@/features/admin/gallery-review";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type {
@@ -85,6 +86,7 @@ function href(input: HrefInput) {
 }
 
 export default async function AdminGalleryPage(props: AdminGalleryPageProps) {
+  await requireAdmin();
   const searchParams = props.searchParams;
   const params = await searchParams;
   const rawStatus = readParam(params, "status");

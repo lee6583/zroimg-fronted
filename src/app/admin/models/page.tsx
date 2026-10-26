@@ -1,4 +1,5 @@
 import { ModelManager } from "@/features/admin/model-manager";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type {
   AdminGenerationModel,
@@ -9,6 +10,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 export default async function AdminModelsPage() {
+  await requireAdmin();
   const [models, catalog, connections] = await Promise.all([
     requestJava<AdminGenerationModel[]>("/generation/admin/models"),
     requestJava<GenerationModelCatalogItem[]>("/generation/admin/models/catalog"),

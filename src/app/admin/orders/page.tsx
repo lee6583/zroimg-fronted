@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { AdminRechargeOrderPage } from "@/types/admin";
 import { orderDisplayStatusLabels } from "@/utils/order-status";
@@ -53,6 +54,7 @@ function statusClass(status: string) {
 }
 
 export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
+  await requireAdmin();
   const searchParams = props.searchParams;
 
   const params = await searchParams;

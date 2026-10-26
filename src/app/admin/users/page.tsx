@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { UserActions } from "@/features/admin/user-actions";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { AdminUserPage } from "@/types/admin";
 import styles from "./users-page.module.css";
@@ -40,6 +41,7 @@ function roleLabel(role: string) {
 }
 
 export default async function AdminUsersPage(props: AdminUsersPageProps) {
+  await requireAdmin();
   const params = await props.searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");

@@ -3,6 +3,7 @@ import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { AdminTicketPage } from "@/types/admin";
 import { feedbackTypeLabels } from "@/utils/feedback";
@@ -58,6 +59,7 @@ function filterHref(input: { q?: string; status?: string; type?: string; pageSiz
 }
 
 export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
+  await requireAdmin();
   const params = await props.searchParams;
   const q = readParam(params, "q")?.trim();
   const status = readParam(params, "status");

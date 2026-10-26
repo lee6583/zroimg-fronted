@@ -3,6 +3,7 @@ import { ArrowLeft, MessageSquareText, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FeedbackActions } from "@/features/admin/feedback-actions";
+import { requireAdmin } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type { AdminTicket } from "@/types/admin";
 import type { FeedbackStatus } from "@/utils/feedback";
@@ -56,6 +57,7 @@ function readStatusClassName(status: string) {
 }
 
 export default async function AdminTicketDetailPage(props: AdminTicketDetailPageProps) {
+  await requireAdmin();
   const params = await props.params;
   const ticket = await loadTicket(params.id);
   if (!ticket) notFound();

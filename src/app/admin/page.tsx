@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { AdminOverview, GenerationQueueStats } from "@/types/admin";
 import { feedbackStatusLabels } from "@/utils/feedback";
@@ -20,6 +21,7 @@ import styles from "./admin.module.css";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  await requireAdmin();
   const [overview, queue] = await Promise.all([
     requestJava<AdminOverview>("/dashboard/admin/overview"),
     requestJava<GenerationQueueStats>("/generation/admin/queue/stats"),

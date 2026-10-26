@@ -12,6 +12,7 @@ import {
 } from "@/features/admin/generation-task";
 import { UserActions } from "@/features/admin/user-actions";
 import { UserGenerationLimits } from "@/features/admin/user-generation-limits";
+import { requireAdmin } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type {
   AdminGenerationTaskPage,
@@ -66,6 +67,7 @@ async function loadUser(id: string) {
 }
 
 export default async function AdminUserDetailPage(props: AdminUserDetailPageProps) {
+  await requireAdmin();
   const params = await props.params;
   const id = params.id;
   const profile = await loadUser(id);

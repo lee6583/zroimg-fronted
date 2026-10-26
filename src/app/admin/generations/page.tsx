@@ -12,6 +12,7 @@ import {
   readTaskType,
   taskStatusLabels,
 } from "@/features/admin/generation-task";
+import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { AdminGenerationTaskPage } from "@/types/admin";
 
@@ -65,6 +66,7 @@ function statusClass(status: string) {
 }
 
 export default async function AdminGenerationsPage(props: AdminGenerationsPageProps) {
+  await requireAdmin();
   const searchParams = props.searchParams;
 
   const params = await searchParams;
