@@ -81,24 +81,19 @@ chmod 600 /opt/zroimg/backend-prod/.env
 
 ## Nginx
 
-复制并按服务器证书路径检查 `nginx.prod.conf.example`，让 Nginx 转发：
+服务器使用宿主机 nginx（非容器），站点配置见 `nginx.prod.conf.example`，部署在 `/etc/nginx/sites-available/zroimg.com`：
 
 ```text
-zroimg.com/api/*  -> zroimg-backend-prod:8080（去掉 /api 前缀，浏览器接口直连 Java）
-zroimg.com/*      -> zroimg-frontend-prod:3000（页面，Next 服务端渲染）
-api.zroimg.com    -> zroimg-backend-prod:8080（支付回调等外部调用）
+zroimg.com/api/*  -> 127.0.0.1:18081（去掉 /api 前缀，浏览器接口直连 Java）
+zroimg.com/*      -> 127.0.0.1:13000（页面，Next 服务端渲染）
+api.zroimg.com    -> 127.0.0.1:18081（支付回调等外部调用）
 ```
 
-浏览器接口与页面同域，Java 设置的登录 Cookie 可以直接生效，前端不再有接口转发层。
-
-Nginx、前端和后端必须加入同一个 `zroimg_default` 网络。MySQL、Redis、前端和后端都不要发布宿主机公网端口。
-
-更新配置后执行：
-
-```bash
-docker exec nginx nginx -t
-docker exec nginx nginx -s reload
-```
+- `zroimg.com` 经过 Cloudflare 代理，`snippets/zroimg-cloudflare-realip.conf` 只信任 Cloudflare 网段传来的 `CF-Connecting-IP`，后端限流和日志拿到的是用户真实 IP。Cloudflare 网段变化时重新生成该文件。
+- `snippets/zroimg-proxy.conf` 统一设置 `Host`、`X-Real-IP`、`X-Forwarded-*`。
+- 证书由 certbot webroot（`/var/www/letsencrypt`）签发，续期后由 `renewal-hooks/deploy/reload-nginx.sh` 重载 nginx。
+- 前端、后端、MySQL（`zroimg-mysql-prod`）、Redis（`zroimg-redis-prod`）都在 `zroimg_default` 网络；只有前后端绑定 `127.0.0.1` 端口，数据库不发布宿主机端口。MySQL/Redis 的 compose 在 `/opt/zroimg/infra`。
+- 部署账号 `zroimgdeploy` 在 docker 组，sudo 只允许 `nginx -t` 和 `systemctl reload nginx`。
 
 ## 发布方式
 
