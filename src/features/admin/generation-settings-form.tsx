@@ -152,11 +152,19 @@ export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
           />
         </div>
         <div className={workspace.formGrid}>
-          <Field label="服务器图片并发" hint="由 GENERATION_IMAGE_CONCURRENCY 配置" isGroup>
-            <span className={workspace.readonlyValue}>{settings.imageConcurrency}</span>
+          <Field
+            label="服务器图片并发"
+            hint="0 表示不限制，由 GENERATION_IMAGE_CONCURRENCY 配置"
+            isGroup
+          >
+            <span className={workspace.readonlyValue}>{settings.imageConcurrency || "不限制"}</span>
           </Field>
-          <Field label="服务器视频并发" hint="由 GENERATION_VIDEO_CONCURRENCY 配置" isGroup>
-            <span className={workspace.readonlyValue}>{settings.videoConcurrency}</span>
+          <Field
+            label="服务器视频并发"
+            hint="0 表示不限制，由 GENERATION_VIDEO_CONCURRENCY 配置"
+            isGroup
+          >
+            <span className={workspace.readonlyValue}>{settings.videoConcurrency || "不限制"}</span>
           </Field>
         </div>
       </Advanced>

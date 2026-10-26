@@ -236,21 +236,24 @@ export default async function AdminPage(props: AdminPageProps) {
                     <div className={styles.queue__head}>
                       <span className={styles.queue__label}>{row.label}</span>
                       <span className={styles.queue__numbers}>
-                        运行 <strong>{row.processing}</strong> / {row.concurrency}
+                        运行 <strong>{row.processing}</strong>
+                        {row.concurrency > 0 ? ` / ${row.concurrency}` : " · 不限制"}
                         <span className={styles.queue__divider} aria-hidden="true" />
                         排队 <strong>{row.pending}</strong>
                       </span>
                     </div>
-                    <div
-                      className={styles.queue__bar}
-                      role="meter"
-                      aria-label={`${row.label}并发占用`}
-                      aria-valuemin={0}
-                      aria-valuemax={row.concurrency}
-                      aria-valuenow={row.processing}
-                    >
-                      <span style={{ width: `${percent}%` }} />
-                    </div>
+                    {row.concurrency > 0 ? (
+                      <div
+                        className={styles.queue__bar}
+                        role="meter"
+                        aria-label={`${row.label}并发占用`}
+                        aria-valuemin={0}
+                        aria-valuemax={row.concurrency}
+                        aria-valuenow={row.processing}
+                      >
+                        <span style={{ width: `${percent}%` }} />
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
