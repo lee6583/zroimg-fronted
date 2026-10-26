@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { HoverText } from "@/components/ui/hover-text";
 import { Clock3, ImageOff } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -295,12 +296,11 @@ export default async function HistoryPage(props: HistoryPageProps) {
                           </div>
                         </td>
                         <td className={clsx(table.dataTable__start, styles.history__cellPrompt)}>
-                          <h2
+                          <HoverText
+                            as="h2"
                             className={clsx(table.dataTable__ellipsis, styles.history__prompt)}
-                            title={task.prompt}
-                          >
-                            {task.prompt}
-                          </h2>
+                            text={task.prompt}
+                          />
                           {task.failReason ? (
                             <p
                               className={clsx(table.dataTable__ellipsis, styles.history__error)}

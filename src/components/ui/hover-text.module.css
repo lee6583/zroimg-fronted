@@ -1,0 +1,20 @@
+.hoverText {
+  min-width: 0;
+}
+
+.hoverText__popover {
+  position: fixed;
+  z-index: 1200;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  padding: 0.625rem 0.75rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+  pointer-events: none;
+}

@@ -64,6 +64,9 @@
   border-radius: 0.375rem;
   background: var(--panel);
   padding: 0.25rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
 }
 
 .appSelect__option {

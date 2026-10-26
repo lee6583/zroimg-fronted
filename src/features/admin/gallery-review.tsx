@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { HoverText } from "@/components/ui/hover-text";
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -240,9 +241,7 @@ export function GalleryReview(props: GalleryReviewProps) {
                   </div>
 
                   {hasTitle ? <p className={styles.review__title}>{title}</p> : null}
-                  <p className={styles.review__prompt} title={item.prompt}>
-                    {item.prompt}
-                  </p>
+                  <HoverText as="p" className={styles.review__prompt} text={item.prompt} />
 
                   {hasReason && item.rejectReason ? (
                     <p className={styles.review__reason}>原因：{item.rejectReason}</p>

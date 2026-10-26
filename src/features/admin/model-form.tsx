@@ -546,19 +546,16 @@ export function ModelForm(props: ModelFormProps) {
   function renderProviderModelControl() {
     if (discoveredForConnection.length) {
       return (
-        <select
-          className={workspace.formField}
+        <AppSelect
           value={form.providerModelCode}
-          onChange={(event) => selectProviderModel(event.target.value)}
-        >
-          <option value="">从可用模型中选择</option>
-          {discoveredForConnection.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.id}
-              {item.ownedBy ? ` · ${item.ownedBy}` : ""}
-            </option>
-          ))}
-        </select>
+          onChange={selectProviderModel}
+          placeholder="从可用模型中选择"
+          triggerClassName={workspace.selectTrigger}
+          options={discoveredForConnection.map((item) => ({
+            value: item.id,
+            label: item.ownedBy ? `${item.id} · ${item.ownedBy}` : item.id,
+          }))}
+        />
       );
     }
 

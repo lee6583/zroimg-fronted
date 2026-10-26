@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { HoverText } from "@/components/ui/hover-text";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
@@ -199,12 +200,10 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                       </td>
                       <td>
                         <div className={workspace.primaryCell}>
-                          <span
+                          <HoverText
                             className={clsx(workspace.truncate, workspace.taskPrompt)}
-                            title={task.prompt}
-                          >
-                            {task.prompt}
-                          </span>
+                            text={task.prompt}
+                          />
                           {task.failReason ? (
                             <span
                               className={clsx(workspace.secondaryText, workspace.truncate)}
