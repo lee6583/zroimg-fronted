@@ -19,6 +19,7 @@ type HistoryImageActionsProps = {
   downloadFileName: string;
   showPublish?: boolean;
   placement?: "default" | "result";
+  media?: "image" | "video";
 };
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
@@ -30,6 +31,11 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
   const downloadFileName = props.downloadFileName;
   const showPublish = props.showPublish ?? true;
   const placement = props.placement ?? "default";
+  const isVideo = props.media === "video";
+  let downloadLabel = "下载图片";
+  if (isVideo) {
+    downloadLabel = "下载视频";
+  }
 
   const [isOpen, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -87,7 +93,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
       )}
     >
       <div className={styles.historyImageActions__row}>
-        {showPublish ? (
+        {showPublish && !isVideo ? (
           <PublishGalleryButton
             generatedImageId={generatedImageId}
             initialStatus={galleryStatus}
@@ -95,23 +101,25 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           />
         ) : null}
 
-        <button
-          type="button"
-          aria-label="收藏到合集"
-          title={isFavorited ? "已收藏" : "收藏到合集"}
-          onClick={openPanel}
-          className={clsx(
-            styles.historyImageActions__iconButton,
-            placement === "result" && styles.historyImageActions__iconButtonResult,
-            isFavorited && styles.historyImageActions__iconButtonActive,
-          )}
-        >
-          <Star size={13} fill={isFavorited ? "currentColor" : "none"} />
-        </button>
+        {isVideo ? null : (
+          <button
+            type="button"
+            aria-label="收藏到合集"
+            title={isFavorited ? "已收藏" : "收藏到合集"}
+            onClick={openPanel}
+            className={clsx(
+              styles.historyImageActions__iconButton,
+              placement === "result" && styles.historyImageActions__iconButtonResult,
+              isFavorited && styles.historyImageActions__iconButtonActive,
+            )}
+          >
+            <Star size={13} fill={isFavorited ? "currentColor" : "none"} />
+          </button>
+        )}
 
         <a
-          aria-label="下载图片"
-          title="下载图片"
+          aria-label={downloadLabel}
+          title={downloadLabel}
           href={downloadUrl}
           download={downloadFileName}
           className={clsx(

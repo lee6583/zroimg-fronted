@@ -4,15 +4,24 @@ import { Clock3, ImageOff } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
 import table from "@/components/ui/data-table.module.css";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { taskStatusLabels } from "@/features/generation/generation-model";
+import { VideoLightbox } from "@/components/ui/video-lightbox";
+import { isTaskPending, taskStatusLabels } from "@/features/generation/generation-model";
+import { HistoryDeleteButton } from "@/features/history/history-delete-button";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
+import { HistoryRow, HistoryTable } from "@/features/history/history-table";
 import { TaskPoller } from "@/features/history/task-poller";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationResult, GenerationTask, GenerationTaskQuery } from "@/types/generation";
-import { getImageResolutionLabel } from "@/utils/generation-quality";
+import {
+  getDeleteText,
+  getDownloadName,
+  getDurationText,
+  getResolutionText,
+  isVideoTask,
+} from "@/utils/history";
 import { userAssetDownloadUrl } from "@/utils/media";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
@@ -33,7 +42,6 @@ type HistoryItem = {
 
 const defaultPageSize = 10;
 const pageSizes = [10, 20, 50];
-const emptyPage: PageResult<GenerationTask> = { total: 0, pages: 0, list: [] };
 
 function readParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -150,23 +158,18 @@ export default async function HistoryPage(props: HistoryPageProps) {
   const rawPage = normalizePage(readParam(params, "page"));
   const currentPageSize = normalizePageSize(readParam(params, "pageSize"));
   const range = getTimeRange(from, to);
-  const shouldShowImages = media === "all" || media === "image";
 
   await requireUser();
-  let tasksPromise = Promise.resolve(emptyPage);
-  if (shouldShowImages) {
-    const query: GenerationTaskQuery = {
-      ...range,
-      pageNo: rawPage,
-      pageSize: currentPageSize,
-      modelType: "image",
-    };
-    tasksPromise = requestJava<PageResult<GenerationTask>>("/generation/user/tasks", {
-      params: query,
-    });
+  const query: GenerationTaskQuery = {
+    ...range,
+    pageNo: rawPage,
+    pageSize: currentPageSize,
+  };
+  if (media !== "all") {
+    query.modelType = media;
   }
   const [taskPage, collections] = await Promise.all([
-    tasksPromise,
+    requestJava<PageResult<GenerationTask>>("/generation/user/tasks", { params: query }),
     requestJava<FavoriteCollection[]>("/favorite/user/collections"),
   ]);
   const historyItems = toHistoryItems(taskPage.list);
@@ -190,7 +193,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
   if (media === "video") {
     emptyTitle = "还没有视频创作记录";
-    emptyText = "视频历史数据源还没有接入，后端完成后会在这里展示。";
+    emptyText = "描述一个画面，生成第一段视频。";
     emptyHref = "/video";
     emptyAction = "去创作视频";
   }
@@ -207,119 +210,146 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
       {historyItems.length > 0 ? (
         <>
-          <section className={table.dataTable__card} aria-label="历史作品">
-            <table className={clsx(table.dataTable, styles.history__table)}>
-              <colgroup>
-                <col className={styles.history__colImage} />
-                <col />
-                <col className={styles.history__colModel} />
-                <col className={styles.history__colShort} />
-                <col className={styles.history__colShort} />
-                <col className={styles.history__colShort} />
-                <col className={styles.history__colStatus} />
-                <col className={styles.history__colTime} />
-                <col className={styles.history__colActions} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>图片</th>
-                  <th className={table.dataTable__start}>提示词</th>
-                  <th>模型</th>
-                  <th>分辨率</th>
-                  <th>比例</th>
-                  <th>消耗</th>
-                  <th>状态</th>
-                  <th>时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historyItems.map((item) => {
-                  const task = item.task;
-                  const result = item.result;
-                  const extension = task.format || "png";
-                  const fileName = `zroimg-${task.taskNo}-${item.index + 1}.${extension}`;
-                  const modelName = task.modelName || task.modelCode;
+          <HistoryTable>
+            <section className={table.dataTable__card} aria-label="历史作品">
+              <table className={clsx(table.dataTable, styles.history__table)}>
+                <colgroup>
+                  <col className={styles.history__colImage} />
+                  <col />
+                  <col className={styles.history__colModel} />
+                  <col className={styles.history__colShort} />
+                  <col className={styles.history__colShort} />
+                  <col className={styles.history__colShort} />
+                  <col className={styles.history__colStatus} />
+                  <col className={styles.history__colTime} />
+                  <col className={styles.history__colActions} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>作品</th>
+                    <th className={table.dataTable__start}>提示词</th>
+                    <th>模型</th>
+                    <th>分辨率</th>
+                    <th>比例</th>
+                    <th>消耗</th>
+                    <th>状态</th>
+                    <th>时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyItems.map((item) => {
+                    const task = item.task;
+                    const result = item.result;
+                    const isVideo = isVideoTask(task);
+                    const fileName = getDownloadName(task, item.index);
+                    const modelName = task.modelName || task.modelCode;
+                    const duration = getDurationText(task);
+                    let kind: "image" | "video" = "image";
+                    if (isVideo) {
+                      kind = "video";
+                    }
 
-                  return (
-                    <tr key={item.id}>
-                      <td>
-                        <div className={styles.history__preview}>
-                          {result ? (
-                            <ImageLightbox
-                              src={result.resultUrl}
-                              alt={task.prompt}
-                              width={768}
-                              height={768}
-                              imageClassName={styles.history__image}
-                            />
-                          ) : (
-                            <div className={styles.history__placeholder}>
-                              <ImageOff size={18} />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className={table.dataTable__start}>
-                        <h2
-                          className={clsx(table.dataTable__ellipsis, styles.history__prompt)}
-                          title={task.prompt}
-                        >
-                          {task.prompt}
-                        </h2>
-                        {task.failReason ? (
-                          <p
-                            className={clsx(table.dataTable__ellipsis, styles.history__error)}
-                            title={task.failReason}
+                    return (
+                      <HistoryRow key={item.id} taskNo={task.taskNo}>
+                        <td>
+                          <div className={styles.history__preview}>
+                            {result && isVideo ? (
+                              <VideoLightbox src={result.resultUrl} label={task.prompt} />
+                            ) : null}
+                            {result && !isVideo ? (
+                              <ImageLightbox
+                                src={result.resultUrl}
+                                alt={task.prompt}
+                                width={768}
+                                height={768}
+                                imageClassName={styles.history__image}
+                              />
+                            ) : null}
+                            {result ? null : (
+                              <div className={styles.history__placeholder}>
+                                <ImageOff size={18} />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className={table.dataTable__start}>
+                          <h2
+                            className={clsx(table.dataTable__ellipsis, styles.history__prompt)}
+                            title={task.prompt}
                           >
-                            {task.failReason}
-                          </p>
-                        ) : null}
-                      </td>
-                      <td className={table.dataTable__muted}>
-                        <span className={table.dataTable__ellipsis} title={modelName}>
-                          {modelName}
-                        </span>
-                      </td>
-                      <td className={table.dataTable__muted}>
-                        {getImageResolutionLabel(task.quality ?? "-")}
-                      </td>
-                      <td className={table.dataTable__muted}>{task.ratio || "-"}</td>
-                      <td className={table.dataTable__num}>{getUnitPoints(task)}</td>
-                      <td>
-                        <span
-                          className={clsx(
-                            styles.history__status,
-                            task.status === "succeeded" && styles.history__statusSuccess,
-                            task.status === "failed" && styles.history__statusDanger,
-                          )}
-                        >
-                          {taskStatusLabels[task.status]}
-                        </span>
-                      </td>
-                      <td className={table.dataTable__time}>{formatTime(task.createTime)}</td>
-                      <td>
-                        <div className={table.dataTable__actions}>
-                          {result ? (
-                            <HistoryImageActions
-                              generatedImageId={result.id}
-                              galleryStatus={result.galleryStatus}
-                              galleryReason={result.galleryRejectReason}
-                              collections={collections}
-                              downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
-                              downloadFileName={fileName}
+                            {task.prompt}
+                          </h2>
+                          {task.failReason ? (
+                            <p
+                              className={clsx(table.dataTable__ellipsis, styles.history__error)}
+                              title={task.failReason}
+                            >
+                              {task.failReason}
+                            </p>
+                          ) : null}
+                        </td>
+                        <td className={table.dataTable__muted}>
+                          <span className={table.dataTable__ellipsis} title={modelName}>
+                            {modelName}
+                          </span>
+                        </td>
+                        <td className={table.dataTable__muted}>
+                          <span className={table.dataTable__ellipsis}>
+                            {getResolutionText(task)}
+                          </span>
+                          {duration ? (
+                            <span
+                              className={clsx(table.dataTable__ellipsis, styles.history__duration)}
+                            >
+                              {duration}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className={table.dataTable__muted}>{task.ratio || "-"}</td>
+                        <td className={table.dataTable__num}>{getUnitPoints(task)}</td>
+                        <td>
+                          <span
+                            className={clsx(
+                              styles.history__status,
+                              task.status === "succeeded" && styles.history__statusSuccess,
+                              task.status === "failed" && styles.history__statusDanger,
+                            )}
+                          >
+                            {taskStatusLabels[task.status]}
+                          </span>
+                        </td>
+                        <td className={table.dataTable__time}>{formatTime(task.createTime)}</td>
+                        <td>
+                          <div className={table.dataTable__actions}>
+                            {result ? (
+                              <HistoryImageActions
+                                generatedImageId={result.id}
+                                galleryStatus={result.galleryStatus}
+                                galleryReason={result.galleryRejectReason}
+                                collections={collections}
+                                downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                                downloadFileName={fileName}
+                                media={kind}
+                              />
+                            ) : null}
+                            {result ? null : (
+                              <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
+                            )}
+                            <HistoryDeleteButton
+                              taskNo={task.taskNo}
+                              content={getDeleteText(task)}
+                              isRunning={isTaskPending(task)}
                             />
-                          ) : (
-                            <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </section>
+                          </div>
+                        </td>
+                      </HistoryRow>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </section>
+          </HistoryTable>
 
           <AppPagination current={currentPage} pageSize={currentPageSize} total={total} />
         </>

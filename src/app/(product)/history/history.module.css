@@ -184,7 +184,7 @@
 }
 
 .history__table {
-  min-width: 60rem;
+  min-width: 62rem;
 }
 
 .history__colImage {
@@ -208,7 +208,7 @@
 }
 
 .history__colActions {
-  width: 12.5rem;
+  width: 14.75rem;
 }
 
 .history__preview {
@@ -273,6 +273,12 @@
 .history__statusDanger {
   background: color-mix(in oklab, var(--danger) 12%, var(--panel));
   color: var(--danger);
+}
+
+.history__duration {
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .history__error {

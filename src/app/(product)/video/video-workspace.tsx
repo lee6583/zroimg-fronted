@@ -194,19 +194,19 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   if (props.initialModels.length > 0 && selected) {
     content = (
       <div className={styles.videoPage__split}>
-        <section className={styles.videoPage__stage} style={frameStyle(selected.ratio)}>
+        {/* 主视频与信息共用一个 key：切换作品时整体替换，不会残留上一个视频帧 */}
+        <section
+          key={selected.taskNo}
+          className={styles.videoPage__stage}
+          style={frameStyle(selected.ratio)}
+        >
           <VideoFrame
-            key={selected.taskNo}
             task={selected}
             isRetrying={retryingNo === selected.taskNo}
             retryMessage={retry?.taskNo === selected.taskNo ? retry.message : ""}
             onRetry={() => retryTask(selected)}
           />
-          <VideoInfo
-            key={selected.taskNo}
-            task={selected}
-            actions={<DownloadLink task={selected} />}
-          />
+          <VideoInfo task={selected} actions={<DownloadLink task={selected} />} />
         </section>
 
         <aside className={styles.videoPage__rail} aria-label="全部作品">

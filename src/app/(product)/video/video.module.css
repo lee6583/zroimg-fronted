@@ -595,6 +595,11 @@
     overflow-y: auto;
     padding: 0 1rem 1.25rem;
     scroll-snap-type: none;
+    scrollbar-width: none;
+  }
+
+  .videoPage__railList::-webkit-scrollbar {
+    display: none;
   }
 
   .videoPage__loadMore {

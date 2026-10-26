@@ -48,10 +48,18 @@ function fetchTask(taskNo: string) {
   });
 }
 
+function deleteTask(taskNo: string) {
+  return request<null>({
+    url: `/api/generation/user/tasks/${encodeURIComponent(taskNo)}`,
+    method: "DELETE",
+  });
+}
+
 export const generationTasksApi = {
   fetchModels,
   estimatePrice,
   createTask,
   fetchTasks,
   fetchTask,
+  deleteTask,
 };

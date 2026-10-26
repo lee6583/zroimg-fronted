@@ -37,12 +37,14 @@
   background: var(--soft);
 }
 
-.appPagination :global(.ant-pagination-item-active) {
+/* 需要高于上面通用 .ant-pagination-item 规则的优先级，否则当前页是白底白字 */
+.appPagination :global(.ant-pagination .ant-pagination-item.ant-pagination-item-active),
+.appPagination :global(.ant-pagination .ant-pagination-item.ant-pagination-item-active:hover) {
   border-color: var(--foreground);
   background: var(--foreground);
 }
 
-.appPagination :global(.ant-pagination-item-active a) {
+.appPagination :global(.ant-pagination .ant-pagination-item.ant-pagination-item-active a) {
   color: var(--background);
 }
 
