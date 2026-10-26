@@ -411,7 +411,7 @@ type BatchApproveGalleryResult = {
 type GalleryReviewStats = Record<GalleryStatus, number>;
 
 // generation models / provider connections
-type GenerationModelAdapter = "openai" | "grok";
+type GenerationModelAdapter = "openai" | "grok" | "gemini";
 
 type GenerationModelType = "image" | "video";
 

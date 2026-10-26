@@ -53,6 +53,13 @@ type ProviderConnectionPanelProps = {
 const adapterLabels: Record<GenerationModelAdapter, string> = {
   openai: "OpenAI",
   grok: "Grok",
+  gemini: "Gemini",
+};
+
+const baseUrlPlaceholders: Record<GenerationModelAdapter, string> = {
+  openai: "https://example.com/v1",
+  grok: "https://api.x.ai/v1",
+  gemini: "https://generativelanguage.googleapis.com",
 };
 
 function emptyForm(): ConnectionForm {
@@ -404,7 +411,7 @@ export function ProviderConnectionPanel(props: ProviderConnectionPanelProps) {
                     className={workspace.formField}
                     type="url"
                     value={form.apiBaseUrl}
-                    placeholder="https://example.com/v1"
+                    placeholder={baseUrlPlaceholders[form.adapter]}
                     onChange={(event) => updateForm({ apiBaseUrl: event.target.value })}
                   />
                 </Field>
