@@ -50,20 +50,24 @@ export function supportsMode(model: GenerationModel, mode: GenerationMode) {
   return model.supportModes.includes(mode);
 }
 
-export function getDefaultOptions(models: GenerationModel[]): GenerationOptions {
-  const model = models.find((item) => item.defaultFlag === 1) ?? models[0];
+/** 没有可用于文生图/图生图的模型时返回 null（例如管理员尚未配置模型）。 */
+export function findDefaultOptions(models: GenerationModel[]): GenerationOptions | null {
+  const usable = models.filter((item) => {
+    return imageModes.some((mode) => supportsMode(item, mode));
+  });
+  const model = usable.find((item) => item.defaultFlag === 1) ?? usable[0];
   if (!model) {
-    throw new Error("暂无可用图片模型");
+    return null;
   }
 
   const params = model.supportParams;
   const defaults = params.defaults;
-  let mode = imageModes.find((item) => item === defaults.mode);
+  let mode = imageModes.find((item) => item === defaults.mode && supportsMode(model, item));
   if (!mode) {
     mode = imageModes.find((item) => supportsMode(model, item));
   }
   if (!mode) {
-    throw new Error("图片模型缺少生成模式配置");
+    return null;
   }
 
   return {
@@ -73,6 +77,15 @@ export function getDefaultOptions(models: GenerationModel[]): GenerationOptions 
     quality: defaults.quality ?? params.qualities[0] ?? "",
     count: defaults.count ?? params.counts[0] ?? 1,
   };
+}
+
+export function getDefaultOptions(models: GenerationModel[]): GenerationOptions {
+  const options = findDefaultOptions(models);
+  if (!options) {
+    throw new Error("暂无可用图片模型");
+  }
+
+  return options;
 }
 
 export function normalizeOptions(

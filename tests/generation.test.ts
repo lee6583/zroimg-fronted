@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  findDefaultOptions,
   getDefaultOptions,
   isTaskPending,
   normalizeOptions,
@@ -80,4 +81,11 @@ test("pending 和 processing 视为进行中", () => {
   assert.equal(isTaskPending({ status: "pending" }), true);
   assert.equal(isTaskPending({ status: "processing" }), true);
   assert.equal(isTaskPending({ status: "failed" }), false);
+});
+
+test("no usable image model yields no default options instead of throwing", () => {
+  assert.equal(findDefaultOptions([]), null);
+  const inpaintOnly = { ...model, supportModes: ["inpaint" as const] };
+  assert.equal(findDefaultOptions([inpaintOnly]), null);
+  assert.throws(() => getDefaultOptions([]), /暂无可用图片模型/);
 });

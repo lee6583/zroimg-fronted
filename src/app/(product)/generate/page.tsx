@@ -2,11 +2,12 @@ import { cookies } from "next/headers";
 import { GenerateForm } from "@/features/generation/generate-form";
 import {
   activeConversationCookieName,
-  getDefaultOptions,
+  findDefaultOptions,
   resolveActiveConversationId,
 } from "@/features/generation/generation-model";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
+import { GenerateUnavailable } from "./generate-unavailable";
 import type { FavoriteCollection } from "@/types/favorites";
 import type {
   GenerationConversation,
@@ -24,7 +25,11 @@ export default async function GeneratePage() {
     requestJava<GenerationConversation[]>("/generation/user/conversations"),
     requestJava<FavoriteCollection[]>("/favorite/user/collections"),
   ]);
-  const options = getDefaultOptions(models);
+  const options = findDefaultOptions(models);
+  if (!options) {
+    return <GenerateUnavailable />;
+  }
+
   const cookieStore = await cookies();
   const rememberedId = cookieStore.get(activeConversationCookieName)?.value;
   const activeId = resolveActiveConversationId(conversations, rememberedId);
