@@ -124,11 +124,17 @@ type GenerationSettingsConfig = {
   maxActiveVideoTasksPerUser: number;
   imageConcurrency: number;
   videoConcurrency: number;
+  autoRetryEnabled?: boolean;
+  maxRetries?: number;
+  retryOnImageReadTimeout?: boolean;
 };
 
 type SaveGenerationSettingsRequest = {
   maxActiveImageTasksPerUser: number;
   maxActiveVideoTasksPerUser: number;
+  autoRetryEnabled: boolean;
+  maxRetries: number;
+  retryOnImageReadTimeout: boolean;
 };
 
 // auth AdminUserVO
@@ -329,6 +335,22 @@ type AdminGenerationTask = {
   createTime: string;
   updateTime: string | null;
   finishTime: string | null;
+  attemptCount?: number;
+  maxAttempts?: number;
+  retrying?: boolean;
+  nextAttemptTime?: string | null;
+  lastError?: string | null;
+};
+
+// generation GenerationTaskAttemptVO
+type AdminTaskAttempt = {
+  attemptNo: number;
+  retryable: boolean;
+  errorCategory: string | null;
+  httpStatus: number | null;
+  errorMessage: string | null;
+  startedTime: string | null;
+  finishedTime: string | null;
 };
 
 type GenerationQueueStats = {
@@ -621,6 +643,7 @@ export type {
   TicketOperationResponse,
   AdminTaskResult,
   AdminGenerationTask,
+  AdminTaskAttempt,
   AdminGenerationTaskPage,
   GenerationQueueStats,
   AdminDashboardKpi,

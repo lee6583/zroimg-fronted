@@ -17,6 +17,10 @@ test("Java video statuses map to UI stages", () => {
   assert.equal(getVideoStage("succeeded"), "completed");
   assert.equal(getVideoStage("failed"), "failed");
   assert.equal(getVideoStage("toString"), "idle");
+  assert.equal(getVideoStage("pending", true), "retrying");
+  assert.equal(getVideoStage("processing", true), "retrying");
+  assert.equal(getVideoStage("failed", true), "failed");
+  assert.equal(isVideoRunning("retrying"), true);
   assert.equal(isVideoRunning("queued"), true);
   assert.equal(isVideoRunning("generating"), true);
   assert.equal(isVideoRunning("completed"), false);

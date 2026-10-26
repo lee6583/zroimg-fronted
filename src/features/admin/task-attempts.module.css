@@ -1,0 +1,92 @@
+.attempts__trigger {
+  border: 0;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.attempts__trigger:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.attempts__triggerActive {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.attempts__popover {
+  width: min(40rem, calc(100vw - 2rem));
+}
+
+.attempts__state {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.attempts__danger {
+  color: var(--danger);
+}
+
+.attempts__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attempts__item {
+  display: grid;
+  grid-template-columns: 3.6rem 7.4rem 4.6rem 4.2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  border-top: 1px solid var(--line);
+  padding: 0.5rem 0;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.attempts__item:first-child {
+  border-top: 0;
+}
+
+.attempts__no {
+  font-weight: 650;
+}
+
+.attempts__muted {
+  overflow: hidden;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+}
+
+.attempts__message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attempts__tag {
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.attempts__tagRetry {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.attempts__tagFinal {
+  background: color-mix(in oklab, var(--danger) 12%, var(--panel));
+  color: var(--danger);
+}

@@ -1,4 +1,4 @@
-import type { GenerationTaskStatus } from "@/types/generation";
+import type { GenerationTaskRetry, GenerationTaskStatus } from "@/types/generation";
 
 type CanvasBoard = {
   id: string;
@@ -47,6 +47,8 @@ type CanvasGeneratorData = {
   status: GenerationTaskStatus | null;
   failReason: string | null;
   resultsApplied: boolean;
+  // 仅运行时：轮询到的自动重试进度，不会保存
+  retry?: GenerationTaskRetry;
 };
 
 type CanvasNoteData = {

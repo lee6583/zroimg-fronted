@@ -6,10 +6,13 @@ import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { AppSelect } from "@/components/ui/app-select";
-import { modeLabels, taskStatusLabels } from "@/features/generation/generation-model";
+import { modeLabels } from "@/features/generation/generation-model";
+import { useClock } from "@/features/generation/use-clock";
+import type { CanvasGeneratorData } from "@/types/canvas";
 import { getErrorMessage } from "@/utils/error";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { userAssetUrl } from "@/utils/media";
+import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { useCanvasActions } from "../canvas-context";
 import {
   generatorNodeWidth,
@@ -24,6 +27,10 @@ import {
 } from "../canvas-model";
 import { useCanvasStore, useCanvasStoreApi } from "../canvas-store";
 import styles from "../canvas-editor.module.css";
+
+type RetryTextProps = {
+  data: CanvasGeneratorData;
+};
 
 type Estimate = {
   points: number | null;
@@ -130,10 +137,8 @@ export function CanvasGeneratorNode(props: NodeProps<GeneratorNode>) {
     }
   }
 
-  let statusText = "";
-  if (data.status) {
-    statusText = taskStatusLabels[data.status];
-  }
+  const status = data.status;
+  const isRetrying = isPending && isTaskRetrying({ ...data.retry, status: status ?? "" });
 
   let priceText = "";
   if (estimate.points !== null) {
@@ -165,16 +170,17 @@ export function CanvasGeneratorNode(props: NodeProps<GeneratorNode>) {
           <Sparkles size={14} />
           {modeLabels[mode]}
         </span>
-        {statusText ? (
+        {status ? (
           <span
             className={clsx(
               styles.badge,
               isPending && styles.badgeActive,
-              data.status === "failed" && styles.badgeDanger,
+              isRetrying && styles.badgeWarning,
+              status === "failed" && styles.badgeDanger,
             )}
           >
             {isPending ? <LoaderCircle size={12} className={styles.spin} /> : null}
-            {statusText}
+            {isRetrying ? <RetryText data={data} /> : getTaskStatusLabel({ status })}
           </span>
         ) : null}
       </header>
@@ -283,4 +289,12 @@ export function CanvasGeneratorNode(props: NodeProps<GeneratorNode>) {
       />
     </div>
   );
+}
+
+// 重试等待期间每秒刷新倒计时
+function RetryText(props: RetryTextProps) {
+  const data = props.data;
+  const now = useClock();
+
+  return getTaskStatusLabel({ ...data.retry, status: data.status ?? "" }, now || undefined);
 }

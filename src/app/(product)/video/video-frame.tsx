@@ -3,8 +3,10 @@
 import clsx from "clsx";
 import { CircleAlert, RotateCcw } from "lucide-react";
 import type { CSSProperties, TransitionEvent } from "react";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
+import { useClock } from "@/features/generation/use-clock";
 import type { VideoTask } from "@/types/video";
+import { getRetryLabel, isTaskRetrying } from "@/utils/task-status";
 import {
   formatElapsed,
   getVideoStage,
@@ -31,38 +33,6 @@ type ElapsedProps = {
 
 type VideoState = "loading" | "ready" | "error";
 
-const listeners = new Set<() => void>();
-let clockNow = 0;
-let clockTimer: number | null = null;
-
-// 所有进行中的任务共用一个 1 秒时钟，最后一个订阅者卸载时停止
-function subscribeClock(listener: () => void) {
-  listeners.add(listener);
-  if (clockTimer === null) {
-    clockNow = Date.now();
-    clockTimer = window.setInterval(() => {
-      clockNow = Date.now();
-      listeners.forEach((item) => item());
-    }, 1000);
-  }
-
-  return () => {
-    listeners.delete(listener);
-    if (listeners.size === 0 && clockTimer !== null) {
-      window.clearInterval(clockTimer);
-      clockTimer = null;
-    }
-  };
-}
-
-function getClock() {
-  return clockNow;
-}
-
-function getServerClock() {
-  return 0;
-}
-
 export function frameStyle(ratio: string) {
   const size = parseRatio(ratio) ?? { width: 16, height: 9 };
   return {
@@ -74,7 +44,7 @@ export function frameStyle(ratio: string) {
 export function VideoFrame(props: VideoFrameProps) {
   const task = props.task;
   const compact = props.compact ?? false;
-  const stage = getVideoStage(task.status);
+  const stage = getVideoStage(task.status, isTaskRetrying(task));
   const isRunning = isVideoRunning(stage);
   const resultUrl = task.results[0]?.resultUrl ?? "";
   const hasVideo = stage === "completed" && Boolean(resultUrl);
@@ -82,6 +52,10 @@ export function VideoFrame(props: VideoFrameProps) {
   const [isCoverGone, setCoverGone] = useState(false);
   const isReady = hasVideo && videoState === "ready";
   const reason = shortFailReason(task.failReason);
+  let title = videoStageLabels[stage];
+  if (stage === "retrying") {
+    title = getRetryLabel(task);
+  }
 
   function hideCover(event: TransitionEvent<HTMLDivElement>) {
     if (event.target === event.currentTarget && isReady) {
@@ -165,7 +139,7 @@ export function VideoFrame(props: VideoFrameProps) {
                   aria-hidden
                 />
                 <p className={styles.frame__title} role="status">
-                  {videoStageLabels[stage]}
+                  {title}
                   <Elapsed createTime={task.createTime} />
                 </p>
                 {compact ? null : <p className={styles.frame__hint}>{videoStageHints[stage]}</p>}
@@ -196,7 +170,7 @@ function durationText(value: number | null) {
 }
 
 function Elapsed(props: ElapsedProps) {
-  const now = useSyncExternalStore(subscribeClock, getClock, getServerClock);
+  const now = useClock();
   const start = parseJavaTime(props.createTime);
 
   if (!now || start === null) {

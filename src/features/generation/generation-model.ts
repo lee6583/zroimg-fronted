@@ -3,7 +3,6 @@ import type {
   GenerationMode,
   GenerationModel,
   GenerationTask,
-  GenerationTaskStatus,
 } from "@/types/generation";
 
 export type GenerationOptions = {
@@ -33,13 +32,6 @@ export const modeLabels: Record<GenerationMode, string> = {
   text_to_image: "文生图",
   image_to_image: "图生图",
   inpaint: "局部重绘",
-};
-
-export const taskStatusLabels: Record<GenerationTaskStatus, string> = {
-  pending: "排队中",
-  processing: "生成中",
-  succeeded: "已完成",
-  failed: "失败",
 };
 
 export function isTaskPending(task: Pick<GenerationTask, "status">) {

@@ -75,6 +75,9 @@ const canvasDefaults = {
 const generationDefaults = {
   image: 3,
   video: 1,
+  autoRetry: true,
+  maxRetries: 3,
+  readTimeoutRetry: false,
 };
 
 function isSameCanvas(settings: CanvasSettingsConfig) {
@@ -139,7 +142,13 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
   const isCanvasDefault = isSameCanvas(canvasSettings);
   const isGenerationDefault =
     generationSettings.maxActiveImageTasksPerUser === generationDefaults.image &&
-    generationSettings.maxActiveVideoTasksPerUser === generationDefaults.video;
+    generationSettings.maxActiveVideoTasksPerUser === generationDefaults.video &&
+    (generationSettings.autoRetryEnabled ?? generationDefaults.autoRetry) ===
+      generationDefaults.autoRetry &&
+    (generationSettings.maxRetries ?? generationDefaults.maxRetries) ===
+      generationDefaults.maxRetries &&
+    (generationSettings.retryOnImageReadTimeout ?? generationDefaults.readTimeoutRetry) ===
+      generationDefaults.readTimeoutRetry;
 
   // 第二步：组装分组导航。
   const groups: SectionGroup[] = [

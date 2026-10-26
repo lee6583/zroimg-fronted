@@ -4,17 +4,23 @@ import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import {
+  hasTaskRetries,
   isTaskRunning,
+  readTaskAttempts,
+  readTaskError,
   readTaskModel,
   readTaskOutputCount,
   readTaskSource,
   readTaskSpec,
+  readTaskStatus,
   readTaskType,
   taskStatusLabels,
 } from "@/features/admin/generation-task";
+import { TaskAttempts } from "@/features/admin/task-attempts";
 import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
-import type { AdminGenerationTaskPage } from "@/types/admin";
+import type { AdminGenerationTask, AdminGenerationTaskPage } from "@/types/admin";
+import { isTaskRetrying } from "@/utils/task-status";
 
 export const dynamic = "force-dynamic";
 
@@ -58,8 +64,10 @@ function href(input: HrefInput) {
   return query ? `/admin/generations?${query}` : "/admin/generations";
 }
 
-function statusClass(status: string) {
+function statusClass(task: AdminGenerationTask) {
+  const status = task.status;
   if (status === "succeeded") return workspace.statusSuccess;
+  if (isTaskRetrying(task)) return workspace.statusWarning;
   if (isTaskRunning(status)) return workspace.statusInfo;
   if (status === "failed") return workspace.statusDanger;
   return undefined;
@@ -159,6 +167,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                 <col className={workspace.colXs} />
                 <col className={workspace.colLg} />
                 <col className={workspace.colSm} />
+                <col className={workspace.colXs} />
                 <col className={workspace.colStatus} />
                 <col className={workspace.colTime} />
               </colgroup>
@@ -170,6 +179,7 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                   <th>来源</th>
                   <th>模型配置</th>
                   <th>消耗 / 输出</th>
+                  <th>重试</th>
                   <th>状态</th>
                   <th>创建时间</th>
                 </tr>
@@ -224,8 +234,22 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                         </div>
                       </td>
                       <td>
-                        <span className={clsx(workspace.status, statusClass(task.status))}>
-                          {taskStatusLabels[task.status] ?? task.status}
+                        {(task.attemptCount ?? 0) > 0 ? (
+                          <TaskAttempts
+                            taskNo={task.taskNo}
+                            label={hasTaskRetries(task) ? readTaskAttempts(task) : "—"}
+                            isActive={hasTaskRetries(task)}
+                          />
+                        ) : (
+                          <span className={workspace.secondaryText}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span
+                          className={clsx(workspace.status, statusClass(task))}
+                          title={readTaskError(task)}
+                        >
+                          {readTaskStatus(task)}
                         </span>
                       </td>
                       <td className={workspace.dateText}>{formatDate(task.createTime)}</td>

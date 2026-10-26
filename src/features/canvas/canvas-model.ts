@@ -12,6 +12,7 @@ import type {
   CreateGenerationTaskRequest,
   GenerationMode,
   GenerationModel,
+  GenerationTaskRetry,
 } from "@/types/generation";
 
 type ImageNode = Node<CanvasImageData, "image">;
@@ -311,6 +312,28 @@ export function isTaskWaiting(data: CanvasGeneratorData) {
   return Boolean(data.taskNo) && isActive && !data.resultsApplied;
 }
 
+export function readRetry(task: GenerationTaskRetry): GenerationTaskRetry | undefined {
+  if (!task.retrying) {
+    return undefined;
+  }
+
+  return {
+    attemptCount: task.attemptCount,
+    maxAttempts: task.maxAttempts,
+    retrying: true,
+    nextAttemptTime: task.nextAttemptTime,
+  };
+}
+
+export function isSameRetry(a?: GenerationTaskRetry, b?: GenerationTaskRetry) {
+  return (
+    a?.retrying === b?.retrying &&
+    a?.attemptCount === b?.attemptCount &&
+    a?.maxAttempts === b?.maxAttempts &&
+    a?.nextAttemptTime === b?.nextAttemptTime
+  );
+}
+
 export function isGeneratorPending(node: CanvasNode) {
   if (node.type !== "generator") {
     return false;
@@ -355,7 +378,10 @@ function toSceneNode(node: CanvasNode): CanvasSceneNode | null {
   }
 
   if (node.type === "generator") {
-    return { id: node.id, type: "generator", position, data: { ...node.data } };
+    // 重试进度只在运行时展示，不进入场景
+    const data = { ...node.data };
+    delete data.retry;
+    return { id: node.id, type: "generator", position, data };
   }
 
   return { id: node.id, type: "note", position, data: { text: node.data.text } };

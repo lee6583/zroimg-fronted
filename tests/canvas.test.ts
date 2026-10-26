@@ -12,9 +12,11 @@ import {
   getPendingTasks,
   getUpstreamImage,
   imageNodeWidth,
+  isSameRetry,
   isValidConnection,
   pickCover,
   placeResults,
+  readRetry,
   resolveOptions,
   resultGap,
   sceneFromFlow,
@@ -213,4 +215,27 @@ test("只轮询未落图的进行中任务", () => {
   const fresh = createGeneratorNode(base, options);
 
   assert.deepEqual(getPendingTasks([waiting, done, fresh]), [{ nodeId: waiting.id, taskNo: "t1" }]);
+});
+
+test("重试中的任务继续轮询，重试进度不进入场景", () => {
+  const retry = readRetry({
+    attemptCount: 1,
+    maxAttempts: 4,
+    retrying: true,
+    nextAttemptTime: null,
+  });
+  const node = createGeneratorNode({ x: 0, y: 0 }, options, {
+    taskNo: "t1",
+    status: "pending",
+    retry,
+  });
+
+  assert.deepEqual(getPendingTasks([node]), [{ nodeId: node.id, taskNo: "t1" }]);
+  assert.equal(readRetry({ attemptCount: 1, retrying: false }), undefined);
+  assert.equal(isSameRetry(retry, { ...retry }), true);
+  assert.equal(isSameRetry(retry, undefined), false);
+  assert.equal(isSameRetry(undefined, undefined), true);
+
+  const scene = sceneFromFlow([node], [], { x: 0, y: 0, zoom: 1 });
+  assert.equal("retry" in scene.nodes[0].data, false);
 });

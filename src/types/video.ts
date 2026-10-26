@@ -86,6 +86,10 @@ type VideoTask = {
   createTime: string;
   updateTime: string | null;
   finishTime: string | null;
+  attemptCount?: number;
+  maxAttempts?: number;
+  retrying?: boolean;
+  nextAttemptTime?: string | null;
 };
 
 type VideoTaskPage = PageResult<VideoTask>;

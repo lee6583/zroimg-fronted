@@ -1,6 +1,6 @@
 import type { VideoTaskStatus } from "@/types/video";
 
-export type VideoStage = "idle" | "queued" | "generating" | "completed" | "failed";
+export type VideoStage = "idle" | "queued" | "generating" | "retrying" | "completed" | "failed";
 
 export type VideoRatio = {
   width: number;
@@ -18,6 +18,7 @@ export const videoStageLabels: Record<VideoStage, string> = {
   idle: "",
   queued: "排队中",
   generating: "正在生成视频",
+  retrying: "重试中",
   completed: "已完成",
   failed: "视频生成失败",
 };
@@ -26,6 +27,7 @@ export const videoStageHints: Record<VideoStage, string> = {
   idle: "",
   queued: "任务已提交，等待开始生成",
   generating: "AI 正在构建画面与运动",
+  retrying: "上次请求未成功，正在自动重试",
   completed: "",
   failed: "",
 };
@@ -33,15 +35,20 @@ export const videoStageHints: Record<VideoStage, string> = {
 const defaultFailReason = "生成未完成，请稍后重试";
 const javaTimePattern = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/;
 
-export function getVideoStage(status: string | null | undefined): VideoStage {
+export function getVideoStage(status: string | null | undefined, retrying = false): VideoStage {
   if (!status || !Object.hasOwn(stageByStatus, status)) {
     return "idle";
   }
-  return stageByStatus[status as VideoTaskStatus];
+
+  const stage = stageByStatus[status as VideoTaskStatus];
+  if (retrying && isVideoRunning(stage)) {
+    return "retrying";
+  }
+  return stage;
 }
 
 export function isVideoRunning(stage: VideoStage) {
-  return stage === "queued" || stage === "generating";
+  return stage === "queued" || stage === "generating" || stage === "retrying";
 }
 
 // Java LocalDateTime 不带时区，按浏览器本地时间解析

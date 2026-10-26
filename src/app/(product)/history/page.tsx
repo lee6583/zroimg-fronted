@@ -5,7 +5,7 @@ import { AppPagination } from "@/components/ui/app-pagination";
 import table from "@/components/ui/data-table.module.css";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { VideoLightbox } from "@/components/ui/video-lightbox";
-import { isTaskPending, taskStatusLabels } from "@/features/generation/generation-model";
+import { isTaskPending } from "@/features/generation/generation-model";
 import { HistoryDeleteButton } from "@/features/history/history-delete-button";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
 import { HistoryRow, HistoryTable } from "@/features/history/history-table";
@@ -23,6 +23,7 @@ import {
   isVideoTask,
 } from "@/utils/history";
 import { userAssetDownloadUrl } from "@/utils/media";
+import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
 
@@ -314,9 +315,10 @@ export default async function HistoryPage(props: HistoryPageProps) {
                               styles.history__status,
                               task.status === "succeeded" && styles.history__statusSuccess,
                               task.status === "failed" && styles.history__statusDanger,
+                              isTaskRetrying(task) && styles.history__statusWarning,
                             )}
                           >
-                            {taskStatusLabels[task.status]}
+                            {getTaskStatusLabel(task)}
                           </span>
                         </td>
                         <td className={table.dataTable__time}>{formatTime(task.createTime)}</td>
@@ -334,7 +336,16 @@ export default async function HistoryPage(props: HistoryPageProps) {
                               />
                             ) : null}
                             {result ? null : (
-                              <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
+                              <TaskPoller
+                                taskNo={task.taskNo}
+                                initialTask={{
+                                  status: task.status,
+                                  attemptCount: task.attemptCount,
+                                  maxAttempts: task.maxAttempts,
+                                  retrying: task.retrying,
+                                  nextAttemptTime: task.nextAttemptTime,
+                                }}
+                              />
                             )}
                             <HistoryDeleteButton
                               taskNo={task.taskNo}

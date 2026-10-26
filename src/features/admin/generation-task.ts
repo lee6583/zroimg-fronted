@@ -1,4 +1,5 @@
 import type { AdminGenerationTask } from "@/types/admin";
+import { isTaskRetrying } from "@/utils/task-status";
 
 const taskStatusLabels: Record<string, string> = {
   pending: "生成中",
@@ -9,6 +10,27 @@ const taskStatusLabels: Record<string, string> = {
 
 function isTaskRunning(status: string) {
   return status === "pending" || status === "processing";
+}
+
+function readTaskStatus(task: AdminGenerationTask) {
+  if (isTaskRetrying(task)) return "重试中";
+  return taskStatusLabels[task.status] ?? task.status;
+}
+
+// 失败或重试中的任务用最近一次错误作为状态提示
+function readTaskError(task: AdminGenerationTask) {
+  const isActive = task.status === "failed" || isTaskRetrying(task);
+  if (!isActive) return undefined;
+  return task.lastError || task.failReason || undefined;
+}
+
+function hasTaskRetries(task: AdminGenerationTask) {
+  return (task.attemptCount ?? 0) > 1;
+}
+
+function readTaskAttempts(task: AdminGenerationTask) {
+  const count = task.attemptCount ?? 0;
+  return `${count}/${task.maxAttempts ?? count}`;
 }
 
 function readTaskType(task: AdminGenerationTask) {
@@ -38,7 +60,11 @@ function readTaskOutputCount(task: AdminGenerationTask) {
 }
 
 export {
+  hasTaskRetries,
   isTaskRunning,
+  readTaskAttempts,
+  readTaskError,
+  readTaskStatus,
   readTaskModel,
   readTaskOutputCount,
   readTaskSource,

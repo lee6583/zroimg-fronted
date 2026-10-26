@@ -5,10 +5,11 @@ import { notFound } from "next/navigation";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
   isTaskRunning,
+  readTaskError,
   readTaskModel,
   readTaskSpec,
+  readTaskStatus,
   readTaskType,
-  taskStatusLabels,
 } from "@/features/admin/generation-task";
 import workspace from "@/features/admin/admin-workspace.module.css";
 import { UserActions } from "@/features/admin/user-actions";
@@ -237,8 +238,9 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                             styles.userDetail__status,
                             generationStatusClass(task.status),
                           )}
+                          title={readTaskError(task)}
                         >
-                          {taskStatusLabels[task.status] || task.status}
+                          {readTaskStatus(task)}
                         </span>
                       </td>
                       <td className={workspace.dateText}>{formatDate(task.createTime)}</td>

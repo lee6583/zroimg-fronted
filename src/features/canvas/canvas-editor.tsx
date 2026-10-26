@@ -42,11 +42,13 @@ import {
   getPendingTasks,
   getUpstreamImage,
   imageNodeWidth,
+  isSameRetry,
   isTaskWaiting,
   isValidConnection,
   noteNodeWidth,
   pickCover,
   placeResults,
+  readRetry,
   resolveOptions,
   resultGap,
   sceneFromFlow,
@@ -140,14 +142,18 @@ function applyTask(store: CanvasStore, nodeId: string, task: GenerationTask) {
     const edges = images.map((image) => createEdge(node.id, image.id));
 
     // 第三步：标记已落图，避免重复添加。
-    const patch = { status: task.status, failReason: null, resultsApplied: true };
+    const patch = { status: task.status, failReason: null, resultsApplied: true, retry: undefined };
     state.patchNode(nodeId, patch, images, edges);
     return;
   }
 
-  const isChanged = task.status !== node.data.status || task.failReason !== node.data.failReason;
+  const retry = readRetry(task);
+  const isChanged =
+    task.status !== node.data.status ||
+    task.failReason !== node.data.failReason ||
+    !isSameRetry(retry, node.data.retry);
   if (isChanged) {
-    state.patchNode(nodeId, { status: task.status, failReason: task.failReason });
+    state.patchNode(nodeId, { status: task.status, failReason: task.failReason, retry });
   }
 }
 
@@ -401,7 +407,12 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       state.updateData(nodeId, options);
       try {
         const task = await generationTasksApi.createTask(request);
-        const patch = { taskNo: task.taskNo, status: "pending", failReason: null };
+        const patch = {
+          taskNo: task.taskNo,
+          status: "pending",
+          failReason: null,
+          retry: undefined,
+        };
         store.getState().patchNode(nodeId, { ...patch, resultsApplied: false });
         applyTask(store, nodeId, task);
         setBalance((current) => Math.max(0, current - task.requiredPoints));

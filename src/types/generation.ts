@@ -95,6 +95,18 @@ type GenerationTask = {
   createTime: string;
   updateTime: string | null;
   finishTime: string | null;
+  attemptCount?: number;
+  maxAttempts?: number;
+  retrying?: boolean;
+  nextAttemptTime?: string | null;
+};
+
+// 自动重试进度；后端未返回时按未重试处理
+type GenerationTaskRetry = {
+  attemptCount?: number;
+  maxAttempts?: number;
+  retrying?: boolean;
+  nextAttemptTime?: string | null;
 };
 
 type GenerationTaskQuery = {
@@ -184,6 +196,7 @@ export type {
   GenerationPriceEstimate,
   GenerationResult,
   GenerationTask,
+  GenerationTaskRetry,
   GenerationTaskQuery,
   CreateGenerationTaskRequest,
   GenerationConversationTaskSummary,

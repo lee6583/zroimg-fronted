@@ -2,29 +2,45 @@
 
 import { useEffect, useState } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
-import { isTaskPending, taskStatusLabels } from "@/features/generation/generation-model";
-import type { GenerationTaskStatus } from "@/types/generation";
+import { isTaskPending } from "@/features/generation/generation-model";
+import type { GenerationTask } from "@/types/generation";
+import { getTaskStatusLabel } from "@/utils/task-status";
 import styles from "./task-poller.module.css";
+
+type PollerTask = Pick<
+  GenerationTask,
+  "status" | "attemptCount" | "maxAttempts" | "retrying" | "nextAttemptTime"
+>;
 
 type TaskPollerProps = {
   taskNo: string;
-  initialStatus: GenerationTaskStatus;
+  initialTask: PollerTask;
 };
+
+function pickTask(task: PollerTask): PollerTask {
+  return {
+    status: task.status,
+    attemptCount: task.attemptCount,
+    maxAttempts: task.maxAttempts,
+    retrying: task.retrying,
+    nextAttemptTime: task.nextAttemptTime,
+  };
+}
 
 export function TaskPoller(props: TaskPollerProps) {
   const taskNo = props.taskNo;
-  const initialStatus = props.initialStatus;
 
-  const [status, setStatus] = useState(initialStatus);
+  const [task, setTask] = useState(props.initialTask);
+  const status = task.status;
 
   useEffect(() => {
     if (!isTaskPending({ status })) return;
 
     const timer = window.setInterval(async () => {
       try {
-        const task = await generationTasksApi.fetchTask(taskNo);
-        setStatus(task.status);
-        if (!isTaskPending(task)) {
+        const nextTask = await generationTasksApi.fetchTask(taskNo);
+        setTask(pickTask(nextTask));
+        if (!isTaskPending(nextTask)) {
           window.location.reload();
         }
       } catch {
@@ -34,5 +50,5 @@ export function TaskPoller(props: TaskPollerProps) {
     return () => window.clearInterval(timer);
   }, [status, taskNo]);
 
-  return <span className={styles.taskPoller__badge}>{taskStatusLabels[status]}</span>;
+  return <span className={styles.taskPoller__badge}>{getTaskStatusLabel(task)}</span>;
 }

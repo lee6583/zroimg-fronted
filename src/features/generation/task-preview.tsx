@@ -7,7 +7,9 @@ import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationTask } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { userAssetDownloadUrl } from "@/utils/media";
-import { isTaskPending, taskStatusLabels } from "./generation-model";
+import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
+import { isTaskPending } from "./generation-model";
+import { useClock } from "./use-clock";
 import styles from "./generate-form.module.css";
 
 type TaskPreviewProps = {
@@ -19,6 +21,11 @@ type TaskPreviewProps = {
 type TaskMessageProps = {
   task: GenerationTask;
   collections: FavoriteCollection[];
+};
+
+type TaskMetaProps = {
+  task: GenerationTask;
+  detail: string;
 };
 
 const promptSuggestions = ["一只在星空下弹吉他的猫", "未来城市的日落景色", "水彩风格的樱花园"];
@@ -85,8 +92,13 @@ function TaskMessage(props: TaskMessageProps) {
   const results = task.results ?? [];
   const hasImages = results.length > 0;
   const isWaiting = isTaskPending(task);
+  const isRetrying = isTaskRetrying(task);
   const quality = getImageResolutionLabel(task.quality ?? "");
-  const metaText = `${taskStatusLabels[task.status]} · ${quality} · ${task.ratio} · ${task.count} 张 · ${task.requiredPoints} 积分`;
+  const detail = `${quality} · ${task.ratio} · ${task.count} 张 · ${task.requiredPoints} 积分`;
+  let waitText = "正在生成画面";
+  if (isRetrying) {
+    waitText = "上次请求未成功，正在自动重试";
+  }
   const extension = task.format || "png";
 
   return (
@@ -139,7 +151,13 @@ function TaskMessage(props: TaskMessageProps) {
             </div>
           ) : (
             <>
-              <p className={styles.generateForm__assistantMeta}>{metaText}</p>
+              {isRetrying ? (
+                <RetryMeta task={task} detail={detail} />
+              ) : (
+                <p className={styles.generateForm__assistantMeta}>
+                  {`${getTaskStatusLabel(task)} · ${detail}`}
+                </p>
+              )}
               {isWaiting || task.status === "failed" ? (
                 <div className={styles.generateForm__streamingRow}>
                   {isWaiting ? (
@@ -150,7 +168,7 @@ function TaskMessage(props: TaskMessageProps) {
                     </>
                   ) : null}
                   <p className={styles.generateForm__assistantText}>
-                    {isWaiting ? "正在生成画面" : "生成失败了，请调整描述后再试。"}
+                    {isWaiting ? waitText : "生成失败了，请调整描述后再试。"}
                   </p>
                 </div>
               ) : null}
@@ -160,6 +178,14 @@ function TaskMessage(props: TaskMessageProps) {
       </div>
     </div>
   );
+}
+
+// 重试等待期间每秒刷新倒计时
+function RetryMeta(props: TaskMetaProps) {
+  const now = useClock();
+  const label = getTaskStatusLabel(props.task, now || undefined);
+
+  return <p className={styles.generateForm__assistantMeta}>{`${label} · ${props.detail}`}</p>;
 }
 
 function Avatar({ type }: { type: "bot" | "user" }) {

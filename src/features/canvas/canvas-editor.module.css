@@ -300,6 +300,11 @@
   color: var(--foreground);
 }
 
+.badgeWarning {
+  border-color: color-mix(in oklab, var(--warning) 40%, transparent);
+  color: var(--warning);
+}
+
 .badgeDanger {
   border-color: color-mix(in oklab, var(--danger) 40%, transparent);
   color: var(--danger);
