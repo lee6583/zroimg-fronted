@@ -217,19 +217,9 @@
 .table th,
 .table td {
   border-bottom: 1px solid var(--line);
-  padding: 0.78rem 0.9rem;
+  padding: 0.78rem 0.75rem;
   text-align: left;
   vertical-align: middle;
-}
-
-.table th:last-child,
-.table td:last-child {
-  text-align: right;
-}
-
-.table .numCell {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .table th {
@@ -254,118 +244,70 @@
   border-bottom: 0;
 }
 
-.ordersTable th:nth-child(1) {
-  width: 16rem;
+.tableCenter th,
+.tableCenter td {
+  text-align: center;
 }
 
-.ordersTable th:nth-child(2) {
-  width: 7rem;
+.table .cellStart {
+  text-align: left;
 }
 
-.ordersTable th:nth-child(3) {
-  width: 11rem;
+.table .actionCell {
+  text-align: center;
 }
 
-.ordersTable th:nth-child(4) {
-  width: 16rem;
+.table .rowActions {
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 
-.ordersTable th:nth-child(5) {
-  width: 9rem;
-}
-
-.ordersTable th:nth-child(6) {
-  width: 11rem;
-}
-
-.ordersTable th:nth-child(7) {
-  width: 7rem;
-}
-
-.tasksTable th:nth-child(1) {
-  width: 12rem;
-}
-
-.tasksTable th:nth-child(2) {
-  width: 23rem;
-}
-
-.tasksTable th:nth-child(3) {
-  width: 7rem;
-}
-
-.tasksTable th:nth-child(4) {
+.colXs {
   width: 5rem;
 }
 
-.tasksTable th:nth-child(5) {
-  width: 14rem;
+.colSm {
+  width: 6rem;
 }
 
-.tasksTable th:nth-child(6) {
+.colMd {
   width: 8rem;
 }
 
-.tasksTable th:nth-child(7) {
-  width: 8rem;
+.colLg {
+  width: 10rem;
 }
 
-.tasksTable th:nth-child(8) {
-  width: 11rem;
-}
-
-@media (min-width: 721px) {
-  .table.tasksTable th,
-  .table.tasksTable td {
-    text-align: center;
-  }
-
-  .tasksTable .primaryCell {
-    justify-items: center;
-  }
-}
-
-.packagesTable th:nth-child(1) {
-  width: 18rem;
-}
-
-.packagesTable th:nth-child(2),
-.packagesTable th:nth-child(3),
-.packagesTable th:nth-child(4),
-.packagesTable th:nth-child(5) {
-  width: 8rem;
-}
-
-.packagesTable th:nth-child(6) {
-  width: 5.5rem;
-}
-
-.packagesTable th:nth-child(7) {
-  width: 11rem;
-}
-
-.table.modelsTable {
-  min-width: 56rem;
-}
-
-.modelsTable th:nth-child(2) {
-  width: 8rem;
-}
-
-.modelsTable th:nth-child(3) {
+.colXl {
   width: 12.5rem;
 }
 
-.modelsTable th:nth-child(4) {
-  width: 11.5rem;
+.colStatus {
+  width: 6.5rem;
 }
 
-.modelsTable th:nth-child(5) {
-  width: 5.75rem;
+.colTime {
+  width: 9rem;
 }
 
-.modelsTable th:nth-child(6) {
-  width: 10.5rem;
+.colIconAction {
+  width: 4rem;
+}
+
+.colActions {
+  width: 12rem;
+}
+
+.ticketsTable {
+  min-width: 52rem;
+}
+
+.packagesTable {
+  min-width: 60rem;
+}
+
+.table.modelsTable {
+  min-width: 64rem;
 }
 
 .priceText {
@@ -408,30 +350,6 @@
   min-height: 2rem;
 }
 
-.ticketsTable th:nth-child(1) {
-  width: 24rem;
-}
-
-.ticketsTable th:nth-child(2) {
-  width: 9rem;
-}
-
-.ticketsTable th:nth-child(3) {
-  width: 15rem;
-}
-
-.ticketsTable th:nth-child(4) {
-  width: 8rem;
-}
-
-.ticketsTable th:nth-child(5) {
-  width: 11rem;
-}
-
-.ticketsTable th:nth-child(6) {
-  width: 4rem;
-}
-
 .primaryCell {
   display: grid;
   min-width: 0;
@@ -471,8 +389,6 @@
 
 .taskPrompt {
   display: block;
-  margin-inline: auto;
-  max-width: 18rem;
 }
 
 .secondaryText {
@@ -491,7 +407,8 @@
   font-weight: 650;
 }
 
-.dateText {
+.dateText,
+.table .dateText {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1423,72 +1340,6 @@ button.selectTrigger {
   .headerActions,
   .headerActions > * {
     width: 100%;
-  }
-
-  .tableWrap {
-    overflow: visible;
-  }
-
-  .table {
-    min-width: 0;
-  }
-
-  .table thead {
-    display: none;
-  }
-
-  .table tbody {
-    display: grid;
-  }
-
-  .table tr {
-    display: grid;
-    gap: 0.65rem;
-    padding: 1rem;
-  }
-
-  .table tr + tr {
-    border-top: 1px solid var(--line);
-  }
-
-  .table td {
-    display: grid;
-    grid-template-columns: 6.5rem minmax(0, 1fr);
-    gap: 0.75rem;
-    border: 0;
-    padding: 0;
-    text-align: right;
-  }
-
-  .table td::before {
-    color: var(--muted);
-    content: attr(data-label);
-    font-size: 0.7rem;
-    font-weight: 650;
-    text-align: left;
-  }
-
-  .table td:first-child {
-    display: block;
-    padding-bottom: 0.25rem;
-    text-align: left;
-  }
-
-  .table td:first-child::before,
-  .table td:empty {
-    display: none;
-  }
-
-  .table td > * {
-    justify-self: end;
-  }
-
-  .table td:first-child > * {
-    justify-self: start;
-  }
-
-  .rowActions {
-    flex-wrap: wrap;
   }
 
   .footer {

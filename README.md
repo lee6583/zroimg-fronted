@@ -399,6 +399,7 @@ function attachMessages(ticketId: string) {
 - 页面私有样式放同目录 CSS Module；令牌只放 `src/style/tokens.css`。
 - CSS Module 使用稳定的 BEM 风格名称，例如 `docs__navLinkActive`。
 - 移动端和桌面端都必须检查文字截断、固定工具尺寸和无重叠。
+- 列表表格使用真实 `<table>`、`table-layout: fixed` 和 `<colgroup>` 统一列宽：用户端复用 `src/components/ui/data-table.module.css`，后台复用 `admin-workspace.module.css` 的 `table` 与 `col*` 列宽；时间、操作列固定宽度，长文本单行省略并带 `title`，窄屏横向滚动而不是压缩列。
 
 当前全局样式入口是 `src/style/index.css`，导航实现是 `src/components/layout/product-top-nav.tsx`，应用壳是 `src/components/layout/product-frame.tsx`。
 

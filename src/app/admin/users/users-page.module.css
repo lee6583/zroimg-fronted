@@ -102,80 +102,8 @@
   color: var(--background);
 }
 
-.usersPage__tableWrap {
-  overflow-x: auto;
-}
-
-.usersPage__table {
-  width: 100%;
-  min-width: 62rem;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.usersPage__table th,
-.usersPage__table td {
-  border-bottom: 1px solid var(--line);
-  padding: 0.75rem 0.9rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.usersPage__table th:nth-child(1),
-.usersPage__table td:nth-child(1),
-.usersPage__table th:nth-child(2),
-.usersPage__table td:nth-child(2) {
-  text-align: left;
-}
-
-.usersPage__table th:last-child,
-.usersPage__table td:last-child {
-  text-align: right;
-}
-
-.usersPage__table th {
-  background: var(--soft);
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.usersPage__table td {
-  color: var(--foreground);
-  font-size: 0.8rem;
-}
-
-.usersPage__table tbody tr:hover {
-  background: color-mix(in oklab, var(--soft) 65%, var(--panel));
-}
-
-.usersPage__table th:nth-child(1) {
-  width: 17rem;
-}
-
-.usersPage__table th:nth-child(2) {
-  width: 13rem;
-}
-
-.usersPage__table th:nth-child(3) {
-  width: 6rem;
-}
-
-.usersPage__table th:nth-child(4) {
-  width: 7rem;
-}
-
-.usersPage__table th:nth-child(5) {
-  width: 6.5rem;
-}
-
-.usersPage__table th:nth-child(6) {
-  width: 10rem;
-}
-
-.usersPage__table th:nth-child(7) {
-  width: 8.5rem;
+table.usersPage__table {
+  min-width: 60rem;
 }
 
 .usersPage__userCell {
@@ -222,11 +150,6 @@
   white-space: nowrap;
 }
 
-.usersPage__points {
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
-}
-
 .usersPage__status {
   display: inline-flex;
   align-items: center;
@@ -253,21 +176,9 @@
   color: #4ade80;
 }
 
-.usersPage__date {
-  color: var(--muted) !important;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.usersPage__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.35rem;
-}
-
 .usersPage__iconButton {
   display: inline-grid;
+  flex: 0 0 auto;
   width: 2rem;
   height: 2rem;
   place-items: center;

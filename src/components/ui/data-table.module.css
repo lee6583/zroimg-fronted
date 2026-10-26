@@ -1,0 +1,75 @@
+.dataTable__card {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.dataTable th,
+.dataTable td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 0.6rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.dataTable th {
+  background: color-mix(in oklab, var(--soft) 72%, var(--panel));
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.dataTable td {
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.dataTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.dataTable .dataTable__start {
+  text-align: left;
+}
+
+.dataTable .dataTable__muted {
+  color: var(--muted);
+}
+
+.dataTable__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.dataTable .dataTable__time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dataTable__ellipsis {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dataTable__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}

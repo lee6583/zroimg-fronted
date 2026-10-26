@@ -242,6 +242,15 @@ export function PackageManager(props: PackageManagerProps) {
         {packages.length > 0 ? (
           <div className={workspace.tableWrap}>
             <table className={clsx(workspace.table, workspace.packagesTable)}>
+              <colgroup>
+                <col />
+                <col className={workspace.colSm} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colActions} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>套餐</th>
@@ -250,26 +259,31 @@ export function PackageManager(props: PackageManagerProps) {
                   <th>状态</th>
                   <th>推荐</th>
                   <th>排序</th>
-                  <th aria-label="操作" />
+                  <th className={workspace.actionCell}>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {packages.map((packageItem) => (
                   <tr key={packageItem.id}>
-                    <td data-label="套餐">
+                    <td>
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>{packageItem.name}</span>
+                        <span className={workspace.primaryText} title={packageItem.name}>
+                          {packageItem.name}
+                        </span>
                         <span className={workspace.monoText}>{packageItem.code}</span>
-                        <span className={workspace.secondaryText}>{packageItem.description}</span>
+                        <span
+                          className={clsx(workspace.secondaryText, workspace.truncate)}
+                          title={packageItem.description ?? undefined}
+                        >
+                          {packageItem.description}
+                        </span>
                       </div>
                     </td>
-                    <td data-label="价格" className={workspace.numeric}>
-                      {packageItem.amountText}
-                    </td>
-                    <td data-label="积分" className={workspace.numeric}>
+                    <td className={workspace.numeric}>{packageItem.amountText}</td>
+                    <td className={workspace.numeric}>
                       {packageItem.credits.toLocaleString("zh-CN")}
                     </td>
-                    <td data-label="状态">
+                    <td>
                       <span
                         className={clsx(
                           workspace.status,
@@ -279,14 +293,14 @@ export function PackageManager(props: PackageManagerProps) {
                         {packageItem.enabled ? "已启用" : "已停用"}
                       </span>
                     </td>
-                    <td data-label="推荐">
+                    <td>
                       {packageItem.recommended ? (
                         <span className={workspace.badge}>推荐</span>
                       ) : (
                         <span className={workspace.secondaryText}>—</span>
                       )}
                     </td>
-                    <td data-label="排序">
+                    <td>
                       <input
                         className={workspace.sortInput}
                         aria-label={`${packageItem.name}排序`}
@@ -295,7 +309,7 @@ export function PackageManager(props: PackageManagerProps) {
                         onBlur={(event) => updateSort(packageItem, event.target.value)}
                       />
                     </td>
-                    <td data-label="操作">
+                    <td className={workspace.actionCell}>
                       <div className={workspace.rowActions}>
                         <button
                           className={workspace.iconAction}

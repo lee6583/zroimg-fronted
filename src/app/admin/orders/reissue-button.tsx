@@ -31,7 +31,7 @@ export function ReissueButton(props: ReissueButtonProps) {
   }
 
   return (
-    <div className="grid justify-items-end gap-1">
+    <div className="grid justify-items-center gap-1">
       <button
         type="button"
         className={workspace.secondaryAction}

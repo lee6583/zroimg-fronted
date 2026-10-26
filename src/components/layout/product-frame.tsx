@@ -3,8 +3,7 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Clock3,
   Clapperboard,
@@ -17,7 +16,12 @@ import {
   ReceiptText,
   Send,
   Settings,
+  FolderOpen,
+  LifeBuoy,
+  Sparkles,
+  Wallet,
 } from "lucide-react";
+import { SideNav, type NavGroup, type NavItem } from "./side-nav";
 import styles from "./shell.module.css";
 
 type AppSection =
@@ -43,77 +47,103 @@ type PendingNav = {
   key: AppSection;
 };
 
-const appNavItems: Array<{
-  key: AppSection;
-  label: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-}> = [
+const overviewItems: Array<NavItem<AppSection>> = [
   {
     key: "overview",
     label: "概览",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
+];
+
+const appNavGroups: Array<NavGroup<AppSection>> = [
   {
-    key: "generate",
-    label: "图片生成",
-    href: "/generate",
-    icon: ImagePlus,
+    key: "create",
+    label: "创作中心",
+    icon: Sparkles,
+    items: [
+      {
+        key: "generate",
+        label: "图片生成",
+        href: "/generate",
+        icon: ImagePlus,
+      },
+      {
+        key: "canvas",
+        label: "无限画布",
+        href: "/canvas",
+        icon: Frame,
+      },
+      {
+        key: "video",
+        label: "视频创作",
+        href: "/video",
+        icon: Clapperboard,
+      },
+    ],
   },
   {
-    key: "canvas",
-    label: "无限画布",
-    href: "/canvas",
-    icon: Frame,
-  },
-  {
-    key: "video",
-    label: "视频创作",
-    href: "/video",
-    icon: Clapperboard,
-  },
-  {
-    key: "history",
-    label: "创作历史",
-    href: "/history",
-    icon: Clock3,
-  },
-  {
-    key: "favorites",
-    label: "收藏合集",
-    href: "/favorites",
-    icon: FolderHeart,
-  },
-  {
-    key: "submissions",
-    label: "我的投稿",
-    href: "/submissions",
-    icon: Send,
-  },
-  {
-    key: "credits",
-    label: "积分购买",
-    href: "/credits",
-    icon: Coins,
+    key: "content",
+    label: "内容管理",
+    icon: FolderOpen,
+    items: [
+      {
+        key: "history",
+        label: "创作历史",
+        href: "/history",
+        icon: Clock3,
+      },
+      {
+        key: "favorites",
+        label: "收藏合集",
+        href: "/favorites",
+        icon: FolderHeart,
+      },
+      {
+        key: "submissions",
+        label: "我的投稿",
+        href: "/submissions",
+        icon: Send,
+      },
+    ],
   },
   {
     key: "billing",
-    label: "我的订单",
-    href: "/billing",
-    icon: ReceiptText,
+    label: "交易与资产",
+    icon: Wallet,
+    items: [
+      {
+        key: "credits",
+        label: "积分购买",
+        href: "/credits",
+        icon: Coins,
+      },
+      {
+        key: "billing",
+        label: "我的订单",
+        href: "/billing",
+        icon: ReceiptText,
+      },
+    ],
   },
   {
-    key: "tickets",
-    label: "意见反馈",
-    href: "/tickets",
-    icon: PencilLine,
-  },
-  {
-    key: "settings",
-    label: "账户设置",
-    href: "/settings",
-    icon: Settings,
+    key: "help",
+    label: "帮助与设置",
+    icon: LifeBuoy,
+    items: [
+      {
+        key: "tickets",
+        label: "意见反馈",
+        href: "/tickets",
+        icon: PencilLine,
+      },
+      {
+        key: "settings",
+        label: "账户设置",
+        href: "/settings",
+        icon: Settings,
+      },
+    ],
   },
 ];
 
@@ -141,7 +171,6 @@ export function ProductFrame(props: ProductFrameProps) {
   const children = props.children;
   const topNav = props.topNav;
   const pathname = usePathname();
-  const router = useRouter();
   const active = useMemo(() => getActiveSection(pathname), [pathname]);
   const flush = useMemo(() => getFlush(pathname), [pathname]);
   const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
@@ -162,39 +191,14 @@ export function ProductFrame(props: ProductFrameProps) {
         <div className={clsx(styles.shell__grid, flush && styles.shell__gridFlush)}>
           <aside className={styles.shell__sidebar}>
             <div className={styles.shell__sidebarInner}>
-              <nav className={styles.shell__nav}>
-                {appNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = visibleActive === item.key;
-
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      prefetch
-                      onFocus={() => router.prefetch(item.href)}
-                      onMouseEnter={() => router.prefetch(item.href)}
-                      onClick={() => setPendingNav({ href: item.href, key: item.key })}
-                      className={clsx(
-                        styles.shell__navLink,
-                        isActive && styles.shell__navLinkActive,
-                      )}
-                    >
-                      <span
-                        className={clsx(
-                          styles.shell__navIcon,
-                          isActive && styles.shell__navIconActive,
-                        )}
-                      >
-                        <Icon size={16} />
-                      </span>
-                      <span className={styles.shell__navText}>
-                        <span>{item.label}</span>
-                      </span>
-                    </Link>
-                  );
-                })}
-              </nav>
+              <SideNav
+                storageKey="zroimg.nav.user"
+                items={overviewItems}
+                groups={appNavGroups}
+                activeKey={visibleActive}
+                prefetch
+                onNavigate={(item) => setPendingNav({ href: item.href, key: item.key })}
+              />
             </div>
           </aside>
 

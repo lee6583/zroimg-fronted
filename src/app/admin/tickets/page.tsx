@@ -127,6 +127,14 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
         {tickets.length > 0 ? (
           <div className={workspace.tableWrap}>
             <table className={clsx(workspace.table, workspace.ticketsTable)}>
+              <colgroup>
+                <col />
+                <col className={workspace.colSm} />
+                <col className={workspace.colLg} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colTime} />
+                <col className={workspace.colIconAction} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>反馈主题</th>
@@ -134,7 +142,7 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
                   <th>用户</th>
                   <th>状态</th>
                   <th>最近更新</th>
-                  <th aria-label="操作" />
+                  <th className={workspace.actionCell}>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -143,31 +151,32 @@ export default async function AdminTicketsPage(props: AdminTicketsPageProps) {
 
                   return (
                     <tr key={ticket.id}>
-                      <td data-label="反馈主题">
+                      <td>
                         <div className={workspace.primaryCell}>
                           <Link
                             className={workspace.primaryText}
                             href={`/admin/tickets/${ticket.id}`}
+                            title={ticket.subject}
                           >
                             {ticket.subject}
                           </Link>
                         </div>
                       </td>
-                      <td data-label="类型">{readTypeLabel(ticket.type)}</td>
-                      <td data-label="用户">
-                        <span>{userName}</span>
+                      <td>{readTypeLabel(ticket.type)}</td>
+                      <td>
+                        <span className={workspace.truncate} title={userName}>
+                          {userName}
+                        </span>
                       </td>
-                      <td data-label="状态">
+                      <td>
                         <span
                           className={clsx(workspace.status, readStatusClassName(ticket.status))}
                         >
                           {readStatusLabel(ticket.status)}
                         </span>
                       </td>
-                      <td data-label="最近更新" className={workspace.dateText}>
-                        {formatDate(ticket.updateTime)}
-                      </td>
-                      <td data-label="操作">
+                      <td className={workspace.dateText}>{formatDate(ticket.updateTime)}</td>
+                      <td className={workspace.actionCell}>
                         <div className={workspace.rowActions}>
                           <Link
                             className={workspace.iconAction}

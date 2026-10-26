@@ -10,6 +10,7 @@ import {
   readTaskType,
   taskStatusLabels,
 } from "@/features/admin/generation-task";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { UserActions } from "@/features/admin/user-actions";
 import { UserGenerationLimits } from "@/features/admin/user-generation-limits";
 import { requireAdmin } from "@/server/auth";
@@ -181,11 +182,21 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
           </header>
 
           {tasks.length > 0 ? (
-            <div className={styles.userDetail__tableWrap}>
-              <table className={styles.userDetail__table}>
+            <div className={workspace.tableWrap}>
+              <table
+                className={clsx(workspace.table, workspace.tableCenter, styles.userDetail__table)}
+              >
+                <colgroup>
+                  <col />
+                  <col className={workspace.colXs} />
+                  <col className={workspace.colLg} />
+                  <col className={workspace.colSm} />
+                  <col className={workspace.colStatus} />
+                  <col className={workspace.colTime} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th>提示词</th>
+                    <th className={workspace.cellStart}>提示词</th>
                     <th>类型</th>
                     <th>模型配置</th>
                     <th>消耗</th>
@@ -196,7 +207,7 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td>
+                      <td className={workspace.cellStart}>
                         <div className={styles.userDetail__primaryCell}>
                           <span className={styles.userDetail__prompt} title={task.prompt}>
                             {task.prompt}
@@ -211,13 +222,13 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                       <td>{readTaskType(task)}</td>
                       <td>
                         <div className={styles.userDetail__primaryCell}>
-                          <span>{readTaskModel(task)}</span>
+                          <span className={workspace.truncate}>{readTaskModel(task)}</span>
                           <span className={styles.userDetail__secondaryText}>
                             {readTaskSpec(task)}
                           </span>
                         </div>
                       </td>
-                      <td className={styles.userDetail__number}>
+                      <td className={workspace.numeric}>
                         {task.requiredPoints.toLocaleString("zh-CN")} 积分
                       </td>
                       <td>
@@ -230,7 +241,7 @@ export default async function AdminUserDetailPage(props: AdminUserDetailPageProp
                           {taskStatusLabels[task.status] || task.status}
                         </span>
                       </td>
-                      <td className={styles.userDetail__date}>{formatDate(task.createTime)}</td>
+                      <td className={workspace.dateText}>{formatDate(task.createTime)}</td>
                     </tr>
                   ))}
                 </tbody>

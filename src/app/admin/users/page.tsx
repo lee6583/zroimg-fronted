@@ -3,6 +3,7 @@ import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import workspace from "@/features/admin/admin-workspace.module.css";
 import { UserActions } from "@/features/admin/user-actions";
 import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
@@ -102,23 +103,34 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
         </div>
 
         {users.length > 0 ? (
-          <div className={styles.usersPage__tableWrap}>
-            <table className={styles.usersPage__table}>
+          <div className={workspace.tableWrap}>
+            <table
+              className={clsx(workspace.table, workspace.tableCenter, styles.usersPage__table)}
+            >
+              <colgroup>
+                <col />
+                <col className={workspace.colLg} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colTime} />
+                <col className={workspace.colActions} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>用户</th>
-                  <th>用户 ID</th>
+                  <th className={workspace.cellStart}>用户</th>
+                  <th className={workspace.cellStart}>用户 ID</th>
                   <th>角色</th>
                   <th>积分余额</th>
                   <th>状态</th>
                   <th>注册时间</th>
-                  <th aria-label="操作" />
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td>
+                    <td className={workspace.cellStart}>
                       <div className={styles.usersPage__userCell}>
                         <UserAvatar
                           name={user.username}
@@ -127,20 +139,22 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
                           decorative
                         />
                         <div>
-                          <Link href={`/admin/users/${user.id}`}>{user.username}</Link>
-                          <span className={styles.usersPage__userMeta}>
+                          <Link href={`/admin/users/${user.id}`} title={user.username}>
+                            {user.username}
+                          </Link>
+                          <span className={styles.usersPage__userMeta} title={user.email}>
                             {user.email || "未填写邮箱"}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td className={workspace.cellStart}>
                       <span className={styles.usersPage__id} title={user.id}>
                         {user.id}
                       </span>
                     </td>
                     <td>{roleLabel(user.role)}</td>
-                    <td className={styles.usersPage__points}>
+                    <td className={workspace.numeric}>
                       {user.totalPoints.toLocaleString("zh-CN")}
                     </td>
                     <td>
@@ -155,9 +169,9 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
                         {user.status === "active" ? "正常" : "已封禁"}
                       </span>
                     </td>
-                    <td className={styles.usersPage__date}>{formatDate(user.createdAt)}</td>
+                    <td className={workspace.dateText}>{formatDate(user.createdAt)}</td>
                     <td>
-                      <div className={styles.usersPage__actions}>
+                      <div className={workspace.rowActions}>
                         <Link
                           className={styles.usersPage__iconButton}
                           href={`/admin/users/${user.id}`}

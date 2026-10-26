@@ -118,7 +118,16 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
 
         {orders.length > 0 ? (
           <div className={workspace.tableWrap}>
-            <table className={clsx(workspace.table, workspace.ordersTable)}>
+            <table className={workspace.table}>
+              <colgroup>
+                <col />
+                <col className={workspace.colMd} />
+                <col className={workspace.colLg} />
+                <col className={workspace.colXl} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colTime} />
+                <col className={workspace.colLg} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>订单号</th>
@@ -127,28 +136,36 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                   <th>支付信息</th>
                   <th>状态</th>
                   <th>时间</th>
-                  <th aria-label="操作" />
+                  <th className={workspace.actionCell}>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.map((order) => (
                   <tr key={order.orderNo}>
-                    <td data-label="订单号">
+                    <td>
                       <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>{order.orderNo}</span>
+                        <span className={workspace.primaryText} title={order.orderNo}>
+                          {order.orderNo}
+                        </span>
                         <span className={workspace.secondaryText}>充值订单</span>
                       </div>
                     </td>
-                    <td data-label="用户">{order.username || "未知用户"}</td>
-                    <td data-label="套餐">
+                    <td>
+                      <span className={workspace.truncate} title={order.username ?? undefined}>
+                        {order.username || "未知用户"}
+                      </span>
+                    </td>
+                    <td>
                       <div className={workspace.primaryCell}>
-                        <span>{order.packageName || "自定义充值"}</span>
+                        <span className={workspace.truncate}>
+                          {order.packageName || "自定义充值"}
+                        </span>
                         <span className={workspace.secondaryText}>
                           {order.credits.toLocaleString("zh-CN")} 积分
                         </span>
                       </div>
                     </td>
-                    <td data-label="支付信息">
+                    <td>
                       <div className={workspace.primaryCell}>
                         <span className={workspace.numeric}>{order.amountText}</span>
                         <span className={workspace.secondaryText}>
@@ -161,7 +178,7 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                         ) : null}
                       </div>
                     </td>
-                    <td data-label="状态">
+                    <td>
                       <div className={workspace.primaryCell}>
                         <span className={clsx(workspace.status, statusClass(order.displayStatus))}>
                           {readStatusLabel(order.displayStatus)}
@@ -176,10 +193,8 @@ export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
                         ) : null}
                       </div>
                     </td>
-                    <td data-label="时间">
-                      <span className={workspace.dateText}>{formatDateText(order.createTime)}</span>
-                    </td>
-                    <td data-label="操作">
+                    <td className={workspace.dateText}>{formatDateText(order.createTime)}</td>
+                    <td className={workspace.actionCell}>
                       <div className={workspace.rowActions}>
                         {order.creditsStatus === "failed" ? (
                           <ReissueButton orderNo={order.orderNo} />

@@ -182,11 +182,12 @@ export function ModelManager(props: ModelManagerProps) {
     const isEnabled = model.status === "enabled";
     const isVerified = model.verificationStatus === "verified";
     const price = pricingText(model);
+    const capabilities = capabilitiesText(model);
     const isBound = model.connectionId !== null;
 
     return (
       <tr key={model.id}>
-        <td data-label="模型">
+        <td>
           <div className={workspace.primaryCell}>
             <div className={workspace.modelIdentity}>
               <span className={workspace.primaryText} title={model.modelName}>
@@ -202,7 +203,7 @@ export function ModelManager(props: ModelManagerProps) {
             </span>
           </div>
         </td>
-        <td data-label="连接">
+        <td>
           {isBound ? (
             <div className={workspace.primaryCell}>
               <span className={workspace.truncate} title={model.connectionName ?? undefined}>
@@ -214,13 +215,17 @@ export function ModelManager(props: ModelManagerProps) {
             <span className={clsx(workspace.badge, workspace.badgeWarning)}>未绑定连接</span>
           )}
         </td>
-        <td data-label="能力">{capabilitiesText(model)}</td>
-        <td data-label="价格">
+        <td>
+          <span className={workspace.truncate} title={capabilities}>
+            {capabilities}
+          </span>
+        </td>
+        <td>
           <span className={clsx(workspace.truncate, workspace.priceText)} title={price}>
             {price}
           </span>
         </td>
-        <td data-label="状态">
+        <td>
           <div className={workspace.primaryCell}>
             <span
               className={clsx(
@@ -237,7 +242,7 @@ export function ModelManager(props: ModelManagerProps) {
             </span>
           </div>
         </td>
-        <td data-label="操作">
+        <td className={workspace.actionCell}>
           <div className={workspace.rowActions}>
             <button className={workspace.rowButton} type="button" onClick={() => openEditor(model)}>
               编辑
@@ -306,6 +311,14 @@ export function ModelManager(props: ModelManagerProps) {
         {models.length ? (
           <div className={workspace.tableWrap}>
             <table className={clsx(workspace.table, workspace.modelsTable)}>
+              <colgroup>
+                <col />
+                <col className={workspace.colMd} />
+                <col className={workspace.colXl} />
+                <col className={workspace.colXl} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colActions} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>模型</th>
@@ -313,7 +326,7 @@ export function ModelManager(props: ModelManagerProps) {
                   <th>能力</th>
                   <th>价格</th>
                   <th>状态</th>
-                  <th>操作</th>
+                  <th className={workspace.actionCell}>操作</th>
                 </tr>
               </thead>
               <tbody>{models.map(renderRow)}</tbody>

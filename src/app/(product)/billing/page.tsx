@@ -2,6 +2,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { FileClock } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
+import table from "@/components/ui/data-table.module.css";
 import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
@@ -130,29 +131,49 @@ export default async function BillingPage(props: BillingPageProps) {
       </section>
 
       {orders.length > 0 ? (
-        <section className={styles.billing__tableCard} aria-label="我的订单列表">
-          <div className={styles.billing__tableScroller}>
-            <div className={clsx(styles.billing__tableRow, styles.billing__tableHead)}>
-              <span>订单号</span>
-              <span>金额</span>
-              <span>积分</span>
-              <span>支付方式</span>
-              <span>状态</span>
-              <span>创建时间</span>
-              <span>支付时间</span>
-              <span>操作</span>
-            </div>
-
-            <div className={styles.billing__tableBody}>
+        <section className={table.dataTable__card} aria-label="我的订单列表">
+          <table className={clsx(table.dataTable, styles.billing__table)}>
+            <colgroup>
+              <col />
+              <col className={styles.billing__colNum} />
+              <col className={styles.billing__colNum} />
+              <col className={styles.billing__colChannel} />
+              <col className={styles.billing__colStatus} />
+              <col className={styles.billing__colTime} />
+              <col className={styles.billing__colTime} />
+              <col className={styles.billing__colActions} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>订单号</th>
+                <th>金额</th>
+                <th>积分</th>
+                <th>支付方式</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>支付时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
               {orders.map((order) => (
-                <div key={order.orderNo} className={styles.billing__tableRow}>
-                  <span className={styles.billing__orderNo}>{order.orderNo}</span>
-                  <span className={styles.billing__amount}>{order.amountText}</span>
-                  <span className={styles.billing__credits}>{formatCredits(order.credits)}</span>
-                  <span className={styles.billing__muted}>
+                <tr key={order.orderNo}>
+                  <td>
+                    <span
+                      className={clsx(table.dataTable__ellipsis, styles.billing__orderNo)}
+                      title={order.orderNo}
+                    >
+                      {order.orderNo}
+                    </span>
+                  </td>
+                  <td className={table.dataTable__num}>{order.amountText}</td>
+                  <td className={table.dataTable__num}>
+                    <span className={styles.billing__credits}>{formatCredits(order.credits)}</span>
+                  </td>
+                  <td className={table.dataTable__muted}>
                     {order.payChannelText || order.payChannel || "—"}
-                  </span>
-                  <span>
+                  </td>
+                  <td>
                     <span
                       className={clsx(
                         styles.billing__statusBadge,
@@ -163,20 +184,20 @@ export default async function BillingPage(props: BillingPageProps) {
                         order.displayStatus as keyof typeof orderDisplayStatusLabels
                       ] ?? order.displayStatus}
                     </span>
-                  </span>
-                  <span className={styles.billing__muted}>{formatDateText(order.createTime)}</span>
-                  <span className={styles.billing__muted}>{formatDateText(order.payTime)}</span>
-                  <span className={styles.billing__muted}>
+                  </td>
+                  <td className={table.dataTable__time}>{formatDateText(order.createTime)}</td>
+                  <td className={table.dataTable__time}>{formatDateText(order.payTime)}</td>
+                  <td className={table.dataTable__muted}>
                     {order.displayStatus === "pending" ? (
                       <OrderActions orderNo={order.orderNo} canCancel />
                     ) : (
                       "—"
                     )}
-                  </span>
-                </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          </div>
+            </tbody>
+          </table>
         </section>
       ) : (
         <section className={styles.billing__empty}>

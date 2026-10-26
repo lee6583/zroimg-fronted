@@ -1,5 +1,7 @@
+import clsx from "clsx";
 import type { Metadata } from "next";
 import { ProductTopNav } from "@/components/layout/product-top-nav";
+import table from "@/components/ui/data-table.module.css";
 import styles from "./licenses.module.css";
 
 export const metadata: Metadata = {
@@ -75,27 +77,43 @@ export default function LicensesPage() {
         <div className={styles.licenses__inner}>
           <h1 className="page-title">开源许可</h1>
 
-          <div className={styles.licenses__tableWrap}>
-            <table className={styles.licenses__table}>
+          <div className={table.dataTable__card}>
+            <table className={clsx(table.dataTable, styles.licenses__table)}>
+              <colgroup>
+                <col className={styles.licenses__colName} />
+                <col className={styles.licenses__colLicense} />
+                <col />
+                <col className={styles.licenses__colUsage} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>项目</th>
-                  <th>许可证</th>
-                  <th>版权</th>
-                  <th>用途</th>
+                  <th className={table.dataTable__start}>项目</th>
+                  <th className={table.dataTable__start}>许可证</th>
+                  <th className={table.dataTable__start}>版权</th>
+                  <th className={table.dataTable__start}>用途</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
                   <tr key={item.url}>
-                    <td>
-                      <a href={item.url} target="_blank" rel="noreferrer">
+                    <td className={table.dataTable__start}>
+                      <a
+                        className={table.dataTable__ellipsis}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={item.name}
+                      >
                         {item.name}
                       </a>
                     </td>
-                    <td>{item.license}</td>
-                    <td>{item.copyright}</td>
-                    <td>{item.usage}</td>
+                    <td className={table.dataTable__start}>{item.license}</td>
+                    <td className={table.dataTable__start}>
+                      <span className={table.dataTable__ellipsis} title={item.copyright}>
+                        {item.copyright}
+                      </span>
+                    </td>
+                    <td className={table.dataTable__start}>{item.usage}</td>
                   </tr>
                 ))}
               </tbody>

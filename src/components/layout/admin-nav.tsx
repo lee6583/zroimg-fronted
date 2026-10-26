@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import {
   Activity,
   Coins,
@@ -12,22 +11,57 @@ import {
   Settings,
   SlidersHorizontal,
   Users,
+  ChartColumn,
+  Megaphone,
+  Sparkles,
+  Wallet,
+  Wrench,
 } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import styles from "./shell.module.css";
+import { usePathname } from "next/navigation";
+import { SideNav, type NavGroup } from "./side-nav";
 
-const adminNavItems = [
-  { label: "概览", href: "/admin", icon: LayoutDashboard },
-  { label: "用户管理", href: "/admin/users", icon: Users },
-  { label: "订单管理", href: "/admin/orders", icon: ReceiptText },
-  { label: "积分套餐", href: "/admin/packages", icon: Coins },
-  { label: "模型配置", href: "/admin/models", icon: SlidersHorizontal },
-  { label: "生成任务", href: "/admin/generations", icon: Activity },
-  { label: "画廊审核", href: "/admin/gallery", icon: Images },
-  { label: "意见反馈", href: "/admin/tickets", icon: MessageSquareText },
-  { label: "文档管理", href: "/admin/docs", icon: FileText },
-  { label: "系统设置", href: "/admin/settings", icon: Settings },
+const adminNavGroups: NavGroup[] = [
+  {
+    key: "overview",
+    label: "概览",
+    icon: LayoutDashboard,
+    items: [{ key: "/admin", label: "数据总览", href: "/admin", icon: ChartColumn }],
+  },
+  {
+    key: "trade",
+    label: "用户与交易",
+    icon: Wallet,
+    items: [
+      { key: "/admin/users", label: "用户管理", href: "/admin/users", icon: Users },
+      { key: "/admin/orders", label: "订单管理", href: "/admin/orders", icon: ReceiptText },
+      { key: "/admin/packages", label: "积分套餐", href: "/admin/packages", icon: Coins },
+    ],
+  },
+  {
+    key: "ai",
+    label: "AI 生成",
+    icon: Sparkles,
+    items: [
+      { key: "/admin/models", label: "模型配置", href: "/admin/models", icon: SlidersHorizontal },
+      { key: "/admin/generations", label: "生成任务", href: "/admin/generations", icon: Activity },
+    ],
+  },
+  {
+    key: "content",
+    label: "内容运营",
+    icon: Megaphone,
+    items: [
+      { key: "/admin/gallery", label: "画廊审核", href: "/admin/gallery", icon: Images },
+      { key: "/admin/docs", label: "文档管理", href: "/admin/docs", icon: FileText },
+      { key: "/admin/tickets", label: "意见反馈", href: "/admin/tickets", icon: MessageSquareText },
+    ],
+  },
+  {
+    key: "system",
+    label: "系统管理",
+    icon: Wrench,
+    items: [{ key: "/admin/settings", label: "系统设置", href: "/admin/settings", icon: Settings }],
+  },
 ];
 
 function isActivePath(pathname: string, href: string) {
@@ -35,32 +69,19 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function getActiveHref(pathname: string) {
+  for (const group of adminNavGroups) {
+    for (const item of group.items) {
+      if (isActivePath(pathname, item.href)) return item.href;
+    }
+  }
+
+  return null;
+}
+
 export function AdminNav() {
   const pathname = usePathname();
-  const router = useRouter();
+  const activeHref = getActiveHref(pathname);
 
-  return (
-    <nav className={styles.shell__nav}>
-      {adminNavItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = isActivePath(pathname, item.href);
-
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={isActive ? "page" : undefined}
-            className={clsx(styles.shell__navLink, isActive && styles.shell__navLinkActive)}
-            onFocus={() => router.prefetch(item.href)}
-            onPointerEnter={() => router.prefetch(item.href)}
-          >
-            <span className={clsx(styles.shell__navIcon, isActive && styles.shell__navIconActive)}>
-              <Icon size={16} />
-            </span>
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  return <SideNav storageKey="zroimg.nav.admin" groups={adminNavGroups} activeKey={activeHref} />;
 }

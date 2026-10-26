@@ -112,8 +112,7 @@ export function HistoryFilters(props: HistoryFiltersProps) {
 
   return (
     <div className={styles.history__filters}>
-      <div className={styles.history__filterField}>
-        <span className={styles.history__filterLabel}>时间范围</span>
+      <div className={styles.history__filterField} role="group" aria-label="时间范围">
         <ConfigProvider
           locale={zhCN}
           theme={{
@@ -138,8 +137,7 @@ export function HistoryFilters(props: HistoryFiltersProps) {
         </ConfigProvider>
       </div>
 
-      <label className={styles.history__filterField}>
-        <span className={styles.history__filterLabel}>创作类型</span>
+      <div className={styles.history__filterField} role="group" aria-label="创作类型">
         <AppSelect
           className={styles.history__typeSelect}
           triggerClassName={styles.history__typeTrigger}
@@ -147,7 +145,7 @@ export function HistoryFilters(props: HistoryFiltersProps) {
           options={mediaOptions}
           onChange={(value) => updateFilter("media", value)}
         />
-      </label>
+      </div>
     </div>
   );
 }

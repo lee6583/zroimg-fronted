@@ -221,75 +221,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.userDetail__tableWrap {
-  min-width: 0;
-  overflow-x: auto;
-}
-
-.userDetail__table {
-  width: 100%;
-  min-width: 58rem;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.userDetail__table th,
-.userDetail__table td {
-  border-bottom: 1px solid var(--line);
-  padding: 0.75rem 0.8rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.userDetail__table th:first-child,
-.userDetail__table td:first-child {
-  text-align: left;
-}
-
-.userDetail__table th {
-  background: color-mix(in oklab, var(--soft) 72%, var(--panel));
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.userDetail__table td {
-  color: var(--foreground);
-  font-size: 0.77rem;
-  line-height: 1.45;
-}
-
-.userDetail__table tbody tr:hover {
-  background: color-mix(in oklab, var(--soft) 58%, var(--panel));
-}
-
-.userDetail__table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.userDetail__table th:nth-child(1) {
-  width: 17rem;
-}
-
-.userDetail__table th:nth-child(2) {
-  width: 5.5rem;
-}
-
-.userDetail__table th:nth-child(3) {
-  width: 11rem;
-}
-
-.userDetail__table th:nth-child(4) {
-  width: 5rem;
-}
-
-.userDetail__table th:nth-child(5) {
-  width: 6rem;
-}
-
-.userDetail__table th:nth-child(6) {
-  width: 9.5rem;
+table.userDetail__table {
+  min-width: 46rem;
 }
 
 .userDetail__primaryCell {
@@ -318,17 +251,6 @@
 .userDetail__secondaryText {
   color: var(--muted);
   font-size: 0.7rem;
-}
-
-.userDetail__number {
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
-}
-
-.userDetail__date {
-  color: var(--muted) !important;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .userDetail__status {

@@ -46,88 +46,50 @@
   background: color-mix(in oklab, var(--foreground) 86%, var(--background));
 }
 
-.billing__tableCard {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 0.9rem;
-  background: var(--panel);
+.billing__table {
+  min-width: 60rem;
 }
 
-.billing__tableScroller {
-  overflow: visible;
+.billing__colNum {
+  width: 6rem;
 }
 
-.billing__tableRow {
-  display: grid;
-  grid-template-columns:
-    minmax(10rem, 1.55fr) minmax(5.5rem, 0.7fr) minmax(5.5rem, 0.7fr) minmax(6.5rem, 0.8fr)
-    minmax(5.5rem, 0.75fr) minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(7rem, 0.75fr);
-  align-items: center;
-  gap: 0.8rem;
-  padding: 1.15rem 1.35rem;
-  text-align: center;
+.billing__colChannel {
+  width: 7rem;
 }
 
-.billing__tableHead {
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 650;
+.billing__colStatus {
+  width: 6rem;
 }
 
-.billing__tableBody {
-  display: grid;
+.billing__colTime {
+  width: 10rem;
 }
 
-.billing__tableBody .billing__tableRow {
-  color: var(--foreground);
-  font-size: 0.9rem;
-}
-
-.billing__tableBody .billing__tableRow + .billing__tableRow {
-  border-top: 1px solid var(--line);
+.billing__colActions {
+  width: 9rem;
 }
 
 .billing__orderNo {
-  overflow: hidden;
   font-family: var(--font-mono);
-  font-size: 0.86rem;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.billing__amount {
-  font-size: 1rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-}
-
-.billing__credits {
-  font-size: 0.98rem;
-  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .billing__credits::before {
   content: "◎";
-  margin-right: 0.45rem;
+  margin-right: 0.35rem;
   color: #f59e0b;
-  font-size: 0.78rem;
-}
-
-.billing__muted {
-  color: var(--muted);
-  text-align: center;
+  font-size: 0.72rem;
 }
 
 .billing__statusBadge {
   display: inline-flex;
-  min-height: 1.75rem;
+  min-height: 1.45rem;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  padding: 0 0.7rem;
-  font-size: 0.8rem;
+  padding: 0 0.55rem;
+  font-size: 0.76rem;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -155,8 +117,10 @@
 .billing__orderActions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .billing__payButton,

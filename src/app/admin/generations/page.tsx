@@ -151,7 +151,17 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
 
         {tasks.length > 0 ? (
           <div className={workspace.tableWrap}>
-            <table className={clsx(workspace.table, workspace.tasksTable)}>
+            <table className={clsx(workspace.table, workspace.tableCenter)}>
+              <colgroup>
+                <col className={workspace.colMd} />
+                <col />
+                <col className={workspace.colSm} />
+                <col className={workspace.colXs} />
+                <col className={workspace.colLg} />
+                <col className={workspace.colSm} />
+                <col className={workspace.colStatus} />
+                <col className={workspace.colTime} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>用户</th>
@@ -165,56 +175,63 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((task) => (
-                  <tr key={task.id}>
-                    <td data-label="用户">
-                      <div className={workspace.primaryCell}>
-                        <span className={workspace.primaryText}>
-                          {task.username || task.userEmail || "-"}
-                        </span>
-                      </div>
-                    </td>
-                    <td data-label="提示词">
-                      <div className={workspace.primaryCell}>
-                        <span
-                          className={clsx(workspace.truncate, workspace.taskPrompt)}
-                          title={task.prompt}
-                        >
-                          {task.prompt}
-                        </span>
-                        {task.failReason ? (
-                          <span className={workspace.secondaryText} title={task.failReason}>
-                            失败原因：{task.failReason}
+                {tasks.map((task) => {
+                  const userName = task.username || task.userEmail || "-";
+
+                  return (
+                    <tr key={task.id}>
+                      <td>
+                        <div className={workspace.primaryCell}>
+                          <span className={workspace.primaryText} title={userName}>
+                            {userName}
                           </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td data-label="类型">{readTaskType(task)}</td>
-                    <td data-label="来源">{readTaskSource(task)}</td>
-                    <td data-label="模型配置">
-                      <div className={workspace.primaryCell}>
-                        <span>{readTaskModel(task)}</span>
-                        <span className={workspace.secondaryText}>{readTaskSpec(task)}</span>
-                      </div>
-                    </td>
-                    <td data-label="消耗 / 输出">
-                      <div className={workspace.primaryCell}>
-                        <span className={workspace.numeric}>{task.requiredPoints} 积分</span>
-                        <span className={workspace.secondaryText}>
-                          {readTaskOutputCount(task)} 个结果
+                        </div>
+                      </td>
+                      <td>
+                        <div className={workspace.primaryCell}>
+                          <span
+                            className={clsx(workspace.truncate, workspace.taskPrompt)}
+                            title={task.prompt}
+                          >
+                            {task.prompt}
+                          </span>
+                          {task.failReason ? (
+                            <span
+                              className={clsx(workspace.secondaryText, workspace.truncate)}
+                              title={task.failReason}
+                            >
+                              失败原因：{task.failReason}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>{readTaskType(task)}</td>
+                      <td>{readTaskSource(task)}</td>
+                      <td>
+                        <div className={workspace.primaryCell}>
+                          <span className={workspace.truncate}>{readTaskModel(task)}</span>
+                          <span className={clsx(workspace.secondaryText, workspace.truncate)}>
+                            {readTaskSpec(task)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={workspace.primaryCell}>
+                          <span className={workspace.numeric}>{task.requiredPoints} 积分</span>
+                          <span className={workspace.secondaryText}>
+                            {readTaskOutputCount(task)} 个结果
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={clsx(workspace.status, statusClass(task.status))}>
+                          {taskStatusLabels[task.status] ?? task.status}
                         </span>
-                      </div>
-                    </td>
-                    <td data-label="状态">
-                      <span className={clsx(workspace.status, statusClass(task.status))}>
-                        {taskStatusLabels[task.status] ?? task.status}
-                      </span>
-                    </td>
-                    <td data-label="创建时间" className={workspace.dateText}>
-                      {formatDate(task.createTime)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className={workspace.dateText}>{formatDate(task.createTime)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

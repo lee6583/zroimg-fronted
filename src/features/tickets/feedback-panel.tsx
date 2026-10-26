@@ -1,10 +1,12 @@
 "use client";
 
+import clsx from "clsx";
 import { ArrowLeft, Eye, ImagePlus, Plus, Send, Trash2, X } from "lucide-react";
 import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { ticketsApi } from "@/api/support/tickets";
 import { AppSelect } from "@/components/ui/app-select";
+import table from "@/components/ui/data-table.module.css";
 import { AppPagination } from "@/components/ui/app-pagination";
 import type { TicketItem, TicketListSummary, TicketStatusFilter } from "@/types/feedback";
 import { type FeedbackType, feedbackTypeLabels } from "@/utils/feedback";
@@ -243,12 +245,23 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
           {tickets.length === 0 ? (
             <div className={styles.feedbackPanel__empty}>还没有匹配的反馈记录。</div>
           ) : (
-            <div className={styles.feedbackPanel__tableWrap} aria-busy={isFetching}>
-              <table className={styles.feedbackPanel__table}>
+            <div
+              className={clsx(table.dataTable__card, styles.feedbackPanel__tableWrap)}
+              aria-busy={isFetching}
+            >
+              <table className={clsx(table.dataTable, styles.feedbackPanel__table)}>
+                <colgroup>
+                  <col className={styles.feedbackPanel__colType} />
+                  <col />
+                  <col className={styles.feedbackPanel__colTime} />
+                  <col className={styles.feedbackPanel__colTime} />
+                  <col className={styles.feedbackPanel__colStatus} />
+                  <col className={styles.feedbackPanel__colActions} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th>意见类型</th>
-                    <th>意见</th>
+                    <th className={table.dataTable__start}>意见</th>
                     <th>创建时间</th>
                     <th>更新时间</th>
                     <th>状态</th>
@@ -259,30 +272,43 @@ export function FeedbackPanel(props: FeedbackPanelProps) {
                   {tickets.map((ticket) => (
                     <tr key={ticket.id}>
                       <td>{feedbackTypeLabels[ticket.type]}</td>
-                      <td>
-                        <div className={styles.feedbackPanel__feedbackCell}>
-                          <strong>{ticket.subject}</strong>
-                          <span>{ticket.content}</span>
-                        </div>
+                      <td className={table.dataTable__start}>
+                        <strong
+                          className={clsx(table.dataTable__ellipsis, styles.feedbackPanel__subject)}
+                          title={ticket.subject}
+                        >
+                          {ticket.subject}
+                        </strong>
+                        <span
+                          className={clsx(table.dataTable__ellipsis, styles.feedbackPanel__content)}
+                          title={ticket.content}
+                        >
+                          {ticket.content}
+                        </span>
                       </td>
-                      <td>{formatDate(ticket.createTime)}</td>
-                      <td>{formatDate(ticket.updateTime)}</td>
+                      <td className={table.dataTable__time}>{formatDate(ticket.createTime)}</td>
+                      <td className={table.dataTable__time}>{formatDate(ticket.updateTime)}</td>
                       <td>
                         <span
-                          className={`${styles.feedbackPanel__statusBadge} ${readStatusBadgeClassName(ticket.status)}`}
+                          className={clsx(
+                            styles.feedbackPanel__statusBadge,
+                            readStatusBadgeClassName(ticket.status),
+                          )}
                         >
                           {readStatusLabel(ticket.status)}
                         </span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => setActiveId(ticket.id)}
-                        >
-                          <Eye size={15} aria-hidden="true" />
-                          查看
-                        </button>
+                        <div className={table.dataTable__actions}>
+                          <button
+                            type="button"
+                            className={clsx("btn-secondary", styles.feedbackPanel__viewButton)}
+                            onClick={() => setActiveId(ticket.id)}
+                          >
+                            <Eye size={14} aria-hidden="true" />
+                            查看
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

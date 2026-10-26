@@ -48,6 +48,17 @@
   padding-bottom: 0.25rem;
 }
 
+/* Mobile keeps the flat horizontal scroller, so group wrappers drop out of layout. */
+.shell__navGroup,
+.shell__navCollapse,
+.shell__navList {
+  display: contents;
+}
+
+.shell__navGroupHead {
+  display: none;
+}
+
 .shell__navLink {
   display: flex;
   min-width: max-content;
@@ -62,6 +73,11 @@
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
+}
+
+.shell__navLink:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
 }
 
 .shell__navLink:hover,
@@ -134,14 +150,125 @@
 
   .shell__nav {
     display: grid;
+    gap: 0.375rem;
     overflow: visible;
     padding-bottom: 0;
+  }
+
+  .shell__navGroup {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  /* 一级节点（顶层链接、分组标题）：字号和字重高于其下的二级页面 */
+  .shell__navGroupHead {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.75rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: transparent;
+    padding: 0.5rem;
+    color: var(--foreground);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .shell__navGroupHead:hover {
+    background: var(--soft);
+  }
+
+  .shell__navGroupHead:hover .shell__navIcon,
+  .shell__navGroupHeadCurrent .shell__navIcon {
+    background: var(--soft);
+  }
+
+  .shell__navGroupHead:hover .shell__navIcon {
+    background: var(--background);
+  }
+
+  .shell__navGroupLabel {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .shell__navGroupHead:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: -2px;
+  }
+
+  .shell__navChevron {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .shell__navChevronClosed {
+    transform: rotate(-90deg);
+  }
+
+  .shell__navCollapse {
+    display: grid;
+    grid-template-rows: 1fr;
+  }
+
+  .shell__navCollapseClosed {
+    grid-template-rows: 0fr;
+  }
+
+  .shell__navList {
+    display: grid;
+    min-height: 0;
+    gap: 0.125rem;
+    overflow: hidden;
+  }
+
+  /* 二级页面：缩进到一级图标中线，左侧细引导线 */
+  .shell__navCollapse .shell__navList {
+    margin-left: 1.375rem;
+    border-left: 1px solid var(--line);
+    padding-left: 0.5rem;
+  }
+
+  .shell__navLinkNested {
+    gap: 0.5rem;
+    padding-top: 0.4375rem;
+    padding-bottom: 0.4375rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+  }
+
+  .shell__navLinkNested .shell__navIcon {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .shell__navLinkNested.shell__navLinkActive {
+    font-weight: 500;
+  }
+
+  .shell__navAnimated .shell__navCollapse {
+    transition: grid-template-rows 0.2s ease;
+  }
+
+  .shell__navAnimated .shell__navChevron {
+    transition: transform 0.2s ease;
   }
 
   .shell__navLink {
     min-width: 0;
     padding-right: 0.5rem;
     padding-left: 0.5rem;
+  }
+
+  .shell__nav > .shell__navList .shell__navLink {
+    color: var(--foreground);
+    font-size: 0.9375rem;
+    font-weight: 600;
   }
 
   .shell__main {
@@ -162,5 +289,12 @@
   .shell__main {
     padding-right: 2.5rem;
     padding-left: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell__navAnimated .shell__navCollapse,
+  .shell__navAnimated .shell__navChevron {
+    transition: none;
   }
 }

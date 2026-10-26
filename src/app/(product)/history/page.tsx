@@ -2,6 +2,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { Clock3, ImageOff } from "lucide-react";
 import { AppPagination } from "@/components/ui/app-pagination";
+import table from "@/components/ui/data-table.module.css";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { taskStatusLabels } from "@/features/generation/generation-model";
 import { HistoryImageActions } from "@/features/history/history-image-actions";
@@ -206,97 +207,118 @@ export default async function HistoryPage(props: HistoryPageProps) {
 
       {historyItems.length > 0 ? (
         <>
-          <section className={styles.history__tableCard} aria-label="历史作品">
-            <div className={styles.history__tableScroller}>
-              <div className={clsx(styles.history__tableRow, styles.history__tableHead)}>
-                <span className={styles.history__centerCell}>图片</span>
-                <span className={styles.history__centerCell}>提示词</span>
-                <span className={styles.history__centerCell}>模型</span>
-                <span className={styles.history__centerCell}>分辨率</span>
-                <span className={styles.history__centerCell}>比例</span>
-                <span className={styles.history__centerCell}>消耗</span>
-                <span className={styles.history__centerCell}>状态</span>
-                <span className={styles.history__centerCell}>时间</span>
-                <span className={styles.history__centerCell}>操作</span>
-              </div>
-
-              <div className={styles.history__tableBody}>
+          <section className={table.dataTable__card} aria-label="历史作品">
+            <table className={clsx(table.dataTable, styles.history__table)}>
+              <colgroup>
+                <col className={styles.history__colImage} />
+                <col />
+                <col className={styles.history__colModel} />
+                <col className={styles.history__colShort} />
+                <col className={styles.history__colShort} />
+                <col className={styles.history__colShort} />
+                <col className={styles.history__colStatus} />
+                <col className={styles.history__colTime} />
+                <col className={styles.history__colActions} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>图片</th>
+                  <th className={table.dataTable__start}>提示词</th>
+                  <th>模型</th>
+                  <th>分辨率</th>
+                  <th>比例</th>
+                  <th>消耗</th>
+                  <th>状态</th>
+                  <th>时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
                 {historyItems.map((item) => {
                   const task = item.task;
                   const result = item.result;
                   const extension = task.format || "png";
                   const fileName = `zroimg-${task.taskNo}-${item.index + 1}.${extension}`;
+                  const modelName = task.modelName || task.modelCode;
 
                   return (
-                    <article key={item.id} className={styles.history__tableRow}>
-                      <div className={styles.history__preview}>
-                        {result ? (
-                          <ImageLightbox
-                            src={result.resultUrl}
-                            alt={task.prompt}
-                            width={768}
-                            height={768}
-                            imageClassName={styles.history__image}
-                          />
-                        ) : (
-                          <div className={styles.history__placeholder}>
-                            <ImageOff size={18} />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className={styles.history__promptCell}>
-                        <h2 className={styles.history__prompt}>{task.prompt}</h2>
+                    <tr key={item.id}>
+                      <td>
+                        <div className={styles.history__preview}>
+                          {result ? (
+                            <ImageLightbox
+                              src={result.resultUrl}
+                              alt={task.prompt}
+                              width={768}
+                              height={768}
+                              imageClassName={styles.history__image}
+                            />
+                          ) : (
+                            <div className={styles.history__placeholder}>
+                              <ImageOff size={18} />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className={table.dataTable__start}>
+                        <h2
+                          className={clsx(table.dataTable__ellipsis, styles.history__prompt)}
+                          title={task.prompt}
+                        >
+                          {task.prompt}
+                        </h2>
                         {task.failReason ? (
-                          <p className={styles.history__error}>{task.failReason}</p>
+                          <p
+                            className={clsx(table.dataTable__ellipsis, styles.history__error)}
+                            title={task.failReason}
+                          >
+                            {task.failReason}
+                          </p>
                         ) : null}
-                      </div>
-
-                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {task.modelName || task.modelCode}
-                      </p>
-                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
+                      </td>
+                      <td className={table.dataTable__muted}>
+                        <span className={table.dataTable__ellipsis} title={modelName}>
+                          {modelName}
+                        </span>
+                      </td>
+                      <td className={table.dataTable__muted}>
                         {getImageResolutionLabel(task.quality ?? "-")}
-                      </p>
-                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {task.ratio || "-"}
-                      </p>
-                      <p className={clsx(styles.history__credits, styles.history__centerCell)}>
-                        {getUnitPoints(task)}
-                      </p>
-                      <span
-                        className={clsx(
-                          styles.history__status,
-                          styles.history__centerCell,
-                          task.status === "succeeded" && styles.history__statusSuccess,
-                          task.status === "failed" && styles.history__statusDanger,
-                        )}
-                      >
-                        {taskStatusLabels[task.status]}
-                      </span>
-                      <p className={clsx(styles.history__cellText, styles.history__centerCell)}>
-                        {formatTime(task.createTime)}
-                      </p>
-
-                      <div className={styles.history__actions}>
-                        {result ? (
-                          <HistoryImageActions
-                            generatedImageId={result.id}
-                            galleryStatus={result.galleryStatus}
-                            galleryReason={result.galleryRejectReason}
-                            collections={collections}
-                            downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
-                            downloadFileName={fileName}
-                          />
-                        ) : (
-                          <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
-                        )}
-                      </div>
-                    </article>
+                      </td>
+                      <td className={table.dataTable__muted}>{task.ratio || "-"}</td>
+                      <td className={table.dataTable__num}>{getUnitPoints(task)}</td>
+                      <td>
+                        <span
+                          className={clsx(
+                            styles.history__status,
+                            task.status === "succeeded" && styles.history__statusSuccess,
+                            task.status === "failed" && styles.history__statusDanger,
+                          )}
+                        >
+                          {taskStatusLabels[task.status]}
+                        </span>
+                      </td>
+                      <td className={table.dataTable__time}>{formatTime(task.createTime)}</td>
+                      <td>
+                        <div className={table.dataTable__actions}>
+                          {result ? (
+                            <HistoryImageActions
+                              generatedImageId={result.id}
+                              galleryStatus={result.galleryStatus}
+                              galleryReason={result.galleryRejectReason}
+                              collections={collections}
+                              downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                              downloadFileName={fileName}
+                            />
+                          ) : (
+                            <TaskPoller taskNo={task.taskNo} initialStatus={task.status} />
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </section>
 
           <AppPagination current={currentPage} pageSize={currentPageSize} total={total} />
