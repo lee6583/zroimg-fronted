@@ -1,0 +1,16 @@
+{
+  "brand": "ZroImg",
+  "actions": {
+    "login": "Войти",
+    "register": "Регистрация",
+    "logout": "Выйти",
+    "retry": "Перезагрузить",
+    "startCreating": "Начать творить",
+    "backHome": "На главную",
+    "close": "Закрыть"
+  },
+  "status": {
+    "loading": "Загрузка...",
+    "pleaseWait": "Подождите..."
+  }
+}

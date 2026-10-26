@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "title": "One thought, endless images",
+    "text": "Describe it in a sentence and let AI create a one-of-a-kind visual.",
+    "statsTitle": "Loved by creators worldwide"
+  },
+  "stats": {
+    "images": "Images generated",
+    "users": "Active users",
+    "satisfaction": "Satisfaction"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "title": "Everything you need to create",
+    "text": "From a single prompt to a set of usable images — ideas, styles, references and results all in one place.",
+    "items": {
+      "conversation": {
+        "title": "Conversational creation",
+        "text": "Describe the scene like a chat. Refine characters, settings, lighting and style one sentence at a time."
+      },
+      "styles": {
+        "title": "Many styles",
+        "text": "Photorealistic, anime, watercolor, oil painting, minimalist posters, product shots — find the right look for every use."
+      },
+      "batch": {
+        "title": "Batch exploration",
+        "text": "Generate several variations at once to explore directions, compare compositions and spread out ideas quickly."
+      },
+      "reference": {
+        "title": "Reference remix",
+        "text": "Upload a reference image to keep the subject, swap the background or restyle it — give old assets new life."
+      },
+      "hd": {
+        "title": "HD output",
+        "text": "Ready for avatars, covers, posters, product images and social posts — use your work right away."
+      },
+      "credits": {
+        "title": "Flexible credits",
+        "text": "Buy credits as you need them and pay only for what you generate — great for trying out or creating every day."
+      }
+    }
+  },
+  "steps": {
+    "eyebrow": "How it works",
+    "title": "From idea to image in four steps",
+    "text": "No design experience or prompt tricks needed — start creating in minutes.",
+    "number": "Step {number}",
+    "items": {
+      "register": {
+        "title": "Create an account",
+        "text": "Sign up for free in seconds, no credit card required. Get credits right after signing up."
+      },
+      "describe": {
+        "title": "Describe your idea",
+        "text": "Start a conversation and describe the image you want. Keep iterating until it clicks."
+      },
+      "generate": {
+        "title": "AI generates it",
+        "text": "AI interprets your prompt and delivers high-quality images in seconds. Generate variations to explore."
+      },
+      "share": {
+        "title": "Download & share",
+        "text": "Download in HD or share directly. Every image stays in your history to revisit anytime."
+      }
+    }
+  },
+  "advantages": {
+    "eyebrow": "Why ZroImg",
+    "title": "Get from idea to image faster",
+    "text": "Works for product showcases, social media visuals, avatars and characters, posters, covers and illustration sketches.",
+    "items": {
+      "noDrawing": "No drawing skills needed to put the picture in your head into words.",
+      "explore": "Quickly explore directions for avatars, product images, posters and covers.",
+      "history": "Every generation is saved, and the ones you like can be edited further.",
+      "credits": "Pay-as-you-go credits suit occasional creators and heavy users alike."
+    }
+  },
+  "vision": {
+    "eyebrow": "Our mission",
+    "title": "Creativity unbound by tools",
+    "text": "We want to bring AI image and video creation to people everywhere, so more ideas make it into real life and work.",
+    "imageAlt": "Illustration of the ZroImg creative mission"
+  },
+  "footer": {
+    "product": "Product",
+    "legal": "Legal",
+    "pricing": "Pricing",
+    "credits": "Buy credits",
+    "contact": "Contact us",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Policy",
+    "licenses": "Open source licenses",
+    "copyright": "© {year} ZroImg"
+  }
+}

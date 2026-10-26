@@ -1,0 +1,16 @@
+{
+  "brand": "ZroImg",
+  "actions": {
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "retry": "重新加载",
+    "startCreating": "开始创作",
+    "backHome": "返回首页",
+    "close": "关闭"
+  },
+  "status": {
+    "loading": "加载中...",
+    "pleaseWait": "请稍候..."
+  }
+}

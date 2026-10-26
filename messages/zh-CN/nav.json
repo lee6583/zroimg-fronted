@@ -1,0 +1,48 @@
+{
+  "homeAria": "ZroImg 首页",
+  "top": {
+    "home": "首页",
+    "gallery": "作品画廊",
+    "pricing": "定价",
+    "docs": "文档"
+  },
+  "account": {
+    "openMenu": "打开账户菜单",
+    "settings": "账户设置",
+    "logout": "退出登录"
+  },
+  "theme": {
+    "toggle": "切换明暗模式"
+  },
+  "locale": {
+    "label": "切换语言"
+  },
+  "announcement": {
+    "open": "查看公告",
+    "close": "关闭公告",
+    "kicker": "公告",
+    "emptyTitle": "暂无公告",
+    "emptyContent": "当前没有正在展示的站内公告。"
+  },
+  "sidebar": {
+    "overview": "概览",
+    "groups": {
+      "create": "创作中心",
+      "content": "内容管理",
+      "billing": "交易与资产",
+      "help": "帮助与设置"
+    },
+    "items": {
+      "generate": "图片生成",
+      "canvas": "无限画布",
+      "video": "视频创作",
+      "history": "创作历史",
+      "favorites": "收藏合集",
+      "submissions": "我的投稿",
+      "credits": "积分购买",
+      "billing": "我的订单",
+      "tickets": "意见反馈",
+      "settings": "账户设置"
+    }
+  }
+}

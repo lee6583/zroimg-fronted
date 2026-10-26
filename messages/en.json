@@ -1,4 +1,17 @@
 {
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Start creating",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "coolingDown": "Please wait..."
+    }
+  },
   "common": {
     "brand": "ZroImg",
     "actions": {
@@ -15,65 +28,21 @@
       "pleaseWait": "Please wait..."
     }
   },
-  "nav": {
-    "homeAria": "ZroImg home",
-    "top": {
-      "home": "Home",
-      "gallery": "Gallery",
-      "pricing": "Pricing",
-      "docs": "Docs"
+  "errors": {
+    "page": {
+      "title": "This page couldn't be loaded",
+      "description": "Please try again later. If the problem persists, contact the administrator.",
+      "retry": "Reload"
     },
-    "account": {
-      "openMenu": "Open account menu",
-      "settings": "Account settings",
-      "logout": "Log out"
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you are looking for doesn't exist or has been removed.",
+      "backHome": "Back to home"
     },
-    "theme": {
-      "toggle": "Toggle light/dark mode"
-    },
-    "locale": {
-      "label": "Change language"
-    },
-    "announcement": {
-      "open": "View announcement",
-      "close": "Close announcement",
-      "kicker": "Announcement",
-      "emptyTitle": "No announcements",
-      "emptyContent": "There are no announcements right now."
-    },
-    "sidebar": {
-      "overview": "Overview",
-      "groups": {
-        "create": "Create",
-        "content": "Content",
-        "billing": "Billing & assets",
-        "help": "Help & settings"
-      },
-      "items": {
-        "generate": "Image generation",
-        "canvas": "Infinite canvas",
-        "video": "Video creation",
-        "history": "History",
-        "favorites": "Collections",
-        "submissions": "My submissions",
-        "credits": "Buy credits",
-        "billing": "My orders",
-        "tickets": "Feedback",
-        "settings": "Account settings"
-      }
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "Welcome back",
-      "noAccount": "Don't have an account?",
-      "registerLink": "Start creating",
-      "email": "Email",
-      "password": "Password",
-      "forgotPassword": "Forgot password?",
-      "submit": "Log in",
-      "submitting": "Logging in...",
-      "coolingDown": "Please wait..."
+    "api": {
+      "network": "Network error. Please check your connection and try again.",
+      "unknown": "Request failed. Please try again later."
     }
   },
   "landing": {
@@ -172,23 +141,6 @@
       "copyright": "© {year} ZroImg"
     }
   },
-  "errors": {
-    "page": {
-      "title": "This page couldn't be loaded",
-      "description": "Please try again later. If the problem persists, contact the administrator.",
-      "retry": "Reload"
-    },
-    "notFound": {
-      "code": "404",
-      "title": "Page not found",
-      "description": "The page you are looking for doesn't exist or has been removed.",
-      "backHome": "Back to home"
-    },
-    "api": {
-      "network": "Network error. Please check your connection and try again.",
-      "unknown": "Request failed. Please try again later."
-    }
-  },
   "metadata": {
     "site": {
       "title": "ZroImg - AI image generator",
@@ -235,6 +187,54 @@
     },
     "notFound": {
       "title": "Page not found"
+    }
+  },
+  "nav": {
+    "homeAria": "ZroImg home",
+    "top": {
+      "home": "Home",
+      "gallery": "Gallery",
+      "pricing": "Pricing",
+      "docs": "Docs"
+    },
+    "account": {
+      "openMenu": "Open account menu",
+      "settings": "Account settings",
+      "logout": "Log out"
+    },
+    "theme": {
+      "toggle": "Toggle light/dark mode"
+    },
+    "locale": {
+      "label": "Change language"
+    },
+    "announcement": {
+      "open": "View announcement",
+      "close": "Close announcement",
+      "kicker": "Announcement",
+      "emptyTitle": "No announcements",
+      "emptyContent": "There are no announcements right now."
+    },
+    "sidebar": {
+      "overview": "Overview",
+      "groups": {
+        "create": "Create",
+        "content": "Content",
+        "billing": "Billing & assets",
+        "help": "Help & settings"
+      },
+      "items": {
+        "generate": "Image generation",
+        "canvas": "Infinite canvas",
+        "video": "Video creation",
+        "history": "History",
+        "favorites": "Collections",
+        "submissions": "My submissions",
+        "credits": "Buy credits",
+        "billing": "My orders",
+        "tickets": "Feedback",
+        "settings": "Account settings"
+      }
     }
   }
 }

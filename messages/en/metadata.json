@@ -1,0 +1,48 @@
+{
+  "site": {
+    "title": "ZroImg - AI image generator",
+    "description": "ZroImg is an AI image generator powered by gpt-image-2: conversational creation, many styles, reference remixing and HD output with pay-as-you-go credits."
+  },
+  "home": {
+    "title": "ZroImg - One thought, endless images",
+    "description": "Describe it in a sentence and let AI create a one-of-a-kind visual. Conversational creation, batch exploration and reference remixing with pay-as-you-go credits."
+  },
+  "gallery": {
+    "title": "Gallery",
+    "description": "Browse AI-generated images published by the ZroImg community and find inspiration by category: photorealistic, anime, art and more."
+  },
+  "pricing": {
+    "title": "Pricing",
+    "description": "ZroImg credit packages and prices: try it free after signing up, buy credits as you need them, no subscription."
+  },
+  "docs": {
+    "title": "Docs",
+    "description": "ZroImg documentation: image generation, infinite canvas, video creation, credits and orders."
+  },
+  "licenses": {
+    "title": "Open source licenses",
+    "description": "Open source projects used by ZroImg and their licenses."
+  },
+  "login": {
+    "title": "Log in",
+    "description": "Log in to your ZroImg account to continue creating AI images."
+  },
+  "register": {
+    "title": "Sign up",
+    "description": "Create a ZroImg account and start generating AI images for free."
+  },
+  "forgotPassword": {
+    "title": "Reset password",
+    "description": "Reset your ZroImg password with an email verification code."
+  },
+  "app": {
+    "title": "Workspace",
+    "description": "ZroImg creative workspace."
+  },
+  "canvas": {
+    "title": "Infinite canvas"
+  },
+  "notFound": {
+    "title": "Page not found"
+  }
+}

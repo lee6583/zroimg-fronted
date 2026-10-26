@@ -1,0 +1,48 @@
+{
+  "site": {
+    "title": "ZroImg - AI 图片生成平台",
+    "description": "ZroImg 是基于 gpt-image-2 的 AI 图片生成平台：对话式创作、多种风格、参考图再创作与高清输出，按需购买积分。"
+  },
+  "home": {
+    "title": "ZroImg - 一念之间，万象生成",
+    "description": "输入一句描述，让 AI 创造独一无二的视觉作品。对话式创作、批量探索、参考图再创作，积分按需购买。"
+  },
+  "gallery": {
+    "title": "作品画廊",
+    "description": "浏览 ZroImg 社区创作者公开发布的 AI 生成图片作品，按写实、动漫、艺术等分类探索灵感。"
+  },
+  "pricing": {
+    "title": "定价",
+    "description": "ZroImg 积分套餐与价格：注册即可免费体验，按需购买积分，无需订阅。"
+  },
+  "docs": {
+    "title": "文档",
+    "description": "ZroImg 使用文档：图片生成、无限画布、视频创作、积分与订单等功能说明。"
+  },
+  "licenses": {
+    "title": "开源许可",
+    "description": "ZroImg 使用和参考的开源项目及其许可证。"
+  },
+  "login": {
+    "title": "登录",
+    "description": "登录 ZroImg 账号，继续你的 AI 图片创作。"
+  },
+  "register": {
+    "title": "注册",
+    "description": "注册 ZroImg 账号，免费开始 AI 图片创作。"
+  },
+  "forgotPassword": {
+    "title": "重置密码",
+    "description": "通过邮箱验证码重置 ZroImg 账号密码。"
+  },
+  "app": {
+    "title": "创作工作台",
+    "description": "ZroImg 创作工作台。"
+  },
+  "canvas": {
+    "title": "无限画布"
+  },
+  "notFound": {
+    "title": "页面不存在"
+  }
+}

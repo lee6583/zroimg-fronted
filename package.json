@@ -9,13 +9,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "typecheck": "node scripts/build-messages.mjs && next typegen && tsc --noEmit --incremental false",
     "test": "node --experimental-strip-types --test tests/canvas.test.ts tests/credits.test.ts tests/dashboard.test.ts tests/generation.test.ts tests/history.test.ts tests/i18n-messages.test.ts tests/java-time.test.ts tests/mask.test.ts tests/media.test.ts tests/order-status.test.ts tests/recharge.test.ts tests/task-status.test.ts tests/video.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit:prod": "pnpm audit --prod --audit-level=high --ignore-registry-errors --registry=https://registry.npmjs.org",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm i18n:check && pnpm test && pnpm build",
-    "i18n:check": "node scripts/check-i18n.mjs"
+    "i18n:check": "node scripts/build-messages.mjs --check && node scripts/check-i18n.mjs",
+    "i18n:build": "node scripts/build-messages.mjs",
+    "predev": "node scripts/build-messages.mjs",
+    "prebuild": "node scripts/build-messages.mjs"
   },
   "dependencies": {
     "@xyflow/react": "12.12.0",

@@ -1,0 +1,17 @@
+{
+  "page": {
+    "title": "This page couldn't be loaded",
+    "description": "Please try again later. If the problem persists, contact the administrator.",
+    "retry": "Reload"
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has been removed.",
+    "backHome": "Back to home"
+  },
+  "api": {
+    "network": "Network error. Please check your connection and try again.",
+    "unknown": "Request failed. Please try again later."
+  }
+}

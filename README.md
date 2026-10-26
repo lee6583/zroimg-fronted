@@ -76,7 +76,7 @@ NEXT_PUBLIC_SITE_URL=https://zroimg.com
 
 详细规范：[docs/i18n.md](docs/i18n.md)、[docs/seo.md](docs/seo.md)。硬性规则：
 
-- 用户端代码（`src/app/[locale]/**`、`src/features/**`、`src/components/**`、`src/utils/**` 中会展示给用户的文本）**不写死任何用户可见字符串**，包括 `aria-label`、`title`、`alt`、`placeholder`、toast 和校验提示；全部放进 `messages/zh-CN.json`，en/ru 保持相同 key。Server Component 用 `getTranslations`，Client Component 用 `useTranslations`。
+- 用户端代码（`src/app/[locale]/**`、`src/features/**`、`src/components/**`、`src/utils/**` 中会展示给用户的文本）**不写死任何用户可见字符串**，包括 `aria-label`、`title`、`alt`、`placeholder`、toast 和校验提示；全部放进 `messages/zh-CN/<namespace>.json`（按命名空间拆分，`pnpm i18n:build` 合并），en/ru 保持相同 key。Server Component 用 `getTranslations`，Client Component 用 `useTranslations`。
 - key 是 camelCase 语义名（`generate.prompt.placeholder`），不用中文原文做 key；变量、复数用 ICU，不拼接字符串。
 - 站内跳转一律从 `@/i18n/navigation` 导入 `Link`、`redirect`、`useRouter`、`usePathname`，写不带语言前缀的路径。
 - 日期、数字、金额用 next-intl 格式化器（共享格式在 `src/i18n/formats.ts`）；Java 的 `LocalDateTime` 先用 `parseJavaDateTime` 解析（北京时间）。
@@ -88,7 +88,7 @@ NEXT_PUBLIC_SITE_URL=https://zroimg.com
 ## 5. 目录结构
 
 ```text
-messages/              zh-CN.json（完整）、en.json、ru.json
+messages/              <locale>/<namespace>.json 源文件；<locale>.json 为合并生成文件
 docs/                  i18n.md、seo.md
 scripts/               check-i18n.mjs
 src/
@@ -441,7 +441,7 @@ function attachMessages(ticketId: string) {
 4. 浏览器请求放到 `src/api/<domain>`。
 5. 请求/响应类型放到对应 `src/types/<domain>.ts`。
 6. 校验、权限和新接口加在 Java 后端，前端不新增 Route Handler。
-7. 文案进 `messages/zh-CN.json`；公开页使用 `buildMetadata` 并登记到 `site-routes.ts`（见 docs/i18n.md 第 4 节）。
+7. 文案进 `messages/zh-CN/<namespace>.json` 并 `pnpm i18n:build`；公开页使用 `buildMetadata` 并登记到 `site-routes.ts`（见 docs/i18n.md 第 4 节）。
 8. 为纯业务规则和回归风险补测试。
 9. 运行 `pnpm check` 和 `pnpm audit:prod`。
 

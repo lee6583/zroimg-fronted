@@ -1,0 +1,16 @@
+{
+  "brand": "ZroImg",
+  "actions": {
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "retry": "Reload",
+    "startCreating": "Start creating",
+    "backHome": "Back to home",
+    "close": "Close"
+  },
+  "status": {
+    "loading": "Loading...",
+    "pleaseWait": "Please wait..."
+  }
+}
