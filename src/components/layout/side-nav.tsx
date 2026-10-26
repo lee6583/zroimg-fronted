@@ -3,7 +3,6 @@
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import styles from "./shell.module.css";
 
@@ -26,7 +25,6 @@ type SideNavProps<K extends string> = {
   items?: Array<NavItem<K>>;
   groups: Array<NavGroup<K>>;
   activeKey: K | null;
-  prefetch?: boolean;
   onNavigate?: (item: NavItem<K>) => void;
 };
 
@@ -34,7 +32,6 @@ type NavLinkProps<K extends string> = {
   item: NavItem<K>;
   isActive: boolean;
   isNested?: boolean;
-  prefetch?: boolean;
   onNavigate?: (item: NavItem<K>) => void;
 };
 
@@ -91,18 +88,13 @@ function NavLink<K extends string>(props: NavLinkProps<K>) {
   const item = props.item;
   const isActive = props.isActive;
   const isNested = props.isNested;
-  const prefetch = props.prefetch;
   const onNavigate = props.onNavigate;
-  const router = useRouter();
   const Icon = item.icon;
 
   return (
     <Link
       href={item.href}
-      prefetch={prefetch}
       aria-current={isActive ? "page" : undefined}
-      onFocus={() => router.prefetch(item.href)}
-      onPointerEnter={() => router.prefetch(item.href)}
       onClick={() => onNavigate?.(item)}
       className={clsx(
         styles.shell__navLink,
@@ -125,7 +117,6 @@ export function SideNav<K extends string>(props: SideNavProps<K>) {
   const items = props.items ?? [];
   const groups = props.groups;
   const activeKey = props.activeKey;
-  const prefetch = props.prefetch;
   const onNavigate = props.onNavigate;
   const baseId = useId();
   const [isAnimated, setAnimated] = useState(false);
@@ -175,7 +166,6 @@ export function SideNav<K extends string>(props: SideNavProps<K>) {
               key={item.key}
               item={item}
               isActive={item.key === activeKey}
-              prefetch={prefetch}
               onNavigate={onNavigate}
             />
           ))}
@@ -227,7 +217,6 @@ export function SideNav<K extends string>(props: SideNavProps<K>) {
                     item={item}
                     isActive={item.key === activeKey}
                     isNested
-                    prefetch={prefetch}
                     onNavigate={onNavigate}
                   />
                 ))}

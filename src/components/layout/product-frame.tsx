@@ -196,7 +196,6 @@ export function ProductFrame(props: ProductFrameProps) {
                 items={overviewItems}
                 groups={appNavGroups}
                 activeKey={visibleActive}
-                prefetch
                 onNavigate={(item) => setPendingNav({ href: item.href, key: item.key })}
               />
             </div>

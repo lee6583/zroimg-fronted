@@ -69,6 +69,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   const [retryingNo, setRetryingNo] = useState<string | null>(null);
 
   const selected = tasks.find((task) => task.taskNo === selectedNo) ?? tasks[0] ?? null;
+  const hasModels = props.initialModels.length > 0;
   const hasPendingTask = tasks.some((task) => isTaskRunning(task.status));
 
   useEffect(() => {
@@ -98,6 +99,29 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
       window.clearInterval(timer);
     };
   }, [hasPendingTask, tasks]);
+
+  // 浏览器前进/后退会复用路由缓存里的旧数据，挂载时以接口为准刷新一次
+  useEffect(() => {
+    if (!hasModels) {
+      return;
+    }
+
+    let isActive = true;
+    listTaskPage(1)
+      .then((page) => {
+        if (!isActive) {
+          return;
+        }
+        setTasks(page.list);
+        setPageNo(1);
+        setTotalPages(page.pages);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isActive = false;
+    };
+  }, [hasModels]);
 
   async function refreshTasks() {
     const page = await listTaskPage(1);
@@ -169,7 +193,7 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
   }
   if (props.initialModels.length > 0 && selected) {
     content = (
-      <>
+      <div className={styles.videoPage__split}>
         <section className={styles.videoPage__stage} style={frameStyle(selected.ratio)}>
           <VideoFrame
             key={selected.taskNo}
@@ -185,28 +209,29 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
           />
         </section>
 
-        {tasks.length > 1 ? (
-          <section className={styles.videoPage__history}>
-            <h2 className={styles.videoPage__historyTitle}>全部作品</h2>
-            <div className={styles.videoPage__taskList}>
-              {tasks.map((task) => (
-                <button
-                  key={task.taskNo}
-                  type="button"
-                  className={clsx(
-                    styles.videoPage__task,
-                    task.taskNo === selected.taskNo && styles.videoPage__taskActive,
-                  )}
-                  onClick={() => setSelectedNo(task.taskNo)}
-                  aria-pressed={task.taskNo === selected.taskNo}
-                >
-                  <VideoFrame task={task} compact />
-                  <span className={styles.videoPage__taskMeta}>
-                    {formatVideoTime(task.createTime)} · {task.ratio}
-                  </span>
-                </button>
-              ))}
-            </div>
+        <aside className={styles.videoPage__rail} aria-label="全部作品">
+          <h2 className={styles.videoPage__railTitle}>
+            全部作品
+            <span className={styles.videoPage__railCount}>{tasks.length}</span>
+          </h2>
+          <div className={styles.videoPage__railList}>
+            {tasks.map((task) => (
+              <button
+                key={task.taskNo}
+                type="button"
+                className={clsx(
+                  styles.videoPage__task,
+                  task.taskNo === selected.taskNo && styles.videoPage__taskActive,
+                )}
+                onClick={() => setSelectedNo(task.taskNo)}
+                aria-pressed={task.taskNo === selected.taskNo}
+              >
+                <VideoFrame task={task} compact />
+                <span className={styles.videoPage__taskMeta}>
+                  {formatVideoTime(task.createTime)} · {task.ratio}
+                </span>
+              </button>
+            ))}
             {pageNo < totalPages ? (
               <button
                 type="button"
@@ -217,9 +242,9 @@ export function VideoWorkspace(props: VideoWorkspaceProps) {
                 {isLoadingMore ? "加载中..." : "加载更多"}
               </button>
             ) : null}
-          </section>
-        ) : null}
-      </>
+          </div>
+        </aside>
+      </div>
     );
   }
 
