@@ -7,6 +7,7 @@ import {
   createGeneratorNode,
   createImageNode,
   createNoteNode,
+  findMaskImage,
   flowFromScene,
   getMode,
   getPendingTasks,
@@ -22,6 +23,7 @@ import {
   sceneFromFlow,
   type CanvasNode,
 } from "../src/features/canvas/canvas-model.ts";
+import { createTextDraft, syncTextDraft } from "../src/features/canvas/text-draft.ts";
 import type { GenerationModel } from "../src/types/generation.ts";
 
 const options = { modelCode: "m1", ratio: "1:1", quality: "low", count: 1 };
@@ -238,4 +240,39 @@ test("重试中的任务继续轮询，重试进度不进入场景", () => {
 
   const scene = sceneFromFlow([node], [], { x: 0, y: 0, zoom: 1 });
   assert.equal("retry" in scene.nodes[0].data, false);
+});
+
+test("输入法组字期间画布数据变化不覆盖输入框草稿", () => {
+  const typing = { ...createTextDraft("你好"), draft: "你好wen", isComposing: true };
+  const synced = syncTextDraft(typing, "你好!");
+  assert.equal(synced.draft, "你好wen");
+  assert.equal(synced.source, "你好!");
+
+  const same = createTextDraft("a");
+  assert.equal(syncTextDraft(same, "a"), same);
+
+  const committed = { ...createTextDraft("a"), draft: "ab" };
+  assert.deepEqual(syncTextDraft(committed, "ab"), {
+    draft: "ab",
+    source: "ab",
+    isComposing: false,
+  });
+
+  // 撤销等外部修改在非组字状态下同步到输入框
+  assert.equal(syncTextDraft(committed, "").draft, "");
+});
+
+test("重新编辑蒙版时找回局部重绘的原图节点", () => {
+  const { image, other, generator, nodes } = setup();
+  const edges = [createEdge(image.id, generator.id)];
+  assert.equal(findMaskImage(generator.id, nodes, edges)?.id, image.id);
+
+  const masked = {
+    ...generator,
+    data: { ...generator.data, referenceMediaId: "a2", maskMediaId: "m" },
+  };
+  const maskedNodes = nodes.map((node) => (node.id === generator.id ? masked : node));
+  assert.equal(findMaskImage(generator.id, maskedNodes, edges)?.id, other.id);
+  assert.equal(findMaskImage(generator.id, nodes, []), null);
+  assert.equal(findMaskImage(image.id, nodes, edges), null);
 });

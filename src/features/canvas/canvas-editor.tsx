@@ -36,6 +36,7 @@ import {
   createGeneratorNode,
   createImageNode,
   createNoteNode,
+  findMaskImage,
   flowFromScene,
   generatorNodeWidth,
   getMode,
@@ -199,6 +200,8 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const [notice, setNotice] = useState("");
   const [isHistoryOpen, setHistoryOpen] = useState(false);
   const [maskNode, setMaskNode] = useState<ImageNode | null>(null);
+  // 重新编辑已有生成节点的蒙版时记录目标节点；为空表示新建局部重绘节点
+  const [maskTargetId, setMaskTargetId] = useState<string | null>(null);
   const [sheetNodeId, setSheetNodeId] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isSavingRef = useRef(false);
@@ -438,6 +441,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       collections,
       balance,
       setBalance,
+      notify: setNotice,
       generate,
       generateFrom(imageId) {
         const image = store.getState().nodes.find((node) => node.id === imageId);
@@ -445,7 +449,18 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       },
       inpaint(imageId) {
         const image = store.getState().nodes.find((node) => node.id === imageId);
-        if (image?.type === "image") setMaskNode(image);
+        if (image?.type !== "image") return;
+
+        setMaskTargetId(null);
+        setMaskNode(image);
+      },
+      editMask(generatorId) {
+        const state = store.getState();
+        const image = findMaskImage(generatorId, state.nodes, state.edges);
+        if (!image) return;
+
+        setMaskTargetId(generatorId);
+        setMaskNode(image);
       },
       remove(nodeId) {
         store.getState().removeNode(nodeId);
@@ -538,8 +553,27 @@ function CanvasWorkspace(props: CanvasEditorProps) {
 
   function confirmMask(mask: MediaAsset) {
     const image = maskNode;
+    const targetId = maskTargetId;
+    closeMask();
+    if (!image) return;
+
+    const target = store.getState().nodes.find((node) => node.id === targetId);
+    if (target?.type === "generator") {
+      const state = store.getState();
+      state.record();
+      state.updateData(target.id, {
+        referenceMediaId: image.data.mediaAssetId,
+        maskMediaId: mask.id,
+      });
+      return;
+    }
+
+    addGeneratorFor(image, mask);
+  }
+
+  function closeMask() {
     setMaskNode(null);
-    if (image) addGeneratorFor(image, mask);
+    setMaskTargetId(null);
   }
 
   function dropFiles(event: DragEvent<HTMLDivElement>) {
@@ -712,7 +746,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
           imageUrl={maskUrl}
           width={maskNode.data.width}
           height={maskNode.data.height}
-          onCancel={() => setMaskNode(null)}
+          onCancel={closeMask}
           onConfirm={confirmMask}
         />
       ) : null}

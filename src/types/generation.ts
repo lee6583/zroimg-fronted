@@ -187,7 +187,30 @@ type GenerationUserLimits = {
   activeVideoTasks: number;
 };
 
+type PromptPolishScene = "image" | "video";
+
+type PromptPolishRequest = {
+  prompt: string;
+  scene: PromptPolishScene;
+};
+
+type PromptPolishResult = {
+  prompt: string;
+  costPoints: number;
+  balancePoints: number;
+};
+
+type PromptPolishConfig = {
+  enabled: boolean;
+  imagePoints: number;
+  videoPoints: number;
+};
+
 export type {
+  PromptPolishScene,
+  PromptPolishRequest,
+  PromptPolishResult,
+  PromptPolishConfig,
   GenerationMode,
   GenerationTaskStatus,
   GenerationModelParams,

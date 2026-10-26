@@ -10,6 +10,9 @@ import {
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { RefObject } from "react";
+import { PolishButton } from "@/features/polish/polish-button";
+import type { PromptPolish } from "@/features/polish/use-prompt-polish";
 import type { GenerationMode, MediaAsset } from "@/types/generation";
 import type { Notice } from "./generation-model";
 import styles from "./generate-form.module.css";
@@ -32,9 +35,12 @@ type PromptComposerProps = {
   onRemove: (id: string) => void;
   onNew: () => Promise<unknown>;
   onSubmit: () => Promise<void>;
+  // AI 润色：按钮在上传参考图右侧
+  polish: PromptPolish;
+  textarea: RefObject<HTMLTextAreaElement | null>;
 };
 
-export function PromptComposer(props: PromptComposerProps) {
+export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
   const inputs = props.inputs;
   const prompt = props.prompt;
   const mode = props.mode;
@@ -51,6 +57,7 @@ export function PromptComposer(props: PromptComposerProps) {
   const onSubmit = props.onSubmit;
   const settingsSummary = props.settingsSummary;
   const onOpenSettings = props.onOpenSettings;
+  const polish = props.polish;
   const t = useTranslations("generate");
   let placeholder = t("composer.placeholder");
   if (mode === "image_to_image") {
@@ -88,6 +95,7 @@ export function PromptComposer(props: PromptComposerProps) {
         ) : null}
 
         <textarea
+          ref={textarea}
           className={styles.generateForm__textarea}
           value={prompt}
           onChange={(event) => onPromptChange(event.target.value)}
@@ -125,6 +133,7 @@ export function PromptComposer(props: PromptComposerProps) {
                 }}
               />
             </label>
+            <PolishButton polish={polish} disabled={isBusy} />
             <button
               type="button"
               onClick={onOpenSettings}

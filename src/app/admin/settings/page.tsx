@@ -20,6 +20,7 @@ import type {
   CanvasSettingsConfig,
   CheckInSettingsConfig,
   EasyPayAdminConfig,
+  GenerationProviderConnection,
   GenerationSettingsConfig,
   SmtpAdminConfig,
 } from "@/types/admin";
@@ -133,6 +134,11 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     requestJava<GenerationSettingsConfig>("/admin/settings/generation"),
   ]);
   const canvasModels = section === "canvas" ? await readCanvasModels() : [];
+  // AI 润色选择中转站连接
+  const connections =
+    section === "generation"
+      ? await requestJava<GenerationProviderConnection[]>("/generation/admin/provider-connections")
+      : [];
 
   // 第一步：按已加载的配置推导每个分类的状态。
   const isPaymentReady =
@@ -246,7 +252,10 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
             <CanvasSettingsForm initialSettings={canvasSettings} models={canvasModels} />
           ) : null}
           {section === "generation" ? (
-            <GenerationSettingsForm initialSettings={generationSettings} />
+            <GenerationSettingsForm
+              initialSettings={generationSettings}
+              connections={connections}
+            />
           ) : null}
         </section>
       </div>

@@ -56,6 +56,7 @@
     "reference": "参考图",
     "mask": "蒙版",
     "removeMask": "移除蒙版",
+    "editMask": "编辑蒙版",
     "count": "{count, plural, other {# 张}}",
     "price": "预计 {points, number} 积分 · 余额 {balance, number}",
     "generate": "生成",

@@ -5,10 +5,13 @@ import { LoaderCircle, Pencil, Sparkles, Trash2, X } from "lucide-react";
 import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { AppSelect } from "@/components/ui/app-select";
 import { useIsMobile } from "@/components/ui/sheet";
 import { useClock } from "@/features/generation/use-clock";
+import { PolishButton } from "@/features/polish/polish-button";
+import { usePromptPolish } from "@/features/polish/use-prompt-polish";
 import { translateApiError } from "@/i18n/api-error";
 import type { CanvasGeneratorData } from "@/types/canvas";
 import type { GenerationMode } from "@/types/generation";
@@ -28,6 +31,7 @@ import {
   type GeneratorOptions,
 } from "../canvas-model";
 import { useCanvasStore, useCanvasStoreApi } from "../canvas-store";
+import { useTextDraft } from "../text-draft";
 import styles from "../canvas-editor.module.css";
 
 type RetryTextProps = {
@@ -192,6 +196,7 @@ function GeneratorRefs(props: GeneratorRefsProps) {
   const data = props.data;
   const t = useTranslations("canvas.generator");
   const store = useCanvasStoreApi();
+  const actions = useCanvasActions();
   const { referenceId } = useGeneratorMode(id, data);
 
   function removeMask() {
@@ -202,33 +207,46 @@ function GeneratorRefs(props: GeneratorRefsProps) {
 
   if (!referenceId) return null;
 
+  const referenceImage = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={styles.generatorNode__thumb}
+      src={userAssetUrl(referenceId)}
+      alt={t("reference")}
+    />
+  );
+  if (!data.maskMediaId) {
+    return <div className={styles.generatorNode__refs}>{referenceImage}</div>;
+  }
+
+  // 蒙版图只用于提交；节点上在原图上叠加高亮显示重绘区域，点击重新编辑蒙版
+  const maskStyle = {
+    "--mask-url": `url("${userAssetUrl(data.maskMediaId)}")`,
+  } as CSSProperties;
+
   return (
     <div className={styles.generatorNode__refs}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        className={styles.generatorNode__thumb}
-        src={userAssetUrl(referenceId)}
-        alt={t("reference")}
-      />
-      {data.maskMediaId ? (
-        <span className={styles.generatorNode__maskThumb}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className={styles.generatorNode__thumb}
-            src={userAssetUrl(data.maskMediaId)}
-            alt={t("mask")}
-          />
-          <button
-            type="button"
-            aria-label={t("removeMask")}
-            title={t("removeMask")}
-            className={clsx("nodrag", styles.generatorNode__thumbRemove)}
-            onClick={removeMask}
-          >
-            <X size={12} />
-          </button>
-        </span>
-      ) : null}
+      <span className={styles.generatorNode__maskThumb}>
+        <button
+          type="button"
+          aria-label={t("editMask")}
+          title={t("editMask")}
+          className={clsx("nodrag", styles.generatorNode__maskEdit)}
+          onClick={() => actions.editMask(id)}
+        >
+          {referenceImage}
+          <span className={styles.generatorNode__maskOverlay} style={maskStyle} />
+        </button>
+        <button
+          type="button"
+          aria-label={t("removeMask")}
+          title={t("removeMask")}
+          className={clsx("nodrag", styles.generatorNode__thumbRemove)}
+          onClick={removeMask}
+        >
+          <X size={12} />
+        </button>
+      </span>
     </div>
   );
 }
@@ -241,6 +259,11 @@ export function GeneratorForm(props: GeneratorFormProps) {
   const isMeasured = props.isMeasured ?? false;
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const focusId = useCanvasStore((state) => state.focusId);
+  // 提示词直接读 store：React Flow 节点 props 晚一帧，受控值落后会打断输入法组字
+  const storedPrompt = useCanvasStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return node?.type === "generator" ? node.data.prompt : data.prompt;
+  });
   const actions = useCanvasActions();
   const models = actions.models;
   const balance = actions.balance;
@@ -264,7 +287,7 @@ export function GeneratorForm(props: GeneratorFormProps) {
   const isMissingReference = needsReference && !referenceId;
   const isShort = estimate.points !== null && estimate.points > balance;
   const canGenerate =
-    !isPending && !isSubmitting && Boolean(data.prompt.trim()) && Boolean(options);
+    !isPending && !isSubmitting && Boolean(storedPrompt.trim()) && Boolean(options);
   const isSheet = variant === "sheet";
 
   const modelCode = options?.modelCode ?? "";
@@ -322,6 +345,20 @@ export function GeneratorForm(props: GeneratorFormProps) {
   function changePrompt(value: string) {
     store.getState().updateData(id, { prompt: value });
   }
+  const promptDraft = useTextDraft(storedPrompt, changePrompt);
+  // AI 润色：结果和输入一样写回画布数据，并记录一步撤销；组字期间延后写入
+  const polish = usePromptPolish({
+    scene: "image",
+    prompt: storedPrompt,
+    textareaRef: promptRef,
+    onApply(value) {
+      const state = store.getState();
+      state.record();
+      state.updateData(id, { prompt: value });
+    },
+    onNotice: actions.notify,
+    onBalance: setBalance,
+  });
 
   async function submit() {
     setSubmitting(true);
@@ -382,17 +419,17 @@ export function GeneratorForm(props: GeneratorFormProps) {
       <textarea
         ref={promptRef}
         className={clsx(
-          "nodrag nowheel",
+          "nodrag nowheel nopan",
           styles.generatorNode__prompt,
           isSheet && styles.generatorNode__promptSheet,
         )}
-        value={data.prompt}
         placeholder={t("placeholder")}
         aria-label={t("placeholder")}
         rows={4}
         maxLength={2000}
         onFocus={() => store.getState().record()}
-        onChange={(event) => changePrompt(event.target.value)}
+        onKeyDown={(event) => event.stopPropagation()}
+        {...promptDraft}
       />
 
       {options && model ? (
@@ -443,6 +480,12 @@ export function GeneratorForm(props: GeneratorFormProps) {
         <span className={clsx(styles.generatorNode__price, isShort && styles.textDanger)}>
           {estimate.error || priceText}
         </span>
+        <PolishButton
+          polish={polish}
+          size={isSheet ? "default" : "compact"}
+          tooltipAlign="end"
+          disabled={isPending}
+        />
         <button
           type="button"
           className={clsx("nodrag", styles.primaryButton, isSheet && styles.generatorSheet__submit)}

@@ -337,6 +337,35 @@
   position: relative;
 }
 
+.generatorNode__maskEdit {
+  position: relative;
+  display: block;
+  border: 0;
+  border-radius: 0.4rem;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.generatorNode__maskEdit:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* 蒙版透明处是重绘区域：用整块色层减去蒙版不透明部分，只在重绘区域显示高亮 */
+.generatorNode__maskOverlay {
+  position: absolute;
+  inset: 1px;
+  border-radius: 0.35rem;
+  background: color-mix(in oklab, var(--mask-paint) 55%, transparent);
+  pointer-events: none;
+  mask-image: var(--mask-url), linear-gradient(#000 0 0);
+  mask-size: cover;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-composite: exclude;
+}
+
 .generatorNode__thumbRemove {
   position: absolute;
   top: -0.35rem;
@@ -398,6 +427,7 @@
 
 .generatorNode__price {
   min-width: 0;
+  flex: 1;
   color: var(--muted);
   font-size: 0.74rem;
 }

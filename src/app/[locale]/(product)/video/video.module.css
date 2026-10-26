@@ -355,6 +355,22 @@
   line-height: 1.45;
 }
 
+.videoPage__promptField {
+  position: relative;
+}
+
+.videoPage__textareaWithPolish {
+  padding-bottom: 2.75rem;
+}
+
+.videoPage__promptField .videoPage__promptPolish {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  background: var(--panel);
+  border-radius: 0.5rem;
+}
+
 .videoPage__textarea {
   width: 100%;
   border: 1px solid var(--line);

@@ -1,0 +1,102 @@
+.polish {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.polish__button {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.polish__button:hover:not(:disabled) {
+  background: var(--soft);
+}
+
+.polish__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.polish__buttonCompact {
+  width: 1.875rem;
+  height: 1.875rem;
+}
+
+.polish__spin {
+  animation: polish-spin 0.9s linear infinite;
+}
+
+.polish__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  z-index: 30;
+  width: max-content;
+  max-width: min(16rem, 70vw);
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--panel) 96%, var(--foreground));
+  padding: 0.35rem 0.55rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: nowrap;
+  opacity: 0;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+  transform: translate(-50%, 0.25rem);
+  transition:
+    opacity 0.12s ease 0.3s,
+    transform 0.12s ease 0.3s;
+}
+
+.polish:hover .polish__tooltip,
+.polish:has(:focus-visible) .polish__tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.polish__tooltipEnd {
+  right: 0;
+  left: auto;
+  transform: translateY(0.25rem);
+}
+
+.polish:hover .polish__tooltipEnd,
+.polish:has(:focus-visible) .polish__tooltipEnd {
+  transform: translateY(0);
+}
+
+@media (hover: none) {
+  .polish__tooltip {
+    display: none;
+  }
+}
+
+@media (max-width: 767px), (pointer: coarse) {
+  .polish__button,
+  .polish__buttonCompact {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+@keyframes polish-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polish__spin {
+    animation-duration: 2s;
+  }
+}

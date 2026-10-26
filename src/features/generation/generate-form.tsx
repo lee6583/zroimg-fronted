@@ -8,6 +8,7 @@ import { generationConversationsApi } from "@/api/generation/conversations";
 import { generationTasksApi } from "@/api/generation/tasks";
 import { uploadMediaFile } from "@/api/media/uploads";
 import { Sheet } from "@/components/ui/sheet";
+import { usePromptPolish } from "@/features/polish/use-prompt-polish";
 import { translateApiError } from "@/i18n/api-error";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
@@ -85,6 +86,15 @@ export function GenerateForm(props: GenerateFormProps) {
   const [isCreatingChat, setCreatingChat] = useState(false);
   const isCreatingChatRef = useRef(false);
   const selectionVersionRef = useRef(0);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const polish = usePromptPolish({
+    scene: "image",
+    prompt,
+    textareaRef: promptRef,
+    onApply: setPrompt,
+    onNotice: (text) => setNotice({ text, tone: "error" }),
+    onBalance: setBalance,
+  });
 
   const isCostError = !isEstimating && (balance < estimate || errorCost === estimate);
   const groups = groupConversations(chats);
@@ -610,6 +620,8 @@ export function GenerateForm(props: GenerateFormProps) {
             onRemove={removeInput}
             onNew={createChat}
             onSubmit={submit}
+            polish={polish}
+            textarea={promptRef}
           />
         </section>
       </div>

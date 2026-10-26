@@ -3,10 +3,12 @@
 import clsx from "clsx";
 import { ImagePlus, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
 import { AppSelect } from "@/components/ui/app-select";
 import { Sheet, useIsMobile } from "@/components/ui/sheet";
+import { PolishButton } from "@/features/polish/polish-button";
+import { usePromptPolish } from "@/features/polish/use-prompt-polish";
 import type { VideoGenerationMode, VideoModel } from "@/types/video";
 import { isVideoMode, submitVideoTask } from "./video-submit";
 import { useVideoText } from "./video-text";
@@ -103,6 +105,14 @@ export function VideoSettings(props: VideoSettingsProps) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
   const [isUploading, setUploading] = useState(false);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const polish = usePromptPolish({
+    scene: "video",
+    prompt: form.prompt,
+    textareaRef: promptRef,
+    onApply: (prompt) => updateForm({ prompt }),
+    onNotice: setMessage,
+  });
 
   const model = getModel(props.models, form.model);
   const params = model?.supportParams || null;
@@ -327,6 +337,7 @@ export function VideoSettings(props: VideoSettingsProps) {
     return (
       <section className={styles.videoPage__composer} aria-label={t("settings.label")}>
         <textarea
+          ref={promptRef}
           className={clsx(styles.videoPage__textarea, styles.videoPage__composerPrompt)}
           rows={2}
           value={form.prompt}
@@ -348,6 +359,7 @@ export function VideoSettings(props: VideoSettingsProps) {
               <span className={styles.videoPage__composerValue}>{summary}</span>
             </span>
           </button>
+          <PolishButton polish={polish} tooltipAlign="end" disabled={isSubmitting} />
           {submitButton}
         </div>
         {message ? <p className={styles.videoPage__composerMessage}>{message}</p> : null}
@@ -381,13 +393,26 @@ export function VideoSettings(props: VideoSettingsProps) {
       {modelGroup}
 
       <SettingGroup title={t("settings.prompt")}>
-        <textarea
-          className={styles.videoPage__textarea}
-          rows={5}
-          value={form.prompt}
-          onChange={(event) => updateForm({ prompt: event.target.value })}
-          placeholder={t("settings.promptPlaceholder")}
-        />
+        <div className={styles.videoPage__promptField}>
+          <textarea
+            ref={promptRef}
+            className={clsx(
+              styles.videoPage__textarea,
+              polish.isEnabled && styles.videoPage__textareaWithPolish,
+            )}
+            rows={5}
+            value={form.prompt}
+            onChange={(event) => updateForm({ prompt: event.target.value })}
+            placeholder={t("settings.promptPlaceholder")}
+          />
+          <PolishButton
+            polish={polish}
+            size="compact"
+            tooltipAlign="end"
+            disabled={isSubmitting}
+            className={styles.videoPage__promptPolish}
+          />
+        </div>
       </SettingGroup>
 
       {optionGroups}

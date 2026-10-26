@@ -201,6 +201,7 @@
       "reference": "Reference image",
       "mask": "Mask",
       "removeMask": "Remove mask",
+      "editMask": "Edit mask",
       "count": "{count, plural, one {# image} other {# images}}",
       "price": "Est. {points, number} credits · Balance {balance, number}",
       "generate": "Generate",
@@ -1086,6 +1087,12 @@
     },
     "avatar": {
       "label": "{name}'s avatar"
+    },
+    "polish": {
+      "tooltip": "{points, plural, =0 {AI polish} one {AI polish · costs # credit} other {AI polish · costs # credits}}",
+      "polishing": "Polishing…",
+      "empty": "Enter a prompt before using AI polish",
+      "notConfigured": "AI polish is not available yet"
     }
   },
   "video": {

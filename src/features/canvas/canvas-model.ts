@@ -175,6 +175,27 @@ export function getReferenceId(data: CanvasGeneratorData, upstream: ImageNode | 
   return upstream?.data.mediaAssetId ?? null;
 }
 
+// 重新编辑蒙版时找回原图节点：优先找局部重绘记录的原图，其次是上游连线的图片。
+export function findMaskImage(generatorId: string, nodes: CanvasNode[], edges: Edge[]) {
+  const generator = nodes.find((node) => node.id === generatorId);
+  if (generator?.type !== "generator") {
+    return null;
+  }
+
+  const referenceId = generator.data.referenceMediaId;
+  const upstream = getUpstreamImage(generatorId, nodes, edges);
+  if (referenceId && upstream?.data.mediaAssetId === referenceId) {
+    return upstream;
+  }
+  for (const node of nodes) {
+    if (node.type === "image" && referenceId && node.data.mediaAssetId === referenceId) {
+      return node;
+    }
+  }
+
+  return upstream?.data.mediaAssetId ? upstream : null;
+}
+
 export function getModeModels(models: GenerationModel[], mode: GenerationMode) {
   return models.filter((model) => model.supportModes.includes(mode));
 }

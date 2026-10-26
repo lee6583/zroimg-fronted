@@ -127,6 +127,13 @@ type GenerationSettingsConfig = {
   autoRetryEnabled?: boolean;
   maxRetries?: number;
   retryOnImageReadTimeout?: boolean;
+  // AI 润色：单次消耗积分、润色结果最大字数、使用的中转站连接与对话模型 ID
+  polishImagePoints?: number;
+  polishVideoPoints?: number;
+  polishImageMaxChars?: number;
+  polishVideoMaxChars?: number;
+  polishConnectionId?: string | null;
+  polishModelCode?: string;
 };
 
 type SaveGenerationSettingsRequest = {
@@ -135,6 +142,12 @@ type SaveGenerationSettingsRequest = {
   autoRetryEnabled: boolean;
   maxRetries: number;
   retryOnImageReadTimeout: boolean;
+  polishImagePoints: number;
+  polishVideoPoints: number;
+  polishImageMaxChars: number;
+  polishVideoMaxChars: number;
+  polishConnectionId: string | null;
+  polishModelCode: string;
 };
 
 // auth AdminUserVO

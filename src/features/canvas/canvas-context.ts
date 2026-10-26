@@ -10,9 +10,13 @@ type CanvasActions = {
   collections: FavoriteCollection[];
   balance: number;
   setBalance: (balance: number) => void;
+  // 在画布底部显示一条短提示（与生成提示共用）
+  notify: (text: string) => void;
   generate: (nodeId: string) => Promise<void>;
   generateFrom: (imageId: string) => void;
   inpaint: (imageId: string) => void;
+  // 重新编辑生成节点的局部重绘蒙版
+  editMask: (generatorId: string) => void;
   remove: (nodeId: string) => void;
   // 手机端在 Sheet 中打开生成节点的提示词和参数
   openGenerator: (nodeId: string) => void;

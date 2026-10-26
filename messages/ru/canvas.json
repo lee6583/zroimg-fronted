@@ -56,6 +56,7 @@
     "reference": "Референс",
     "mask": "Маска",
     "removeMask": "Удалить маску",
+    "editMask": "Изменить маску",
     "count": "{count, plural, one {# шт.} few {# шт.} many {# шт.} other {# шт.}}",
     "price": "Ориентировочно {points, number} баллов · Баланс: {balance, number}",
     "generate": "Создать",

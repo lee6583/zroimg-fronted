@@ -201,6 +201,7 @@
       "reference": "参考图",
       "mask": "蒙版",
       "removeMask": "移除蒙版",
+      "editMask": "编辑蒙版",
       "count": "{count, plural, other {# 张}}",
       "price": "预计 {points, number} 积分 · 余额 {balance, number}",
       "generate": "生成",
@@ -1086,6 +1087,12 @@
     },
     "avatar": {
       "label": "{name} 的头像"
+    },
+    "polish": {
+      "tooltip": "{points, plural, =0 {AI 润色} other {AI 润色 · 消耗 # 积分}}",
+      "polishing": "正在润色…",
+      "empty": "请先输入提示词，再使用 AI 润色",
+      "notConfigured": "AI 润色暂未开放"
     }
   },
   "video": {
