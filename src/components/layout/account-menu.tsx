@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
+import NextLink from "next/link";
 import { authApi } from "@/api/auth/email-auth";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -11,6 +12,8 @@ import styles from "./product-top-nav.module.css";
 type AccountMenuProps = {
   name: string;
   avatarUrl: string | null;
+  // 管理员只使用后台：菜单里给后台入口，不给用户端的账户设置。
+  isAdmin?: boolean;
 };
 
 /** 退出登录并回到登录页；顶栏账户菜单和手机端「我的」共用。 */
@@ -78,15 +81,23 @@ export function AccountMenu(props: AccountMenuProps) {
 
       {isOpen ? (
         <div className={styles.productTopNav__accountMenu} role="menu">
-          <Link
-            href="/settings"
-            className={styles.productTopNav__accountItem}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-          >
-            <Settings size={15} />
-            {t("settings")}
-          </Link>
+          {props.isAdmin ? (
+            // 后台不在 [locale] 下，用 next/link 避免被加上语言前缀。
+            <NextLink href="/admin" className={styles.productTopNav__accountItem} role="menuitem">
+              <LayoutDashboard size={15} />
+              {t("adminConsole")}
+            </NextLink>
+          ) : (
+            <Link
+              href="/settings"
+              className={styles.productTopNav__accountItem}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+            >
+              <Settings size={15} />
+              {t("settings")}
+            </Link>
+          )}
           <button
             type="button"
             className={styles.productTopNav__accountItem}

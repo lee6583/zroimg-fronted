@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { docsLastModified, docsPath, docsSlugs } from "@/content/docs/navigation";
 
 type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
@@ -16,7 +17,18 @@ export const publicPages: PublicPage[] = [
   { path: "/", changeFrequency: "weekly", priority: 1, lastModified: "2026-10-26" },
   { path: "/gallery", changeFrequency: "daily", priority: 0.8, lastModified: "2026-10-26" },
   { path: "/pricing", changeFrequency: "monthly", priority: 0.7, lastModified: "2026-10-26" },
-  { path: "/docs", changeFrequency: "weekly", priority: 0.6, lastModified: "2026-10-26" },
+  { path: "/docs", changeFrequency: "weekly", priority: 0.6, lastModified: docsLastModified },
+  // 内置文档每页一条，slug 与阅读顺序见 src/content/docs/navigation.ts
+  ...docsSlugs.map((slug) => {
+    const page: PublicPage = {
+      path: docsPath(slug),
+      changeFrequency: "monthly",
+      priority: 0.5,
+      lastModified: docsLastModified,
+    };
+
+    return page;
+  }),
   { path: "/licenses", changeFrequency: "yearly", priority: 0.2, lastModified: "2026-10-26" },
 ];
 

@@ -11,7 +11,8 @@
   "account": {
     "openMenu": "打开账户菜单",
     "settings": "账户设置",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "adminConsole": "管理后台"
   },
   "theme": {
     "toggle": "切换明暗模式"

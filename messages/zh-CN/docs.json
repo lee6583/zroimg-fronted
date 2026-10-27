@@ -1,6 +1,41 @@
 {
-  "loading": "文档加载中...",
-  "empty": "暂无文档",
-  "toc": "目录",
-  "tocLabel": "文档目录"
+  "toc": "本页目录",
+  "tocLabel": "本页目录",
+  "navLabel": "文档导航",
+  "menu": "文档",
+  "overview": {
+    "navTitle": "文档首页",
+    "eyebrow": "ZroImg 文档",
+    "title": "ZroImg 产品文档",
+    "description": "了解 ZroImg 的图片与视频生成、无限画布和积分规则，并通过开放 API 把生成能力接入你自己的应用。"
+  },
+  "sections": {
+    "guide": "使用指南",
+    "api": "API 基础",
+    "endpoints": "API 接口"
+  },
+  "sectionDescriptions": {
+    "guide": "第一次使用 ZroImg？从平台介绍和快速上手开始，再了解积分如何计费。",
+    "api": "开始调用前先了解认证、异步任务模型、幂等、限流和错误码。",
+    "endpoints": "每个接口的参数、响应和可直接运行的 cURL、Python、JavaScript 示例。"
+  },
+  "notices": {
+    "title": "公告与常见问题",
+    "description": "由运营团队维护的最新公告与常见问题。"
+  },
+  "pager": {
+    "label": "上一页和下一页",
+    "previous": "上一页",
+    "next": "下一页"
+  },
+  "code": {
+    "copy": "复制",
+    "copied": "已复制",
+    "languages": "示例语言",
+    "language": {
+      "curl": "cURL",
+      "python": "Python",
+      "javascript": "JavaScript"
+    }
+  }
 }

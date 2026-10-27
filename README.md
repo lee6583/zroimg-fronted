@@ -63,6 +63,8 @@ JAVA_API_BASE_URL=http://localhost:8080
 NEXT_PUBLIC_SITE_URL=https://zroimg.com
 ```
 
+- `NEXT_PUBLIC_OPEN_API_BASE_URL` 是开放 API 的对外地址，只用于文档示例和 API 密钥页展示；不填默认 `https://api.zroimg.com`。
+
 - `NEXT_PUBLIC_SITE_URL` 是站点对外地址，用于 canonical、hreflang、sitemap 和 OpenGraph；不填默认 `https://zroimg.com`，测试环境需要改成测试域名。
 
 - `JAVA_API_BASE_URL` 只供 Next 服务端渲染调用 Java；生产环境填 Java 的内网地址，不填公网域名。
@@ -74,7 +76,7 @@ NEXT_PUBLIC_SITE_URL=https://zroimg.com
 
 ## 4. 国际化与 SEO
 
-详细规范：[docs/i18n.md](docs/i18n.md)、[docs/seo.md](docs/seo.md)。硬性规则：
+详细规范：[docs/i18n.md](docs/i18n.md)、[docs/seo.md](docs/seo.md)；文档站（`/docs`）的结构与写作约定见 [docs/docs-site.md](docs/docs-site.md)。硬性规则：
 
 - 用户端代码（`src/app/[locale]/**`、`src/features/**`、`src/components/**`、`src/utils/**` 中会展示给用户的文本）**不写死任何用户可见字符串**，包括 `aria-label`、`title`、`alt`、`placeholder`、toast 和校验提示；全部放进 `messages/zh-CN/<namespace>.json`（按命名空间拆分，`pnpm i18n:build` 合并），en/ru 保持相同 key。Server Component 用 `getTranslations`，Client Component 用 `useTranslations`。
 - key 是 camelCase 语义名（`generate.prompt.placeholder`），不用中文原文做 key；变量、复数用 ICU，不拼接字符串。
@@ -89,7 +91,7 @@ NEXT_PUBLIC_SITE_URL=https://zroimg.com
 
 ```text
 messages/              <locale>/<namespace>.json 源文件；<locale>.json 为合并生成文件
-docs/                  i18n.md、seo.md
+docs/                  i18n.md、seo.md、docs-site.md
 scripts/               check-i18n.mjs
 src/
   proxy.ts             语言协商（next-intl），排除 /api、/admin、静态文件
@@ -104,7 +106,8 @@ src/
     ui/                业务无关 UI
   features/            按业务域组织的交互组件
     canvas/            无限画布编辑器（React Flow）和局部重绘遮罩（Konva）
-  lib/                 seo.ts（buildMetadata）、structured-data.ts（JSON-LD）、site-routes.ts
+  content/docs/        内置文档内容（按语言）与 API 代码示例，见 docs/docs-site.md
+  lib/                 seo.ts（buildMetadata）、structured-data.ts（JSON-LD）、site-routes.ts、open-api.ts
   server/
     auth.ts            SSR 会话入口
     env.ts             服务端环境配置

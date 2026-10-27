@@ -16,8 +16,8 @@
     "description": "ZroImg credit packages and prices: try it free after signing up, buy credits as you need them, no subscription."
   },
   "docs": {
-    "title": "Docs",
-    "description": "ZroImg documentation: image generation, infinite canvas, video creation, credits and orders."
+    "title": "Documentation",
+    "description": "ZroImg documentation: platform introduction, quickstart, credits and billing, plus the image and video generation API reference with authentication, errors and code examples."
   },
   "licenses": {
     "title": "Open source licenses",

@@ -21,6 +21,7 @@ import { translateApiError } from "@/i18n/api-error";
 import { useRouter } from "@/i18n/navigation";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import styles from "./account-settings-form.module.css";
+import { ApiKeysSection } from "./api-keys-section";
 
 type AccountSettingsFormProps = {
   username: string;
@@ -49,12 +50,17 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
             <ShieldCheck size={16} />
             <span>{t("security")}</span>
           </a>
+          <a href="#api-keys">
+            <KeyRound size={16} />
+            <span>{t("apiKeys")}</span>
+          </a>
         </nav>
       </aside>
 
       <div className={styles.accountSettings__content}>
         <ProfileForm {...props} />
         <PasswordForm />
+        <ApiKeysSection />
       </div>
     </section>
   );

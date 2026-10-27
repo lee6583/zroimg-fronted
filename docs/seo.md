@@ -7,7 +7,7 @@
 - 每个公开页面、每种语言都有唯一的 `<title>` 和 description（`metadata.<page>.*` 文案）。
 - canonical、hreflang（含 `x-default`）、OpenGraph、Twitter Card、robots 由 `buildMetadata` 统一生成。
 - `sitemap.xml`（公开页 × 全部语言，带 hreflang）与 `robots.txt`。
-- JSON-LD：首页 `Organization` + `WebSite`，画廊 `ImageGallery`（当前页作品的 `ImageObject`）。
+- JSON-LD：首页 `Organization` + `WebSite`，画廊 `ImageGallery`（当前页作品的 `ImageObject`），文档页 `TechArticle`。
 - 登录后的应用页、认证页、后台、404 一律 `noindex`。
 - 爬虫访问无前缀地址时不做语言重定向（见 [docs/i18n.md](./i18n.md) 1.2）。
 
@@ -17,7 +17,7 @@
 
 | 类型   | 路径（每种语言各一份）                                                                                                                    | robots            | 出现在 sitemap                                  |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ----------------------------------------------- |
-| 公开页 | `/`、`/gallery`、`/pricing`、`/docs`、`/licenses`                                                                                         | index, follow     | 是                                              |
+| 公开页 | `/`、`/gallery`、`/pricing`、`/docs`、`/docs/<slug>`、`/licenses`                                                                         | index, follow     | 是                                              |
 | 认证页 | `/login`、`/register`、`/forgot-password`                                                                                                 | noindex, nofollow | 否（允许抓取以便看到 noindex）                  |
 | 应用页 | `/dashboard`、`/generate`、`/canvas`、`/video`、`/history`、`/favorites`、`/submissions`、`/credits`、`/billing`、`/tickets`、`/settings` | noindex, nofollow | 否；robots.txt Disallow（含 `/en`、`/ru` 前缀） |
 | 后台   | `/admin/**`                                                                                                                               | noindex, nofollow | 否；Disallow                                    |

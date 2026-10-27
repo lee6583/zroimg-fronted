@@ -1,4 +1,5 @@
 import type { AppLocale } from "@/i18n/routing";
+import { docsLastModified } from "@/content/docs/navigation";
 import { absoluteUrl, localizedPath, siteName, siteUrl } from "@/lib/seo";
 
 type JsonLdValue = string | number | boolean | null | JsonLdObject | JsonLdValue[];
@@ -14,6 +15,13 @@ type ImageGalleryItem = {
   datePublished?: string;
   width?: number;
   height?: number;
+};
+
+type TechArticleOptions = {
+  locale: AppLocale;
+  path: string;
+  headline: string;
+  description: string;
 };
 
 type ImageGalleryOptions = {
@@ -78,6 +86,22 @@ export function imageGallery(options: ImageGalleryOptions): JsonLdObject {
     url: absoluteUrl(localizedPath(options.locale, options.path)),
     inLanguage: options.locale,
     image: images,
+  };
+
+  return result;
+}
+
+// 文档页：TechArticle，dateModified 取内置文档的最近更新日期。
+export function techArticle(options: TechArticleOptions): JsonLdObject {
+  const result: JsonLdObject = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: options.headline,
+    description: options.description,
+    url: absoluteUrl(localizedPath(options.locale, options.path)),
+    inLanguage: options.locale,
+    dateModified: docsLastModified,
+    publisher: organization(),
   };
 
   return result;

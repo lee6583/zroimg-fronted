@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { ProductFrame } from "@/components/layout/product-frame";
@@ -25,6 +26,11 @@ export default async function ProductLayout(props: ProductLayoutProps) {
   const children = props.children;
 
   const user = await requireUser();
+  // 管理员账号只使用后台，不进入创作端（Java 同样拒绝管理员调用用户端创作接口）。
+  if (user.role === "admin") {
+    redirect("/admin");
+  }
+
   const account = {
     username: user.username,
     email: user.email,

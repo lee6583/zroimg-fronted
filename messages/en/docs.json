@@ -1,6 +1,41 @@
 {
-  "loading": "Loading docs...",
-  "empty": "No docs yet",
-  "toc": "Contents",
-  "tocLabel": "Docs contents"
+  "toc": "On this page",
+  "tocLabel": "On this page",
+  "navLabel": "Documentation",
+  "menu": "Docs",
+  "overview": {
+    "navTitle": "Docs home",
+    "eyebrow": "ZroImg Docs",
+    "title": "ZroImg documentation",
+    "description": "Learn how image and video generation, the infinite canvas and credits work in ZroImg, and integrate generation into your own apps with the open API."
+  },
+  "sections": {
+    "guide": "Guides",
+    "api": "API basics",
+    "endpoints": "API endpoints"
+  },
+  "sectionDescriptions": {
+    "guide": "New to ZroImg? Start with the introduction and quickstart, then learn how credits are charged.",
+    "api": "Before you call the API, learn about authentication, the async task model, idempotency, rate limits and errors.",
+    "endpoints": "Parameters, responses and ready-to-run cURL, Python and JavaScript examples for every endpoint."
+  },
+  "notices": {
+    "title": "Announcements & FAQ",
+    "description": "Latest announcements and frequently asked questions maintained by the ZroImg team."
+  },
+  "pager": {
+    "label": "Previous and next page",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "code": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "languages": "Example language",
+    "language": {
+      "curl": "cURL",
+      "python": "Python",
+      "javascript": "JavaScript"
+    }
+  }
 }

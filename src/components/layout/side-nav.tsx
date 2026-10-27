@@ -26,6 +26,8 @@ type SideNavProps<K extends string> = {
   groups: Array<NavGroup<K>>;
   activeKey: K | null;
   onNavigate?: (item: NavItem<K>) => void;
+  // 手机宽度下也保持竖向分组（例如放在 Sheet 里的文档导航）；默认手机上是横向滚动条。
+  isVertical?: boolean;
 };
 
 type NavLinkProps<K extends string> = {
@@ -158,7 +160,13 @@ export function SideNav<K extends string>(props: SideNavProps<K>) {
   }
 
   return (
-    <nav className={clsx(styles.shell__nav, isAnimated && styles.shell__navAnimated)}>
+    <nav
+      className={clsx(
+        styles.shell__nav,
+        props.isVertical && styles.shell__navVertical,
+        isAnimated && styles.shell__navAnimated,
+      )}
+    >
       {items.length > 0 && (
         <div className={styles.shell__navList}>
           {items.map((item) => (

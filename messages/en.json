@@ -362,10 +362,45 @@
     }
   },
   "docs": {
-    "loading": "Loading docs...",
-    "empty": "No docs yet",
-    "toc": "Contents",
-    "tocLabel": "Docs contents"
+    "toc": "On this page",
+    "tocLabel": "On this page",
+    "navLabel": "Documentation",
+    "menu": "Docs",
+    "overview": {
+      "navTitle": "Docs home",
+      "eyebrow": "ZroImg Docs",
+      "title": "ZroImg documentation",
+      "description": "Learn how image and video generation, the infinite canvas and credits work in ZroImg, and integrate generation into your own apps with the open API."
+    },
+    "sections": {
+      "guide": "Guides",
+      "api": "API basics",
+      "endpoints": "API endpoints"
+    },
+    "sectionDescriptions": {
+      "guide": "New to ZroImg? Start with the introduction and quickstart, then learn how credits are charged.",
+      "api": "Before you call the API, learn about authentication, the async task model, idempotency, rate limits and errors.",
+      "endpoints": "Parameters, responses and ready-to-run cURL, Python and JavaScript examples for every endpoint."
+    },
+    "notices": {
+      "title": "Announcements & FAQ",
+      "description": "Latest announcements and frequently asked questions maintained by the ZroImg team."
+    },
+    "pager": {
+      "label": "Previous and next page",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "code": {
+      "copy": "Copy",
+      "copied": "Copied",
+      "languages": "Example language",
+      "language": {
+        "curl": "cURL",
+        "python": "Python",
+        "javascript": "JavaScript"
+      }
+    }
   },
   "errors": {
     "page": {
@@ -788,8 +823,8 @@
       "description": "ZroImg credit packages and prices: try it free after signing up, buy credits as you need them, no subscription."
     },
     "docs": {
-      "title": "Docs",
-      "description": "ZroImg documentation: image generation, infinite canvas, video creation, credits and orders."
+      "title": "Documentation",
+      "description": "ZroImg documentation: platform introduction, quickstart, credits and billing, plus the image and video generation API reference with authentication, errors and code examples."
     },
     "licenses": {
       "title": "Open source licenses",
@@ -831,7 +866,8 @@
     "account": {
       "openMenu": "Open account menu",
       "settings": "Account settings",
-      "logout": "Log out"
+      "logout": "Log out",
+      "adminConsole": "Admin console"
     },
     "theme": {
       "toggle": "Toggle light/dark mode"
@@ -905,7 +941,8 @@
     "nav": {
       "label": "Account settings categories",
       "profile": "Profile",
-      "security": "Sign-in security"
+      "security": "Sign-in security",
+      "apiKeys": "API keys"
     },
     "profile": {
       "title": "Profile",
@@ -936,6 +973,71 @@
       "submit": "Update password",
       "submitting": "Updating",
       "updated": "Password updated"
+    },
+    "apiKeys": {
+      "title": "API keys",
+      "intro": "Use API keys to call the ZroImg open API from your own code. Requests spend this account's credits. Keep keys secret and never expose them in web pages or apps. <docs>Read the API docs</docs>",
+      "loading": "Loading API keys…",
+      "retry": "Retry",
+      "limit": "{max, plural, one {An account can have at most # active key. Revoke a key you no longer use before creating a new one.} other {An account can have at most # active keys. Revoke keys you no longer use before creating a new one.}}",
+      "docsLink": "Read the API docs",
+      "neverUsed": "Never used",
+      "neverExpires": "Never expires",
+      "empty": {
+        "title": "No API keys yet",
+        "text": "Create a key to submit image and video generation tasks with cURL, Python or JavaScript."
+      },
+      "columns": {
+        "name": "Name",
+        "key": "Key",
+        "created": "Created",
+        "lastUsed": "Last used",
+        "expires": "Expires",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "create": {
+        "action": "Create key",
+        "title": "Create API key",
+        "name": "Name",
+        "namePlaceholder": "e.g. Production server",
+        "nameRequired": "Enter a name for the key",
+        "expiry": "Expiration",
+        "expiryOptions": {
+          "30": "30 days",
+          "90": "90 days",
+          "365": "365 days",
+          "never": "Never"
+        },
+        "cancel": "Cancel",
+        "submit": "Create",
+        "submitting": "Creating"
+      },
+      "created": {
+        "title": "Key created",
+        "warningTitle": "Shown only once — save it now",
+        "warningText": "You won't be able to see the full key again after closing this window. If you lose it, revoke it and create a new one.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "copyFailed": "Copy failed. Select the key and copy it manually.",
+        "usage": "Use it in the request header:",
+        "docsLink": "View API docs and examples",
+        "done": "I've saved it, close"
+      },
+      "revoke": {
+        "action": "Revoke",
+        "labelFor": "Revoke key \"{name}\"",
+        "title": "Revoke API key",
+        "description": "Revoke the key \"{name}\"? Requests using this key will fail immediately. This cannot be undone.",
+        "confirm": "Revoke",
+        "submitting": "Revoking",
+        "cancel": "Cancel"
+      }
     }
   },
   "submissions": {

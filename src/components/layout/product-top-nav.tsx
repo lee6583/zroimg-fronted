@@ -37,6 +37,7 @@ export async function ProductTopNav(props: ProductTopNavProps = {}) {
       avatarUrl={user?.avatarUrl ?? null}
       username={user?.username || "Z"}
       isLoggedIn={Boolean(user)}
+      isAdmin={user?.role === "admin"}
       autoOpenAnnouncement={Boolean(props.autoOpenAnnouncement && user)}
       canSwitchLocale={!props.isAdminConsole}
       variant={props.isAdminConsole ? "admin" : (props.variant ?? "public")}

@@ -1,0 +1,429 @@
+/* 文档站布局：左侧导航（≥ 1024px）、正文、右侧本页目录（≥ 1280px）。 */
+.docs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  width: min(100%, 90rem);
+  min-height: calc(100dvh - 3.5rem);
+  margin: 0 auto;
+}
+
+.docs__main {
+  min-width: 0;
+}
+
+/* 左侧导航 */
+.docs__sidebar {
+  display: none;
+}
+
+.docs__sheetTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 窄屏吸顶条：打开导航 Sheet */
+.docs__mobileBar {
+  position: sticky;
+  top: calc(3.5rem + 1px);
+  z-index: 30;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in oklab, var(--background) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.docs__mobileBarButton {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  background: transparent;
+  padding: 0 1rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.docs__mobileBarLabel {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.docs__mobileBarDivider {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.docs__mobileBarCurrent {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 文档页面 */
+.docs__page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1.5rem 1rem 4rem;
+}
+
+.docs__article {
+  min-width: 0;
+  max-width: 48rem;
+}
+
+.docs__header {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.docs__eyebrow {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.docs__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.docs__lead {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.docs__body {
+  margin-top: 0.5rem;
+}
+
+/* 窄屏本页目录 */
+.docs__mobileToc {
+  margin-top: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+}
+
+.docs__mobileTocSummary {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.docs__mobileTocSummary::-webkit-details-marker {
+  display: none;
+}
+
+.docs__mobileTocIcon {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+
+.docs__mobileToc[open] .docs__mobileTocIcon {
+  transform: rotate(180deg);
+}
+
+.docs__mobileTocPanel {
+  display: grid;
+  max-height: min(60dvh, 28rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--line);
+  padding: 0.4rem 0.5rem 0.6rem;
+}
+
+.docs__mobileTocLink {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border-radius: 0.375rem;
+  padding: 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.docs__mobileTocLink:active,
+.docs__mobileTocLink:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+/* 桌面右侧目录 */
+.docs__toc {
+  display: none;
+}
+
+.docs__tocTitle {
+  margin-bottom: 0.6rem;
+  color: var(--foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.docs__tocItems {
+  display: grid;
+  gap: 0.1rem;
+  border-inline-start: 1px solid var(--line);
+}
+
+.docs__tocLink {
+  margin-inline-start: -1px;
+  border-inline-start: 1px solid transparent;
+  padding: 0.25rem 0 0.25rem 0.8rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.docs__tocLink:hover {
+  border-inline-start-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.docs__tocLinkNested {
+  padding-inline-start: 1.6rem;
+}
+
+.docs__mobileTocLink.docs__tocLinkNested {
+  padding-inline-start: 1.25rem;
+}
+
+/* 上一页 / 下一页 */
+.docs__pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.docs__pagerLink {
+  display: grid;
+  min-height: 4rem;
+  align-content: center;
+  gap: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.docs__pagerLink:hover {
+  border-color: color-mix(in oklab, var(--foreground) 35%, var(--line));
+}
+
+.docs__pagerLinkNext {
+  grid-column: 2;
+  justify-items: end;
+  text-align: end;
+}
+
+.docs__pagerHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.docs__pagerTitle {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 文档首页 */
+.docs__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.docs__card {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  padding: 1rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.docs__card:hover {
+  border-color: color-mix(in oklab, var(--foreground) 35%, var(--line));
+}
+
+.docs__cardTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.docs__cardIcon {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.docs__cardText {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.docs__notice {
+  margin-top: 2rem;
+}
+
+.docs__noticeGroup {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.5rem;
+}
+
+.docs__noticeArticle {
+  scroll-margin-top: 7rem;
+}
+
+@media (max-width: 767px) {
+  .docs__lead {
+    font-size: 1rem;
+  }
+
+  .docs__pager {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs__pagerLinkNext {
+    grid-column: 1;
+  }
+
+  .docs__cardText {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .docs__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .docs {
+    min-height: calc(100dvh - 4rem);
+  }
+
+  .docs__mobileBar {
+    top: calc(4rem + 1px);
+  }
+
+  .docs__mobileBarButton {
+    padding: 0 2rem;
+  }
+
+  .docs__page {
+    padding: 2.5rem 2rem 5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .docs {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    padding-inline: 1.5rem;
+  }
+
+  .docs__mobileBar {
+    display: none;
+  }
+
+  .docs__sidebar {
+    position: sticky;
+    top: 4rem;
+    display: block;
+    height: calc(100dvh - 4rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-inline-end: 1px solid var(--line);
+    padding: 2rem 1rem 2rem 0;
+  }
+
+  .docs__page {
+    padding: 2.5rem 0 5rem 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .docs__page {
+    grid-template-columns: minmax(0, 48rem) 13rem;
+    justify-content: space-between;
+    column-gap: 3rem;
+  }
+
+  .docs__mobileToc {
+    display: none;
+  }
+
+  .docs__toc {
+    position: sticky;
+    top: 6.5rem;
+    display: block;
+    max-height: calc(100dvh - 8.5rem);
+    overflow-y: auto;
+    align-self: start;
+  }
+}
+
+.docs__sectionTitle {
+  margin-top: 2.5rem;
+  scroll-margin-top: 7rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.docs__sectionText {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.docs__noticeTitle {
+  margin-top: 1.5rem;
+  scroll-margin-top: 7rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}

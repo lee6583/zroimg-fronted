@@ -1,0 +1,437 @@
+.apiKeys__body {
+  max-width: none;
+}
+
+.apiKeys__intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.apiKeys__intro p {
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.apiKeys__inlineLink {
+  color: var(--foreground);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.apiKeys__createButton {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.apiKeys__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.apiKeys__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, var(--line));
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  color: var(--danger);
+  font-size: 0.82rem;
+}
+
+.apiKeys__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.6rem;
+  padding: 2rem 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.apiKeys__empty strong {
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.apiKeys__empty p {
+  max-width: 28rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.apiKeys__docsLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* 桌面表格 */
+.apiKeys__colPrefix {
+  width: 8rem;
+}
+
+.apiKeys__colTime {
+  width: 8.5rem;
+}
+
+.apiKeys__colStatus {
+  width: 5.25rem;
+}
+
+.apiKeys__colAction {
+  width: 4.75rem;
+}
+
+.apiKeys__table table {
+  min-width: 46rem;
+}
+
+.apiKeys__name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apiKeys__prefix {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.apiKeys__status {
+  display: inline-flex;
+  min-height: 1.4rem;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.apiKeys__status_active {
+  background: color-mix(in oklab, #16a34a 14%, transparent);
+  color: #15803d;
+}
+
+:global(:root[data-theme="dark"]) .apiKeys__status_active {
+  color: #4ade80;
+}
+
+.apiKeys__status_expired {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.apiKeys__status_revoked {
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.apiKeys__revoke {
+  min-height: 2rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  padding: 0 0.6rem;
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.apiKeys__revoke:hover {
+  background: color-mix(in oklab, var(--danger) 10%, transparent);
+}
+
+.apiKeys__revokeError {
+  margin-top: 0.6rem;
+  color: var(--danger);
+  font-size: 0.82rem;
+}
+
+/* 手机卡片 */
+.apiKeys__cards {
+  display: none;
+}
+
+.apiKeys__card {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.apiKeys__cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.apiKeys__meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  font-size: 0.875rem;
+}
+
+.apiKeys__meta dt {
+  color: var(--muted);
+}
+
+.apiKeys__meta dd {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.apiKeys__card .apiKeys__revoke {
+  justify-self: stretch;
+  min-height: 2.75rem;
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, var(--line));
+}
+
+/* 创建弹层 */
+.apiKeys__form {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.apiKeys__expiry {
+  display: grid;
+  gap: 0.45rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.apiKeys__expiry legend {
+  margin-bottom: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.apiKeys__expiryOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 0.4rem;
+}
+
+.apiKeys__expiryOption {
+  position: relative;
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  padding: 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+
+.apiKeys__expiryOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.apiKeys__expiryOption:has(input:focus-visible) {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.apiKeys__expiryOptionActive {
+  border-color: var(--foreground);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.apiKeys__sheetActions {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.apiKeys__sheetActions button {
+  white-space: nowrap;
+}
+
+/* 创建成功：一次性显示完整密钥 */
+.apiKeys__created {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.apiKeys__warning {
+  display: flex;
+  gap: 0.65rem;
+  border: 1px solid color-mix(in oklab, var(--warning) 45%, var(--line));
+  border-radius: 0.55rem;
+  background: var(--warning-soft);
+  padding: 0.8rem 0.9rem;
+  color: var(--foreground);
+}
+
+.apiKeys__warning svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--warning);
+}
+
+.apiKeys__warning strong {
+  font-size: 0.875rem;
+}
+
+.apiKeys__warning p {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.apiKeys__secretLabel {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apiKeys__secret {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.apiKeys__secretValue {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--soft);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.apiKeys__secret button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.apiKeys__usage {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.apiKeys__usageCode {
+  overflow-x: auto;
+  border-radius: 0.45rem;
+  background: var(--soft);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .apiKeys__sheet[role="dialog"] {
+    width: min(100%, 32rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .apiKeys__intro {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .apiKeys__intro p {
+    font-size: 0.9375rem;
+  }
+
+  .apiKeys__createButton {
+    min-height: 2.75rem;
+    justify-content: center;
+  }
+
+  .apiKeys__table {
+    display: none;
+  }
+
+  .apiKeys__cards {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .apiKeys__input {
+    height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  .apiKeys__expiryOptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .apiKeys__sheetActions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  }
+
+  .apiKeys__sheetActions button {
+    min-height: 2.75rem;
+    justify-content: center;
+  }
+
+  .apiKeys__secret {
+    flex-direction: column;
+  }
+
+  .apiKeys__secret button {
+    min-height: 2.75rem;
+    justify-content: center;
+  }
+
+  .apiKeys__secretValue {
+    font-size: 0.875rem;
+  }
+
+  .apiKeys__empty p {
+    font-size: 0.9375rem;
+  }
+}

@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
-import { ProductTopNav } from "@/components/layout/product-top-nav";
+import { JsonLd } from "@/components/seo/json-ld";
+import { getDocsContent } from "@/content/docs";
+import { docsSections } from "@/content/docs/navigation";
+import { DocsArticle } from "@/features/docs/docs-article";
+import { renderMarkdown, type MarkdownHeading } from "@/features/docs/markdown";
+import styles from "@/features/docs/docs.module.css";
 import { Link } from "@/i18n/navigation";
 import { buildMetadata } from "@/lib/seo";
+import { techArticle } from "@/lib/structured-data";
 import { requestJava } from "@/server/java-api";
 import type { DocsConfig } from "@/types/content";
-import { DocsMobileToc } from "./docs-mobile-toc";
-import styles from "./docs.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -24,197 +27,107 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-function inlineCode(text: string) {
-  return text.split(/(`[^`]+`)/g).map((part, index) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code key={`${part}-${index}`} className={styles.docs__codeInline}>
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-    return part;
+export default async function DocsOverviewPage() {
+  const locale = await getLocale();
+  const t = await getTranslations("docs");
+  const content = getDocsContent(locale);
+
+  // 后台「文档管理」维护的公告与常见问题；未保存时 Java 返回空对象 {}，原样展示（不翻译）。
+  const adminDocs = await requestJava<Partial<DocsConfig>>("/content/public/docs");
+  const adminGroups = (adminDocs.groups ?? []).filter((group) => group.items.length > 0);
+  const hasNotices = adminGroups.length > 0;
+
+  // 第一步：内置文档的分区目录。
+  const headings: MarkdownHeading[] = docsSections.map((section) => {
+    const heading: MarkdownHeading = {
+      id: section.key,
+      title: t(`sections.${section.key}`),
+      level: 2,
+    };
+
+    return heading;
   });
-}
 
-function renderMarkdown(body: string) {
-  const lines = body.split(/\r?\n/);
-  const nodes: ReactNode[] = [];
-  let index = 0;
+  // 第二步：后台文档逐篇渲染，标题降一级，锚点加前缀避免与内置分区冲突。
+  const notices = adminGroups.map((group) => {
+    const items = group.items.map((item) => {
+      const rendered = renderMarkdown(item.body, {
+        idPrefix: `notice-${item.id}-`,
+        shiftHeadings: true,
+      });
 
-  while (index < lines.length) {
-    const line = lines[index]?.trimEnd() ?? "";
-    const trimmed = line.trim();
+      return { id: item.id, title: item.title, nodes: rendered.nodes };
+    });
 
-    if (!trimmed) {
-      index += 1;
-      continue;
-    }
+    return { title: group.title, items };
+  });
 
-    if (trimmed.startsWith("```")) {
-      const language = trimmed.slice(3).trim();
-      const codeLines: string[] = [];
-      index += 1;
-      while (index < lines.length && !lines[index]?.trim().startsWith("```")) {
-        codeLines.push(lines[index] ?? "");
-        index += 1;
+  if (hasNotices) {
+    headings.push({ id: "notices", title: t("notices.title"), level: 2 });
+    for (const group of notices) {
+      for (const item of group.items) {
+        headings.push({ id: `notice-${item.id}`, title: item.title, level: 3 });
       }
-      index += 1;
-      nodes.push(
-        <pre key={`code-${index}`} className={styles.docs__codeBlock}>
-          <code className={styles.docs__code} data-language={language || undefined}>
-            {codeLines.join("\n")}
-          </code>
-        </pre>,
-      );
-      continue;
     }
-
-    if (trimmed.startsWith("# ")) {
-      nodes.push(
-        <h1 key={`h1-${index}`} className={styles.docs__headingPrimary}>
-          {inlineCode(trimmed.slice(2))}
-        </h1>,
-      );
-      index += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith("## ")) {
-      nodes.push(
-        <h2 key={`h2-${index}`} className={styles.docs__headingSecondary}>
-          {inlineCode(trimmed.slice(3))}
-        </h2>,
-      );
-      index += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith("### ")) {
-      nodes.push(
-        <h3 key={`h3-${index}`} className={styles.docs__headingTertiary}>
-          {inlineCode(trimmed.slice(4))}
-        </h3>,
-      );
-      index += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith("> ")) {
-      const quoteLines: string[] = [];
-      while (index < lines.length && lines[index]?.trim().startsWith("> ")) {
-        quoteLines.push((lines[index] ?? "").trim().slice(2));
-        index += 1;
-      }
-      nodes.push(
-        <div key={`quote-${index}`} className={styles.docs__quote}>
-          {quoteLines.map((quote, quoteIndex) => (
-            <p key={`${quote}-${quoteIndex}`}>{inlineCode(quote)}</p>
-          ))}
-        </div>,
-      );
-      continue;
-    }
-
-    if (/^[-*]\s+/.test(trimmed)) {
-      const items: string[] = [];
-      while (index < lines.length && /^[-*]\s+/.test(lines[index]?.trim() ?? "")) {
-        items.push((lines[index] ?? "").trim().replace(/^[-*]\s+/, ""));
-        index += 1;
-      }
-      nodes.push(
-        <ul key={`ul-${index}`} className={styles.docs__list}>
-          {items.map((item, itemIndex) => (
-            <li key={`${item}-${itemIndex}`} className={styles.docs__listItem}>
-              <span className={styles.docs__listBullet} />
-              <span>{inlineCode(item)}</span>
-            </li>
-          ))}
-        </ul>,
-      );
-      continue;
-    }
-
-    if (/^\d+\.\s+/.test(trimmed)) {
-      const items: string[] = [];
-      while (index < lines.length && /^\d+\.\s+/.test(lines[index]?.trim() ?? "")) {
-        items.push((lines[index] ?? "").trim().replace(/^\d+\.\s+/, ""));
-        index += 1;
-      }
-      nodes.push(
-        <ol key={`ol-${index}`} className={styles.docs__orderedList}>
-          {items.map((item, itemIndex) => (
-            <li key={`${item}-${itemIndex}`} className={styles.docs__orderedItem}>
-              <span className={styles.docs__stepNumber}>{itemIndex + 1}</span>
-              <p className={styles.docs__stepText}>{inlineCode(item)}</p>
-            </li>
-          ))}
-        </ol>,
-      );
-      continue;
-    }
-
-    nodes.push(
-      <p key={`p-${index}`} className={styles.docs__paragraph}>
-        {inlineCode(trimmed)}
-      </p>,
-    );
-    index += 1;
   }
 
-  return nodes;
-}
-
-export default async function DocsPage() {
-  // 后台尚未保存文档时 Java 返回空对象 {}
-  const docs = await requestJava<Partial<DocsConfig>>("/content/public/docs");
-  const groups = docs.groups ?? [];
-  const t = await getTranslations("docs");
-  const tocGroups = groups.map((group) => ({
-    title: group.title,
-    items: group.items.map((item) => ({ id: item.id, title: item.title })),
-  }));
-
   return (
-    <>
-      <ProductTopNav />
-      <main className={styles.docs}>
-        <aside className={styles.docs__sidebar}>
-          <DocsMobileToc groups={tocGroups} />
-          <div className={styles.docs__sidebarInner}>
-            <nav className={styles.docs__nav} aria-label={t("tocLabel")}>
-              {groups.map((group) => (
-                <section key={group.title}>
-                  <div className={styles.docs__navGroupHeader}>
-                    <h2 className={styles.docs__navGroupTitle}>{group.title}</h2>
-                    <ChevronDown size={14} className={styles.docs__navGroupIcon} aria-hidden />
-                  </div>
-                  <div className={styles.docs__navItems}>
-                    {group.items.map((item) => (
-                      <Link key={item.id} href={`#${item.id}`} className={styles.docs__navLink}>
-                        {item.title}
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </nav>
-          </div>
-        </aside>
+    <DocsArticle
+      eyebrow={t("overview.eyebrow")}
+      title={t("overview.title")}
+      description={t("overview.description")}
+      headings={headings}
+      next={{ href: "/docs/introduction", title: content.introduction.navTitle }}
+    >
+      <JsonLd
+        data={techArticle({
+          locale,
+          path: "/docs",
+          headline: t("overview.title"),
+          description: t("overview.description"),
+        })}
+      />
 
-        <section className={styles.docs__content}>
-          <div className={styles.docs__contentInner}>
-            {groups.length === 0 ? <p className={styles.docs__paragraph}>{t("empty")}</p> : null}
-            {groups.map((group) =>
-              group.items.map((item) => (
-                <article key={item.id} id={item.id} className={styles.docs__article}>
-                  {renderMarkdown(item.body)}
-                </article>
-              )),
-            )}
+      {docsSections.map((section) => (
+        <section key={section.key}>
+          <h2 id={section.key} className={styles.docs__sectionTitle}>
+            {t(`sections.${section.key}`)}
+          </h2>
+          <p className={styles.docs__sectionText}>{t(`sectionDescriptions.${section.key}`)}</p>
+          <div className={styles.docs__cards}>
+            {section.slugs.map((slug) => (
+              <Link key={slug} href={`/docs/${slug}`} className={styles.docs__card}>
+                <span className={styles.docs__cardTitle}>
+                  {content[slug].navTitle}
+                  <ArrowRight size={15} aria-hidden className={styles.docs__cardIcon} />
+                </span>
+                <span className={styles.docs__cardText}>{content[slug].description}</span>
+              </Link>
+            ))}
           </div>
         </section>
-      </main>
-    </>
+      ))}
+
+      {hasNotices ? (
+        <section className={styles.docs__notice}>
+          <h2 id="notices" className={styles.docs__sectionTitle}>
+            {t("notices.title")}
+          </h2>
+          <p className={styles.docs__sectionText}>{t("notices.description")}</p>
+          {notices.map((group) => (
+            <div key={group.title} className={styles.docs__noticeGroup}>
+              {group.items.map((item) => (
+                <article key={item.id} className={styles.docs__noticeArticle}>
+                  <h3 id={`notice-${item.id}`} className={styles.docs__noticeTitle}>
+                    {item.title}
+                  </h3>
+                  {item.nodes}
+                </article>
+              ))}
+            </div>
+          ))}
+        </section>
+      ) : null}
+    </DocsArticle>
   );
 }

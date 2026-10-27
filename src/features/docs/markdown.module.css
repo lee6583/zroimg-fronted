@@ -1,0 +1,389 @@
+.markdown__h1 {
+  margin-top: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.markdown__h2 {
+  margin-top: 2.75rem;
+  scroll-margin-top: 7rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.markdown__h3 {
+  margin-top: 1.75rem;
+  scroll-margin-top: 7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.markdown__anchor {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown__anchor:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 0.25em;
+}
+
+.markdown__paragraph {
+  margin-top: 0.85rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.markdown__paragraph strong,
+.markdown__list strong,
+.markdown__table strong,
+.markdown__steps strong,
+.markdown__callout strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.markdown__link {
+  color: var(--foreground);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--foreground) 35%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.markdown__link:hover {
+  text-decoration-color: var(--foreground);
+}
+
+.markdown__codeInline {
+  border-radius: 0.3rem;
+  background: var(--soft);
+  padding: 0.1rem 0.35rem;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.markdown__list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 1rem 0;
+  padding-inline-start: 1.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  list-style: disc;
+}
+
+.markdown__list li::marker {
+  color: color-mix(in oklab, var(--muted) 70%, transparent);
+}
+
+.markdown__steps {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1.25rem 0;
+}
+
+.markdown__step {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.markdown__stepNumber {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.markdown__step p {
+  padding-top: 0.1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.markdown__quote {
+  margin: 1.25rem 0;
+  border-inline-start: 3px solid var(--line);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+.markdown__callout {
+  display: flex;
+  gap: 0.7rem;
+  margin: 1.25rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--soft);
+  padding: 0.85rem 1rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.markdown__callout[data-kind="warning"] {
+  border-color: color-mix(in oklab, var(--warning) 35%, var(--line));
+  background: var(--warning-soft);
+}
+
+.markdown__calloutIcon {
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+  color: var(--foreground);
+}
+
+.markdown__callout[data-kind="warning"] .markdown__calloutIcon {
+  color: var(--warning);
+}
+
+.markdown__calloutBody {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.markdown__tableWrap {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+}
+
+.markdown__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.markdown__table th {
+  border-bottom: 1px solid var(--line);
+  background: var(--soft);
+  padding: 0.55rem 0.8rem;
+  color: var(--foreground);
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.markdown__table td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.6rem 0.8rem;
+  color: var(--muted);
+  vertical-align: top;
+}
+
+.markdown__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.markdown__table td:first-child {
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.markdown__codeBlock {
+  margin: 1.25rem 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--soft);
+}
+
+.markdown__codeHeader {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0 0.35rem 0 0.75rem;
+}
+
+.markdown__codeLanguage {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: lowercase;
+}
+
+.markdown__tabs {
+  display: flex;
+  min-width: 0;
+  gap: 0.15rem;
+  overflow-x: auto;
+  margin-inline-start: -0.4rem;
+  scrollbar-width: none;
+}
+
+.markdown__tab {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  flex-shrink: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.markdown__tab:hover {
+  color: var(--foreground);
+}
+
+.markdown__tabActive {
+  border-bottom-color: var(--foreground);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.markdown__copy {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  padding: 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.markdown__copy:hover {
+  background: var(--panel);
+  color: var(--foreground);
+}
+
+.markdown__pre {
+  overflow-x: auto;
+  padding: 0.9rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  tab-size: 2;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown__pre code {
+  font-family: inherit;
+  white-space: pre;
+}
+
+@media (max-width: 767px) {
+  .markdown__paragraph,
+  .markdown__list,
+  .markdown__step p {
+    font-size: 1rem;
+  }
+
+  .markdown__callout {
+    font-size: 0.9375rem;
+  }
+
+  .markdown__codeBlock {
+    margin-inline: -1rem;
+    border-radius: 0;
+    border-inline: 0;
+  }
+
+  .markdown__copy {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    justify-content: center;
+  }
+
+  .markdown__copy span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .markdown__tab {
+    min-height: 2.75rem;
+  }
+
+  /* 手机端表格改为每行一张卡片：单元格前面显示表头。 */
+  .markdown__tableWrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  .markdown__table,
+  .markdown__table tbody,
+  .markdown__table tr,
+  .markdown__table td {
+    display: block;
+  }
+
+  .markdown__table thead {
+    display: none;
+  }
+
+  .markdown__table tr {
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    padding: 0.35rem 0.85rem;
+  }
+
+  .markdown__table tr + tr {
+    margin-top: 0.6rem;
+  }
+
+  .markdown__table td {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, 34%) minmax(0, 1fr);
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+  }
+
+  .markdown__table td:first-child {
+    white-space: normal;
+  }
+
+  .markdown__table td:last-child {
+    border-bottom: 0;
+  }
+
+  .markdown__table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+}

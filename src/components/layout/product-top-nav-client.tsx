@@ -23,6 +23,7 @@ type ProductTopNavClientProps = {
   avatarUrl: string | null;
   username: string;
   isLoggedIn: boolean;
+  isAdmin: boolean;
   autoOpenAnnouncement: boolean;
   canSwitchLocale: boolean;
   variant: "public" | "app" | "admin";
@@ -122,7 +123,7 @@ export function ProductTopNavClient(props: ProductTopNavClientProps) {
           </span>
           <span className={clsx(styles.productTopNav__slot, desktopOnlyAccount)}>
             {isLoggedIn ? (
-              <AccountMenu name={username} avatarUrl={avatarUrl} />
+              <AccountMenu name={username} avatarUrl={avatarUrl} isAdmin={props.isAdmin} />
             ) : (
               <Link href="/login" className={styles.productTopNav__login}>
                 {t("login")}

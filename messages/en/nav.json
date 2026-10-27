@@ -11,7 +11,8 @@
   "account": {
     "openMenu": "Open account menu",
     "settings": "Account settings",
-    "logout": "Log out"
+    "logout": "Log out",
+    "adminConsole": "Admin console"
   },
   "theme": {
     "toggle": "Toggle light/dark mode"
