@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { getPastedImages } from "@/utils/clipboard-images";
 import {
   ArrowUp,
   ImagePlus,
@@ -99,6 +100,15 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
           className={styles.generateForm__textarea}
           value={prompt}
           onChange={(event) => onPromptChange(event.target.value)}
+          onPaste={(event) => {
+            // 粘贴剪贴板里的图片，等同于点"上传参考图"
+            const images = getPastedImages(event.clipboardData);
+            if (images.length === 0) return;
+            event.preventDefault();
+            const transfer = new DataTransfer();
+            for (const image of images) transfer.items.add(image);
+            void onFiles(transfer.files);
+          }}
           placeholder={placeholder}
         />
 

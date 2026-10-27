@@ -1,5 +1,7 @@
 /* 文档站布局：左侧导航（≥ 1024px）、正文、右侧本页目录（≥ 1280px）。 */
 .docs {
+  /* body 是 flex 列：不加 flex: none，.docs 会被压缩到一屏高，内容溢出后左侧导航的 sticky 就失效 */
+  flex: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
@@ -10,6 +12,19 @@
 
 .docs__main {
   min-width: 0;
+}
+
+/* body 是 flex 列且高度只有一屏：吸顶元素的参照盒必须是这个随内容增高的容器，否则滚过一屏后 sticky 失效 */
+.docs__root {
+  flex: none;
+}
+
+/* 顶部导航随页面吸顶，左侧导航和右侧目录才有固定的位置 */
+.docs__topNav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex: none;
 }
 
 /* 左侧导航 */

@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { getPastedImages } from "@/utils/clipboard-images";
 import { LoaderCircle, Pencil, Sparkles, Trash2, X } from "lucide-react";
 import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/react";
 import { useTranslations } from "next-intl";
@@ -428,9 +429,15 @@ export function GeneratorForm(props: GeneratorFormProps) {
         placeholder={t("placeholder")}
         aria-label={t("placeholder")}
         rows={4}
-        maxLength={2000}
         onFocus={() => store.getState().record()}
         onKeyDown={(event) => event.stopPropagation()}
+        onPaste={(event) => {
+          // 粘贴图片：作为参考图节点接到当前生成节点，文字照常粘贴
+          const images = getPastedImages(event.clipboardData);
+          if (images.length === 0) return;
+          event.preventDefault();
+          actions.pasteImages(id, images);
+        }}
         {...promptDraft}
       />
 

@@ -2,13 +2,14 @@
 
 import clsx from "clsx";
 import { SlidersHorizontal, Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ClipboardEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { uploadMediaFile } from "@/api/media/uploads";
 import { AppSelect } from "@/components/ui/app-select";
 import { Sheet, useIsMobile } from "@/components/ui/sheet";
 import { PolishButton } from "@/features/polish/polish-button";
 import { usePromptPolish } from "@/features/polish/use-prompt-polish";
+import { getPastedImages } from "@/utils/clipboard-images";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import { isContinuousDurations, trimReferences } from "@/utils/video-task";
 import type { VideoGenerationMode, VideoModel, VideoPriceEstimate } from "@/types/video";
@@ -311,6 +312,23 @@ export function VideoSettings(props: VideoSettingsProps) {
     }
   }
 
+  // 在提示词框里粘贴图片：模型支持图生视频时，等同于上传参考图（必要时自动切到图生视频）
+  function pasteReferences(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const images = getPastedImages(event.clipboardData);
+    if (images.length === 0) return;
+
+    event.preventDefault();
+    const supportsImage = model?.supportModes.includes("image_to_video") ?? false;
+    if (!supportsImage) {
+      setReferenceError(t("settings.pasteUnsupported"));
+      return;
+    }
+    if (form.mode !== "image_to_video") {
+      selectMode("image_to_video");
+    }
+    void uploadReferences(images);
+  }
+
   function removeReference(id: string) {
     setForm((currentForm) => {
       const nextReferences = currentForm.references.filter((reference) => reference.id !== id);
@@ -517,6 +535,7 @@ export function VideoSettings(props: VideoSettingsProps) {
           rows={2}
           value={form.prompt}
           onChange={(event) => updateForm({ prompt: event.target.value })}
+          onPaste={pasteReferences}
           placeholder={t("settings.promptPlaceholder")}
           aria-label={t("settings.prompt")}
         />
@@ -578,6 +597,7 @@ export function VideoSettings(props: VideoSettingsProps) {
             rows={5}
             value={form.prompt}
             onChange={(event) => updateForm({ prompt: event.target.value })}
+            onPaste={pasteReferences}
             placeholder={t("settings.promptPlaceholder")}
           />
           <PolishButton

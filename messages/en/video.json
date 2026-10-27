@@ -39,7 +39,8 @@
     "priceDetail": "Est. {total, number} credits · {billing, select, request {{unit, number} per video} other {{unit, number}/s × {seconds, number}s}}{refs, plural, =0 {} other { + # references × {refPoints, number}}}",
     "fileTooLarge": "\"{name}\" is larger than {max} MB and was not uploaded",
     "fileTypeInvalid": "\"{name}\" is not supported. Use PNG, JPEG, or WebP",
-    "uploadFailed": "Failed to upload \"{name}\": {reason}"
+    "uploadFailed": "Failed to upload \"{name}\": {reason}",
+    "pasteUnsupported": "This model does not support image-to-video, so a pasted image can't be used as a reference"
   },
   "errors": {
     "notConfigured": "Video service isn't configured yet",

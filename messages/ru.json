@@ -1240,7 +1240,8 @@
       "priceDetail": "≈ {total, number} кр. · {billing, select, request {{unit, number} за видео} other {{unit, number}/с × {seconds, number} с}}{refs, plural, =0 {} other { + референсы: # × {refPoints, number}}}",
       "fileTooLarge": "Файл «{name}» больше {max} МБ и не был загружен",
       "fileTypeInvalid": "Файл «{name}» не поддерживается. Используйте PNG, JPEG или WebP",
-      "uploadFailed": "Не удалось загрузить «{name}»: {reason}"
+      "uploadFailed": "Не удалось загрузить «{name}»: {reason}",
+      "pasteUnsupported": "Эта модель не поддерживает режим «изображение в видео», вставленное изображение нельзя использовать как референс"
     },
     "errors": {
       "notConfigured": "Видеосервис пока не настроен",

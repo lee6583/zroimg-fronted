@@ -9,12 +9,14 @@ export default async function DocsLayout(props: LayoutProps<"/[locale]/docs">) {
   const sections = getDocsNavigation(locale);
 
   return (
-    <>
-      <ProductTopNav />
+    <div className={styles.docs__root}>
+      <div className={styles.docs__topNav}>
+        <ProductTopNav />
+      </div>
       <div className={styles.docs}>
         <DocsSidebar sections={sections} />
         <main className={styles.docs__main}>{props.children}</main>
       </div>
-    </>
+    </div>
   );
 }

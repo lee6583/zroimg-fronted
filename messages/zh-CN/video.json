@@ -39,7 +39,8 @@
     "priceDetail": "预计 {total, number} 积分 · {billing, select, request {每条 {unit, number} 积分} other {{unit, number} 积分/秒 × {seconds, number} 秒}}{refs, plural, =0 {} other { + 参考图 # 张 × {refPoints, number}}}",
     "fileTooLarge": "「{name}」超过 {max} MB，未上传",
     "fileTypeInvalid": "「{name}」格式不支持，仅支持 PNG、JPEG、WebP",
-    "uploadFailed": "「{name}」上传失败：{reason}"
+    "uploadFailed": "「{name}」上传失败：{reason}",
+    "pasteUnsupported": "当前模型不支持图生视频，无法粘贴参考图"
   },
   "errors": {
     "notConfigured": "视频服务暂未配置",

@@ -17,6 +17,8 @@ type CanvasActions = {
   inpaint: (imageId: string) => void;
   // 重新编辑生成节点的局部重绘蒙版
   editMask: (generatorId: string) => void;
+  // 在生成节点的提示词框里粘贴图片：作为图片节点放到它左侧并连线
+  pasteImages: (generatorId: string, files: File[]) => void;
   remove: (nodeId: string) => void;
   // 手机端在 Sheet 中打开生成节点的提示词和参数
   openGenerator: (nodeId: string) => void;

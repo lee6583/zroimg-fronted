@@ -25,6 +25,7 @@ import type { CanvasBoardDetail, CanvasConfig, SaveCanvasSceneRequest } from "@/
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationModel, GenerationTask, MediaAsset } from "@/types/generation";
 import { ApiRequestError } from "@/utils/request";
+import { getPastedImages } from "@/utils/clipboard-images";
 import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import { CanvasContext, type CanvasActions } from "./canvas-context";
 import { CanvasHistoryPicker, type PickedImage } from "./canvas-history-picker";
@@ -462,6 +463,9 @@ function CanvasWorkspace(props: CanvasEditorProps) {
         setMaskTargetId(generatorId);
         setMaskNode(image);
       },
+      pasteImages(generatorId, files) {
+        void pasteImagesInto(generatorId, files);
+      },
       remove(nodeId) {
         store.getState().removeNode(nodeId);
       },
@@ -470,6 +474,55 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       },
     };
   }, [addGeneratorFor, balance, board.id, collections, generate, models, store]);
+
+  // 粘贴到某个生成节点：先放上传中的图片节点并立刻连线，上传完成后回填
+  async function pasteImagesInto(generatorId: string, files: File[]) {
+    const generator = store.getState().nodes.find((node) => node.id === generatorId);
+    if (!generator || generator.type !== "generator" || files.length === 0) return;
+
+    const invalid = files.find((file) => !isSupportedImageType(file.type));
+    if (invalid) {
+      setNotice(t("notices.fileType"));
+      return;
+    }
+    const oversized = files.find((file) => file.size > maxImageBytes);
+    if (oversized) {
+      setNotice(t("notices.fileSize"));
+      return;
+    }
+    if (!hasRoom(files.length)) return;
+
+    const column = generator.position.x - imageNodeWidth - resultGap;
+    const placeholders = files.map((file, index) => {
+      const point = { x: column, y: generator.position.y + index * (imageNodeWidth + resultGap) };
+      return createImageNode(point, { name: file.name, isUploading: true });
+    });
+    const edges = placeholders.map((node) => ({
+      id: `${node.id}->${generatorId}`,
+      source: node.id,
+      target: generatorId,
+    }));
+    store.getState().addNodes(placeholders, edges);
+
+    await Promise.all(
+      files.map(async (file, index) => {
+        const id = placeholders[index].id;
+        try {
+          const asset = await uploadMediaFile(file);
+          store.getState().patchNode(id, {
+            mediaAssetId: asset.id,
+            width: asset.width,
+            height: asset.height,
+            name: asset.originalName ?? file.name,
+            isUploading: false,
+          });
+        } catch (error) {
+          store.getState().changeNodes([{ type: "remove", id }]);
+          setNotice(translateApiError(error, tError));
+        }
+      }),
+    );
+  }
 
   async function uploadFiles(files: File[], position?: XYPosition) {
     if (files.length === 0) return;
@@ -616,8 +669,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const onPaste = useEffectEvent((event: ClipboardEvent) => {
     if (isEditableTarget(event.target)) return;
 
-    const files = Array.from(event.clipboardData?.files ?? []);
-    const images = files.filter((file) => file.type.startsWith("image/"));
+    const images = getPastedImages(event.clipboardData);
     if (images.length === 0) return;
 
     event.preventDefault();
