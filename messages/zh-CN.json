@@ -163,7 +163,7 @@
       "deleteTitle": "删除画布",
       "deleteDescription": "确定删除画布“{title}”吗？删除后无法恢复。",
       "deleteConfirm": "确定删除",
-      "meta": "{count, plural, other {# 个节点}} · {time}"
+      "nodes": "{count, plural, other {# 个节点}}"
     },
     "toolbar": {
       "back": "返回画布列表",

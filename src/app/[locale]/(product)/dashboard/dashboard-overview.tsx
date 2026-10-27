@@ -14,6 +14,7 @@ import {
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { CheckInCard } from "@/features/dashboard/check-in-card";
+import { HoverText } from "@/components/ui/hover-text";
 import { Link } from "@/i18n/navigation";
 import type { SignCard } from "@/types/checkin";
 import styles from "./dashboard.module.css";
@@ -149,7 +150,9 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                   height={previewSize}
                   unoptimized
                 />
-                <p className={styles.dashboard__recentPrompt}>{item.prompt}</p>
+                <div className={styles.dashboard__recentBody}>
+                  <HoverText as="p" className={styles.dashboard__recentPrompt} text={item.prompt} />
+                </div>
               </article>
             ))}
           </div>

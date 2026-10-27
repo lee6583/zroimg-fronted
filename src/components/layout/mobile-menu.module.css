@@ -27,7 +27,7 @@
   padding: 0.25rem 0.5rem;
   color: var(--foreground);
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-align: start;
   text-decoration: none;
@@ -69,30 +69,51 @@ button.mobileMenu__row:active {
   color: var(--muted);
 }
 
-.mobileMenu__segments {
-  display: flex;
+/* 语言行：标题在上，三个选项在下方等宽分段，避免挤在标题右侧 */
+.mobileMenu__rowStacked {
   flex-wrap: wrap;
-  justify-content: flex-end;
+  row-gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.mobileMenu__segments {
+  display: grid;
+  flex-basis: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.25rem;
+  border-radius: 0.625rem;
+  background: var(--soft);
+  padding: 0.25rem;
 }
 
 .mobileMenu__segment {
-  display: inline-flex;
-  min-height: 2.25rem;
+  display: flex;
+  min-width: 0;
+  min-height: 2.75rem;
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 0.375rem;
-  padding: 0 0.6rem;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  padding: 0 0.375rem;
   color: var(--muted);
   font-size: 0.8125rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
   white-space: nowrap;
   text-decoration: none;
 }
 
+.mobileMenu__segment:active {
+  color: var(--foreground);
+}
+
 .mobileMenu__segmentActive {
-  border-color: var(--foreground);
-  background: var(--foreground);
-  color: var(--background);
+  background: var(--panel);
+  color: var(--foreground);
+  font-weight: 600;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 1px 2px rgb(0 0 0 / 0.06);
 }
 
 .mobileMenu__switch {

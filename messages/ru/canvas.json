@@ -18,7 +18,7 @@
     "deleteTitle": "Удаление холста",
     "deleteDescription": "Удалить холст «{title}»? Это действие нельзя отменить.",
     "deleteConfirm": "Удалить",
-    "meta": "{count, plural, one {# узел} few {# узла} many {# узлов} other {# узла}} · {time}"
+    "nodes": "{count, plural, one {# узел} few {# узла} many {# узлов} other {# узла}}"
   },
   "toolbar": {
     "back": "Назад к списку холстов",

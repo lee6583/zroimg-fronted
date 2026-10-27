@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { Check, Frame, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { canvasBoardsApi } from "@/api/canvas/boards";
 import { Sheet } from "@/components/ui/sheet";
 import { translateApiError } from "@/i18n/api-error";
@@ -193,7 +193,10 @@ function BoardCard(props: BoardCardProps) {
 
   const [isEditing, setEditing] = useState(false);
   const [title, setTitle] = useState(board.title);
+  const formId = useId();
   const cover = getCover(board);
+  const nodes = t("nodes", { count: board.nodeCount });
+  const time = format.dateTime(parseJavaDateTime(board.updateTime), "datetime");
 
   function startEdit() {
     setTitle(board.title);
@@ -219,7 +222,7 @@ function BoardCard(props: BoardCardProps) {
 
       <div className={styles.canvasList__body}>
         {isEditing ? (
-          <form className={styles.canvasList__renameForm} onSubmit={submit}>
+          <form id={formId} className={styles.canvasList__renameForm} onSubmit={submit}>
             <input
               className={styles.canvasList__input}
               value={title}
@@ -228,62 +231,71 @@ function BoardCard(props: BoardCardProps) {
               aria-label={t("nameLabel")}
               onChange={(event) => setTitle(event.target.value)}
             />
-            <button
-              type="submit"
-              aria-label={t("saveName")}
-              title={t("saveName")}
-              className={styles.canvasList__iconButton}
-              disabled={isBusy}
-            >
-              <Check size={14} />
-            </button>
-            <button
-              type="button"
-              aria-label={t("cancel")}
-              title={t("cancel")}
-              className={styles.canvasList__iconButton}
-              onClick={() => setEditing(false)}
-            >
-              <X size={14} />
-            </button>
           </form>
         ) : (
-          <div className={styles.canvasList__titleRow}>
-            <Link
-              href={`/canvas/${board.id}`}
-              className={styles.canvasList__title}
-              title={board.title}
-            >
-              {board.title}
-            </Link>
-            <button
-              type="button"
-              aria-label={t("rename")}
-              title={t("rename")}
-              className={styles.canvasList__iconButton}
-              disabled={isBusy}
-              onClick={startEdit}
-            >
-              <Pencil size={14} />
-            </button>
-            <button
-              type="button"
-              aria-label={t("delete")}
-              title={t("delete")}
-              className={styles.canvasList__iconButton}
-              disabled={isBusy}
-              onClick={() => onDelete(board)}
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
+          <Link
+            href={`/canvas/${board.id}`}
+            className={styles.canvasList__title}
+            title={board.title}
+          >
+            {board.title}
+          </Link>
         )}
-        <p className={styles.canvasList__meta}>
-          {t("meta", {
-            count: board.nodeCount,
-            time: format.dateTime(parseJavaDateTime(board.updateTime), "datetime"),
-          })}
+        <p className={styles.canvasList__meta} title={`${nodes} · ${time}`}>
+          <span className={styles.canvasList__metaPart}>{nodes}</span>
+          <span className={styles.canvasList__metaDot} aria-hidden>
+            ·
+          </span>
+          <span className={styles.canvasList__metaPart}>{time}</span>
         </p>
+        <div className={styles.canvasList__actions}>
+          {isEditing ? (
+            <>
+              <button
+                type="submit"
+                form={formId}
+                aria-label={t("saveName")}
+                title={t("saveName")}
+                className={styles.canvasList__iconButton}
+                disabled={isBusy}
+              >
+                <Check size={15} />
+              </button>
+              <button
+                type="button"
+                aria-label={t("cancel")}
+                title={t("cancel")}
+                className={styles.canvasList__iconButton}
+                onClick={() => setEditing(false)}
+              >
+                <X size={15} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                aria-label={t("rename")}
+                title={t("rename")}
+                className={styles.canvasList__iconButton}
+                disabled={isBusy}
+                onClick={startEdit}
+              >
+                <Pencil size={15} />
+              </button>
+              <button
+                type="button"
+                aria-label={t("delete")}
+                title={t("delete")}
+                className={styles.canvasList__iconButton}
+                disabled={isBusy}
+                onClick={() => onDelete(board)}
+              >
+                <Trash2 size={15} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </article>
   );

@@ -382,7 +382,11 @@
   }
 
   .apiKeys__intro p {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
+  }
+
+  .apiKeys__meta {
+    font-size: 0.8125rem;
   }
 
   .apiKeys__createButton {

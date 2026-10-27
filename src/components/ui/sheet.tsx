@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useRef,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import clsx from "clsx";
@@ -74,6 +81,14 @@ export function Sheet(props: SheetProps) {
   });
   const swipeHandlers = isMobile && !isLocked ? swipe.handlers : undefined;
 
+  const handleKey = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === "Escape" && !isLocked) {
+      onClose();
+    }
+  });
+
+  // 只依赖 open：调用方常传内联 onClose，若它进依赖，每次输入重渲染都会让清理函数把焦点还给触发按钮、
+  // 再把焦点移到面板，手机上表现为输入一个字键盘就收起。
   useEffect(() => {
     if (!open) {
       return;
@@ -84,19 +99,17 @@ export function Sheet(props: SheetProps) {
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
 
-    function handleKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isLocked) {
-        onClose();
-      }
+    function onKeyDown(event: KeyboardEvent) {
+      handleKey(event);
     }
 
-    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keydown", onKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus();
     };
-  }, [open, isLocked, onClose]);
+  }, [open]);
 
   if (!isClient || !open) {
     return null;

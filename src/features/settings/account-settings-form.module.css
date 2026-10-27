@@ -407,8 +407,13 @@
     height: 2.25rem;
   }
 
+  .accountSettings__sectionHeader h2 {
+    font-size: 0.9rem;
+  }
+
+  /* 输入框保持 16px 防止 iOS 聚焦缩放，其余文字比桌面略收 */
   .accountSettings__field label {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .accountSettings__input,

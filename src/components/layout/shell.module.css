@@ -1,6 +1,8 @@
 .shellPage {
   display: flex;
   min-height: 100dvh;
+  /* body 是纵向 flex：不禁止收缩时外壳被压回一屏高，底部留给标签栏的 padding 会失效 */
+  flex-shrink: 0;
   flex-direction: column;
 }
 

@@ -68,7 +68,11 @@ export function MenuLocaleRow(props: MenuLocaleRowProps) {
   const { locale, pathname, switchLocale } = useSwitchLocale();
 
   return (
-    <div className={styles.mobileMenu__row} role="group" aria-label={t("language")}>
+    <div
+      className={clsx(styles.mobileMenu__row, styles.mobileMenu__rowStacked)}
+      role="group"
+      aria-label={t("language")}
+    >
       <span className={styles.mobileMenu__icon}>
         <Globe size={18} />
       </span>

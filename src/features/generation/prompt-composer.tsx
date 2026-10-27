@@ -11,10 +11,11 @@ import {
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { RefObject } from "react";
+import { useLayoutEffect, useRef, type RefObject } from "react";
 import { PolishButton } from "@/features/polish/polish-button";
 import type { PromptPolish } from "@/features/polish/use-prompt-polish";
 import type { GenerationMode, MediaAsset } from "@/types/generation";
+import { userAssetUrl } from "@/utils/media";
 import type { Notice } from "./generation-model";
 import styles from "./generate-form.module.css";
 
@@ -64,6 +65,20 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
   if (mode === "image_to_image") {
     placeholder = t("composer.placeholderEdit");
   }
+  // 手机端输入框随内容长高（CSS 限制 2～4 行）；不支持 field-sizing 的浏览器（旧版 iOS Safari）用 JS 兜底。
+  // 桌面端没有 max-height，保持原来的固定高度。
+  const composerRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = composerRef.current?.querySelector("textarea");
+    if (!element || CSS.supports("field-sizing", "content")) return;
+    if (getComputedStyle(element).maxHeight === "none") {
+      element.style.height = "";
+      return;
+    }
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  }, [prompt]);
+
   let costText = t("composer.cost", { points: estimate });
   if (hasCostError) {
     costText = t("composer.insufficient");
@@ -71,11 +86,19 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
 
   return (
     <div className={styles.generateForm__composerBar}>
-      <div className={styles.generateForm__composer}>
+      <div ref={composerRef} className={styles.generateForm__composer}>
         {inputs.length ? (
           <div className={styles.generateForm__inputChips}>
             {inputs.map((item) => (
               <span key={item.id} className={styles.generateForm__inputChip}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- 用户上传的私有媒体走 Java 接口，不经过 next/image；只在手机端显示 */}
+                <img
+                  className={styles.generateForm__inputChipThumb}
+                  src={userAssetUrl(item.id)}
+                  alt=""
+                  loading="lazy"
+                  title={item.originalName || undefined}
+                />
                 <span
                   className={styles.generateForm__inputChipName}
                   title={item.originalName || undefined}
@@ -88,7 +111,7 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
                   className={styles.generateForm__chipRemove}
                   aria-label={t("composer.removeReference")}
                 >
-                  <X size={12} />
+                  <X size={12} aria-hidden />
                 </button>
               </span>
             ))}
@@ -143,7 +166,11 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
                 }}
               />
             </label>
-            <PolishButton polish={polish} disabled={isBusy} />
+            <PolishButton
+              polish={polish}
+              disabled={isBusy}
+              className={styles.generateForm__composerPolish}
+            />
             <button
               type="button"
               onClick={onOpenSettings}
