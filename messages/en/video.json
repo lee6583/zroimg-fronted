@@ -36,7 +36,10 @@
     "referenceTrimmed": "This model accepts up to {max, number} reference images. The last {removed, number} were removed.",
     "referenceLimit": "You can upload up to {max, number} reference images. Extra files were skipped.",
     "resolutionAuto": "Auto",
-    "priceDetail": "Est. {total, number} credits · {billing, select, request {{unit, number} per video} other {{unit, number}/s × {seconds, number}s}}{refs, plural, =0 {} other { + # references × {refPoints, number}}}"
+    "priceDetail": "Est. {total, number} credits · {billing, select, request {{unit, number} per video} other {{unit, number}/s × {seconds, number}s}}{refs, plural, =0 {} other { + # references × {refPoints, number}}}",
+    "fileTooLarge": "\"{name}\" is larger than {max} MB and was not uploaded",
+    "fileTypeInvalid": "\"{name}\" is not supported. Use PNG, JPEG, or WebP",
+    "uploadFailed": "Failed to upload \"{name}\": {reason}"
   },
   "errors": {
     "notConfigured": "Video service isn't configured yet",

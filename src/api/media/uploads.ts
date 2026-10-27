@@ -1,10 +1,13 @@
-import { ApiRequestError, clientErrorCodes, request } from "@/utils/request";
-import type { MediaAsset, MediaUploadPresign } from "@/types/generation";
+import { request } from "@/utils/request";
+import type { MediaAsset } from "@/types/generation";
 
-const directUploadThreshold = 5 * 1024 * 1024;
 const assetsUrl = "/api/media/user/assets";
 
-function uploadForm(file: File) {
+/**
+ * 图片统一经 Java 后端上传（nginx 不限体积，后端上限见 MEDIA_MAX_IMAGE_BYTES，默认 20 MB）。
+ * 不要再让浏览器直传对象存储：R2 桶没有配置 CORS，大于 5 MB 的直传会被浏览器拦截而静默失败。
+ */
+export function uploadMediaFile(file: File): Promise<MediaAsset> {
   const body = new FormData();
   body.set("file", file);
   return request<MediaAsset>({
@@ -12,59 +15,4 @@ function uploadForm(file: File) {
     method: "POST",
     body,
   });
-}
-
-async function cancelUpload(assetId: string) {
-  await request<null>({
-    url: `${assetsUrl}/uploads/${encodeURIComponent(assetId)}`,
-    method: "DELETE",
-  }).catch(() => undefined);
-}
-
-async function uploadDirectly(file: File) {
-  const upload = await request<MediaUploadPresign>({
-    url: `${assetsUrl}/uploads/presign`,
-    method: "POST",
-    data: {
-      originalName: file.name,
-      contentType: file.type,
-      size: file.size,
-    },
-  });
-
-  const response = await fetch(upload.uploadUrl, {
-    method: "PUT",
-    headers: upload.requiredHeaders,
-    body: file,
-  }).catch(() => null);
-  if (!response?.ok) {
-    await cancelUpload(upload.assetId);
-    // 直传对象存储失败：用户端经 translateApiError 显示 errors.api.uploadFailed，message 是后台兜底
-    throw new ApiRequestError({
-      message: "文件上传失败，请重试",
-      code: response?.status ?? 0,
-      errorCode: clientErrorCodes.uploadFailed,
-      status: response?.status ?? 0,
-      url: upload.uploadUrl,
-      method: "PUT",
-    });
-  }
-
-  try {
-    return await request<MediaAsset>({
-      url: `${assetsUrl}/uploads/${encodeURIComponent(upload.assetId)}/complete`,
-      method: "POST",
-    });
-  } catch (error) {
-    await cancelUpload(upload.assetId);
-    throw error;
-  }
-}
-
-export function uploadMediaFile(file: File): Promise<MediaAsset> {
-  if (file.size > directUploadThreshold) {
-    return uploadDirectly(file);
-  }
-
-  return uploadForm(file);
 }

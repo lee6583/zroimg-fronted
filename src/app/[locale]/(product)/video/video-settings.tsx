@@ -9,9 +9,11 @@ import { AppSelect } from "@/components/ui/app-select";
 import { Sheet, useIsMobile } from "@/components/ui/sheet";
 import { PolishButton } from "@/features/polish/polish-button";
 import { usePromptPolish } from "@/features/polish/use-prompt-polish";
+import { isSupportedImageType, maxImageBytes } from "@/utils/media";
 import { isContinuousDurations, trimReferences } from "@/utils/video-task";
 import type { VideoGenerationMode, VideoModel, VideoPriceEstimate } from "@/types/video";
 import { VideoReferences } from "./video-references";
+import type { PendingReference } from "./video-references";
 import type { VideoReference } from "./video-references";
 import { estimateVideoTask, isVideoMode, submitVideoTask } from "./video-submit";
 import type { VideoTaskInput } from "./video-submit";
@@ -125,6 +127,8 @@ export function VideoSettings(props: VideoSettingsProps) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
   const [isUploading, setUploading] = useState(false);
+  const [pendingReferences, setPendingReferences] = useState<PendingReference[]>([]);
+  const [referenceError, setReferenceError] = useState("");
   const [estimate, setEstimate] = useState<VideoPriceEstimate | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const polish = usePromptPolish({
@@ -243,29 +247,64 @@ export function VideoSettings(props: VideoSettingsProps) {
     });
   }
 
-  // 按选择顺序逐张上传，只上传剩余名额内的图片
+  // 按选择顺序逐张上传，只上传剩余名额内的图片；上传中显示本地预览，失败原因显示在参考图区域内
   async function uploadReferences(files: File[]) {
     const slots = Math.max(maxReferences - form.references.length, 0);
     const accepted = files.slice(0, slots);
-    let notice = "";
+    const errors: string[] = [];
     if (files.length > accepted.length) {
-      notice = t("settings.referenceLimit", { max: maxReferences });
+      errors.push(t("settings.referenceLimit", { max: maxReferences }));
     }
 
-    try {
-      setUploading(true);
-      setMessage(notice);
-      for (const file of accepted) {
-        const asset = await uploadMediaFile(file);
-        const reference = { id: asset.id, name: asset.originalName || file.name };
-        setForm((currentForm) => {
-          const nextReferences = [...currentForm.references, reference];
-          return { ...currentForm, references: nextReferences };
-        });
+    const maxMb = String(Math.round(maxImageBytes / 1024 / 1024));
+    const valid: File[] = [];
+    for (const file of accepted) {
+      if (!isSupportedImageType(file.type)) {
+        errors.push(t("settings.fileTypeInvalid", { name: file.name }));
+      } else if (file.size <= 0 || file.size > maxImageBytes) {
+        errors.push(t("settings.fileTooLarge", { name: file.name, max: maxMb }));
+      } else {
+        valid.push(file);
       }
-    } catch (error) {
-      setMessage(text.errorText(error));
+    }
+
+    setReferenceError(errors.join("\n"));
+    setMessage("");
+    if (valid.length === 0) {
+      return;
+    }
+
+    const pending = valid.map((file) => ({
+      key: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
+      name: file.name,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setPendingReferences(pending);
+    setUploading(true);
+    try {
+      for (const [index, file] of valid.entries()) {
+        try {
+          const asset = await uploadMediaFile(file);
+          const reference = { id: asset.id, name: asset.originalName || file.name };
+          setForm((currentForm) => {
+            const nextReferences = [...currentForm.references, reference];
+            return { ...currentForm, references: nextReferences };
+          });
+        } catch (error) {
+          errors.push(
+            t("settings.uploadFailed", { name: file.name, reason: text.errorText(error) }),
+          );
+          setReferenceError(errors.join("\n"));
+        }
+        setPendingReferences((current) =>
+          current.filter((item) => item.key !== pending[index]?.key),
+        );
+      }
     } finally {
+      for (const item of pending) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      setPendingReferences([]);
       setUploading(false);
     }
   }
@@ -406,10 +445,16 @@ export function VideoSettings(props: VideoSettingsProps) {
           <VideoReferences
             references={form.references}
             maxCount={maxReferences}
+            pending={pendingReferences}
             isUploading={isUploading}
             onUpload={uploadReferences}
             onRemove={removeReference}
           />
+          {referenceError ? (
+            <p className={styles.videoPage__referenceError} role="alert">
+              {referenceError}
+            </p>
+          ) : null}
         </SettingGroup>
       ) : null}
 

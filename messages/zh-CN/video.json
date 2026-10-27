@@ -36,7 +36,10 @@
     "referenceTrimmed": "新模型最多支持 {max, number} 张参考图，已移除最后 {removed, number} 张",
     "referenceLimit": "最多上传 {max, number} 张参考图，超出的图片未上传",
     "resolutionAuto": "自动",
-    "priceDetail": "预计 {total, number} 积分 · {billing, select, request {每条 {unit, number} 积分} other {{unit, number} 积分/秒 × {seconds, number} 秒}}{refs, plural, =0 {} other { + 参考图 # 张 × {refPoints, number}}}"
+    "priceDetail": "预计 {total, number} 积分 · {billing, select, request {每条 {unit, number} 积分} other {{unit, number} 积分/秒 × {seconds, number} 秒}}{refs, plural, =0 {} other { + 参考图 # 张 × {refPoints, number}}}",
+    "fileTooLarge": "「{name}」超过 {max} MB，未上传",
+    "fileTypeInvalid": "「{name}」格式不支持，仅支持 PNG、JPEG、WebP",
+    "uploadFailed": "「{name}」上传失败：{reason}"
   },
   "errors": {
     "notConfigured": "视频服务暂未配置",

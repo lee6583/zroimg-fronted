@@ -1,6 +1,7 @@
 "use client";
 
-import { ImagePlus, X } from "lucide-react";
+import clsx from "clsx";
+import { ImagePlus, Loader2, X } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { userAssetUrl } from "@/utils/media";
 import { useVideoText } from "./video-text";
@@ -11,8 +12,15 @@ type VideoReference = {
   name: string;
 };
 
+type PendingReference = {
+  key: string;
+  name: string;
+  previewUrl: string;
+};
+
 type VideoReferencesProps = {
   references: VideoReference[];
+  pending: PendingReference[];
   maxCount: number;
   isUploading: boolean;
   onUpload: (files: File[]) => void;
@@ -25,7 +33,7 @@ export function VideoReferences(props: VideoReferencesProps) {
   const t = text.t;
   const references = props.references;
   const maxCount = props.maxCount;
-  const canAdd = references.length < maxCount;
+  const canAdd = references.length + props.pending.length < maxCount;
   const isMultiple = maxCount > 1;
 
   function selectFiles(event: ChangeEvent<HTMLInputElement>) {
@@ -68,6 +76,19 @@ export function VideoReferences(props: VideoReferencesProps) {
           </button>
         </li>
       ))}
+      {props.pending.map((item) => (
+        <li key={item.key} className={styles.videoPage__referenceItem} aria-busy>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 本地 blob 预览 */}
+          <img
+            className={clsx(styles.videoPage__referenceImage, styles.videoPage__referencePending)}
+            src={item.previewUrl}
+            alt={item.name}
+          />
+          <span className={styles.videoPage__referenceSpinner} aria-hidden>
+            <Loader2 size={18} />
+          </span>
+        </li>
+      ))}
       {canAdd ? (
         <li className={styles.videoPage__referenceItem}>
           <label className={styles.videoPage__referenceAdd} aria-busy={props.isUploading}>
@@ -88,4 +109,4 @@ export function VideoReferences(props: VideoReferencesProps) {
   );
 }
 
-export type { VideoReference };
+export type { PendingReference, VideoReference };

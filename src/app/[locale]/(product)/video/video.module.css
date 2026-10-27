@@ -926,3 +926,39 @@
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
+
+.videoPage__referencePending {
+  opacity: 0.55;
+}
+
+.videoPage__referenceSpinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--foreground);
+}
+
+.videoPage__referenceSpinner svg {
+  animation: videoReferenceSpin 0.9s linear infinite;
+}
+
+.videoPage__referenceError {
+  margin: 0.5rem 0 0;
+  color: var(--danger);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+@keyframes videoReferenceSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .videoPage__referenceSpinner svg {
+    animation: none;
+  }
+}
