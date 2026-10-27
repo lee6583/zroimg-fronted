@@ -1125,14 +1125,23 @@
       "resolution": "分辨率",
       "submit": "生成视频",
       "submitting": "提交中...",
-      "submitted": "任务已提交"
+      "submitted": "任务已提交",
+      "addReference": "继续添加",
+      "referenceAlt": "参考图 {index, number}",
+      "removeReferenceAt": "移除第 {index, number} 张参考图",
+      "referenceCount": "参考图 {count, number}/{max, number}",
+      "referenceTrimmed": "新模型最多支持 {max, number} 张参考图，已移除最后 {removed, number} 张",
+      "referenceLimit": "最多上传 {max, number} 张参考图，超出的图片未上传",
+      "resolutionAuto": "自动",
+      "priceDetail": "预计 {total, number} 积分 · {billing, select, request {每条 {unit, number} 积分} other {{unit, number} 积分/秒 × {seconds, number} 秒}}{refs, plural, =0 {} other { + 参考图 # 张 × {refPoints, number}}}"
     },
     "errors": {
       "notConfigured": "视频服务暂未配置",
       "promptRequired": "请输入视频提示词",
       "paramsIncomplete": "视频参数尚未配置完整",
       "referenceRequired": "图生视频需要上传参考图片",
-      "insufficientPoints": "积分不足，还需要 {points, number} 积分"
+      "insufficientPoints": "积分不足，还需要 {points, number} 积分",
+      "referenceMin": "当前模型至少需要 {min, number} 张参考图"
     },
     "frame": {
       "stage": {
@@ -1149,7 +1158,16 @@
       "retry": "重新生成",
       "retrySubmitting": "提交中...",
       "loadFailed": "视频加载失败",
-      "durationShort": "{seconds, number}s"
+      "durationShort": "{seconds, number}s",
+      "progress": {
+        "queued": "{ahead, plural, =0 {上游排队中} other {上游排队中，前方 # 个任务}}",
+        "running": "上游正在生成",
+        "carpool_waiting_balance": "拼车等待成团中",
+        "carpool_boarding": "拼车上车中，即将开始",
+        "carpool_queued": "{ahead, plural, =0 {拼车候车中，即将轮到你} other {拼车候车中，前方 # 个任务}}",
+        "carpool_running": "拼车生成中",
+        "percent": "进度 {percent, number}%"
+      }
     },
     "info": {
       "toggle": "生成信息",
@@ -1161,7 +1179,9 @@
       "ratio": "比例",
       "resolution": "分辨率",
       "points": "消耗积分",
-      "createdAt": "创建时间"
+      "createdAt": "创建时间",
+      "references": "参考图 {count, number} 张",
+      "moreReferences": "+{count, number}"
     },
     "workspace": {
       "closedTitle": "视频创作暂未开放",

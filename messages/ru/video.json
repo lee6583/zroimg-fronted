@@ -28,14 +28,23 @@
     "resolution": "Разрешение",
     "submit": "Создать видео",
     "submitting": "Отправка...",
-    "submitted": "Задача отправлена"
+    "submitted": "Задача отправлена",
+    "addReference": "Добавить",
+    "referenceAlt": "Референс {index, number}",
+    "removeReferenceAt": "Удалить референс {index, number}",
+    "referenceCount": "Референсы {count, number}/{max, number}",
+    "referenceTrimmed": "Эта модель принимает до {max, number} референсов. Последние {removed, number} удалены.",
+    "referenceLimit": "Можно загрузить до {max, number} референсов. Лишние файлы пропущены.",
+    "resolutionAuto": "Авто",
+    "priceDetail": "≈ {total, number} кр. · {billing, select, request {{unit, number} за видео} other {{unit, number}/с × {seconds, number} с}}{refs, plural, =0 {} other { + референсы: # × {refPoints, number}}}"
   },
   "errors": {
     "notConfigured": "Видеосервис пока не настроен",
     "promptRequired": "Введите промпт для видео",
     "paramsIncomplete": "Параметры видео заданы не полностью",
     "referenceRequired": "Для режима «изображение в видео» загрузите референс",
-    "insufficientPoints": "Недостаточно баллов, не хватает ещё {points, number}"
+    "insufficientPoints": "Недостаточно баллов, не хватает ещё {points, number}",
+    "referenceMin": "Этой модели нужно не менее {min, number} референсов"
   },
   "frame": {
     "stage": {
@@ -52,7 +61,16 @@
     "retry": "Создать заново",
     "retrySubmitting": "Отправка...",
     "loadFailed": "Не удалось загрузить видео",
-    "durationShort": "{seconds, number} с"
+    "durationShort": "{seconds, number} с",
+    "progress": {
+      "queued": "{ahead, plural, =0 {В очереди у провайдера} one {В очереди, впереди # задача} few {В очереди, впереди # задачи} many {В очереди, впереди # задач} other {В очереди, впереди # задачи}}",
+      "running": "Провайдер генерирует видео",
+      "carpool_waiting_balance": "Ожидание набора группы",
+      "carpool_boarding": "Посадка в группу, скоро начнём",
+      "carpool_queued": "{ahead, plural, =0 {Очередь группы, вы следующий} one {Очередь группы, впереди # задача} few {Очередь группы, впереди # задачи} many {Очередь группы, впереди # задач} other {Очередь группы, впереди # задачи}}",
+      "carpool_running": "Групповая генерация",
+      "percent": "Прогресс {percent, number}%"
+    }
   },
   "info": {
     "toggle": "Сведения о генерации",
@@ -64,7 +82,9 @@
     "ratio": "Соотношение сторон",
     "resolution": "Разрешение",
     "points": "Потрачено баллов",
-    "createdAt": "Создано"
+    "createdAt": "Создано",
+    "references": "{count, plural, one {# референс} few {# референса} many {# референсов} other {# референса}}",
+    "moreReferences": "+{count, number}"
   },
   "workspace": {
     "closedTitle": "Создание видео пока недоступно",

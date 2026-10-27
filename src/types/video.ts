@@ -13,6 +13,8 @@ type VideoModelDefaults = {
   duration: number | null;
 };
 
+type VideoBillingUnit = "second" | "request";
+
 type VideoModelSupportParams = {
   ratios: string[];
   qualities: string[];
@@ -22,6 +24,10 @@ type VideoModelSupportParams = {
   resolutionsByMode: Record<string, string[]>;
   durationMin: number;
   durationMax: number;
+  /** 图生视频最多参考图数量，没有图生视频时为 0 */
+  maxReferenceImages?: number;
+  minReferenceImages?: number;
+  billingUnit?: VideoBillingUnit;
   defaults: VideoModelDefaults;
 };
 
@@ -44,6 +50,8 @@ type VideoPriceEstimate = {
   unitPoints: number;
   billingUnit: string;
   referencePoints: number | null;
+  referenceCount?: number | null;
+  unitReferencePoints?: number | null;
   durationSeconds: number | null;
   count: number | null;
   requiredPoints: number;
@@ -72,6 +80,7 @@ type VideoTask = {
   prompt: string;
   referenceImageUrl: string | null;
   referenceMediaId: string | null;
+  referenceImages?: VideoReferenceImage[];
   ratio: string;
   resolution: string;
   durationSeconds: number | null;
@@ -90,6 +99,15 @@ type VideoTask = {
   maxAttempts?: number;
   retrying?: boolean;
   nextAttemptTime?: string | null;
+  /** 上游排队 / 生成阶段，例如 carpool_queued；只在进行中有值 */
+  progressStage?: string | null;
+  progressAhead?: number | null;
+  progressPercent?: number | null;
+};
+
+type VideoReferenceImage = {
+  mediaId: string;
+  url: string;
 };
 
 type VideoTaskPage = PageResult<VideoTask>;
@@ -101,6 +119,7 @@ type VideoPriceEstimateRequest = {
   resolution: string;
   duration: number;
   priceVersion?: string;
+  referenceCount?: number;
 };
 
 type CreateVideoTaskRequest = {
@@ -112,6 +131,7 @@ type CreateVideoTaskRequest = {
   duration: number;
   priceVersion: string;
   referenceMediaId?: string;
+  referenceMediaIds?: string[];
 };
 
 type VideoTaskPageQuery = {
@@ -124,6 +144,8 @@ type VideoTaskPageQuery = {
 };
 
 export type {
+  VideoBillingUnit,
+  VideoReferenceImage,
   VideoGenerationMode,
   VideoTaskStatus,
   VideoModelDefaults,

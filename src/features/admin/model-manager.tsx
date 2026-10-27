@@ -33,7 +33,15 @@ type EditorState = {
 
 function capabilitiesText(model: AdminGenerationModel) {
   if (model.modelType === "video") {
-    return model.imageToVideoEnabled ? "文生视频 · 图生视频" : "文生视频";
+    const videoLabels: string[] = [];
+    if (model.textToVideoEnabled ?? true) {
+      videoLabels.push("文生视频");
+    }
+    if (model.imageToVideoEnabled) {
+      const max = model.maxReferenceImages ?? 1;
+      videoLabels.push(max > 1 ? `图生视频（≤${max} 张）` : "图生视频");
+    }
+    return videoLabels.join(" · ");
   }
   const labels = ["文生图"];
   if (model.imageToImageEnabled) {
@@ -47,9 +55,11 @@ function capabilitiesText(model: AdminGenerationModel) {
 
 function pricingText(model: AdminGenerationModel) {
   if (model.modelType === "video") {
+    const unit = model.videoBillingUnit === "request" ? "条" : "秒";
     const parts = model.supportedResolutions.map((resolution) => {
       const points = model.pointsPerSecondByResolution[resolution] ?? "-";
-      return `${resolution} ${points}/秒`;
+      const label = resolution === "adaptive" ? "自动" : resolution;
+      return `${label} ${points}/${unit}`;
     });
     return parts.join(" · ");
   }

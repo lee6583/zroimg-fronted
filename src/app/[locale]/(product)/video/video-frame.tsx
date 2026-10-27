@@ -32,6 +32,22 @@ type ElapsedProps = {
 
 type VideoState = "loading" | "ready" | "error";
 
+const progressStages = [
+  "queued",
+  "running",
+  "carpool_waiting_balance",
+  "carpool_boarding",
+  "carpool_queued",
+  "carpool_running",
+] as const;
+
+type ProgressStage = (typeof progressStages)[number];
+
+function getProgressStage(value: string | null | undefined) {
+  const stage = progressStages.find((item) => item === value);
+  return stage ?? null;
+}
+
 export function frameStyle(ratio: string) {
   const size = parseRatio(ratio) ?? { width: 16, height: 9 };
   return {
@@ -45,6 +61,7 @@ export function VideoFrame(props: VideoFrameProps) {
   const compact = props.compact ?? false;
   const t = useTranslations("video.frame");
   const tTask = useTranslations("task");
+  const tVideo = useTranslations("video");
   const stage = getVideoStage(task.status, isTaskRetrying(task));
   const isRunning = isVideoRunning(stage);
   const resultUrl = task.results[0]?.resultUrl ?? "";
@@ -63,6 +80,15 @@ export function VideoFrame(props: VideoFrameProps) {
   let hint = "";
   if (stage === "queued" || stage === "generating" || stage === "retrying") {
     hint = t(`hint.${stage}`);
+  }
+  // 上游（例如拼车模型）返回的排队阶段优先展示，让用户知道前方还有多少任务
+  const progressStage: ProgressStage | null = getProgressStage(task.progressStage);
+  if (progressStage && stage !== "retrying") {
+    hint = t(`progress.${progressStage}`, { ahead: task.progressAhead ?? 0 });
+  }
+  let percentText = "";
+  if (isRunning && typeof task.progressPercent === "number" && task.progressPercent > 0) {
+    percentText = t("progress.percent", { percent: task.progressPercent });
   }
 
   function hideCover(event: TransitionEvent<HTMLDivElement>) {
@@ -151,6 +177,9 @@ export function VideoFrame(props: VideoFrameProps) {
                   <Elapsed createTime={task.createTime} />
                 </p>
                 {compact ? null : <p className={styles.frame__hint}>{hint}</p>}
+                {compact || !percentText ? null : (
+                  <p className={styles.frame__hint}>{percentText}</p>
+                )}
               </>
             ) : null}
             {!isRunning && videoState === "error" ? (
@@ -161,7 +190,9 @@ export function VideoFrame(props: VideoFrameProps) {
             <p className={styles.frame__meta}>
               {[
                 task.ratio,
-                task.resolution,
+                task.resolution === "adaptive"
+                  ? tVideo("settings.resolutionAuto")
+                  : task.resolution,
                 task.durationSeconds === null
                   ? ""
                   : t("durationShort", { seconds: task.durationSeconds }),

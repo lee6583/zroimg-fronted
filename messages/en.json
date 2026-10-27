@@ -1125,14 +1125,23 @@
       "resolution": "Resolution",
       "submit": "Generate video",
       "submitting": "Submitting...",
-      "submitted": "Task submitted"
+      "submitted": "Task submitted",
+      "addReference": "Add more",
+      "referenceAlt": "Reference image {index, number}",
+      "removeReferenceAt": "Remove reference image {index, number}",
+      "referenceCount": "Reference images {count, number}/{max, number}",
+      "referenceTrimmed": "This model accepts up to {max, number} reference images. The last {removed, number} were removed.",
+      "referenceLimit": "You can upload up to {max, number} reference images. Extra files were skipped.",
+      "resolutionAuto": "Auto",
+      "priceDetail": "Est. {total, number} credits · {billing, select, request {{unit, number} per video} other {{unit, number}/s × {seconds, number}s}}{refs, plural, =0 {} other { + # references × {refPoints, number}}}"
     },
     "errors": {
       "notConfigured": "Video service isn't configured yet",
       "promptRequired": "Enter a video prompt",
       "paramsIncomplete": "Video parameters aren't fully configured",
       "referenceRequired": "Image to video requires a reference image",
-      "insufficientPoints": "Not enough credits. You need {points, number} more."
+      "insufficientPoints": "Not enough credits. You need {points, number} more.",
+      "referenceMin": "This model needs at least {min, number} reference images"
     },
     "frame": {
       "stage": {
@@ -1149,7 +1158,16 @@
       "retry": "Regenerate",
       "retrySubmitting": "Submitting...",
       "loadFailed": "Failed to load video",
-      "durationShort": "{seconds, number}s"
+      "durationShort": "{seconds, number}s",
+      "progress": {
+        "queued": "{ahead, plural, =0 {Waiting in the provider queue} one {Queued, # task ahead} other {Queued, # tasks ahead}}",
+        "running": "The provider is generating",
+        "carpool_waiting_balance": "Waiting for the carpool to fill",
+        "carpool_boarding": "Boarding the carpool, starting soon",
+        "carpool_queued": "{ahead, plural, =0 {In the carpool queue, you are next} one {In the carpool queue, # task ahead} other {In the carpool queue, # tasks ahead}}",
+        "carpool_running": "Carpool generating",
+        "percent": "Progress {percent, number}%"
+      }
     },
     "info": {
       "toggle": "Generation info",
@@ -1161,7 +1179,9 @@
       "ratio": "Aspect ratio",
       "resolution": "Resolution",
       "points": "Credits used",
-      "createdAt": "Created"
+      "createdAt": "Created",
+      "references": "{count, plural, one {# reference image} other {# reference images}}",
+      "moreReferences": "+{count, number}"
     },
     "workspace": {
       "closedTitle": "Video creation isn't available yet",

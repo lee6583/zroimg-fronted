@@ -101,3 +101,21 @@ export function shortFailReason(value: string | null | undefined) {
   }
   return line;
 }
+
+/** 时长是否为连续整数：连续时页面用滑块，否则用选项按钮（例如 4、6、8、15 秒）。 */
+export function isContinuousDurations(durations: number[]) {
+  for (let index = 1; index < durations.length; index += 1) {
+    if (durations[index] !== durations[index - 1] + 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** 切换模型时按上传顺序保留前 max 张参考图，返回保留的列表和被移除的数量。 */
+export function trimReferences<T>(references: T[], max: number) {
+  const limit = Math.max(max, 0);
+  const kept = references.slice(0, limit);
+  const removed = references.length - kept.length;
+  return { kept, removed };
+}

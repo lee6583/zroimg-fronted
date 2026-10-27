@@ -21,5 +21,12 @@ export function useVideoText() {
     return translateApiError(error, tError);
   }
 
-  return { t, modeLabel, errorText };
+  function resolutionLabel(resolution: string) {
+    if (resolution === "adaptive") {
+      return t("settings.resolutionAuto");
+    }
+    return resolution;
+  }
+
+  return { t, modeLabel, errorText, resolutionLabel };
 }

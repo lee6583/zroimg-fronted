@@ -477,7 +477,9 @@ type BatchApproveGalleryResult = {
 type GalleryReviewStats = Record<GalleryStatus, number>;
 
 // generation models / provider connections
-type GenerationModelAdapter = "openai" | "grok" | "gemini";
+type GenerationModelAdapter = "openai" | "grok" | "gemini" | "rose";
+
+type VideoBillingUnit = "second" | "request";
 
 type GenerationModelType = "image" | "video";
 
@@ -498,6 +500,8 @@ type GenerationModelCatalogItem = {
   defaultPoints: Record<string, number>;
   defaultPointsPerSecond: Record<string, number>;
   defaultReferencePoints: Record<string, number>;
+  maxReferenceImages?: number | null;
+  defaultBillingUnit?: string | null;
 };
 
 type GenerationProviderConnection = {
@@ -513,11 +517,35 @@ type GenerationProviderConnection = {
   updatedAt: string | null;
 };
 
+type DiscoveredModelPricing = {
+  currency: string;
+  amount: number;
+  unit: string;
+};
+
+/** 上游目录给出的能力（目前只有 Rose 视频中转提供） */
+type DiscoveredModelCapabilities = {
+  modes: string[];
+  ratios: string[];
+  resolutions: string[];
+  durations: number[];
+  minDuration: number | null;
+  maxDuration: number | null;
+  maxReferenceImages: number;
+  minReferenceImages: number;
+  maxReferenceVideos: number;
+  maxReferenceAudios: number;
+  presets: string[];
+  pollIntervalSeconds: number;
+  pricing: DiscoveredModelPricing | null;
+};
+
 type DiscoveredProviderModel = {
   id: string;
   displayName: string;
   ownedBy: string;
   object: string;
+  capabilities?: DiscoveredModelCapabilities;
 };
 
 type SaveProviderConnectionRequest = {
@@ -559,7 +587,13 @@ type AdminGenerationModel = {
   minDuration: number | null;
   maxDuration: number | null;
   maxCount: number;
+  textToVideoEnabled?: boolean;
+  durations?: number[];
+  maxReferenceImages?: number | null;
+  minReferenceImages?: number | null;
+  videoBillingUnit?: VideoBillingUnit;
   pointsByQuality: Record<string, number>;
+  /** 按秒计费为每秒积分，按条计费为每条积分 */
   pointsPerSecondByResolution: Record<string, number>;
   referencePointsByResolution: Record<string, number>;
   createdAt: string | null;
@@ -573,7 +607,9 @@ type ImageQualityPrice = {
 
 type VideoResolutionPrice = {
   resolution: string;
+  /** 单位积分：按秒计费为每秒积分，按条计费为每条积分 */
   pointsPerSecond: number;
+  /** 每张参考图附加积分 */
   referencePoints: number;
 };
 
@@ -599,10 +635,15 @@ type ImageModelFields = {
 
 type VideoModelFields = {
   modelType: "video";
+  textToVideoEnabled: boolean;
   imageToVideoEnabled: boolean;
   resolutions: string[];
   minDuration: number;
   maxDuration: number;
+  durations?: number[];
+  maxReferenceImages: number;
+  minReferenceImages: number;
+  videoBillingUnit: VideoBillingUnit;
   videoPrices: VideoResolutionPrice[];
 };
 
@@ -673,6 +714,9 @@ export type {
   BatchApproveGalleryResult,
   GalleryReviewStats,
   GenerationModelAdapter,
+  VideoBillingUnit,
+  DiscoveredModelCapabilities,
+  DiscoveredModelPricing,
   GenerationModelType,
   GenerationModelCatalogItem,
   GenerationProviderConnection,

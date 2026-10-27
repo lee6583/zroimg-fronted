@@ -54,12 +54,14 @@ const adapterLabels: Record<GenerationModelAdapter, string> = {
   openai: "OpenAI",
   grok: "Grok",
   gemini: "Gemini",
+  rose: "Rose 视频",
 };
 
 const baseUrlPlaceholders: Record<GenerationModelAdapter, string> = {
   openai: "https://example.com/v1",
   grok: "https://api.x.ai/v1",
   gemini: "https://generativelanguage.googleapis.com",
+  rose: "https://angusapi.wxw.boats",
 };
 
 function emptyForm(): ConnectionForm {

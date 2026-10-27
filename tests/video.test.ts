@@ -3,6 +3,8 @@ import { test } from "node:test";
 import {
   formatElapsed,
   getVideoStage,
+  isContinuousDurations,
+  trimReferences,
   isVideoRunning,
   parseJavaTime,
   parseRatio,
@@ -60,4 +62,16 @@ test("fail reasons collapse to one readable line", () => {
   assert.equal(shortFailReason("  超时\n  stack trace"), "超时");
   assert.equal(shortFailReason('{"error":"bad"}'), "");
   assert.equal(shortFailReason(null), "");
+});
+
+test("discrete durations switch the duration control to options", () => {
+  assert.equal(isContinuousDurations([1, 2, 3, 4]), true);
+  assert.equal(isContinuousDurations([4, 6, 8, 15, 20, 30]), false);
+  assert.equal(isContinuousDurations([30]), true);
+});
+
+test("switching models keeps references in upload order up to the new limit", () => {
+  assert.deepEqual(trimReferences(["a", "b", "c"], 2), { kept: ["a", "b"], removed: 1 });
+  assert.deepEqual(trimReferences(["a"], 14), { kept: ["a"], removed: 0 });
+  assert.deepEqual(trimReferences(["a", "b"], 0), { kept: [], removed: 2 });
 });

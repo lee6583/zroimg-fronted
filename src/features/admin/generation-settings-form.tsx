@@ -107,9 +107,11 @@ export function GenerationSettingsForm(props: GenerationSettingsFormProps) {
   const polishConnectionId = form.polishConnectionId;
   const discoveredModels =
     polishConnectionId && discoveredConnectionId === polishConnectionId ? discovered : [];
+  // Rose 是纯视频中转，没有对话接口，不能用于提示词润色
+  const polishConnections = connections.filter((item) => item.adapter !== "rose");
   const connectionOptions = [
     { value: "", label: "未选择（不启用 AI 润色）" },
-    ...connections.map((item) => {
+    ...polishConnections.map((item) => {
       const parts = [item.name, adapterLabels[item.adapter]];
       if (item.status !== "enabled") parts.push("已停用");
       return { value: item.id, label: parts.join(" · ") };

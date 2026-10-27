@@ -7,10 +7,12 @@ import { adminModelsApi } from "@/api/admin/models";
 import { AppSelect } from "@/components/ui/app-select";
 import type {
   AdminGenerationModel,
+  DiscoveredModelCapabilities,
   DiscoveredProviderModel,
   GenerationModelCatalogItem,
   GenerationProviderConnection,
   SaveModelRequest,
+  VideoBillingUnit,
 } from "@/types/admin";
 import { getErrorMessage } from "@/utils/error";
 import { Affix, ChipGroup, Field, SwitchRow } from "./admin-form";
@@ -39,6 +41,7 @@ type FormState = {
   defaultFlag: 0 | 1;
   sortOrder: string;
   imageToImageEnabled: boolean;
+  textToVideoEnabled: boolean;
   imageToVideoEnabled: boolean;
   inpaintEnabled: boolean;
   ratios: string[];
@@ -46,6 +49,10 @@ type FormState = {
   resolutions: string[];
   minDuration: string;
   maxDuration: string;
+  durations: string;
+  maxReferenceImages: string;
+  minReferenceImages: string;
+  videoBillingUnit: VideoBillingUnit;
   maxCount: string;
   pointsByQuality: Record<string, string>;
   pointsPerSecond: Record<string, string>;
@@ -75,6 +82,107 @@ const qualityLabels: Record<string, string> = {
   standard: "标准",
 };
 
+const billingOptions: { value: VideoBillingUnit; label: string }[] = [
+  { value: "second", label: "按秒计费" },
+  { value: "request", label: "按条计费" },
+];
+
+function resolutionLabel(resolution: string) {
+  if (resolution === "adaptive") {
+    return "自动（不传分辨率）";
+  }
+  return resolution;
+}
+
+function profileBillingUnit(
+  profile: GenerationModelCatalogItem | undefined | null,
+): VideoBillingUnit {
+  if (profile?.defaultBillingUnit === "request") {
+    return "request";
+  }
+  return "second";
+}
+
+/** 已知 Grok 视频模型的参考图上限：1.5 版本 14 张，旧版 7 张，未知模型 1 张。 */
+function grokReferenceLimit(providerModelCode: string) {
+  const code = providerModelCode.trim();
+  if (code.startsWith("grok-imagine-video-1.5")) {
+    return 14;
+  }
+  if (code.startsWith("grok-imagine-video")) {
+    return 7;
+  }
+  return 1;
+}
+
+function isContinuousRange(values: number[]) {
+  for (let index = 1; index < values.length; index += 1) {
+    if (values[index] !== values[index - 1] + 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function formatPricing(capabilities: DiscoveredModelCapabilities | undefined) {
+  const pricing = capabilities?.pricing;
+  if (!pricing) {
+    return "";
+  }
+  const currency = pricing.currency === "CNY" ? "¥" : `${pricing.currency} `;
+  let unit = pricing.unit;
+  if (pricing.unit === "request") {
+    unit = "次";
+  } else if (pricing.unit === "second") {
+    unit = "秒";
+  }
+  return `${currency}${pricing.amount} / ${unit}`;
+}
+
+/** 用上游目录给出的能力填写用户能力（只取能力模板支持的值）。 */
+function applyCapabilities(
+  form: FormState,
+  capabilities: DiscoveredModelCapabilities,
+  profile: GenerationModelCatalogItem | null,
+): FormState {
+  const profileRatios = profile?.ratios ?? [];
+  const profileResolutions = profile?.resolutions ?? [];
+  const ratios = capabilities.ratios.filter((value) => profileRatios.includes(value));
+  const resolutions = capabilities.resolutions.filter((value) =>
+    profileResolutions.includes(value),
+  );
+  const durations = [...capabilities.durations].sort((a, b) => a - b);
+  const profileMax = profile?.maxReferenceImages ?? capabilities.maxReferenceImages;
+  const maxReferences = Math.max(Math.min(capabilities.maxReferenceImages, profileMax), 1);
+  const minReferences = Math.max(capabilities.minReferenceImages, 1);
+  const hasImageMode = capabilities.modes.includes("image_to_video");
+  let billingUnit = form.videoBillingUnit;
+  if (capabilities.pricing?.unit === "request") {
+    billingUnit = "request";
+  } else if (capabilities.pricing?.unit === "second") {
+    billingUnit = "second";
+  }
+
+  let durationText = "";
+  if (durations.length > 0 && !isContinuousRange(durations)) {
+    durationText = durations.join(", ");
+  }
+
+  return {
+    ...form,
+    textToVideoEnabled: capabilities.modes.includes("text_to_video"),
+    imageToVideoEnabled: hasImageMode && profile?.imageToVideoSupported === true,
+    ratios: ratios.length > 0 ? ratios : form.ratios,
+    resolutions: resolutions.length > 0 ? resolutions : form.resolutions,
+    minDuration: durations.length > 0 ? String(durations[0]) : form.minDuration,
+    maxDuration: durations.length > 0 ? String(durations[durations.length - 1]) : form.maxDuration,
+    durations: durationText,
+    maxReferenceImages: String(maxReferences),
+    minReferenceImages: String(Math.min(minReferences, maxReferences)),
+    videoBillingUnit: billingUnit,
+  };
+}
+
 function stringRecord(values: Record<string, number> | undefined) {
   return Object.fromEntries(
     Object.entries(values ?? {}).map(([key, value]) => [key, String(value)]),
@@ -93,6 +201,7 @@ function createForm(item: GenerationModelCatalogItem | undefined): FormState {
     defaultFlag: 0,
     sortOrder: "10",
     imageToImageEnabled: item?.imageToImageSupported ?? false,
+    textToVideoEnabled: true,
     imageToVideoEnabled: item?.imageToVideoSupported ?? false,
     inpaintEnabled: false,
     ratios: [...(item?.ratios ?? [])],
@@ -100,6 +209,10 @@ function createForm(item: GenerationModelCatalogItem | undefined): FormState {
     resolutions: [...(item?.resolutions ?? [])],
     minDuration: String(item?.minDuration ?? 1),
     maxDuration: String(item?.maxDuration ?? 15),
+    durations: "",
+    maxReferenceImages: "1",
+    minReferenceImages: "1",
+    videoBillingUnit: profileBillingUnit(item),
     maxCount: String(item?.maxCount ?? 1),
     pointsByQuality: stringRecord(item?.defaultPoints),
     pointsPerSecond: stringRecord(item?.defaultPointsPerSecond),
@@ -123,6 +236,7 @@ function formFromModel(
     defaultFlag: model.defaultFlag === 1 ? 1 : 0,
     sortOrder: String(model.sortOrder),
     imageToImageEnabled: model.imageToImageEnabled,
+    textToVideoEnabled: model.textToVideoEnabled ?? true,
     imageToVideoEnabled: model.imageToVideoEnabled,
     inpaintEnabled: model.inpaintEnabled,
     ratios: [...model.supportedRatios],
@@ -130,11 +244,23 @@ function formFromModel(
     resolutions: [...model.supportedResolutions],
     minDuration: String(model.minDuration ?? profile?.minDuration ?? 1),
     maxDuration: String(model.maxDuration ?? profile?.maxDuration ?? 15),
+    durations: modelDurationText(model),
+    maxReferenceImages: String(model.maxReferenceImages ?? 1),
+    minReferenceImages: String(model.minReferenceImages ?? 1),
+    videoBillingUnit: model.videoBillingUnit ?? "second",
     maxCount: String(model.maxCount || profile?.maxCount || 1),
     pointsByQuality: stringRecord(model.pointsByQuality),
     pointsPerSecond: stringRecord(model.pointsPerSecondByResolution),
     referencePoints: stringRecord(model.referencePointsByResolution),
   };
+}
+
+function modelDurationText(model: AdminGenerationModel) {
+  const durations = model.durations ?? [];
+  if (durations.length === 0 || isContinuousRange(durations)) {
+    return "";
+  }
+  return durations.join(", ");
 }
 
 function applyProfile(form: FormState, profile: GenerationModelCatalogItem): FormState {
@@ -143,6 +269,7 @@ function applyProfile(form: FormState, profile: GenerationModelCatalogItem): For
     modelType: profile.modelType,
     capabilityProfile: profile.capabilityProfile,
     imageToImageEnabled: profile.imageToImageSupported,
+    textToVideoEnabled: true,
     imageToVideoEnabled: profile.imageToVideoSupported,
     inpaintEnabled: false,
     ratios: [...profile.ratios],
@@ -150,6 +277,10 @@ function applyProfile(form: FormState, profile: GenerationModelCatalogItem): For
     resolutions: [...profile.resolutions],
     minDuration: String(profile.minDuration ?? 1),
     maxDuration: String(profile.maxDuration ?? 15),
+    durations: "",
+    maxReferenceImages: "1",
+    minReferenceImages: "1",
+    videoBillingUnit: profileBillingUnit(profile),
     maxCount: String(profile.maxCount ?? 1),
     pointsByQuality: stringRecord(profile.defaultPoints),
     pointsPerSecond: stringRecord(profile.defaultPointsPerSecond),
@@ -188,6 +319,14 @@ function readInteger(value: string, label: string) {
     throw new Error(`${label}必须是整数`);
   }
   return parsed;
+}
+
+function readDurations(value: string) {
+  const parts = value
+    .split(/[,，\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return parts.map((item) => readInteger(item, "可选时长"));
 }
 
 export function ModelForm(props: ModelFormProps) {
@@ -289,14 +428,37 @@ export function ModelForm(props: ModelFormProps) {
   }
 
   function selectProviderModel(providerModelCode: string) {
-    const isListed = discoveredForConnection.some((item) => item.id === providerModelCode);
+    const picked = discoveredForConnection.find((item) => item.id === providerModelCode);
+    const isListed = Boolean(picked);
     const isVerifiedPick = isListed && !canEnterManually;
-    updateForm({
-      providerModelCode,
-      verificationStatus: isVerifiedPick ? "verified" : "unverified",
-      status: isVerifiedPick ? form.status : "disabled",
-      defaultFlag: isVerifiedPick ? form.defaultFlag : 0,
+    setForm((current) => {
+      const next: FormState = {
+        ...current,
+        providerModelCode,
+        verificationStatus: isVerifiedPick ? "verified" : "unverified",
+        status: isVerifiedPick ? current.status : "disabled",
+        defaultFlag: isVerifiedPick ? current.defaultFlag : 0,
+      };
+      return fillModelDefaults(next, picked);
     });
+  }
+
+  // 选中上游模型后自动填写能力：Rose 用目录能力，Grok 视频按已知模型填参考图上限
+  function fillModelDefaults(next: FormState, picked: DiscoveredProviderModel | undefined) {
+    if (next.modelType !== "video") {
+      return next;
+    }
+    if (picked?.capabilities) {
+      return applyCapabilities(next, picked.capabilities, profile);
+    }
+    if (profile?.adapter === "grok") {
+      const limit = Math.min(
+        grokReferenceLimit(next.providerModelCode),
+        profile.maxReferenceImages ?? 14,
+      );
+      return { ...next, maxReferenceImages: String(limit) };
+    }
+    return next;
   }
 
   function toggleListValue(field: ListField, value: string) {
@@ -402,24 +564,37 @@ export function ModelForm(props: ModelFormProps) {
       };
     }
 
+    const unitLabel = form.videoBillingUnit === "request" ? "每条积分" : "每秒积分";
     const videoPrices = form.resolutions.map((resolution) => ({
       resolution,
-      pointsPerSecond: readInteger(form.pointsPerSecond[resolution] ?? "", `${resolution}每秒积分`),
+      pointsPerSecond: readInteger(
+        form.pointsPerSecond[resolution] ?? "",
+        `${resolutionLabel(resolution)}${unitLabel}`,
+      ),
       referencePoints: readInteger(
-        form.referencePoints[resolution] ?? "",
-        `${resolution}参考图积分`,
+        form.referencePoints[resolution] || "0",
+        `${resolutionLabel(resolution)}参考图积分`,
       ),
     }));
     if (videoPrices.some((item) => item.pointsPerSecond < 0 || item.referencePoints < 0)) {
       throw new Error("积分不能小于 0");
     }
+    if (!form.textToVideoEnabled && !form.imageToVideoEnabled) {
+      throw new Error("文生视频和图生视频至少开放一个");
+    }
+    const durations = readDurations(form.durations);
     return {
       ...base,
       modelType: "video",
+      textToVideoEnabled: form.textToVideoEnabled,
       imageToVideoEnabled: form.imageToVideoEnabled,
       resolutions: form.resolutions,
       minDuration: readInteger(form.minDuration, "最短时长"),
       maxDuration: readInteger(form.maxDuration, "最长时长"),
+      durations: durations.length > 0 ? durations : undefined,
+      maxReferenceImages: readInteger(form.maxReferenceImages, "最多参考图"),
+      minReferenceImages: readInteger(form.minReferenceImages, "最少参考图"),
+      videoBillingUnit: form.videoBillingUnit,
       videoPrices,
     };
   }
@@ -536,7 +711,15 @@ export function ModelForm(props: ModelFormProps) {
     picked: DiscoveredProviderModel,
     models: DiscoveredProviderModel[],
   ) {
-    updateForm({ connectionId, providerModelCode: picked.id, verificationStatus: "verified" });
+    setForm((current) => {
+      const next: FormState = {
+        ...current,
+        connectionId,
+        providerModelCode: picked.id,
+        verificationStatus: "verified",
+      };
+      return fillModelDefaults(next, picked);
+    });
     setDiscovered(models);
     setDiscoveredConnectionId(connectionId);
     setDiscoveryState("success");
@@ -739,14 +922,21 @@ export function ModelForm(props: ModelFormProps) {
     if (isVideo) {
       const resolutionOptions = (profile?.resolutions ?? []).map((value) => ({
         value,
-        label: value,
+        label: resolutionLabel(value),
       }));
       const isSupported = profile?.imageToVideoSupported === true;
       const durationHint = `${profile?.minDuration ?? 1} – ${profile?.maxDuration ?? 15}`;
+      const referenceHint = `1 – ${profile?.maxReferenceImages ?? 1}`;
 
       return (
         <div className={workspace.formSection}>
           <div className={workspace.switchList}>
+            <SwitchRow
+              label="文生视频"
+              hint="必须上传参考图的模型请关闭"
+              checked={form.textToVideoEnabled}
+              onChange={(checked) => updateForm({ textToVideoEnabled: checked })}
+            />
             <SwitchRow
               label="图生视频"
               hint={isSupported ? undefined : unsupported}
@@ -790,6 +980,40 @@ export function ModelForm(props: ModelFormProps) {
                 />
               </Affix>
             </Field>
+            <Field label="可选时长" hint="逗号分隔，例如 4, 6, 8, 15；留空表示最短到最长的每一秒">
+              <input
+                className={workspace.formField}
+                value={form.durations}
+                placeholder="留空"
+                onChange={(event) => updateForm({ durations: event.target.value })}
+              />
+            </Field>
+            {form.imageToVideoEnabled ? (
+              <>
+                <Field label="最多参考图" hint={referenceHint}>
+                  <Affix suffix="张">
+                    <input
+                      type="number"
+                      min={1}
+                      max={profile?.maxReferenceImages ?? 1}
+                      value={form.maxReferenceImages}
+                      onChange={(event) => updateForm({ maxReferenceImages: event.target.value })}
+                    />
+                  </Affix>
+                </Field>
+                <Field label="最少参考图" hint="图生视频至少需要的张数">
+                  <Affix suffix="张">
+                    <input
+                      type="number"
+                      min={1}
+                      max={profile?.maxReferenceImages ?? 1}
+                      value={form.minReferenceImages}
+                      onChange={(event) => updateForm({ minReferenceImages: event.target.value })}
+                    />
+                  </Affix>
+                </Field>
+              </>
+            ) : null}
           </div>
         </div>
       );
@@ -851,13 +1075,46 @@ export function ModelForm(props: ModelFormProps) {
 
   function renderPricing() {
     if (isVideo) {
+      const isPerRequest = form.videoBillingUnit === "request";
+      const upstreamPrice = formatPricing(
+        discoveredForConnection.find((item) => item.id === form.providerModelCode)?.capabilities,
+      );
       return (
         <div className={workspace.formSection}>
+          <div className={workspace.summary}>
+            <span className={workspace.summaryItem} role="radiogroup" aria-label="计费方式">
+              <span>计费方式</span>
+              {billingOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.videoBillingUnit === option.value}
+                  className={clsx(
+                    workspace.chip,
+                    form.videoBillingUnit === option.value && workspace.chipActive,
+                  )}
+                  onClick={() => updateForm({ videoBillingUnit: option.value })}
+                >
+                  {form.videoBillingUnit === option.value ? (
+                    <Check size={13} aria-hidden="true" />
+                  ) : null}
+                  {option.label}
+                </button>
+              ))}
+            </span>
+            {upstreamPrice ? (
+              <span className={workspace.summaryItem}>
+                <span>上游价格</span>
+                <strong>{upstreamPrice}</strong>
+              </span>
+            ) : null}
+          </div>
           {form.resolutions.length ? null : <p className={workspace.formMessage}>未选择分辨率</p>}
           {form.resolutions.map((resolution) => (
             <div key={resolution} className={clsx(workspace.formGrid, workspace.formGridNarrow)}>
-              <Field label={`${resolution} 每秒`}>
-                <Affix suffix="积分 / 秒">
+              <Field label={`${resolutionLabel(resolution)} ${isPerRequest ? "每条" : "每秒"}`}>
+                <Affix suffix={isPerRequest ? "积分 / 条" : "积分 / 秒"}>
                   <input
                     type="number"
                     min={0}
@@ -868,8 +1125,8 @@ export function ModelForm(props: ModelFormProps) {
                   />
                 </Affix>
               </Field>
-              <Field label={`${resolution} 参考图`}>
-                <Affix suffix="积分">
+              <Field label={`${resolutionLabel(resolution)} 参考图`} hint="按参考图张数累加">
+                <Affix suffix="积分 / 张">
                   <input
                     type="number"
                     min={0}

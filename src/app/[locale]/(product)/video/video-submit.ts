@@ -18,15 +18,34 @@ export function isVideoMode(mode: string): mode is VideoGenerationMode {
   return mode === "text_to_video" || mode === "image_to_video";
 }
 
-// 先按当前价格估算积分，不足时抛出 VideoPointsShortageError，再创建任务
-export async function submitVideoTask(input: VideoTaskInput) {
-  const price = await videoApi.estimate({
+export function referenceCount(input: VideoTaskInput) {
+  if (input.mode !== "image_to_video") {
+    return 0;
+  }
+  if (input.referenceMediaIds && input.referenceMediaIds.length > 0) {
+    return input.referenceMediaIds.length;
+  }
+  if (input.referenceMediaId) {
+    return 1;
+  }
+  return 0;
+}
+
+export function estimateVideoTask(input: VideoTaskInput) {
+  return videoApi.estimate({
     model: input.model,
     mode: input.mode,
     ratio: input.ratio,
     resolution: input.resolution,
     duration: input.duration,
+    referenceCount:
+      input.mode === "image_to_video" ? Math.max(referenceCount(input), 1) : undefined,
   });
+}
+
+// 先按当前价格估算积分，不足时抛出 VideoPointsShortageError，再创建任务
+export async function submitVideoTask(input: VideoTaskInput) {
+  const price = await estimateVideoTask(input);
 
   if (!price.enough) {
     throw new VideoPointsShortageError(price.shortagePoints);
@@ -41,8 +60,13 @@ export function retryInput(task: VideoTask): VideoTaskInput | null {
   }
 
   let referenceMediaId: string | null = null;
+  let referenceMediaIds: string[] | undefined;
   if (task.mode === "image_to_video") {
     referenceMediaId = task.referenceMediaId;
+    const images = task.referenceImages ?? [];
+    if (images.length > 0) {
+      referenceMediaIds = images.map((image) => image.mediaId);
+    }
   }
 
   return {
@@ -53,5 +77,6 @@ export function retryInput(task: VideoTask): VideoTaskInput | null {
     resolution: task.resolution,
     duration: task.durationSeconds,
     referenceMediaId: referenceMediaId ?? undefined,
+    referenceMediaIds,
   };
 }

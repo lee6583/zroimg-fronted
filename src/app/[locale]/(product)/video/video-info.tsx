@@ -7,6 +7,7 @@ import { useFormatter } from "next-intl";
 import { useState } from "react";
 import type { VideoTask } from "@/types/video";
 import { parseJavaDateTime } from "@/utils/java-time";
+import { userAssetUrl } from "@/utils/media";
 import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
@@ -16,6 +17,7 @@ type VideoInfoProps = {
 };
 
 const longPrompt = 120;
+const previewReferences = 4;
 
 export function VideoInfo(props: VideoInfoProps) {
   const task = props.task;
@@ -33,12 +35,19 @@ export function VideoInfo(props: VideoInfoProps) {
   if (task.createTime) {
     createdAt = format.dateTime(parseJavaDateTime(task.createTime), "datetime");
   }
+  const references = task.referenceImages ?? [];
+  const shownReferences = references.slice(0, previewReferences);
+  const hiddenReferences = references.length - shownReferences.length;
   const rows = [
     { key: "model", label: t("info.model"), value: task.modelName || task.modelCode },
     { key: "mode", label: t("info.mode"), value: text.modeLabel(task.mode) },
     { key: "duration", label: t("info.duration"), value: duration },
     { key: "ratio", label: t("info.ratio"), value: task.ratio || "-" },
-    { key: "resolution", label: t("info.resolution"), value: task.resolution || "-" },
+    {
+      key: "resolution",
+      label: t("info.resolution"),
+      value: task.resolution ? text.resolutionLabel(task.resolution) : "-",
+    },
     { key: "points", label: t("info.points"), value: format.number(task.requiredPoints, "points") },
     { key: "createdAt", label: t("info.createdAt"), value: createdAt },
   ];
@@ -82,6 +91,30 @@ export function VideoInfo(props: VideoInfoProps) {
               </button>
             ) : null}
           </div>
+          {references.length > 0 ? (
+            <div className={styles.videoPage__infoReferences}>
+              <span className={styles.videoPage__infoReferencesLabel}>
+                {t("info.references", { count: references.length })}
+              </span>
+              <ul className={styles.videoPage__infoReferenceList}>
+                {shownReferences.map((reference, index) => (
+                  <li key={reference.mediaId}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 私有参考图走 Java 媒体接口 */}
+                    <img
+                      src={userAssetUrl(reference.mediaId)}
+                      alt={t("settings.referenceAlt", { index: index + 1 })}
+                      className={styles.videoPage__infoReferenceImage}
+                    />
+                  </li>
+                ))}
+                {hiddenReferences > 0 ? (
+                  <li className={styles.videoPage__infoReferenceMore}>
+                    {t("info.moreReferences", { count: hiddenReferences })}
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          ) : null}
           <dl className={styles.videoPage__infoGrid}>
             {rows.map((row) => (
               <div key={row.key} className={styles.videoPage__infoItem}>
