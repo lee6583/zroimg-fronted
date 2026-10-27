@@ -24,7 +24,7 @@ For detailed rules, see [Credits and billing](/docs/billing).
 4. Click generate. Images usually finish within 30–90 seconds, and you can keep typing your next prompt in the meantime.
 5. Once generation is complete, you can zoom in, download, add to favorites, submit to the gallery, or use the image as a reference for further creation.
 > [!NOTE]
-> Want to modify an existing image? Upload reference images in the input box (up to 4; PNG, JPEG, WebP, up to 10 MB each), or choose "Inpainting" and paint over the area you want to change on the original image.
+> Want to modify an existing image? Upload reference images in the input box (up to 4; PNG, JPEG, WebP, up to 20 MB each), or choose "Inpainting" and paint over the area you want to change on the original image.
 ## 4. Generate your first video {#first-video}
 1. Go to [Video creation](/video).
 2. Choose "Text to video" or "Image to video"; image-to-video requires a reference image.

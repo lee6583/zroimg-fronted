@@ -23,7 +23,7 @@ The platform is billed in credits: the estimated cost is shown before each gener
 ### Image generation {#image-generation}
 The image generation workspace uses a chat-style layout: the conversation list on the left, the result preview in the middle, and the prompt input at the bottom. Each conversation keeps its own generation history, which makes it easy to keep refining around one theme.
 - **Text-to-image**: enter a prompt only.
-- **Image-to-image with references**: upload 1–4 reference images (PNG, JPEG, WebP, up to 10 MB each) to change the style or background while preserving the subject or composition.
+- **Image-to-image with references**: upload 1–4 reference images (PNG, JPEG, WebP, up to 20 MB each) to change the style or background while preserving the subject or composition.
 - **Inpainting**: draw a mask on the original image to change only that area while leaving the rest untouched.
 Supported aspect ratios, quality levels and image counts vary by model; the interface automatically shows the available options for the selected model.
 ### Video creation {#video-generation}

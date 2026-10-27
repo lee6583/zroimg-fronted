@@ -20,7 +20,7 @@
     "duration": "Длительность",
     "durationLabel": "Длительность видео",
     "reference": "Референс",
-    "referenceHint": "Только PNG, JPEG, WebP, до 10 МБ",
+    "referenceHint": "Только PNG, JPEG, WebP, до 20 МБ",
     "upload": "Загрузить референс",
     "uploading": "Загрузка...",
     "removeReference": "Удалить референс",

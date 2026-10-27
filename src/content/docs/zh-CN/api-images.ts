@@ -61,7 +61,7 @@ POST /open/v1/images/generations
 遮罩要求：PNG 格式，尺寸与原图一致；**透明区域（alpha 为 0）是需要重绘的部分**，其余区域为不透明。
 ::: example imagesEdit
 > [!NOTE]
-> 参考图和遮罩由服务端下载：只接受公网可访问的 \`https\` 地址（不支持内网地址），支持 PNG、JPEG、WebP，单张不超过 10 MB。下载失败或地址不安全时返回 \`400 invalid_request\`。
+> 参考图和遮罩由服务端下载：只接受公网可访问的 \`https\` 地址（不支持内网地址），支持 PNG、JPEG、WebP，单张不超过 20 MB。下载失败或地址不安全时返回 \`400 invalid_request\`。
 ## 获取结果 {#result}
 提交后用返回的 \`id\` 轮询 \`GET /tasks/{id}\`，直到 \`status\` 为 \`succeeded\` 或 \`failed\`。完整的轮询代码见 [API 概览中的完整示例](/docs/api/overview#end-to-end)，任务对象说明见 [任务](/docs/api/tasks)。
 `,

@@ -61,7 +61,7 @@ A replay with the same \`Idempotency-Key\` also returns \`202\` and the task cre
 Mask requirements: PNG format, same dimensions as the source image; **transparent areas (alpha 0) are the parts to be regenerated**, and all other areas are opaque.
 ::: example imagesEdit
 > [!NOTE]
-> Reference images and masks are downloaded by the server: only publicly accessible \`https\` URLs are accepted (private network addresses are not supported). PNG, JPEG and WebP are supported, up to 10 MB each. If a download fails or a URL is deemed unsafe, the API returns \`400 invalid_request\`.
+> Reference images and masks are downloaded by the server: only publicly accessible \`https\` URLs are accepted (private network addresses are not supported). PNG, JPEG and WebP are supported, up to 20 MB each. If a download fails or a URL is deemed unsafe, the API returns \`400 invalid_request\`.
 ## Getting results {#result}
 After submitting, poll \`GET /tasks/{id}\` with the returned \`id\` until \`status\` is \`succeeded\` or \`failed\`. See the [end-to-end example in the API overview](/docs/api/overview#end-to-end) for complete polling code, and [Tasks](/docs/api/tasks) for the task object.
 `,

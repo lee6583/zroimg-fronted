@@ -48,7 +48,7 @@
     "maxPending": "{count, plural, one {Each canvas can run up to # generation task at a time} other {Each canvas can run up to # generation tasks at a time}}",
     "referenceNotReady": "Reference image isn't ready",
     "fileType": "Only PNG, JPEG, and WebP images are supported",
-    "fileSize": "Each image must be 10 MB or smaller"
+    "fileSize": "Each image must be 20 MB or smaller"
   },
   "generator": {
     "placeholder": "Describe the image you want to generate",

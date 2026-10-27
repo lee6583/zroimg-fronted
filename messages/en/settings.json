@@ -10,7 +10,7 @@
     "title": "Profile",
     "avatar": "Avatar",
     "changeAvatar": "Change avatar",
-    "avatarHint": "JPG, PNG, or WebP, up to 10 MB",
+    "avatarHint": "JPG, PNG, or WebP, up to 20 MB",
     "avatarUpdated": "Avatar updated",
     "username": "Username",
     "email": "Email",

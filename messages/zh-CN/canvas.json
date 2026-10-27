@@ -48,7 +48,7 @@
     "maxPending": "{count, plural, other {每个画布最多同时进行 # 个生成任务}}",
     "referenceNotReady": "参考图未就绪",
     "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
-    "fileSize": "单张图片不能超过 10 MB"
+    "fileSize": "单张图片不能超过 20 MB"
   },
   "generator": {
     "placeholder": "描述你想生成的画面",

@@ -20,7 +20,7 @@
     "duration": "Duration",
     "durationLabel": "Video duration",
     "reference": "Reference image",
-    "referenceHint": "PNG, JPEG, or WebP only, up to 10 MB",
+    "referenceHint": "PNG, JPEG, or WebP only, up to 20 MB",
     "upload": "Upload reference image",
     "uploading": "Uploading...",
     "removeReference": "Remove reference image",

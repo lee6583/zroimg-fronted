@@ -60,7 +60,7 @@
     "noEditModel": "No image-to-image models available",
     "maxInputs": "{count, plural, one {You can upload up to # reference image} other {You can upload up to # reference images}}",
     "fileType": "Only PNG, JPEG, and WebP images are supported",
-    "fileSize": "Each image must be 10 MB or smaller",
+    "fileSize": "Each image must be 20 MB or smaller",
     "needReference": "Image to image requires at least 1 reference image"
   },
   "preview": {

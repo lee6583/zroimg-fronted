@@ -60,7 +60,7 @@
     "noEditModel": "暂无可用图生图模型",
     "maxInputs": "{count, plural, other {最多上传 # 张参考图}}",
     "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
-    "fileSize": "单张图片不能超过 10 MB",
+    "fileSize": "单张图片不能超过 20 MB",
     "needReference": "图生图需要先上传至少 1 张参考图"
   },
   "preview": {

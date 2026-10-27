@@ -10,7 +10,7 @@
     "title": "个人资料",
     "avatar": "头像",
     "changeAvatar": "更换头像",
-    "avatarHint": "支持 JPG、PNG、WebP 格式，文件不超过 10 MB",
+    "avatarHint": "支持 JPG、PNG、WebP 格式，文件不超过 20 MB",
     "avatarUpdated": "头像已更新",
     "username": "用户名",
     "email": "邮箱",

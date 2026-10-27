@@ -10,7 +10,7 @@
     "title": "Профиль",
     "avatar": "Аватар",
     "changeAvatar": "Сменить аватар",
-    "avatarHint": "Форматы JPG, PNG, WebP, размер файла до 10 МБ",
+    "avatarHint": "Форматы JPG, PNG, WebP, размер файла до 20 МБ",
     "avatarUpdated": "Аватар обновлён",
     "username": "Имя пользователя",
     "email": "Эл. почта",

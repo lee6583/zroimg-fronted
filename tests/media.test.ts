@@ -4,7 +4,7 @@ import { isSupportedImageType, maxImageBytes, maxImageFiles } from "../src/utils
 
 test("media limits stay explicit", () => {
   assert.equal(maxImageFiles, 4);
-  assert.equal(maxImageBytes, 10 * 1024 * 1024);
+  assert.equal(maxImageBytes, 20 * 1024 * 1024);
 });
 
 test("only supported image MIME types are accepted", () => {

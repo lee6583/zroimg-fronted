@@ -20,7 +20,7 @@
     "duration": "时长",
     "durationLabel": "视频时长",
     "reference": "参考图",
-    "referenceHint": "仅支持 PNG、JPEG、WebP，最大 10 MB",
+    "referenceHint": "仅支持 PNG、JPEG、WebP，最大 20 MB",
     "upload": "上传参考图",
     "uploading": "上传中...",
     "removeReference": "移除参考图",

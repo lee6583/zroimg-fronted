@@ -193,7 +193,7 @@
       "maxPending": "{count, plural, other {每个画布最多同时进行 # 个生成任务}}",
       "referenceNotReady": "参考图未就绪",
       "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
-      "fileSize": "单张图片不能超过 10 MB"
+      "fileSize": "单张图片不能超过 20 MB"
     },
     "generator": {
       "placeholder": "描述你想生成的画面",
@@ -605,7 +605,7 @@
       "noEditModel": "暂无可用图生图模型",
       "maxInputs": "{count, plural, other {最多上传 # 张参考图}}",
       "fileType": "仅支持 PNG、JPEG 和 WebP 图片",
-      "fileSize": "单张图片不能超过 10 MB",
+      "fileSize": "单张图片不能超过 20 MB",
       "needReference": "图生图需要先上传至少 1 张参考图"
     },
     "preview": {
@@ -948,7 +948,7 @@
       "title": "个人资料",
       "avatar": "头像",
       "changeAvatar": "更换头像",
-      "avatarHint": "支持 JPG、PNG、WebP 格式，文件不超过 10 MB",
+      "avatarHint": "支持 JPG、PNG、WebP 格式，文件不超过 20 MB",
       "avatarUpdated": "头像已更新",
       "username": "用户名",
       "email": "邮箱",
@@ -1219,7 +1219,7 @@
       "duration": "时长",
       "durationLabel": "视频时长",
       "reference": "参考图",
-      "referenceHint": "仅支持 PNG、JPEG、WebP，最大 10 MB",
+      "referenceHint": "仅支持 PNG、JPEG、WebP，最大 20 MB",
       "upload": "上传参考图",
       "uploading": "上传中...",
       "removeReference": "移除参考图",
