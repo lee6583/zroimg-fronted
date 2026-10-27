@@ -1,0 +1,261 @@
+/*
+ * 瀑布流：卡片绝对定位，位置由 masonry.ts 预先算好写进 CSS 变量（每个断点一套），
+ * 这里按媒体查询选用。列宽 --colw 用容器查询单位 cqw 计算，所以服务端渲染就是最终布局，
+ * 图片加载前后不会重排。断点与 masonry.ts 的 masonryBreakpoints 保持一致。
+ */
+.feed {
+  container-type: inline-size;
+  padding-bottom: 3rem;
+}
+
+.masonry {
+  --cols: 2;
+  --gap: 12px;
+  --gallery-footer: 58px;
+  --row: calc(var(--gallery-footer) + var(--gap));
+  --colw: calc((100cqw - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  position: relative;
+  height: var(--h2);
+}
+
+.card,
+.skeleton {
+  --c: var(--c2);
+  --s: var(--s2);
+  --k: var(--k2);
+  position: absolute;
+  top: calc(var(--s) * var(--colw) + var(--k) * var(--row));
+  left: calc(var(--c) * (var(--colw) + var(--gap)));
+  width: var(--colw);
+}
+
+@media (max-width: 359px) {
+  .masonry {
+    --cols: 1;
+    height: var(--h1);
+  }
+
+  .card,
+  .skeleton {
+    --c: var(--c1);
+    --s: var(--s1);
+    --k: var(--k1);
+  }
+}
+
+@media (min-width: 900px) {
+  .masonry {
+    --cols: 3;
+    --gap: 16px;
+    height: var(--h3);
+  }
+
+  .card,
+  .skeleton {
+    --c: var(--c3);
+    --s: var(--s3);
+    --k: var(--k3);
+  }
+}
+
+@media (min-width: 1200px) {
+  .masonry {
+    --cols: 4;
+    height: var(--h4);
+  }
+
+  .card,
+  .skeleton {
+    --c: var(--c4);
+    --s: var(--s4);
+    --k: var(--k4);
+  }
+}
+
+@media (min-width: 1440px) {
+  .masonry {
+    --cols: 5;
+    height: var(--h5);
+  }
+
+  .card,
+  .skeleton {
+    --c: var(--c5);
+    --s: var(--s5);
+    --k: var(--k5);
+  }
+}
+
+.card__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: var(--ar);
+  border-radius: 0.75rem;
+  background-color: var(--soft);
+  background-position: center;
+  background-size: cover;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card__media:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.card__imageLoaded {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .card:hover .card__media {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.12);
+  }
+
+  :global([data-theme="dark"]) .card:hover .card__media {
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.5);
+  }
+}
+
+.card__footer {
+  display: flex;
+  height: var(--gallery-footer);
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.125rem 0;
+}
+
+.card__title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card__meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card__creator {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  margin-inline-end: -0.35rem;
+  padding: 0 0.35rem 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.card__creator:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.card__creatorName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skeleton__media {
+  aspect-ratio: var(--ar);
+  border-radius: 0.75rem;
+  background: var(--soft);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton__line,
+.skeleton__lineShort {
+  height: 0.6rem;
+  margin-top: 0.7rem;
+  border-radius: 999px;
+  background: var(--soft);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton__line {
+  width: 72%;
+}
+
+.skeleton__lineShort {
+  width: 40%;
+  margin-top: 0.55rem;
+}
+
+.feed__sentinel {
+  height: 1px;
+}
+
+.feed__status {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.feed__retry {
+  min-height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 0 0.85rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.feed__retry:hover {
+  background: var(--soft);
+}
+
+@keyframes shimmer {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card__media,
+  .card__image {
+    transition: none;
+  }
+
+  .skeleton__media,
+  .skeleton__line,
+  .skeleton__lineShort {
+    animation: none;
+  }
+}

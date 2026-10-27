@@ -45,6 +45,8 @@ type GenerateFormProps = {
   initialEstimate: number;
   initialCollections: FavoriteCollection[];
   modelOptions: GenerationModel[];
+  // 从画廊「用这个提示词创作」带过来的提示词（/generate?prompt=...）
+  initialPrompt?: string;
 };
 
 const maxGenerationInputs = 1;
@@ -60,6 +62,7 @@ export function GenerateForm(props: GenerateFormProps) {
   const initialEstimate = props.initialEstimate;
   const initialCollections = props.initialCollections;
   const modelOptions = props.modelOptions;
+  const initialPrompt = props.initialPrompt ?? "";
   const t = useTranslations("generate");
   const tTask = useTranslations("task");
   const tError = useTranslations("errors.api");
@@ -69,7 +72,7 @@ export function GenerateForm(props: GenerateFormProps) {
   const [chats, setChats] = useState(initialChats);
   const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
   const [tasks, setTasks] = useState(initialTasks);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [options, setOptions] = useState<GenerationOptions>(initialOptions);
   const [estimate, setEstimate] = useState(initialEstimate);
   const [hasEstimateError, setEstimateError] = useState(false);

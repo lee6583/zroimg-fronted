@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { authApi } from "@/api/auth/email-auth";
 import { SliderVerification } from "@/features/auth/slider-verification";
 import { translateApiError } from "@/i18n/api-error";
+import { ApiRequestError } from "@/utils/request";
 import { useRouter } from "@/i18n/navigation";
 import styles from "./auth-form.module.css";
 import { PasswordInput } from "./password-input";
@@ -23,6 +24,11 @@ type RegisterFields = {
 };
 
 type ValidationKey = keyof Messages["auth"]["validation"];
+
+type RegisterFormProps = {
+  // 后台配置的新用户赠送积分，0 时不展示赠送提示
+  rewardPoints: number;
+};
 
 type SliderChallenge = {
   challengeId: string;
@@ -71,11 +77,13 @@ function getFormError(fields: RegisterFields): ValidationKey | "" {
   return "";
 }
 
-export function RegisterForm() {
+export function RegisterForm(props: RegisterFormProps) {
+  const rewardPoints = props.rewardPoints;
   const t = useTranslations("auth.register");
   const tCode = useTranslations("auth.code");
   const tValidation = useTranslations("auth.validation");
   const tError = useTranslations("errors.api");
+  const tClosed = useTranslations("auth.register.closed");
   const router = useRouter();
   const emailRef = useRef("");
   const [username, setUsername] = useState("");
@@ -104,6 +112,15 @@ export function RegisterForm() {
 
     return () => clearTimeout(timer);
   }, [codeCountdown]);
+
+  // 页面加载后后台关闭了注册：Java 返回 403，提示当前语言的「暂未开放注册」
+  function readSubmitError(error: unknown) {
+    if (error instanceof ApiRequestError && error.status === 403) {
+      return tClosed("title");
+    }
+
+    return translateApiError(error, tError);
+  }
 
   function resetSliderVerification() {
     setVerified(false);
@@ -203,7 +220,7 @@ export function RegisterForm() {
       setMessage(tCode("sent"));
     } catch (error) {
       setMessageType("error");
-      setMessage(translateApiError(error, tError));
+      setMessage(readSubmitError(error));
     } finally {
       setSendingCode(false);
     }
@@ -237,7 +254,7 @@ export function RegisterForm() {
       router.push("/login");
     } catch (error) {
       setMessageType("error");
-      setMessage(translateApiError(error, tError));
+      setMessage(readSubmitError(error));
     } finally {
       setLoading(false);
     }
@@ -368,13 +385,17 @@ export function RegisterForm() {
         {isLoading ? t("submitting") : t("submit")}
       </button>
 
-      <div className={styles.authForm__reward}>
-        <Gift className={styles.authForm__rewardIcon} />
-        <div>
-          <p className={styles.authForm__rewardTitle}>{t("rewardTitle")}</p>
-          <p className={styles.authForm__rewardText}>{t("rewardText")}</p>
+      {rewardPoints > 0 ? (
+        <div className={styles.authForm__reward}>
+          <Gift className={styles.authForm__rewardIcon} />
+          <div>
+            <p className={styles.authForm__rewardTitle}>
+              {t("rewardTitle", { points: rewardPoints })}
+            </p>
+            <p className={styles.authForm__rewardText}>{t("rewardText")}</p>
+          </div>
         </div>
-      </div>
+      ) : null}
     </form>
   );
 }

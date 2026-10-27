@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
+import { RegisterClosed } from "@/features/auth/register-closed";
 import { RegisterForm } from "@/features/auth/register-form";
+import { getRegisterConfig } from "@/server/register-config";
+
+// 注册开关来自后台配置，不在构建期固化
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -18,7 +23,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RegisterPage() {
-  const t = await getTranslations("auth.register");
+  const [t, config] = await Promise.all([getTranslations("auth.register"), getRegisterConfig()]);
+
+  if (!config.registrationEnabled) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-4 py-24">
+        <div className="w-full max-w-sm">
+          <RegisterClosed />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-24">
@@ -26,7 +41,7 @@ export default async function RegisterPage() {
         <div className="mb-8 text-center">
           <h1 className="page-title">{t("title")}</h1>
         </div>
-        <RegisterForm />
+        <RegisterForm rewardPoints={config.rewardPoints} />
         <p className="mt-6 text-center text-sm text-muted">
           {t("hasAccount")}{" "}
           <Link href="/login" className="font-medium text-foreground hover:underline">

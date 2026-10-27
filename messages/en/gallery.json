@@ -1,16 +1,11 @@
 {
   "hero": {
-    "title": "Explore great work from community creators"
+    "title": "Community gallery",
+    "subtitle": "Explore work created with ZroImg"
   },
   "tabs": {
     "label": "Work categories",
     "all": "All"
-  },
-  "category": {
-    "realistic": "Realistic",
-    "anime": "Anime",
-    "art": "Art",
-    "other": "Other"
   },
   "status": {
     "pending": "In review",
@@ -19,13 +14,10 @@
     "withdrawn": "Withdrawn",
     "removed": "Removed"
   },
-  "list": {
-    "label": "Community works"
-  },
   "card": {
     "untitled": "Untitled",
-    "author": "by {name}",
-    "anonymous": "Creator"
+    "anonymous": "Creator",
+    "open": "View work: {title}"
   },
   "empty": {
     "label": "No public works yet",
@@ -45,5 +37,49 @@
     "noReason": "No reason provided",
     "rejectedTitle": "Rejected: {reason}",
     "removedTitle": "Removed: {reason}. Contact us through feedback if you have questions"
+  },
+  "feed": {
+    "label": "Community works",
+    "loadingMore": "Loading more works…",
+    "end": "You've reached the end",
+    "error": "Failed to load",
+    "retry": "Retry"
+  },
+  "like": {
+    "like": "Like",
+    "unlike": "Unlike",
+    "count": "{count, plural, one {# like} other {# likes}}",
+    "adminBlocked": "Admin accounts can't like works"
+  },
+  "detail": {
+    "label": "Work details",
+    "viewOriginal": "View original",
+    "prompt": "Prompt",
+    "copy": "Copy prompt",
+    "copied": "Copied",
+    "usePrompt": "Create with this prompt",
+    "model": "Model",
+    "category": "Category",
+    "published": "Published",
+    "loading": "Loading…",
+    "notFound": "This work doesn't exist or has been removed",
+    "openCreator": "View creator {name}"
+  },
+  "creator": {
+    "label": "Creator profile",
+    "joined": "Joined {date}",
+    "images": "Images",
+    "videos": "Videos",
+    "published": "Public works",
+    "loading": "Loading…",
+    "error": "Couldn't load profile",
+    "noBio": "This creator hasn't written a bio yet."
+  },
+  "publishDialog": {
+    "title": "Submit to gallery",
+    "confirm": "Submit for review",
+    "hint": "Pick a category (optional). A reviewer will make the final call.",
+    "label": "Category",
+    "auto": "Let the reviewer decide"
   }
 }

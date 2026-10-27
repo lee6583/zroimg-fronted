@@ -240,21 +240,65 @@
   overflow: hidden;
 }
 
+/* 图片框宽高比固定（来自原图尺寸），加载前后不跳动；模糊占位图先铺底，缩略图加载完淡入 */
 .imageNode__frame {
   position: relative;
   cursor: zoom-in;
-  min-height: 8rem;
   overflow: hidden;
   border-radius: 0.75rem 0.75rem 0 0;
   background: var(--soft);
 }
 
+.imageNode__placeholder {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  filter: blur(12px);
+  transform: scale(1.12);
+}
+
 .imageNode__image {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.imageNode__imageLoaded {
+  opacity: 1;
+}
+
+.imageNode__retry {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.imageNode__retry:hover {
+  background: var(--soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imageNode__image {
+    transition: none;
+  }
 }
 
 .imageNode__uploading {

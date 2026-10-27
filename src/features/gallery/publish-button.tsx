@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { galleryApi } from "@/api/generation/gallery";
 import { ConfirmSheet } from "@/features/history/confirm-sheet";
 import { translateApiError } from "@/i18n/api-error";
-import type { GalleryStatus } from "@/types/gallery";
+import type { GalleryCategory, GalleryCategoryOption, GalleryStatus } from "@/types/gallery";
 import styles from "./publish-button.module.css";
 
 type PublishGalleryButtonProps = {
@@ -19,6 +19,20 @@ type PublishGalleryButtonProps = {
   size?: "compact" | "touch";
   onChange?: (status: GalleryStatus) => void;
 };
+
+// 分类列表在一个页面里只请求一次；失败时清掉缓存，下次打开再试
+let categoriesPromise: Promise<GalleryCategoryOption[]> | null = null;
+
+function loadCategories() {
+  if (!categoriesPromise) {
+    categoriesPromise = galleryApi.listCategories().catch((error: unknown) => {
+      categoriesPromise = null;
+      throw error;
+    });
+  }
+
+  return categoriesPromise;
+}
 
 export function PublishGalleryButton(props: PublishGalleryButtonProps) {
   const generatedImageId = props.generatedImageId;
@@ -34,6 +48,10 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
   const [reason, setReason] = useState(initialReason);
   const [isLoading, setLoading] = useState(false);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
+  const [isSubmitOpen, setSubmitOpen] = useState(false);
+  const [categories, setCategories] = useState<GalleryCategoryOption[]>([]);
+  // 用户建议的分类；空字符串表示交给审核员决定
+  const [category, setCategory] = useState<GalleryCategory>("");
   const [message, setMessage] = useState("");
 
   function applyStatus(nextStatus: GalleryStatus, nextReason: string | null) {
@@ -42,15 +60,28 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
     onChange?.(nextStatus);
   }
 
+  function openSubmit() {
+    setMessage("");
+    setSubmitOpen(true);
+    loadCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }
+
   async function submit() {
     setLoading(true);
     setMessage("");
 
     try {
-      const image = await galleryApi.publishImage({ generatedImageId });
+      const image = await galleryApi.publishImage({
+        generatedImageId,
+        category: category || undefined,
+      });
       applyStatus(image.status, image.rejectReason);
+      setSubmitOpen(false);
     } catch (error) {
       setMessage(translateApiError(error, tError));
+      setSubmitOpen(false);
     } finally {
       setLoading(false);
     }
@@ -112,7 +143,7 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
       {isIdle ? (
         <button
           type="button"
-          onClick={submit}
+          onClick={openSubmit}
           disabled={isLoading}
           className={styles.publishButton__action}
         >
@@ -150,7 +181,7 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
       {status === "rejected" ? (
         <button
           type="button"
-          onClick={submit}
+          onClick={openSubmit}
           disabled={isLoading}
           className={styles.publishButton__link}
         >
@@ -163,6 +194,51 @@ export function PublishGalleryButton(props: PublishGalleryButtonProps) {
           {message}
         </span>
       ) : null}
+
+      <ConfirmSheet
+        open={isSubmitOpen}
+        title={t("publishDialog.title")}
+        confirmLabel={isLoading ? t("publish.submitting") : t("publishDialog.confirm")}
+        cancelLabel={t("publish.cancel")}
+        isLoading={isLoading}
+        onConfirm={submit}
+        onClose={() => setSubmitOpen(false)}
+      >
+        <p className={styles.publishButton__dialogText}>{t("publishDialog.hint")}</p>
+        <div
+          className={styles.publishButton__chips}
+          role="radiogroup"
+          aria-label={t("publishDialog.label")}
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={category === ""}
+            className={clsx(
+              styles.publishButton__chip,
+              category === "" && styles.publishButton__chipActive,
+            )}
+            onClick={() => setCategory("")}
+          >
+            {t("publishDialog.auto")}
+          </button>
+          {categories.map((option) => (
+            <button
+              key={option.code}
+              type="button"
+              role="radio"
+              aria-checked={category === option.code}
+              className={clsx(
+                styles.publishButton__chip,
+                category === option.code && styles.publishButton__chipActive,
+              )}
+              onClick={() => setCategory(option.code)}
+            >
+              {option.name}
+            </button>
+          ))}
+        </div>
+      </ConfirmSheet>
 
       <ConfirmSheet
         open={isConfirmOpen}

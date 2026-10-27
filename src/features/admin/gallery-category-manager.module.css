@@ -1,0 +1,113 @@
+.manager__hint {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.manager__list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.manager__row {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+}
+
+.manager__rowDragging {
+  opacity: 0.5;
+}
+
+.manager__rowDisabled .manager__name {
+  color: var(--muted);
+}
+
+.manager__main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.55rem 0.5rem 0.55rem 0.625rem;
+}
+
+.manager__grip {
+  flex-shrink: 0;
+  color: var(--muted);
+  cursor: grab;
+}
+
+.manager__names {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.15rem;
+}
+
+.manager__name {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.manager__code {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.manager__sub {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.manager__panel {
+  display: grid;
+  gap: 0.6rem;
+  border-top: 1px solid var(--line);
+  padding: 0.75rem;
+}
+
+.manager__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+.manager__panelActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.manager__reassign {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.manager__create {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}

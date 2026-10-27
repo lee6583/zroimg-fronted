@@ -6,7 +6,8 @@
   "free": {
     "code": "Free",
     "name": "免费体验",
-    "credits": "新用户体验额度",
+    "credits": "免费注册，按需购买积分",
+    "creditsReward": "注册即送 {points, number} 积分",
     "action": "注册体验",
     "features": {
       "start": "注册后即可开始体验",

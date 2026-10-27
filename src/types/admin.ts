@@ -41,6 +41,12 @@ type CheckInSettingsConfig = {
   dailyCredits: number;
 };
 
+// Java AdminSettingsService.RegistrationSettings（GET/POST /admin/settings/registration）
+type RegistrationSettingsConfig = {
+  registrationEnabled: boolean;
+  registerRewardPoints: number;
+};
+
 type AnnouncementSettingsConfig = {
   enabled: boolean;
   title: string;
@@ -110,6 +116,8 @@ type SaveEasyPaySettingsRequest = {
 type SaveCheckInSettingsRequest = {
   dailyCredits: number;
 };
+
+type SaveRegistrationSettingsRequest = RegistrationSettingsConfig;
 
 type SaveAnnouncementSettingsRequest = {
   enabled: boolean;
@@ -476,6 +484,40 @@ type BatchApproveGalleryResult = {
 
 type GalleryReviewStats = Record<GalleryStatus, number>;
 
+// gallery AdminGalleryCategoryVO
+type AdminGalleryCategory = {
+  id: string;
+  code: string;
+  nameZh: string;
+  nameEn: string | null;
+  nameRu: string | null;
+  sortOrder: number;
+  status: "enabled" | "disabled";
+  imageCount: number;
+  // 默认分类（other）不能删除或停用
+  isDefault: boolean;
+  createTime: string;
+  updateTime: string;
+};
+
+// gallery GalleryCategoryDTO：code 只在新增时使用；字段不传表示不修改
+type SaveGalleryCategoryRequest = {
+  code?: string;
+  nameZh?: string;
+  nameEn?: string;
+  nameRu?: string;
+  sortOrder?: number;
+  status?: "enabled" | "disabled";
+};
+
+type ReorderGalleryCategoriesRequest = {
+  ids: string[];
+};
+
+type ChangeGalleryCategoryRequest = {
+  category: GalleryCategory;
+};
+
 // generation models / provider connections
 type GenerationModelAdapter = "openai" | "grok" | "gemini" | "rose";
 
@@ -660,6 +702,7 @@ export type {
   SmtpAdminConfig,
   EasyPayAdminConfig,
   CheckInSettingsConfig,
+  RegistrationSettingsConfig,
   AnnouncementSettingsConfig,
   CanvasSettingsConfig,
   DocsItem,
@@ -669,6 +712,7 @@ export type {
   TestSmtpSettingsRequest,
   SaveEasyPaySettingsRequest,
   SaveCheckInSettingsRequest,
+  SaveRegistrationSettingsRequest,
   SaveAnnouncementSettingsRequest,
   SaveCanvasSettingsRequest,
   GenerationSettingsConfig,
@@ -727,4 +771,8 @@ export type {
   ImageQualityPrice,
   VideoResolutionPrice,
   SaveModelRequest,
+  AdminGalleryCategory,
+  SaveGalleryCategoryRequest,
+  ReorderGalleryCategoriesRequest,
+  ChangeGalleryCategoryRequest,
 };

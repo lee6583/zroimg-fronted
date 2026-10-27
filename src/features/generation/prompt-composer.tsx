@@ -15,7 +15,7 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 import { PolishButton } from "@/features/polish/polish-button";
 import type { PromptPolish } from "@/features/polish/use-prompt-polish";
 import type { GenerationMode, MediaAsset } from "@/types/generation";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import type { Notice } from "./generation-model";
 import styles from "./generate-form.module.css";
 
@@ -94,7 +94,7 @@ export function PromptComposer({ textarea, ...props }: PromptComposerProps) {
                 {/* eslint-disable-next-line @next/next/no-img-element -- 用户上传的私有媒体走 Java 接口，不经过 next/image；只在手机端显示 */}
                 <img
                   className={styles.generateForm__inputChipThumb}
-                  src={userAssetUrl(item.id)}
+                  src={userAssetThumbnailUrl(item.id)}
                   alt=""
                   loading="lazy"
                   title={item.originalName || undefined}

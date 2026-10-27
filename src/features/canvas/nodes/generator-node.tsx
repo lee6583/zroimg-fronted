@@ -17,7 +17,7 @@ import { translateApiError } from "@/i18n/api-error";
 import type { CanvasGeneratorData } from "@/types/canvas";
 import type { GenerationMode } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { useCanvasActions } from "../canvas-context";
 import {
@@ -212,7 +212,7 @@ function GeneratorRefs(props: GeneratorRefsProps) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       className={styles.generatorNode__thumb}
-      src={userAssetUrl(referenceId)}
+      src={userAssetThumbnailUrl(referenceId)}
       alt={t("reference")}
     />
   );
@@ -222,7 +222,7 @@ function GeneratorRefs(props: GeneratorRefsProps) {
 
   // 蒙版图只用于提交；节点上在原图上叠加高亮显示重绘区域，点击重新编辑蒙版
   const maskStyle = {
-    "--mask-url": `url("${userAssetUrl(data.maskMediaId)}")`,
+    "--mask-url": `url("${userAssetThumbnailUrl(data.maskMediaId)}")`,
   } as CSSProperties;
 
   return (

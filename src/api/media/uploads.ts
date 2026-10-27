@@ -1,5 +1,5 @@
 import { request } from "@/utils/request";
-import type { MediaAsset } from "@/types/generation";
+import type { MediaAsset, MediaPreview } from "@/types/generation";
 
 const assetsUrl = "/api/media/user/assets";
 
@@ -14,5 +14,14 @@ export function uploadMediaFile(file: File): Promise<MediaAsset> {
     url: assetsUrl,
     method: "POST",
     body,
+  });
+}
+
+// 批量读取图片尺寸和模糊占位图（最多 100 个 id，非本人资源会被忽略）
+export function fetchMediaPreviews(ids: string[]): Promise<MediaPreview[]> {
+  return request<MediaPreview[]>({
+    url: `${assetsUrl}/previews`,
+    method: "GET",
+    params: { ids: ids.join(",") },
   });
 }

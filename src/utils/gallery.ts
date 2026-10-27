@@ -1,11 +1,4 @@
-import type { GalleryCategory, GalleryStatus } from "@/types/gallery";
-
-export const galleryCategoryLabels: Record<GalleryCategory, string> = {
-  realistic: "写实",
-  anime: "动漫",
-  art: "艺术",
-  other: "其他",
-};
+import type { GalleryStatus } from "@/types/gallery";
 
 export const galleryStatusLabels: Record<GalleryStatus, string> = {
   pending: "审核中",
@@ -14,10 +7,6 @@ export const galleryStatusLabels: Record<GalleryStatus, string> = {
   withdrawn: "已撤回",
   removed: "已下架",
 };
-
-export function isGalleryCategory(value: string | undefined): value is GalleryCategory {
-  return value !== undefined && Object.hasOwn(galleryCategoryLabels, value);
-}
 
 export function isGalleryStatus(value: string | undefined): value is GalleryStatus {
   return value !== undefined && Object.hasOwn(galleryStatusLabels, value);

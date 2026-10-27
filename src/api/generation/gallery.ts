@@ -1,15 +1,47 @@
 import { request } from "@/utils/request";
 import type { PageResult } from "@/types/api";
 import type {
+  GalleryCategoryOption,
+  GalleryCreator,
+  GalleryCursorPage,
   GalleryImage,
   GalleryImageQuery,
+  GalleryLikeResult,
   GallerySubmission,
   GallerySubmissionQuery,
   PublishGalleryRequest,
 } from "@/types/gallery";
 
 function listPublicImages(params: GalleryImageQuery = {}) {
-  return request<PageResult<GalleryImage>>({ url: "/api/gallery/public/images", params });
+  return request<GalleryCursorPage<GalleryImage>>({ url: "/api/gallery/public/images", params });
+}
+
+function getPublicImage(id: string) {
+  return request<GalleryImage>({ url: `/api/gallery/public/images/${encodeURIComponent(id)}` });
+}
+
+function listCategories() {
+  return request<GalleryCategoryOption[]>({ url: "/api/gallery/public/categories" });
+}
+
+function getCreator(userId: string) {
+  return request<GalleryCreator>({
+    url: `/api/gallery/public/creators/${encodeURIComponent(userId)}`,
+  });
+}
+
+function like(id: string) {
+  return request<GalleryLikeResult>({
+    url: `/api/gallery/user/images/${encodeURIComponent(id)}/like`,
+    method: "POST",
+  });
+}
+
+function unlike(id: string) {
+  return request<GalleryLikeResult>({
+    url: `/api/gallery/user/images/${encodeURIComponent(id)}/like`,
+    method: "DELETE",
+  });
 }
 
 function publishImage(data: PublishGalleryRequest) {
@@ -32,6 +64,11 @@ function listSubmissions(params: GallerySubmissionQuery = {}) {
 
 export const galleryApi = {
   listPublicImages,
+  getPublicImage,
+  listCategories,
+  getCreator,
+  like,
+  unlike,
   publishImage,
   withdrawImage,
   listSubmissions,

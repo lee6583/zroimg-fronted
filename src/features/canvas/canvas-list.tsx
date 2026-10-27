@@ -9,7 +9,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { translateApiError } from "@/i18n/api-error";
 import type { CanvasBoard, CanvasConfig } from "@/types/canvas";
 import { parseJavaDateTime } from "@/utils/java-time";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import styles from "./canvas-list.module.css";
 import { Link, useRouter } from "@/i18n/navigation";
 
@@ -27,7 +27,7 @@ type BoardCardProps = {
 
 function getCover(board: CanvasBoard) {
   if (board.coverMediaId) {
-    return userAssetUrl(board.coverMediaId);
+    return userAssetThumbnailUrl(board.coverMediaId);
   }
 
   return board.coverUrl;

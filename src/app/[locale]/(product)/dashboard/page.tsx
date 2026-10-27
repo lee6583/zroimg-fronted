@@ -4,6 +4,7 @@ import { requireUser } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type { DashboardStats, SignCard } from "@/types/checkin";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import { DashboardOverview } from "./dashboard-overview";
 import type { RecentCreation } from "./dashboard-overview";
 import styles from "./dashboard.module.css";
@@ -22,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type TaskResult = {
   id: string;
   resultType: string;
+  mediaAssetId: string | null;
   resultUrl: string | null;
 };
 
@@ -54,10 +56,16 @@ async function listRecentCreations() {
         continue;
       }
 
+      // 概览卡片很小，用缩略图而不是原图
+      let imageUrl = result.resultUrl;
+      if (result.mediaAssetId) {
+        imageUrl = userAssetThumbnailUrl(result.mediaAssetId);
+      }
+
       creations.push({
         id: result.id,
         prompt: task.prompt,
-        imageUrl: result.resultUrl,
+        imageUrl,
       });
     }
   }

@@ -7,7 +7,7 @@ import { requireUser } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type { FavoriteCollection } from "@/types/favorites";
 import { parseJavaDateTime } from "@/utils/java-time";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import styles from "../favorites.module.css";
 import { Link } from "@/i18n/navigation";
 
@@ -70,7 +70,7 @@ export default async function FavoriteCollectionPage(props: FavoriteCollectionPa
               <article key={item.id} className={styles.favorites__imageCard}>
                 <Image
                   className={styles.favorites__image}
-                  src={userAssetUrl(asset.id)}
+                  src={userAssetThumbnailUrl(asset.id)}
                   alt={image.task.prompt}
                   width={image.width || asset.width || 768}
                   height={image.height || asset.height || 768}

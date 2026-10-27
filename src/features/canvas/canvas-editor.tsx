@@ -18,15 +18,15 @@ import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } fro
 import type { DragEvent } from "react";
 import { canvasBoardsApi } from "@/api/canvas/boards";
 import { generationTasksApi } from "@/api/generation/tasks";
-import { uploadMediaFile } from "@/api/media/uploads";
+import { fetchMediaPreviews, uploadMediaFile } from "@/api/media/uploads";
 import { useIsMobile } from "@/components/ui/sheet";
 import { translateApiError } from "@/i18n/api-error";
 import type { CanvasBoardDetail, CanvasConfig, SaveCanvasSceneRequest } from "@/types/canvas";
 import type { FavoriteCollection } from "@/types/favorites";
-import type { GenerationModel, GenerationTask, MediaAsset } from "@/types/generation";
+import type { GenerationModel, GenerationTask, MediaAsset, MediaPreview } from "@/types/generation";
 import { ApiRequestError } from "@/utils/request";
 import { getPastedImages } from "@/utils/clipboard-images";
-import { isSupportedImageType, maxImageBytes } from "@/utils/media";
+import { chunkIds, isSupportedImageType, maxImageBytes } from "@/utils/media";
 import { CanvasContext, type CanvasActions } from "./canvas-context";
 import { CanvasHistoryPicker, type PickedImage } from "./canvas-history-picker";
 import { CanvasResultActions } from "./canvas-result-actions";
@@ -40,6 +40,7 @@ import {
   findMaskImage,
   flowFromScene,
   generatorNodeWidth,
+  getImageHeight,
   getMode,
   getNodeWidth,
   getPendingTasks,
@@ -70,7 +71,9 @@ import { CanvasToolbar, type SaveStatus } from "./canvas-toolbar";
 import { GeneratorSheet } from "./generator-sheet";
 import { MaskEditorDialog } from "./mask-editor-dialog";
 import { CanvasGeneratorNode } from "./nodes/generator-node";
-import { CanvasImageNode, getImageSrc } from "./nodes/image-node";
+import { createPreviewStore, PreviewStoreContext, type PreviewStore } from "./canvas-previews";
+import { nearestImageIds } from "./image-loading";
+import { CanvasImageNode, getImageSrc, getThumbnailSrc } from "./nodes/image-node";
 import { CanvasNoteNode } from "./nodes/note-node";
 import styles from "./canvas-editor.module.css";
 
@@ -81,6 +84,8 @@ type CanvasEditorProps = {
   collections: FavoriteCollection[];
   balance: number;
   defaults: GeneratorOptions | null;
+  // 服务端渲染时取到的图片尺寸和 LQIP
+  initialPreviews: MediaPreview[];
 };
 
 type SaveState = "idle" | "saving" | "error" | "conflict";
@@ -94,15 +99,66 @@ const nodeTypes = {
 const pollDelay = 2500;
 const saveDelay = 1500;
 const nodeGap = 80;
+const previewDelay = 400;
+const maxPreviewRetries = 2;
+const previewRetryDelay = 3000;
+// 只用于估算布局中心，真实尺寸以渲染后测量为准
+const estimatedNodeHeight = 240;
+
+// 打开画布时（fitView）视口中心就是全部节点包围盒的中心；按到中心的距离挑出优先加载的图片节点
+function pickPriorityIds(nodes: CanvasNode[]) {
+  if (nodes.length === 0) return [];
+
+  // 第一步：估算每个节点的尺寸并求包围盒。
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  const images = [];
+  for (const node of nodes) {
+    const width = getNodeWidth(node);
+    let height = estimatedNodeHeight;
+    if (node.type === "image") {
+      height = getImageHeight(node.data.width, node.data.height);
+      images.push({ id: node.id, position: node.position, width, height });
+    }
+    minX = Math.min(minX, node.position.x);
+    minY = Math.min(minY, node.position.y);
+    maxX = Math.max(maxX, node.position.x + width);
+    maxY = Math.max(maxY, node.position.y + height);
+  }
+
+  // 第二步：取离中心最近的图片。
+  const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+  return nearestImageIds(images, center);
+}
+
+function getImageAssetIds(nodes: CanvasNode[]) {
+  const ids: string[] = [];
+  for (const node of nodes) {
+    if (node.type === "image" && node.data.mediaAssetId) {
+      ids.push(node.data.mediaAssetId);
+    }
+  }
+  ids.sort();
+
+  return ids.join(",");
+}
 
 export function CanvasEditor(props: CanvasEditorProps) {
   const board = props.board;
   const [store] = useState(() => createCanvasStore(flowFromScene(board.scene), board.version));
+  const [previewStore] = useState(() => {
+    const nodes = store.getState().nodes;
+    return createPreviewStore(pickPriorityIds(nodes), props.initialPreviews);
+  });
 
   return (
     <ReactFlowProvider>
       <CanvasStoreContext value={store}>
-        <CanvasWorkspace {...props} />
+        <PreviewStoreContext value={previewStore}>
+          <CanvasWorkspace {...props} previewStore={previewStore} />
+        </PreviewStoreContext>
       </CanvasStoreContext>
     </ReactFlowProvider>
   );
@@ -161,8 +217,13 @@ function applyTask(store: CanvasStore, nodeId: string, task: GenerationTask) {
   }
 }
 
-function CanvasWorkspace(props: CanvasEditorProps) {
+type CanvasWorkspaceProps = CanvasEditorProps & {
+  previewStore: PreviewStore;
+};
+
+function CanvasWorkspace(props: CanvasWorkspaceProps) {
   const board = props.board;
+  const previewStore = props.previewStore;
   const config = props.config;
   const models = props.models;
   const collections = props.collections;
@@ -184,6 +245,7 @@ function CanvasWorkspace(props: CanvasEditorProps) {
     const tasks = getPendingTasks(state.nodes);
     return tasks.map((task) => `${task.nodeId}:${task.taskNo}`).join("|");
   });
+  const imageAssetKey = useCanvasStore((state) => getImageAssetIds(state.nodes));
   const selectedResult = useCanvasStore((state) => {
     const selected = state.nodes.filter((node) => node.selected);
     const node = selected[0];
@@ -207,6 +269,13 @@ function CanvasWorkspace(props: CanvasEditorProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isSavingRef = useRef(false);
   const isConflictRef = useRef(false);
+  // 服务端渲染时已带回 LQIP 的图片不再重复请求
+  const requestedPreviewsRef = useRef(
+    new Set(props.initialPreviews.filter((item) => item.lqip).map((item) => item.id)),
+  );
+  const previewRetriesRef = useRef(new Map<string, number>());
+  const hasFetchedPreviewsRef = useRef(false);
+  const [previewRound, setPreviewRound] = useState(0);
 
   let saveStatus: SaveStatus = "dirty";
   if (saveState === "conflict") {
@@ -323,6 +392,76 @@ function CanvasWorkspace(props: CanvasEditorProps) {
       if (timer) window.clearTimeout(timer);
     };
   }, [pendingKey, store]);
+
+  // 打开画布时先用高优先级预加载离视口中心最近的几张缩略图
+  useEffect(() => {
+    const priorityIds = previewStore.getState().priorityIds;
+    const preloaded: HTMLImageElement[] = [];
+    for (const node of store.getState().nodes) {
+      if (node.type !== "image" || !priorityIds.includes(node.id)) continue;
+
+      const src = getThumbnailSrc(node.data);
+      if (!src) continue;
+
+      const image = new Image();
+      image.fetchPriority = "high";
+      image.src = src;
+      preloaded.push(image);
+    }
+  }, [previewStore, store]);
+
+  // 批量取图片尺寸和模糊占位图：打开画布时一次请求，之后新增的图片合并成一批再请求
+  useEffect(() => {
+    if (!imageAssetKey) return;
+
+    const requested = requestedPreviewsRef.current;
+    const ids = imageAssetKey.split(",").filter((id) => !requested.has(id));
+    if (ids.length === 0) return;
+
+    ids.forEach((id) => requested.add(id));
+    let delay = previewDelay;
+    if (!hasFetchedPreviewsRef.current) delay = 0;
+
+    let isDisposed = false;
+    const timer = window.setTimeout(async () => {
+      hasFetchedPreviewsRef.current = true;
+      for (const chunk of chunkIds(ids)) {
+        try {
+          const previews = await fetchMediaPreviews(chunk);
+          if (isDisposed) return;
+
+          previewStore.getState().addPreviews(previews);
+          scheduleRetry(previews.filter((item) => !item.lqip).map((item) => item.id));
+        } catch {
+          // 预览信息只影响占位效果，失败时下一轮再取
+          chunk.forEach((id) => requested.delete(id));
+        }
+      }
+    }, delay);
+
+    // 服务端还在生成占位图时稍后再取，最多重试两次
+    function scheduleRetry(pending: string[]) {
+      const retries = previewRetriesRef.current;
+      const retryIds = pending.filter((id) => (retries.get(id) ?? 0) < maxPreviewRetries);
+      if (retryIds.length === 0) return;
+
+      window.setTimeout(() => {
+        retryIds.forEach((id) => {
+          retries.set(id, (retries.get(id) ?? 0) + 1);
+          requested.delete(id);
+        });
+        setPreviewRound((current) => current + 1);
+      }, previewRetryDelay);
+    }
+
+    return () => {
+      isDisposed = true;
+      window.clearTimeout(timer);
+      ids.forEach((id) => {
+        if (!previewStore.getState().previews[id]) requested.delete(id);
+      });
+    };
+  }, [imageAssetKey, previewRound, previewStore]);
 
   const hasRoom = useCallback(
     (extra: number) => {
@@ -739,6 +878,8 @@ function CanvasWorkspace(props: CanvasEditorProps) {
           defaultViewport={initialViewport}
           fitView={hasInitialNodes}
           fitViewOptions={{ maxZoom: 1 }}
+          // 只渲染视口附近的节点：画布外的图片不挂载、不请求
+          onlyRenderVisibleElements
           minZoom={0.1}
           maxZoom={2}
           deleteKeyCode={["Backspace", "Delete"]}

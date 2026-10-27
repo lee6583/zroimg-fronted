@@ -9,7 +9,7 @@ export const quickstart: DocsPageContent = {
 ## 1. Sign up and log in {#register}
 1. Open the [sign-up page](/register), enter your email and complete verification.
 2. Set a username and password; you are logged in automatically once registration is complete.
-3. New users receive trial credits on sign-up and can start generating right away.
+3. New users may receive sign-up bonus credits; see the sign-up page for the current offer.
 > [!TIP]
 > If you forget your password, use "Forgot password" on the [login page](/login) to reset it with an email verification code.
 ## 2. Get credits {#credits}

@@ -8,7 +8,7 @@ import { generationTasksApi } from "@/api/generation/tasks";
 import { Sheet } from "@/components/ui/sheet";
 import { translateApiError } from "@/i18n/api-error";
 import type { GenerationResult, GenerationTask } from "@/types/generation";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import styles from "./canvas-editor.module.css";
 
 type PickedImage = {
@@ -166,7 +166,7 @@ function HistoryPicker(props: Omit<CanvasHistoryPickerProps, "open">) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.picker__image}
-                  src={userAssetUrl(image.result.mediaAssetId)}
+                  src={userAssetThumbnailUrl(image.result.mediaAssetId)}
                   alt={image.task.prompt}
                   loading="lazy"
                 />

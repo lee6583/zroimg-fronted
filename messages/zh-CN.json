@@ -23,8 +23,13 @@
       "verification": "安全验证",
       "submit": "注册",
       "submitting": "注册中...",
-      "rewardTitle": "注册即送 10 积分",
-      "rewardText": "首次注册自动到账，立即开始创作。"
+      "rewardTitle": "注册即送 {points, number} 积分",
+      "rewardText": "首次注册自动到账，立即开始创作。",
+      "closed": {
+        "title": "暂未开放注册",
+        "text": "新用户注册暂时关闭，已有账号可以直接登录。",
+        "action": "去登录"
+      }
     },
     "forgotPassword": {
       "title": "重置密码",
@@ -218,7 +223,8 @@
       "download": "下载",
       "delete": "删除",
       "uploading": "上传中",
-      "view": "查看大图"
+      "view": "查看大图",
+      "retry": "重新加载"
     },
     "note": {
       "placeholder": "便签",
@@ -497,17 +503,12 @@
   },
   "gallery": {
     "hero": {
-      "title": "探索社区创作者的精彩作品"
+      "title": "社区画廊",
+      "subtitle": "探索创作者用 ZroImg 生成的作品"
     },
     "tabs": {
       "label": "作品分类",
       "all": "全部"
-    },
-    "category": {
-      "realistic": "写实",
-      "anime": "动漫",
-      "art": "艺术",
-      "other": "其他"
     },
     "status": {
       "pending": "审核中",
@@ -516,13 +517,10 @@
       "withdrawn": "已撤回",
       "removed": "已下架"
     },
-    "list": {
-      "label": "社区作品"
-    },
     "card": {
       "untitled": "未命名作品",
-      "author": "by {name}",
-      "anonymous": "创作者"
+      "anonymous": "创作者",
+      "open": "查看作品：{title}"
     },
     "empty": {
       "label": "暂无公开作品",
@@ -542,6 +540,50 @@
       "noReason": "未填写原因",
       "rejectedTitle": "未通过：{reason}",
       "removedTitle": "已下架：{reason}。如有疑问请通过意见反馈联系我们"
+    },
+    "feed": {
+      "label": "社区作品",
+      "loadingMore": "正在加载更多作品…",
+      "end": "已经到底啦",
+      "error": "加载失败",
+      "retry": "重试"
+    },
+    "like": {
+      "like": "点赞",
+      "unlike": "取消点赞",
+      "count": "{count, plural, other {# 个赞}}",
+      "adminBlocked": "管理员账号不能点赞"
+    },
+    "detail": {
+      "label": "作品详情",
+      "viewOriginal": "查看原图",
+      "prompt": "提示词",
+      "copy": "复制提示词",
+      "copied": "已复制",
+      "usePrompt": "用这个提示词创作",
+      "model": "模型",
+      "category": "分类",
+      "published": "发布时间",
+      "loading": "正在加载…",
+      "notFound": "作品不存在或已下架",
+      "openCreator": "查看创作者 {name}"
+    },
+    "creator": {
+      "label": "创作者资料",
+      "joined": "{date}加入",
+      "images": "图片",
+      "videos": "视频",
+      "published": "公开作品",
+      "loading": "加载中…",
+      "error": "资料加载失败",
+      "noBio": "这位创作者还没有写简介。"
+    },
+    "publishDialog": {
+      "title": "投稿到画廊",
+      "confirm": "提交审核",
+      "hint": "选择一个分类（可选），审核员会最终确认。",
+      "label": "作品分类",
+      "auto": "交给审核员"
     }
   },
   "generate": {
@@ -743,7 +785,7 @@
       "items": {
         "register": {
           "title": "注册账号",
-          "text": "几秒钟即可免费注册，无需信用卡。注册后立即获得积分。"
+          "text": "几秒钟即可免费注册，无需信用卡，注册后即可开始创作。"
         },
         "describe": {
           "title": "描述你的构想",
@@ -927,7 +969,8 @@
     "free": {
       "code": "Free",
       "name": "免费体验",
-      "credits": "新用户体验额度",
+      "credits": "免费注册，按需购买积分",
+      "creditsReward": "注册即送 {points, number} 积分",
       "action": "注册体验",
       "features": {
         "start": "注册后即可开始体验",

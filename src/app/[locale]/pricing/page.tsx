@@ -5,6 +5,7 @@ import { ProductTopNav } from "@/components/layout/product-top-nav";
 import { Link } from "@/i18n/navigation";
 import { buildMetadata } from "@/lib/seo";
 import { requestJava } from "@/server/java-api";
+import { getRegisterConfig } from "@/server/register-config";
 import type { CreditPackage } from "@/types/orders";
 import styles from "./pricing.module.css";
 
@@ -25,8 +26,13 @@ export async function generateMetadata(): Promise<Metadata> {
 const freeFeatureKeys = ["start", "learn", "browse", "noSubscription"] as const;
 
 export default async function PricingPage() {
-  const packages = await requestJava<CreditPackage[]>("/order/user/packages");
+  const [packages, registerConfig] = await Promise.all([
+    requestJava<CreditPackage[]>("/order/user/packages"),
+    getRegisterConfig(),
+  ]);
   const t = await getTranslations("pricing");
+  const tActions = await getTranslations("common.actions");
+  const rewardPoints = registerConfig.rewardPoints;
   const format = await getFormatter();
   return (
     <>
@@ -44,7 +50,11 @@ export default async function PricingPage() {
                 <h2 className={styles.pricing__planName}>{t("free.name")}</h2>
                 <div className={styles.pricing__priceRow}>
                   <p className={styles.pricing__price}>{format.number(0, "currency")}</p>
-                  <p className={styles.pricing__credits}>{t("free.credits")}</p>
+                  <p className={styles.pricing__credits}>
+                    {rewardPoints > 0
+                      ? t("free.creditsReward", { points: rewardPoints })
+                      : t("free.credits")}
+                  </p>
                 </div>
                 <ul className={styles.pricing__features}>
                   {freeFeatureKeys.map((key) => (
@@ -54,9 +64,15 @@ export default async function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/register" className={styles.pricing__action}>
-                  {t("free.action")}
-                </Link>
+                {registerConfig.registrationEnabled ? (
+                  <Link href="/register" className={styles.pricing__action}>
+                    {t("free.action")}
+                  </Link>
+                ) : (
+                  <Link href="/login" className={styles.pricing__action}>
+                    {tActions("login")}
+                  </Link>
+                )}
               </article>
 
               {packages.map((item) => {

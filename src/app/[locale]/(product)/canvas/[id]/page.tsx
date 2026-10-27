@@ -8,7 +8,8 @@ import { requireUser } from "@/server/auth";
 import { JavaApiError, requestJava } from "@/server/java-api";
 import type { CanvasBoardDetail, CanvasConfig } from "@/types/canvas";
 import type { FavoriteCollection } from "@/types/favorites";
-import type { GenerationMode, GenerationModel } from "@/types/generation";
+import type { GenerationMode, GenerationModel, MediaPreview } from "@/types/generation";
+import { maxPreviewIds } from "@/utils/media";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,25 @@ async function readBoard(id: string) {
     }
 
     throw error;
+  }
+}
+
+// 首屏 HTML 直接带上图片的 LQIP 和尺寸，浏览器不用等客户端请求就能显示模糊占位
+async function readPreviews(board: CanvasBoardDetail) {
+  const ids: string[] = [];
+  for (const node of board.scene?.nodes ?? []) {
+    if (node.type === "image" && node.data.mediaAssetId && !ids.includes(node.data.mediaAssetId)) {
+      ids.push(node.data.mediaAssetId);
+    }
+  }
+  if (ids.length === 0) return [];
+
+  try {
+    const params = { ids: ids.slice(0, maxPreviewIds).join(","), wait: "false" };
+    return await requestJava<MediaPreview[]>("/media/user/assets/previews", { params });
+  } catch {
+    // 占位信息只影响加载体验，失败时由客户端再取
+    return [];
   }
 }
 
@@ -85,6 +105,8 @@ export default async function CanvasBoardPage(props: CanvasBoardPageProps) {
   ]);
   if (!board) notFound();
 
+  const initialPreviews = await readPreviews(board);
+
   const models = pickModels(allModels, config.allowedModelCodes);
 
   return (
@@ -96,6 +118,7 @@ export default async function CanvasBoardPage(props: CanvasBoardPageProps) {
       collections={collections}
       balance={user.totalPoints}
       defaults={pickDefaults(models)}
+      initialPreviews={initialPreviews}
     />
   );
 }

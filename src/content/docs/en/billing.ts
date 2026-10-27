@@ -31,7 +31,7 @@ Each refund happens only once, and you can see failed tasks and their failure re
 > Tasks submitted through the open API follow the same rules: failed tasks are refunded automatically. Combined with the \`Idempotency-Key\` request header, network retries won't result in duplicate charges either. See the [API overview](/docs/api/overview#idempotency).
 ## Getting credits {#get-points}
 ### Sign-up bonus {#signup-bonus}
-New users receive trial credits after signing up to get familiar with the generation workflow.
+New users may receive sign-up bonus credits to get familiar with the generation workflow. Whether a bonus is offered, and how much, is shown on the sign-up page.
 ### Daily check-in {#check-in}
 You can check in once a day on the [Dashboard](/dashboard) to claim credits; the page shows how many credits you can claim each day and your check-ins for the week. The check-in feature and reward amounts are configured by the platform and may change.
 ### Buy credit packages {#packages}

@@ -24,7 +24,7 @@ import {
   getResolutionText,
 } from "@/utils/history";
 import { parseJavaDateTime } from "@/utils/java-time";
-import { userAssetDownloadUrl } from "@/utils/media";
+import { userAssetDownloadUrl, userAssetThumbnailUrl } from "@/utils/media";
 import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { HistoryFilters } from "./history-filters";
 import styles from "./history.module.css";
@@ -282,6 +282,7 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             {result && !isVideo ? (
                               <ImageLightbox
                                 src={result.resultUrl}
+                                previewSrc={userAssetThumbnailUrl(result.mediaAssetId)}
                                 alt={task.prompt}
                                 width={768}
                                 height={768}

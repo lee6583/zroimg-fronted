@@ -3,22 +3,19 @@ import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { AppPagination } from "@/components/ui/app-pagination";
 import workspace from "@/features/admin/admin-workspace.module.css";
+import { GalleryCategoryManager } from "@/features/admin/gallery-category-manager";
 import { GalleryReview } from "@/features/admin/gallery-review";
 import { requireAdmin } from "@/server/auth";
 import { requestJava } from "@/server/java-api";
 import type { PageResult } from "@/types/api";
 import type {
+  AdminGalleryCategory,
   AdminGallerySubmission,
   AdminGallerySubmissionQuery,
   GalleryReviewStats,
 } from "@/types/admin";
 import type { GalleryCategory, GalleryStatus } from "@/types/gallery";
-import {
-  galleryCategoryLabels,
-  galleryStatusLabels,
-  isGalleryCategory,
-  isGalleryStatus,
-} from "@/utils/gallery";
+import { galleryStatusLabels, isGalleryStatus } from "@/utils/gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +33,6 @@ type HrefInput = {
 };
 
 const statusTabs: GalleryStatus[] = ["pending", "approved", "rejected", "removed", "withdrawn"];
-const categories = Object.keys(galleryCategoryLabels) as GalleryCategory[];
 const defaultPageSize = 10;
 const pageSizes = [10, 20, 50];
 
@@ -92,7 +88,11 @@ export default async function AdminGalleryPage(props: AdminGalleryPageProps) {
   const rawStatus = readParam(params, "status");
   const rawCategory = readParam(params, "category");
   const status = isGalleryStatus(rawStatus) ? rawStatus : "pending";
-  const category = isGalleryCategory(rawCategory) ? rawCategory : undefined;
+  const categories = await requestJava<AdminGalleryCategory[]>("/gallery/admin/categories");
+  let category: GalleryCategory | undefined;
+  if (rawCategory && categories.some((item) => item.code === rawCategory)) {
+    category = rawCategory;
+  }
   const keyword = readParam(params, "keyword")?.trim() || undefined;
   const userId = readParam(params, "userId")?.trim() || undefined;
   const page = normalizePage(readParam(params, "page"));
@@ -119,6 +119,9 @@ export default async function AdminGalleryPage(props: AdminGalleryPageProps) {
       <header className={workspace.header}>
         <div className={workspace.headerCopy}>
           <h1 className="page-title">画廊审核</h1>
+        </div>
+        <div className={workspace.headerActions}>
+          <GalleryCategoryManager initialCategories={categories} />
         </div>
       </header>
 
@@ -149,11 +152,12 @@ export default async function AdminGalleryPage(props: AdminGalleryPageProps) {
             </Link>
             {categories.map((item) => (
               <Link
-                key={item}
-                className={clsx(category === item && workspace.filterActive)}
-                href={href({ ...filters, status, category: item })}
+                key={item.code}
+                className={clsx(category === item.code && workspace.filterActive)}
+                href={href({ ...filters, status, category: item.code })}
               >
-                {galleryCategoryLabels[item]}
+                {item.nameZh}
+                {item.status === "disabled" ? "（停用）" : ""}
               </Link>
             ))}
           </nav>
@@ -194,6 +198,7 @@ export default async function AdminGalleryPage(props: AdminGalleryPageProps) {
           key={`${status}:${page}:${submissionPage.list.map((item) => item.id).join(",")}`}
           status={status}
           submissions={submissionPage.list}
+          categories={categories}
         />
 
         <footer className={workspace.footer}>

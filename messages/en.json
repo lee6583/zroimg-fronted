@@ -23,8 +23,13 @@
       "verification": "Security check",
       "submit": "Sign up",
       "submitting": "Signing up...",
-      "rewardTitle": "Get 10 credits when you sign up",
-      "rewardText": "Credited automatically on first sign-up. Start creating right away."
+      "rewardTitle": "Get {points, plural, one {# credit} other {# credits}} when you sign up",
+      "rewardText": "Credited automatically on first sign-up. Start creating right away.",
+      "closed": {
+        "title": "Sign-ups are currently closed",
+        "text": "New registrations are paused for now. If you already have an account, you can log in.",
+        "action": "Go to login"
+      }
     },
     "forgotPassword": {
       "title": "Reset password",
@@ -218,7 +223,8 @@
       "download": "Download",
       "delete": "Delete",
       "uploading": "Uploading",
-      "view": "View full size"
+      "view": "View full size",
+      "retry": "Retry"
     },
     "note": {
       "placeholder": "Note",
@@ -497,17 +503,12 @@
   },
   "gallery": {
     "hero": {
-      "title": "Explore great work from community creators"
+      "title": "Community gallery",
+      "subtitle": "Explore work created with ZroImg"
     },
     "tabs": {
       "label": "Work categories",
       "all": "All"
-    },
-    "category": {
-      "realistic": "Realistic",
-      "anime": "Anime",
-      "art": "Art",
-      "other": "Other"
     },
     "status": {
       "pending": "In review",
@@ -516,13 +517,10 @@
       "withdrawn": "Withdrawn",
       "removed": "Removed"
     },
-    "list": {
-      "label": "Community works"
-    },
     "card": {
       "untitled": "Untitled",
-      "author": "by {name}",
-      "anonymous": "Creator"
+      "anonymous": "Creator",
+      "open": "View work: {title}"
     },
     "empty": {
       "label": "No public works yet",
@@ -542,6 +540,50 @@
       "noReason": "No reason provided",
       "rejectedTitle": "Rejected: {reason}",
       "removedTitle": "Removed: {reason}. Contact us through feedback if you have questions"
+    },
+    "feed": {
+      "label": "Community works",
+      "loadingMore": "Loading more works…",
+      "end": "You've reached the end",
+      "error": "Failed to load",
+      "retry": "Retry"
+    },
+    "like": {
+      "like": "Like",
+      "unlike": "Unlike",
+      "count": "{count, plural, one {# like} other {# likes}}",
+      "adminBlocked": "Admin accounts can't like works"
+    },
+    "detail": {
+      "label": "Work details",
+      "viewOriginal": "View original",
+      "prompt": "Prompt",
+      "copy": "Copy prompt",
+      "copied": "Copied",
+      "usePrompt": "Create with this prompt",
+      "model": "Model",
+      "category": "Category",
+      "published": "Published",
+      "loading": "Loading…",
+      "notFound": "This work doesn't exist or has been removed",
+      "openCreator": "View creator {name}"
+    },
+    "creator": {
+      "label": "Creator profile",
+      "joined": "Joined {date}",
+      "images": "Images",
+      "videos": "Videos",
+      "published": "Public works",
+      "loading": "Loading…",
+      "error": "Couldn't load profile",
+      "noBio": "This creator hasn't written a bio yet."
+    },
+    "publishDialog": {
+      "title": "Submit to gallery",
+      "confirm": "Submit for review",
+      "hint": "Pick a category (optional). A reviewer will make the final call.",
+      "label": "Category",
+      "auto": "Let the reviewer decide"
     }
   },
   "generate": {
@@ -743,7 +785,7 @@
       "items": {
         "register": {
           "title": "Create an account",
-          "text": "Sign up for free in seconds, no credit card required. Get credits right after signing up."
+          "text": "Sign up for free in seconds, no credit card required, and start creating right away."
         },
         "describe": {
           "title": "Describe your idea",
@@ -927,7 +969,8 @@
     "free": {
       "code": "Free",
       "name": "Free Trial",
-      "credits": "Starter credits for new users",
+      "credits": "Free sign-up, buy credits as needed",
+      "creditsReward": "{points, plural, one {# credit} other {# credits}} on sign-up",
       "action": "Sign up to try",
       "features": {
         "start": "Start exploring right after sign-up",

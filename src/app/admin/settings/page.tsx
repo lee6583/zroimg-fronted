@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { CreditCard, Frame, Gauge, Gift, Mail, Megaphone } from "lucide-react";
+import { CreditCard, Frame, Gauge, Gift, Mail, Megaphone, UserPlus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import workspace from "@/features/admin/admin-workspace.module.css";
@@ -7,6 +7,7 @@ import { AnnouncementSettingsForm } from "@/features/admin/announcement-settings
 import { CanvasSettingsForm } from "@/features/admin/canvas-settings-form";
 import type { CanvasModelOption } from "@/features/admin/canvas-settings-form";
 import { GenerationSettingsForm } from "@/features/admin/generation-settings-form";
+import { RegistrationSettingsForm } from "@/features/admin/registration-settings-form";
 import {
   CheckInSettingsForm,
   EasyPaySettingsForm,
@@ -22,6 +23,7 @@ import type {
   EasyPayAdminConfig,
   GenerationProviderConnection,
   GenerationSettingsConfig,
+  RegistrationSettingsConfig,
   SmtpAdminConfig,
 } from "@/types/admin";
 import styles from "./settings.module.css";
@@ -33,10 +35,18 @@ type AdminSettingsPageProps = {
   searchParams: SearchParams;
 };
 
-const sectionIds = ["payment", "smtp", "checkin", "announcement", "canvas", "generation"] as const;
+const sectionIds = [
+  "payment",
+  "smtp",
+  "registration",
+  "checkin",
+  "announcement",
+  "canvas",
+  "generation",
+] as const;
 type SettingsSection = (typeof sectionIds)[number];
 
-type SectionStatus = "configured" | "missing" | "default" | "off";
+type SectionStatus = "configured" | "missing" | "default" | "off" | "open" | "closed";
 
 type SectionItem = {
   id: SettingsSection;
@@ -55,6 +65,8 @@ const statusLabels: Record<SectionStatus, string> = {
   missing: "未配置",
   default: "默认",
   off: "未启用",
+  open: "已开放",
+  closed: "已关闭",
 };
 
 const statusClasses: Record<SectionStatus, string | undefined> = {
@@ -62,6 +74,8 @@ const statusClasses: Record<SectionStatus, string | undefined> = {
   missing: styles.navStatusMissing,
   default: undefined,
   off: undefined,
+  open: styles.navStatusOk,
+  closed: undefined,
 };
 
 // 与 Java AdminSettingsService 的默认值保持一致，仅用于展示“默认”状态。
@@ -122,6 +136,7 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     smtpSettings,
     easyPaySettings,
     checkInSettings,
+    registrationSettings,
     announcementSettings,
     canvasSettings,
     generationSettings,
@@ -129,6 +144,7 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     requestJava<SmtpAdminConfig>("/admin/settings/smtp"),
     requestJava<EasyPayAdminConfig>("/admin/settings/easypay"),
     requestJava<CheckInSettingsConfig>("/admin/settings/checkin"),
+    requestJava<RegistrationSettingsConfig>("/admin/settings/registration"),
     requestJava<AnnouncementSettingsConfig>("/admin/settings/announcement"),
     requestJava<CanvasSettingsConfig>("/admin/settings/canvas"),
     requestJava<GenerationSettingsConfig>("/admin/settings/generation"),
@@ -178,6 +194,12 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
     {
       title: "运营",
       items: [
+        {
+          id: "registration",
+          label: "用户",
+          status: registrationSettings.registrationEnabled ? "open" : "closed",
+          icon: UserPlus,
+        },
         {
           id: "announcement",
           label: "站内公告",
@@ -244,6 +266,9 @@ export default async function AdminSettingsPage(props: AdminSettingsPageProps) {
         <section className={styles.content}>
           {section === "payment" ? <EasyPaySettingsForm initialSettings={easyPaySettings} /> : null}
           {section === "smtp" ? <SmtpSettingsForm initialSettings={smtpSettings} /> : null}
+          {section === "registration" ? (
+            <RegistrationSettingsForm initialSettings={registrationSettings} />
+          ) : null}
           {section === "checkin" ? <CheckInSettingsForm initialSettings={checkInSettings} /> : null}
           {section === "announcement" ? (
             <AnnouncementSettingsForm initialSettings={announcementSettings} />

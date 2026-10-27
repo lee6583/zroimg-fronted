@@ -11,6 +11,7 @@ import type { PageResult } from "@/types/api";
 import type { GalleryStatus, GallerySubmission, GallerySubmissionQuery } from "@/types/gallery";
 import { isGalleryStatus } from "@/utils/gallery";
 import { parseJavaDateTime } from "@/utils/java-time";
+import { toThumbnailUrl } from "@/utils/media";
 import styles from "./submissions.module.css";
 import { Link } from "@/i18n/navigation";
 
@@ -133,6 +134,7 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
                 <article key={item.id} className={styles.submissions__card}>
                   <ImageLightbox
                     src={item.imageUrl}
+                    previewSrc={toThumbnailUrl(item.imageUrl)}
                     alt={item.prompt}
                     width={768}
                     height={768}
@@ -152,7 +154,7 @@ export default async function SubmissionsPage(props: SubmissionsPageProps) {
                       >
                         {tGallery(`status.${item.status}`)}
                       </span>
-                      <span>{tGallery(`category.${item.category}`)}</span>
+                      <span>{item.categoryName}</span>
                     </div>
 
                     <p className={styles.submissions__prompt} title={item.prompt}>

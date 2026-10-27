@@ -153,6 +153,16 @@ type GenerationConversationRequest = {
   title: string;
 };
 
+// 媒体预览信息：画布加载时一次批量取回，用于占位比例和模糊底图
+type MediaPreview = {
+  id: string;
+  width: number | null;
+  height: number | null;
+  thumbWidth: number | null;
+  thumbHeight: number | null;
+  lqip: string | null;
+};
+
 type MediaAsset = {
   id: string;
   originalName: string | null;
@@ -228,6 +238,7 @@ export type {
   GenerationConversation,
   GenerationConversationRequest,
   MediaAsset,
+  MediaPreview,
   MediaUploadPresignRequest,
   MediaUploadPresign,
   GenerationUserLimits,

@@ -27,8 +27,26 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-export default async function GeneratePage() {
+type GeneratePageProps = {
+  searchParams: Promise<{ prompt?: string | string[] }>;
+};
+
+// 画廊带过来的提示词只用于预填输入框，过长时截断，避免地址栏塞入超大内容
+const maxPrefillLength = 4000;
+
+function readPrompt(value?: string | string[]) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) {
+    return undefined;
+  }
+
+  return raw.slice(0, maxPrefillLength);
+}
+
+export default async function GeneratePage(props: GeneratePageProps) {
   await requireUser();
+  const params = await props.searchParams;
+  const initialPrompt = readPrompt(params.prompt);
   const [models, conversations, collections] = await Promise.all([
     requestJava<GenerationModel[]>("/generation/user/models", { params: { modelType: "image" } }),
     requestJava<GenerationConversation[]>("/generation/user/conversations"),
@@ -64,6 +82,7 @@ export default async function GeneratePage() {
       initialEstimate={price.requiredPoints}
       initialCollections={collections}
       modelOptions={models}
+      initialPrompt={initialPrompt}
     />
   );
 }

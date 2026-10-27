@@ -112,3 +112,37 @@
     white-space: normal;
   }
 }
+
+.publishButton__dialogText {
+  margin: 0 0 0.75rem;
+}
+
+.publishButton__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.publishButton__chip {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 0 0.85rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.publishButton__chip:hover {
+  border-color: var(--muted);
+}
+
+.publishButton__chipActive,
+.publishButton__chipActive:hover {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}

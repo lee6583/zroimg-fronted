@@ -159,6 +159,10 @@ public/assets/         实际被页面引用的静态资源
 - 画布场景 JSON（`{nodes, edges, viewport}`）保存在 Java `canvas_board`，前端只负责编辑和提交。
 - 节点类型为 `image`、`generator`、`note`；生成节点保存任务 `taskNo`，前端轮询任务结果后在客户端把结果图放到画布上。
 - 局部重绘遮罩是与原图原始分辨率一致的 PNG：透明（alpha 0）为重绘区域，其余为不透明黑色。
+- 画布上禁止加载原图：图片节点显示缩略图 `userAssetThumbnailUrl`（最长边 768），缩放到 1.3 倍以上或选中/悬停且屏幕像素宽度超过 700 时，后台加载预览图 `userAssetPreviewUrl`（最长边 1600），解码完成后再替换。原图（`/content`、`/download`）只用于查看大图、下载、遮罩编辑和局部重绘。纯函数在 `features/canvas/image-loading.ts`。
+- 画布页服务端渲染时先用 `GET /media/user/assets/previews?ids=&wait=false` 取回已有的原图尺寸和模糊占位图（LQIP），首屏 HTML 即带占位；浏览器端再用同一接口（每批最多 100 个）补齐缺失的项，存在内存 store（`canvas-previews.ts`），不写进场景 JSON；之后新增的图片合并成一批再取。图片框按原图宽高比固定尺寸，占位图先铺底，缩略图加载后淡入，失败显示重试按钮。
+- ReactFlow 开启 `onlyRenderVisibleElements`，视口外的节点不挂载、不请求；打开时离视口中心最近的 6 张缩略图以高优先级预加载。
+- 其他列表（概览最近创作、历史、收藏、投稿、生成页对话结果、画廊卡片、参考图小图）同样用缩略图或预览图展示，点开看大图和下载仍是原图。
 - 改编自第三方开源项目的文件必须保留原 MIT 版权头；新增或移除第三方来源时同步更新 `THIRD_PARTY_NOTICES.md` 和 `/licenses` 页面。
 
 画廊投稿（`features/gallery`、`/submissions`、`/admin/gallery`）：

@@ -6,7 +6,8 @@
   "free": {
     "code": "Free",
     "name": "Free Trial",
-    "credits": "Starter credits for new users",
+    "credits": "Free sign-up, buy credits as needed",
+    "creditsReward": "{points, plural, one {# credit} other {# credits}} on sign-up",
     "action": "Sign up to try",
     "features": {
       "start": "Start exploring right after sign-up",

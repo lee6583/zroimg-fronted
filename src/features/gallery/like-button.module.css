@@ -1,0 +1,68 @@
+.likeButton {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  margin-inline-start: -0.4rem;
+  padding: 0 0.4rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.likeButton:hover {
+  background: var(--soft);
+  color: var(--foreground);
+}
+
+.likeButton:disabled {
+  cursor: default;
+}
+
+.likeButton:disabled:hover {
+  background: transparent;
+  color: var(--muted);
+}
+
+.likeButtonActive,
+.likeButtonActive:hover {
+  color: var(--foreground);
+}
+
+.likeButtonActive svg {
+  fill: currentColor;
+}
+
+.likeButton__count {
+  line-height: 1;
+}
+
+.likeButtonDetail {
+  min-height: 2.5rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 767px) {
+  /* 手机端点击区域不小于 44px：用透明扩展区域，不改变视觉尺寸 */
+  .likeButton {
+    position: relative;
+  }
+
+  .likeButton::after {
+    position: absolute;
+    inset: -0.5rem -0.25rem;
+    content: "";
+  }
+}

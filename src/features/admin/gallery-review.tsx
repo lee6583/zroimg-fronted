@@ -8,16 +8,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminGalleryApi } from "@/api/admin/gallery";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import type { AdminGallerySubmission } from "@/types/admin";
+import type { AdminGalleryCategory, AdminGallerySubmission } from "@/types/admin";
 import type { GalleryCategory, GalleryStatus } from "@/types/gallery";
 import { getErrorMessage } from "@/utils/error";
-import { formatGalleryTime, galleryCategoryLabels, galleryStatusLabels } from "@/utils/gallery";
+import { formatGalleryTime, galleryStatusLabels } from "@/utils/gallery";
 import workspace from "./admin-workspace.module.css";
 import styles from "./gallery-review.module.css";
 
 type GalleryReviewProps = {
   status: GalleryStatus;
   submissions: AdminGallerySubmission[];
+  categories: AdminGalleryCategory[];
 };
 
 type ReasonMode = "reject" | "remove";
@@ -28,7 +29,6 @@ type ReasonDialog = {
 };
 
 const presetReasons = ["违规内容", "画质较差", "疑似侵权", "与分类不符"];
-const categories = Object.keys(galleryCategoryLabels) as GalleryCategory[];
 const maxBatch = 50;
 const maxReason = 200;
 
@@ -42,11 +42,14 @@ function statusClass(status: GalleryStatus) {
 export function GalleryReview(props: GalleryReviewProps) {
   const status = props.status;
   const submissions = props.submissions;
+  const categories = props.categories;
   const router = useRouter();
 
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [categoryById, setCategoryById] = useState<Record<string, GalleryCategory>>({});
+  // 已公开作品改分类后，卡片上显示新分类（不从列表里移除）
+  const [savedCategoryById, setSavedCategoryById] = useState<Record<string, GalleryCategory>>({});
   const [busyId, setBusyId] = useState("");
   const [dialog, setDialog] = useState<ReasonDialog | null>(null);
   const [reason, setReason] = useState("");
@@ -68,6 +71,30 @@ export function GalleryReview(props: GalleryReviewProps) {
     document.addEventListener("keydown", closeByEscape);
     return () => document.removeEventListener("keydown", closeByEscape);
   }, [dialog]);
+
+  function categoryLabel(code: GalleryCategory) {
+    const category = categories.find((item) => item.code === code);
+    if (!category) {
+      return code;
+    }
+
+    return category.nameZh;
+  }
+
+  async function changeCategory(submission: AdminGallerySubmission, category: GalleryCategory) {
+    setBusyId(submission.id);
+    setMessage("");
+
+    try {
+      await adminGalleryApi.changeCategory(submission.id, { category });
+      setSavedCategoryById((current) => ({ ...current, [submission.id]: category }));
+      showMessage(`已改为「${categoryLabel(category)}」`, false);
+    } catch (error) {
+      showMessage(getErrorMessage(error), true);
+    } finally {
+      setBusyId("");
+    }
+  }
 
   function showMessage(text: string, hasError: boolean) {
     setMessage(text);
@@ -199,7 +226,32 @@ export function GalleryReview(props: GalleryReviewProps) {
             const isSelected = selectedIds.includes(item.id);
             const hasReason = item.status === "rejected" || item.status === "removed";
             const canReapprove = item.status === "rejected" || item.status === "removed";
-            const category = categoryById[item.id] ?? item.category;
+            const savedCategory = savedCategoryById[item.id] ?? item.category;
+            const category = categoryById[item.id] ?? savedCategory;
+            const categorySelect = (
+              <select
+                aria-label="作品分类"
+                title="作品分类"
+                className={styles.review__category}
+                value={category}
+                disabled={isBusy}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (item.status === "approved") {
+                    void changeCategory(item, value);
+                    return;
+                  }
+                  setCategoryById((current) => ({ ...current, [item.id]: value }));
+                }}
+              >
+                {categories.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.nameZh}
+                    {option.status === "disabled" ? "（停用）" : ""}
+                  </option>
+                ))}
+              </select>
+            );
             const uploader = item.username || item.email || item.userId;
             const title = item.title?.trim() ?? "";
             const hasTitle = title !== "" && !item.prompt.startsWith(title);
@@ -237,7 +289,7 @@ export function GalleryReview(props: GalleryReviewProps) {
                     <span className={clsx(workspace.status, statusClass(item.status))}>
                       {galleryStatusLabels[item.status]}
                     </span>
-                    <span className={workspace.badge}>{galleryCategoryLabels[item.category]}</span>
+                    <span className={workspace.badge}>{categoryLabel(savedCategory)}</span>
                   </div>
 
                   {hasTitle ? <p className={styles.review__title}>{title}</p> : null}
@@ -276,22 +328,7 @@ export function GalleryReview(props: GalleryReviewProps) {
 
                   {item.status === "pending" ? (
                     <div className={styles.review__actions}>
-                      <select
-                        aria-label="通过时的分类"
-                        className={styles.review__category}
-                        value={category}
-                        disabled={isBusy}
-                        onChange={(event) => {
-                          const value = event.target.value as GalleryCategory;
-                          setCategoryById((current) => ({ ...current, [item.id]: value }));
-                        }}
-                      >
-                        {categories.map((option) => (
-                          <option key={option} value={option}>
-                            {galleryCategoryLabels[option]}
-                          </option>
-                        ))}
-                      </select>
+                      {categorySelect}
                       <button
                         type="button"
                         className={workspace.primaryAction}
@@ -313,6 +350,7 @@ export function GalleryReview(props: GalleryReviewProps) {
 
                   {item.status === "approved" ? (
                     <div className={styles.review__actions}>
+                      {categorySelect}
                       <button
                         type="button"
                         className={workspace.dangerAction}
@@ -326,6 +364,7 @@ export function GalleryReview(props: GalleryReviewProps) {
 
                   {canReapprove ? (
                     <div className={styles.review__actions}>
+                      {categorySelect}
                       <button
                         type="button"
                         className={workspace.secondaryAction}

@@ -7,7 +7,7 @@ import { HistoryImageActions } from "@/features/history/history-image-actions";
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GenerationTask } from "@/types/generation";
 import { getImageResolutionLabel } from "@/utils/generation-quality";
-import { userAssetDownloadUrl } from "@/utils/media";
+import { userAssetDownloadUrl, userAssetPreviewUrl } from "@/utils/media";
 import { getTaskStatusLabel, isTaskRetrying } from "@/utils/task-status";
 import { isTaskPending } from "./generation-model";
 import { useClock } from "./use-clock";
@@ -139,6 +139,7 @@ function TaskMessage(props: TaskMessageProps) {
                 <div key={result.id} className={styles.generateForm__chatImageItem}>
                   <ImageLightbox
                     src={result.resultUrl}
+                    previewSrc={userAssetPreviewUrl(result.mediaAssetId)}
                     alt={t("resultAlt", { prompt: task.prompt, index: index + 1 })}
                     width={768}
                     height={768}

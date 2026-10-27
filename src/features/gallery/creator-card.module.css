@@ -1,0 +1,87 @@
+.creator__popover {
+  position: fixed;
+  z-index: 1150;
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--panel);
+  padding: 1rem;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.14);
+  animation: creatorIn 0.14s ease-out;
+}
+
+.creator {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.creator__head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.creator__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator__bio,
+.creator__muted {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.creator__muted {
+  color: var(--muted);
+}
+
+.creator__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-block: 1px solid var(--line);
+  padding: 0.65rem 0;
+  text-align: center;
+}
+
+.creator__stats div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column-reverse;
+  gap: 0.15rem;
+}
+
+.creator__stats dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.creator__stats dt {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator__joined {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+@keyframes creatorIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

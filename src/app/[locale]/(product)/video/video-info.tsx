@@ -7,7 +7,7 @@ import { useFormatter } from "next-intl";
 import { useState } from "react";
 import type { VideoTask } from "@/types/video";
 import { parseJavaDateTime } from "@/utils/java-time";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
@@ -101,7 +101,7 @@ export function VideoInfo(props: VideoInfoProps) {
                   <li key={reference.mediaId}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- 私有参考图走 Java 媒体接口 */}
                     <img
-                      src={userAssetUrl(reference.mediaId)}
+                      src={userAssetThumbnailUrl(reference.mediaId)}
                       alt={t("settings.referenceAlt", { index: index + 1 })}
                       className={styles.videoPage__infoReferenceImage}
                     />

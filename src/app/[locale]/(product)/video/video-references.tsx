@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { userAssetUrl } from "@/utils/media";
+import { userAssetThumbnailUrl } from "@/utils/media";
 import { useVideoText } from "./video-text";
 import styles from "./video.module.css";
 
@@ -58,7 +58,7 @@ export function VideoReferences(props: VideoReferencesProps) {
           {/* eslint-disable-next-line @next/next/no-img-element -- 用户上传的私有媒体走 Java 接口，不经过 next/image */}
           <img
             className={styles.videoPage__referenceImage}
-            src={userAssetUrl(reference.id)}
+            src={userAssetThumbnailUrl(reference.id)}
             alt={t("settings.referenceAlt", { index: index + 1 })}
             title={reference.name}
           />
