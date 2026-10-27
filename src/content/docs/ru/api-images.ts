@@ -22,7 +22,7 @@ POST /open/v1/images/generations
 | Параметр | Тип | Обязательный | Описание |
 | --- | --- | --- | --- |
 | \`model\` | string | Да | ID модели с \`type\` равным \`image\` из [списка моделей](/docs/api/models) |
-| \`prompt\` | string | Да | Промпт, не более 4000 символов |
+| \`prompt\` | string | Да | Промпт (длина не ограничена; действуют лимиты самой модели) |
 | \`mode\` | string | Нет | \`text_to_image\`, \`image_to_image\` или \`inpaint\`; если не указан, определяется автоматически: при наличии \`mask_url\` — \`inpaint\`, при наличии \`image_urls\` — \`image_to_image\`, иначе — \`text_to_image\` |
 | \`ratio\` | string | Нет | Соотношение сторон — одно из значений \`ratios\` модели, например \`1:1\`, \`16:9\` |
 | \`quality\` | string | Нет | Качество — одно из значений \`qualities\` модели |

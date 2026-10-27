@@ -17,7 +17,7 @@ POST /open/v1/videos/generations
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | \`model\` | string | 是 | 视频模型 ID |
-| \`prompt\` | string | 是 | 描述画面内容、镜头运动和风格，最多 4000 个字符 |
+| \`prompt\` | string | 是 | 描述画面内容、镜头运动和风格，不限制长度，受上游模型自身限制 |
 | \`mode\` | string | 否 | \`text_to_video\` 或 \`image_to_video\`；省略时按是否传了 \`image_urls\` 推断 |
 | \`duration\` | integer | 否 | 时长（秒），必须是模型 \`durations\` 中的值 |
 | \`ratio\` | string | 否 | 画面比例，必须是模型 \`ratios\` 中的值 |

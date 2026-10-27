@@ -22,7 +22,7 @@ A successful submission returns \`202 Accepted\` and a task object. The task run
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
 | \`model\` | string | Yes | Model ID of a model with \`type\` \`image\` from the [models list](/docs/api/models) |
-| \`prompt\` | string | Yes | Prompt, up to 4000 characters |
+| \`prompt\` | string | Yes | Prompt (no length limit; the upstream model's own limit applies) |
 | \`mode\` | string | No | \`text_to_image\`, \`image_to_image\` or \`inpaint\`; inferred when omitted: \`inpaint\` if \`mask_url\` is present, \`image_to_image\` if \`image_urls\` is present, otherwise \`text_to_image\` |
 | \`ratio\` | string | No | Aspect ratio; must be one of the model's \`ratios\`, e.g. \`1:1\`, \`16:9\` |
 | \`quality\` | string | No | Quality; must be one of the model's \`qualities\` |

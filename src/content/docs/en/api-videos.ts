@@ -17,7 +17,7 @@ Replace \`YOUR_VIDEO_MODEL_ID\` with the ID of a model with \`type\` \`video\` f
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
 | \`model\` | string | Yes | Video model ID |
-| \`prompt\` | string | Yes | Describes the scene content, camera movement and style; up to 4000 characters |
+| \`prompt\` | string | Yes | Describes the scene content, camera movement and style; no length limit; the upstream model's own limit applies |
 | \`mode\` | string | No | \`text_to_video\` or \`image_to_video\`; when omitted, inferred from whether \`image_urls\` is provided |
 | \`duration\` | integer | No | Duration (seconds); must be one of the model's \`durations\` |
 | \`ratio\` | string | No | Aspect ratio; must be one of the model's \`ratios\` |

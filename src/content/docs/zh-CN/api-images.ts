@@ -22,7 +22,7 @@ POST /open/v1/images/generations
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | \`model\` | string | 是 | 模型 ID，来自 [模型列表](/docs/api/models) 中 \`type\` 为 \`image\` 的模型 |
-| \`prompt\` | string | 是 | 提示词，最多 4000 个字符 |
+| \`prompt\` | string | 是 | 提示词（不限制长度，受上游模型自身限制） |
 | \`mode\` | string | 否 | \`text_to_image\`、\`image_to_image\` 或 \`inpaint\`；省略时自动推断：有 \`mask_url\` 为 \`inpaint\`，有 \`image_urls\` 为 \`image_to_image\`，否则为 \`text_to_image\` |
 | \`ratio\` | string | 否 | 画面比例，必须是模型 \`ratios\` 中的值，例如 \`1:1\`、\`16:9\` |
 | \`quality\` | string | 否 | 画质，必须是模型 \`qualities\` 中的值 |
