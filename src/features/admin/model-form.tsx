@@ -818,9 +818,29 @@ export function ModelForm(props: ModelFormProps) {
       connectionHint = `${selectedConnection.apiBaseUrl} · ${key}`;
     }
 
+    // 连接的适配器没有当前类型的能力模板（例如把 Rose 视频中转建成了 OpenAI 连接），保存一定会失败，提前说明
+    const isAdapterMismatch = Boolean(selectedConnection) && !profile;
+
     return (
       <div className={workspace.formSection}>
         {renderProfileSummary()}
+        {isAdapterMismatch && selectedConnection ? (
+          <div className={workspace.adapterMismatch} role="alert">
+            <span>
+              连接「{selectedConnection.name}」的适配器是{" "}
+              {adapterLabels[selectedConnection.adapter]}
+              ，不支持{modelTypeLabels[form.modelType]}模型。Rose 中转站请把连接的适配器改为「
+              {adapterLabels.rose}」。
+            </span>
+            <button
+              type="button"
+              className={workspace.adapterMismatch__action}
+              onClick={() => setPanelOpen(true)}
+            >
+              修改连接
+            </button>
+          </div>
+        ) : null}
         <div className={workspace.formGrid}>
           <Field label="中转站连接" hint={connectionHint} isGroup>
             <div className={workspace.fieldWithAction}>
@@ -1204,7 +1224,7 @@ export function ModelForm(props: ModelFormProps) {
         ))}
       </nav>
 
-      {message ? <p className={workspace.inlineMessage}>{message}</p> : null}
+      {message ? <p className={workspace.inlineAlert}>{message}</p> : null}
 
       <div className={workspace.editorBody}>
         {activeTab === "basic" ? renderBasic() : null}

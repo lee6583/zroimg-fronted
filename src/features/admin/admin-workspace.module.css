@@ -1406,3 +1406,30 @@ button.selectTrigger {
 :global(:root[data-theme="dark"]) .statusSuccessText {
   color: #4ade80;
 }
+
+.adapterMismatch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, var(--line));
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--danger) 5%, var(--panel));
+  color: var(--danger);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.adapterMismatch__action {
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
