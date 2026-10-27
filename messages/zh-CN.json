@@ -217,7 +217,8 @@
       "inpaint": "局部重绘",
       "download": "下载",
       "delete": "删除",
-      "uploading": "上传中"
+      "uploading": "上传中",
+      "view": "查看大图"
     },
     "note": {
       "placeholder": "便签",

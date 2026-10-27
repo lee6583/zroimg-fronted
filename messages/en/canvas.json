@@ -72,7 +72,8 @@
     "inpaint": "Inpaint",
     "download": "Download",
     "delete": "Delete",
-    "uploading": "Uploading"
+    "uploading": "Uploading",
+    "view": "View full size"
   },
   "note": {
     "placeholder": "Note",

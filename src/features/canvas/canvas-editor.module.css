@@ -242,6 +242,7 @@
 
 .imageNode__frame {
   position: relative;
+  cursor: zoom-in;
   min-height: 8rem;
   overflow: hidden;
   border-radius: 0.75rem 0.75rem 0 0;

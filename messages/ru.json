@@ -217,7 +217,8 @@
       "inpaint": "Перерисовать область",
       "download": "Скачать",
       "delete": "Удалить",
-      "uploading": "Загрузка"
+      "uploading": "Загрузка",
+      "view": "Открыть крупно"
     },
     "note": {
       "placeholder": "Заметка",

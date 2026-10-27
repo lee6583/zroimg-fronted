@@ -1,9 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import { Brush, Download, LoaderCircle, Sparkles, Trash2 } from "lucide-react";
+import { Brush, Download, LoaderCircle, Maximize2, Sparkles, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/react";
 import { useTranslations } from "next-intl";
+import { ImageViewer } from "@/components/ui/image-lightbox";
 import { userAssetDownloadUrl, userAssetUrl } from "@/utils/media";
 import { useCanvasActions } from "../canvas-context";
 import { getImageHeight, imageNodeWidth, type ImageNode } from "../canvas-model";
@@ -25,6 +27,7 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
   const actions = useCanvasActions();
   const store = useCanvasStoreApi();
   const t = useTranslations("canvas.image");
+  const [isViewing, setViewing] = useState(false);
 
   const src = getImageSrc(data);
   const hasSize = Boolean(data.width && data.height);
@@ -46,6 +49,16 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
     <div className={clsx(styles.node, styles.imageNode, selected && styles.nodeSelected)}>
       <NodeToolbar isVisible={selected && isReady} position={Position.Top} offset={10}>
         <div className={styles.nodeToolbar}>
+          <button
+            aria-label={t("view")}
+            title={t("view")}
+            type="button"
+            className={styles.nodeToolbar__button}
+            onClick={() => setViewing(true)}
+          >
+            <Maximize2 size={14} />
+            <span className={styles.nodeToolbar__label}>{t("view")}</span>
+          </button>
           <button
             aria-label={t("generateFrom")}
             title={t("generateFrom")}
@@ -100,6 +113,11 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
       <div
         className={styles.imageNode__frame}
         style={{ width: imageNodeWidth, height: hasSize ? height : undefined }}
+        onDoubleClick={(event) => {
+          // 双击图片放大查看；阻止冒泡，避免画布把双击当成缩放
+          event.stopPropagation();
+          if (src && isReady) setViewing(true);
+        }}
       >
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -119,6 +137,14 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
         ) : null}
       </div>
       {sizeLabel ? <p className={styles.imageNode__meta}>{sizeLabel}</p> : null}
+      {src ? (
+        <ImageViewer
+          open={isViewing}
+          src={src}
+          alt={data.name ?? ""}
+          onClose={() => setViewing(false)}
+        />
+      ) : null}
       <Handle type="source" position={Position.Right} className={styles.handle} />
     </div>
   );
