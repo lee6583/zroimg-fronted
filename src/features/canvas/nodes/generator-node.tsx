@@ -350,6 +350,8 @@ export function GeneratorForm(props: GeneratorFormProps) {
   const polish = usePromptPolish({
     scene: "image",
     prompt: storedPrompt,
+    // 与生成时相同的参考图：图生图 / 局部重绘的原图（连线的图片节点或记录的原图）
+    referenceMediaIds: mode === "text_to_image" ? [] : [referenceId],
     textareaRef: promptRef,
     onApply(value) {
       const state = store.getState();

@@ -90,6 +90,8 @@ export function GenerateForm(props: GenerateFormProps) {
   const polish = usePromptPolish({
     scene: "image",
     prompt,
+    // 与提交任务时一致：图生图只使用第一张上传的参考图
+    referenceMediaIds: options.mode === "text_to_image" ? [] : [inputs[0]?.id],
     textareaRef: promptRef,
     onApply: setPrompt,
     onNotice: (text) => setNotice({ text, tone: "error" }),

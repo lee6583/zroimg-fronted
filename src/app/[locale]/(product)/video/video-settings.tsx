@@ -134,6 +134,8 @@ export function VideoSettings(props: VideoSettingsProps) {
   const polish = usePromptPolish({
     scene: "video",
     prompt: form.prompt,
+    referenceMediaIds:
+      form.mode === "image_to_video" ? form.references.map((reference) => reference.id) : [],
     textareaRef: promptRef,
     onApply: (prompt) => updateForm({ prompt }),
     onNotice: setMessage,

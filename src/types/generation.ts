@@ -192,6 +192,8 @@ type PromptPolishScene = "image" | "video";
 type PromptPolishRequest = {
   prompt: string;
   scene: PromptPolishScene;
+  // 可选：用户自己的参考图媒体 ID（最多 4 张）
+  referenceMediaIds?: string[];
 };
 
 type PromptPolishResult = {

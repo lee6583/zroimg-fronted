@@ -7,10 +7,13 @@ import { useRouter } from "@/i18n/navigation";
 import { translateApiError } from "@/i18n/api-error";
 import type { PromptPolishConfig, PromptPolishScene } from "@/types/generation";
 import { ApiRequestError } from "@/utils/request";
+import { normalizePolishReferences } from "./polish-references";
 
 type UsePromptPolishOptions = {
   scene: PromptPolishScene;
   prompt: string;
+  // 当前模式下生成会用到的参考图（用户自己的媒体 ID）；传入后润色会以图片内容为准
+  referenceMediaIds?: readonly (string | null | undefined)[];
   // 用润色结果替换输入框内容（受控状态的写入方式与输入时相同）
   onApply: (prompt: string) => void;
   // 提示文案，接入页面已有的提示区域
@@ -119,6 +122,8 @@ export function usePromptPolish(options: UsePromptPolishOptions) {
 
   const isEnabled = Boolean(config?.enabled);
   const points = scene === "video" ? (config?.videoPoints ?? 0) : (config?.imagePoints ?? 0);
+  const referenceMediaIds = normalizePolishReferences(options.referenceMediaIds);
+  const usesReferences = referenceMediaIds.length > 0;
 
   function apply(value: string) {
     if (isComposingRef.current) {
@@ -140,7 +145,11 @@ export function usePromptPolish(options: UsePromptPolishOptions) {
 
     setPolishing(true);
     try {
-      const result = await promptPolishApi.polish({ prompt: text, scene });
+      const result = await promptPolishApi.polish({
+        prompt: text,
+        scene,
+        ...(usesReferences ? { referenceMediaIds } : {}),
+      });
       apply(result.prompt);
       optionsRef.current.onBalance?.(result.balancePoints);
       router.refresh();
@@ -161,7 +170,7 @@ export function usePromptPolish(options: UsePromptPolishOptions) {
     }
   }
 
-  return { isEnabled, points, isPolishing, polish };
+  return { isEnabled, points, usesReferences, isPolishing, polish };
 }
 
 export type PromptPolish = ReturnType<typeof usePromptPolish>;

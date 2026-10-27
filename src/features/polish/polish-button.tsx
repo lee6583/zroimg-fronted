@@ -23,7 +23,12 @@ export function PolishButton(props: PolishButtonProps) {
   const t = useTranslations("ui.polish");
   if (!polish.isEnabled) return null;
 
-  const label = polish.isPolishing ? t("polishing") : t("tooltip", { points: polish.points });
+  let label = t("tooltip", { points: polish.points });
+  if (polish.isPolishing) {
+    label = t("polishing");
+  } else if (polish.usesReferences) {
+    label = t("tooltipWithReferences", { points: polish.points });
+  }
 
   return (
     <span className={clsx(styles.polish, props.className)}>

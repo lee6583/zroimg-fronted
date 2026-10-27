@@ -101,3 +101,15 @@ test("no usable image model yields no default options instead of throwing", () =
   assert.equal(findDefaultOptions([inpaintOnly]), null);
   assert.throws(() => getDefaultOptions([]), /No usable image model/);
 });
+
+test("AI 润色参考图去空、去重并最多保留 4 张", async () => {
+  const { normalizePolishReferences } = await import("../src/features/polish/polish-references.ts");
+  assert.deepEqual(normalizePolishReferences(undefined), []);
+  assert.deepEqual(normalizePolishReferences([null, undefined, " "]), []);
+  assert.deepEqual(normalizePolishReferences(["1", "1", " 2 ", null, "3", "4", "5"]), [
+    "1",
+    "2",
+    "3",
+    "4",
+  ]);
+});

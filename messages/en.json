@@ -1192,6 +1192,7 @@
     },
     "polish": {
       "tooltip": "{points, plural, =0 {AI polish} one {AI polish · costs # credit} other {AI polish · costs # credits}}",
+      "tooltipWithReferences": "{points, plural, =0 {AI polish · uses your uploaded images} one {AI polish · uses your uploaded images · costs # credit} other {AI polish · uses your uploaded images · costs # credits}}",
       "polishing": "Polishing…",
       "empty": "Enter a prompt before using AI polish",
       "notConfigured": "AI polish is not available yet"

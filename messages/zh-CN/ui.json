@@ -23,6 +23,7 @@
   },
   "polish": {
     "tooltip": "{points, plural, =0 {AI 润色} other {AI 润色 · 消耗 # 积分}}",
+    "tooltipWithReferences": "{points, plural, =0 {AI 润色 · 将参考已上传的图片} other {AI 润色 · 将参考已上传的图片 · 消耗 # 积分}}",
     "polishing": "正在润色…",
     "empty": "请先输入提示词，再使用 AI 润色",
     "notConfigured": "AI 润色暂未开放"

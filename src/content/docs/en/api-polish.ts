@@ -17,6 +17,7 @@ Works the same as "AI polish" in the web app: it expands a simple idea into a co
 | --- | --- | --- | --- |
 | \`prompt\` | string | Yes | Original description to polish |
 | \`scene\` | string | No | \`image\` (default) or \`video\`; polishes in the style of an image or video prompt |
+| \`image_urls\` | string[] | No | Reference image HTTPS URLs, up to 4 (PNG / JPEG / WebP). The result stays grounded in the images: it keeps the subject, setting, palette, lighting and style they show and treats \`prompt\` as the requested change or action; for \`video\` it describes motion and camera work starting from the image |
 ## Response {#response}
 ~~~json
 {
@@ -34,6 +35,7 @@ Works the same as "AI polish" in the web app: it expands a simple idea into a co
 - Each polish is charged separately at the same price as in the web app; credits are refunded automatically if polishing fails.
 - Counts toward the submit endpoint limit (20 requests / minute per key).
 - Returns \`400 invalid_request\` when the platform has not enabled the polish service; an upstream service failure returns \`502 upstream_error\`, and credits are refunded.
+- If \`image_urls\` is provided but the platform's polish model cannot read images, returns \`502 upstream_error\` and the credits are refunded.
 The polished result can be used directly as the \`prompt\` for [image generation](/docs/api/images) or [video generation](/docs/api/videos).
 `,
 };

@@ -17,6 +17,7 @@ POST /open/v1/prompts/polish
 | --- | --- | --- | --- |
 | \`prompt\` | string | 是 | 需要润色的原始描述 |
 | \`scene\` | string | 否 | \`image\`（默认）或 \`video\`，按图片或视频的写法润色 |
+| \`image_urls\` | string[] | 否 | 参考图 HTTPS 地址，最多 4 张（PNG / JPEG / WebP）。传入后会以图片内容为准：保留图中的主体、场景、色调、光线和风格，\`prompt\` 视为要做的改动或动作；视频场景从图片开始描述运动和运镜 |
 ## 响应 {#response}
 ~~~json
 {
@@ -34,6 +35,7 @@ POST /open/v1/prompts/polish
 - 每次润色单独扣费，价格与网页端相同；润色失败时积分自动退还。
 - 计入提交类接口的限额（每个密钥 20 次 / 分钟）。
 - 平台未开放润色服务时返回 \`400 invalid_request\`；上游服务失败返回 \`502 upstream_error\`，积分已退还。
+- 传了 \`image_urls\` 但平台配置的润色模型不支持识图时，返回 \`502 upstream_error\`（「当前润色模型不支持识图…」），积分已退还。
 润色结果可以直接作为 [图片生成](/docs/api/images) 或 [视频生成](/docs/api/videos) 的 \`prompt\`。
 `,
 };
