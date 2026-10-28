@@ -57,6 +57,7 @@ type FormState = {
   pointsByQuality: Record<string, string>;
   pointsPerSecond: Record<string, string>;
   referencePoints: Record<string, string>;
+  remark: string;
 };
 
 type EditorTab = "basic" | "capabilities" | "pricing";
@@ -217,6 +218,7 @@ function createForm(item: GenerationModelCatalogItem | undefined): FormState {
     pointsByQuality: stringRecord(item?.defaultPoints),
     pointsPerSecond: stringRecord(item?.defaultPointsPerSecond),
     referencePoints: stringRecord(item?.defaultReferencePoints),
+    remark: "",
   };
 }
 
@@ -252,6 +254,7 @@ function formFromModel(
     pointsByQuality: stringRecord(model.pointsByQuality),
     pointsPerSecond: stringRecord(model.pointsPerSecondByResolution),
     referencePoints: stringRecord(model.referencePointsByResolution),
+    remark: model.remark ?? "",
   };
 }
 
@@ -540,6 +543,7 @@ export function ModelForm(props: ModelFormProps) {
       defaultFlag: isModelVerified ? form.defaultFlag : 0,
       sortOrder: readInteger(form.sortOrder, "排序"),
       ratios: form.ratios,
+      remark: form.remark.trim() || undefined,
     } as const;
 
     if (form.modelType === "image") {
@@ -896,6 +900,15 @@ export function ModelForm(props: ModelFormProps) {
               type="number"
               value={form.sortOrder}
               onChange={(event) => updateForm({ sortOrder: event.target.value })}
+            />
+          </Field>
+
+          <Field label="备注">
+            <input
+              className={workspace.formField}
+              value={form.remark}
+              maxLength={200}
+              onChange={(event) => updateForm({ remark: event.target.value })}
             />
           </Field>
         </div>

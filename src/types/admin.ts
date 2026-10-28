@@ -640,6 +640,7 @@ type AdminGenerationModel = {
   referencePointsByResolution: Record<string, number>;
   createdAt: string | null;
   updatedAt: string | null;
+  remark?: string | null;
 };
 
 type ImageQualityPrice = {
@@ -664,6 +665,7 @@ type SaveModelBase = {
   defaultFlag: number;
   sortOrder: number;
   ratios: string[];
+  remark?: string;
 };
 
 type ImageModelFields = {

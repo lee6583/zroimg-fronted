@@ -413,7 +413,11 @@ export function VideoSettings(props: VideoSettingsProps) {
       <AppSelect
         value={form.model}
         onChange={selectModel}
-        options={props.models.map((item) => ({ value: item.modelCode, label: item.modelName }))}
+        options={props.models.map((item) => ({
+          value: item.modelCode,
+          label: item.modelName,
+          description: item.remark ?? undefined,
+        }))}
       />
     </SettingGroup>
   );

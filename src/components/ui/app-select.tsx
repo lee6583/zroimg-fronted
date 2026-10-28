@@ -10,6 +10,7 @@ import styles from "./app-select.module.css";
 export type AppSelectOption<T extends string> = {
   value: T;
   label: ReactNode;
+  description?: ReactNode;
   disabled?: boolean;
 };
 
@@ -122,7 +123,14 @@ export function AppSelect<T extends string>(props: AppSelectProps<T>) {
                   optionClassName,
                 )}
               >
-                <span className={styles.appSelect__optionLabel}>{option.label}</span>
+                <span className={styles.appSelect__optionLabelGroup}>
+                  <span className={styles.appSelect__optionLabel}>{option.label}</span>
+                  {option.description ? (
+                    <span className={styles.appSelect__optionDescription}>
+                      {option.description}
+                    </span>
+                  ) : null}
+                </span>
                 {selected ? (
                   <Check size={18} className={styles.appSelect__check} />
                 ) : (

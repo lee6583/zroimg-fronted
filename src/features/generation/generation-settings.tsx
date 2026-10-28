@@ -80,6 +80,7 @@ export function GenerationSettings(props: GenerationSettingsProps) {
           options={availableModels.map((option) => ({
             value: option.modelCode,
             label: option.modelName,
+            description: option.remark ?? undefined,
           }))}
         />
       </SettingGroup>
