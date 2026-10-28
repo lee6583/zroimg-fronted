@@ -69,11 +69,23 @@ export function GenerateForm(props: GenerateFormProps) {
   const isCompact = useCompactLayout();
   const defaultTitle = t("conversation.defaultTitle");
 
+  // Restore unsent draft from sessionStorage (URL-supplied prompt takes precedence).
+  const DRAFT_KEY = "generate:draft";
+  const draft = (() => {
+    if (typeof window === "undefined" || props.initialPrompt) return null;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      return raw ? (JSON.parse(raw) as { prompt: string; options: GenerationOptions }) : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const [chats, setChats] = useState(initialChats);
   const [activeId, setActiveId] = useState(initialId || initialChats[0]?.id || "");
   const [tasks, setTasks] = useState(initialTasks);
-  const [prompt, setPrompt] = useState(initialPrompt);
-  const [options, setOptions] = useState<GenerationOptions>(initialOptions);
+  const [prompt, setPrompt] = useState(draft?.prompt ?? initialPrompt);
+  const [options, setOptions] = useState<GenerationOptions>(draft?.options ?? initialOptions);
   const [estimate, setEstimate] = useState(initialEstimate);
   const [hasEstimateError, setEstimateError] = useState(false);
   const [inputs, setInputs] = useState<MediaAsset[]>([]);
@@ -270,6 +282,15 @@ export function GenerateForm(props: GenerateFormProps) {
     }
   }
 
+  // Save draft so the user can navigate away and come back without losing their work.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ prompt, options }));
+    } catch {
+      // Ignore if storage is full or blocked.
+    }
+  }, [prompt, options]);
+
   async function selectChat(id: string) {
     selectionVersionRef.current += 1;
     setActiveId(id);
@@ -377,7 +398,8 @@ export function GenerateForm(props: GenerateFormProps) {
     try {
       const uploaded = await Promise.all(selected.map(uploadMediaFile));
       setInputs((current) => [...current, ...uploaded].slice(0, maxGenerationInputs));
-      setEstimating(true);
+      // Mode might not change (already image_to_image) so don't set isEstimating manually here;
+      // the estimate effect triggers automatically when options actually change.
       setOptions((current) => {
         const nextOptions = { ...current, mode: "image_to_image" as const };
         return normalizeOptions(nextOptions, modelOptions);
@@ -424,6 +446,12 @@ export function GenerateForm(props: GenerateFormProps) {
 
       setTasks((current) => [pendingTask, ...current]);
       setPrompt("");
+      // Clear draft after successful submission so the next session starts fresh.
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
 
       let referenceMediaId: string | undefined;
       if (options.mode === "image_to_image") {

@@ -124,7 +124,20 @@ export function VideoSettings(props: VideoSettingsProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setSheetOpen] = useState(false);
   const firstModel = props.models[0] || null;
-  const [form, setForm] = useState(() => createForm(firstModel));
+  const VIDEO_DRAFT_KEY = "video:draft";
+  const videoDraft = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem(VIDEO_DRAFT_KEY);
+      return raw ? (JSON.parse(raw) as VideoForm) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const [form, setForm] = useState<VideoForm>(() => {
+    if (videoDraft) return videoDraft;
+    return createForm(firstModel);
+  });
   const [message, setMessage] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -336,6 +349,15 @@ export function VideoSettings(props: VideoSettingsProps) {
     });
   }
 
+  // Persist form draft so navigating away and back restores it.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(VIDEO_DRAFT_KEY, JSON.stringify(form));
+    } catch {
+      /* ignore */
+    }
+  }, [form]);
+
   async function submit() {
     if (!model || !params) {
       setMessage(t("errors.notConfigured"));
@@ -372,6 +394,12 @@ export function VideoSettings(props: VideoSettingsProps) {
     try {
       await submitVideoTask(input);
       await props.onCreated();
+      // Clear draft after successful submission.
+      try {
+        sessionStorage.removeItem(VIDEO_DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
       setMessage(t("settings.submitted"));
     } catch (error) {
       setMessage(text.errorText(error));
