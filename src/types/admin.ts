@@ -361,11 +361,28 @@ type AdminGenerationTask = {
   retrying?: boolean;
   nextAttemptTime?: string | null;
   lastError?: string | null;
+  /** 是否已切换到备用中转站 */
+  fallbackUsed?: boolean | null;
+  /** 当前（最近一次尝试）使用的中转站 */
+  connectionName?: string | null;
+  /** 当前使用的供应商模型 ID */
+  providerModelCode?: string | null;
+  /** 主中转站（切换备用后才有） */
+  primaryConnectionName?: string | null;
+  /** 触发切换的主中转站错误 */
+  fallbackReason?: string | null;
 };
 
 // generation GenerationTaskAttemptVO
 type AdminTaskAttempt = {
   attemptNo: number;
+  connectionId?: string | null;
+  connectionName?: string | null;
+  providerModelCode?: string | null;
+  /** 本次尝试在备用中转站上执行 */
+  fallback?: boolean | null;
+  /** 本次失败后切换到了备用中转站 */
+  failoverTriggered?: boolean | null;
   retryable: boolean;
   errorCategory: string | null;
   httpStatus: number | null;
@@ -613,6 +630,12 @@ type AdminGenerationModel = {
   adapter: GenerationModelAdapter;
   connectionId: string | null;
   connectionName: string | null;
+  /** 备用中转站：主中转站失败并重试用完后自动切换 */
+  fallbackConnectionId?: string | null;
+  fallbackConnectionName?: string | null;
+  fallbackAdapter?: GenerationModelAdapter | null;
+  /** 备用中转站上的供应商模型 ID，空表示沿用主模型 ID */
+  fallbackProviderModelCode?: string | null;
   providerModelCode: string;
   capabilityProfile: string;
   verificationStatus: "verified" | "unverified";
@@ -659,6 +682,8 @@ type VideoResolutionPrice = {
 type SaveModelBase = {
   connectionId: string;
   providerModelCode: string;
+  fallbackConnectionId?: string | null;
+  fallbackProviderModelCode?: string | null;
   capabilityProfile: string;
   modelName: string;
   status: "enabled" | "disabled";

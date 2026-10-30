@@ -206,6 +206,14 @@ export function ModelManager(props: ModelManagerProps) {
               <span className={workspace.modelBadges}>
                 <span className={workspace.badge}>{modelTypeLabels[model.modelType]}</span>
                 {model.defaultFlag === 1 ? <span className={workspace.badge}>默认</span> : null}
+                {model.fallbackConnectionId ? (
+                  <span
+                    className={workspace.badge}
+                    title={`备用中转站：${model.fallbackConnectionName ?? model.fallbackConnectionId}`}
+                  >
+                    有备用
+                  </span>
+                ) : null}
               </span>
             </div>
             <span className={workspace.monoText} title={model.providerModelCode}>

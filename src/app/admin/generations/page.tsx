@@ -14,6 +14,7 @@ import {
   readTaskSource,
   readTaskSpec,
   readTaskStatus,
+  readFallbackTitle,
   readTaskType,
   taskStatusLabels,
 } from "@/features/admin/generation-task";
@@ -222,6 +223,14 @@ export default async function AdminGenerationsPage(props: AdminGenerationsPagePr
                           <span className={clsx(workspace.secondaryText, workspace.truncate)}>
                             {readTaskSpec(task)}
                           </span>
+                          {task.fallbackUsed ? (
+                            <span
+                              className={clsx(workspace.badge, workspace.badgeInfo)}
+                              title={readFallbackTitle(task)}
+                            >
+                              已切换备用中转站
+                            </span>
+                          ) : null}
                         </div>
                       </td>
                       <td>

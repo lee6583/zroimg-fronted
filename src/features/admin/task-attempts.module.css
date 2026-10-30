@@ -21,7 +21,7 @@
 }
 
 .attempts__popover {
-  width: min(40rem, calc(100vw - 2rem));
+  width: min(48rem, calc(100vw - 2rem));
 }
 
 .attempts__state {
@@ -43,7 +43,7 @@
 
 .attempts__item {
   display: grid;
-  grid-template-columns: 3.6rem 7.4rem 4.6rem 4.2rem minmax(0, 1fr) auto;
+  grid-template-columns: 3.6rem 7.4rem 7rem 4.6rem 4.2rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.6rem;
   border-top: 1px solid var(--line);
@@ -84,6 +84,15 @@
 .attempts__tagRetry {
   background: var(--warning-soft);
   color: var(--warning);
+}
+
+.attempts__tagSwitch {
+  background: color-mix(in oklab, #1d4ed8 12%, var(--panel));
+  color: #1d4ed8;
+}
+
+.attempts__fallback {
+  color: #1d4ed8;
 }
 
 .attempts__tagFinal {

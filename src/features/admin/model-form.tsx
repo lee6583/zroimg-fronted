@@ -34,6 +34,10 @@ type FormState = {
   modelType: "image" | "video";
   connectionId: string;
   providerModelCode: string;
+  /** 备用中转站连接，空字符串表示没有备用 */
+  fallbackConnectionId: string;
+  /** 备用中转站上的模型 ID，空字符串表示沿用主模型 ID */
+  fallbackProviderModelCode: string;
   modelName: string;
   capabilityProfile: string;
   verificationStatus: "verified" | "unverified";
@@ -195,6 +199,8 @@ function createForm(item: GenerationModelCatalogItem | undefined): FormState {
     modelType: item?.modelType ?? "image",
     connectionId: "",
     providerModelCode: "",
+    fallbackConnectionId: "",
+    fallbackProviderModelCode: "",
     modelName: item?.modelName ?? "",
     capabilityProfile: item?.capabilityProfile ?? "",
     verificationStatus: "unverified",
@@ -231,6 +237,8 @@ function formFromModel(
     modelType: model.modelType,
     connectionId: model.connectionId ?? "",
     providerModelCode: model.providerModelCode,
+    fallbackConnectionId: model.fallbackConnectionId ?? "",
+    fallbackProviderModelCode: model.fallbackProviderModelCode ?? "",
     modelName: model.modelName,
     capabilityProfile: model.capabilityProfile || profile?.capabilityProfile || "",
     verificationStatus: model.verificationStatus,
@@ -356,6 +364,9 @@ export function ModelForm(props: ModelFormProps) {
   const [discoveryState, setDiscoveryState] = useState<DiscoveryState>("idle");
   const [isDiscovering, setDiscovering] = useState(false);
   const [isPanelOpen, setPanelOpen] = useState(false);
+  const [fallbackModels, setFallbackModels] = useState<DiscoveredProviderModel[]>([]);
+  const [fallbackModelsFor, setFallbackModelsFor] = useState<string | null>(null);
+  const [isFallbackDiscovering, setFallbackDiscovering] = useState(false);
 
   const selectedConnection = connections.find((item) => item.id === form.connectionId) ?? null;
   const profile = catalog.find((item) => item.capabilityProfile === form.capabilityProfile) ?? null;
@@ -386,6 +397,10 @@ export function ModelForm(props: ModelFormProps) {
   }
 
   function selectConnection(connectionId: string) {
+    if (connectionId && connectionId === form.fallbackConnectionId) {
+      // 主备不能是同一个连接
+      updateForm({ fallbackConnectionId: "", fallbackProviderModelCode: "" });
+    }
     const connection = connections.find((item) => item.id === connectionId);
     if (!connection) {
       updateForm({
@@ -520,6 +535,35 @@ export function ModelForm(props: ModelFormProps) {
     }
   }
 
+  function selectFallbackConnection(connectionId: string) {
+    updateForm({ fallbackConnectionId: connectionId, fallbackProviderModelCode: "" });
+    setFallbackModels([]);
+    setFallbackModelsFor(null);
+  }
+
+  async function discoverFallbackConnection() {
+    const connectionId = form.fallbackConnectionId;
+    if (!connectionId) {
+      return;
+    }
+    setFallbackDiscovering(true);
+    setMessage("");
+    try {
+      const models = await adminModelsApi.discoverSaved(connectionId);
+      setFallbackModels(models);
+      setFallbackModelsFor(connectionId);
+      if (models.length === 0) {
+        setMessage("备用中转站没有返回可用模型，可以手动填写模型 ID");
+      }
+    } catch (error) {
+      setFallbackModels([]);
+      setFallbackModelsFor(null);
+      setMessage(getErrorMessage(error));
+    } finally {
+      setFallbackDiscovering(false);
+    }
+  }
+
   function buildPayload(): SaveModelRequest {
     if (!selectedConnection) {
       throw new Error("请选择中转站连接");
@@ -534,9 +578,14 @@ export function ModelForm(props: ModelFormProps) {
 
     const isListed = discoveredForConnection.some((item) => item.id === providerModelCode);
     const isModelVerified = !canEnterManually && (isVerified || isListed);
+    const fallbackConnectionId = form.fallbackConnectionId || null;
     const base = {
       connectionId: selectedConnection.id,
       providerModelCode,
+      fallbackConnectionId,
+      fallbackProviderModelCode: fallbackConnectionId
+        ? form.fallbackProviderModelCode.trim() || null
+        : null,
       modelName: form.modelName.trim() || profile.modelName,
       capabilityProfile: profile.capabilityProfile,
       status: isModelVerified ? form.status : "disabled",
@@ -699,6 +748,9 @@ export function ModelForm(props: ModelFormProps) {
 
   function removeConnection(connection: GenerationProviderConnection) {
     onConnectionRemoved(connection);
+    if (form.fallbackConnectionId === connection.id) {
+      updateForm({ fallbackConnectionId: "", fallbackProviderModelCode: "" });
+    }
     if (form.connectionId === connection.id) {
       updateForm({
         connectionId: "",
@@ -766,6 +818,105 @@ export function ModelForm(props: ModelFormProps) {
         placeholder="请先拉取可用模型"
         aria-label="供应商模型 ID"
       />
+    );
+  }
+
+  function renderFallbackModelControl() {
+    const primaryCode = form.providerModelCode.trim();
+    const placeholder = primaryCode ? `留空沿用 ${primaryCode}` : "留空沿用主供应商模型 ID";
+    const models = fallbackModelsFor === form.fallbackConnectionId ? fallbackModels : [];
+    if (models.length > 0) {
+      const options = models.map((item) => ({
+        value: item.id,
+        label: item.ownedBy ? `${item.id} · ${item.ownedBy}` : item.id,
+      }));
+      const isCustom =
+        Boolean(form.fallbackProviderModelCode) &&
+        !models.some((item) => item.id === form.fallbackProviderModelCode);
+      return (
+        <AppSelect
+          value={form.fallbackProviderModelCode}
+          onChange={(value) => updateForm({ fallbackProviderModelCode: value })}
+          placeholder={placeholder}
+          triggerClassName={workspace.selectTrigger}
+          options={[
+            { value: "", label: primaryCode ? `沿用主模型 ID（${primaryCode}）` : "沿用主模型 ID" },
+            ...(isCustom
+              ? [{ value: form.fallbackProviderModelCode, label: form.fallbackProviderModelCode }]
+              : []),
+            ...options,
+          ]}
+        />
+      );
+    }
+    return (
+      <input
+        className={workspace.formField}
+        value={form.fallbackProviderModelCode}
+        maxLength={200}
+        disabled={!form.fallbackConnectionId}
+        placeholder={placeholder}
+        aria-label="备用供应商模型 ID"
+        onChange={(event) => updateForm({ fallbackProviderModelCode: event.target.value })}
+      />
+    );
+  }
+
+  function renderFallback() {
+    // 只列出启用、且适配器支持当前模型类型的连接；主连接不能同时做备用
+    const options = connections
+      .filter((connection) => {
+        if (connection.id === form.fallbackConnectionId) return true;
+        if (connection.id === form.connectionId || connection.status !== "enabled") return false;
+        return catalog.some(
+          (item) => item.adapter === connection.adapter && item.modelType === form.modelType,
+        );
+      })
+      .map((connection) => {
+        const suffix = connection.status === "enabled" ? "" : "（已停用）";
+        return {
+          value: connection.id,
+          label: `${connection.name} · ${adapterLabels[connection.adapter]}${suffix}`,
+        };
+      });
+    const fallbackConnection = connections.find((item) => item.id === form.fallbackConnectionId);
+    const connectionHint = fallbackConnection ? fallbackConnection.apiBaseUrl : undefined;
+
+    return (
+      <div className={workspace.fallbackGroup}>
+        <div className={workspace.fallbackGroup__head}>
+          <h3 className={workspace.formSectionTitle}>备用中转站</h3>
+          <span className={workspace.secondaryText}>
+            主中转站失败并重试用完后自动切换，价格不变
+          </span>
+        </div>
+        <div className={workspace.formGrid}>
+          <Field label="备用连接" hint={connectionHint} isGroup>
+            <AppSelect
+              value={form.fallbackConnectionId}
+              onChange={selectFallbackConnection}
+              placeholder="不使用备用"
+              triggerClassName={workspace.selectTrigger}
+              options={[{ value: "", label: "不使用备用" }, ...options]}
+            />
+          </Field>
+
+          <Field label="备用供应商模型 ID" hint="留空则沿用主供应商模型 ID" isGroup>
+            <div className={workspace.fieldWithAction}>
+              {renderFallbackModelControl()}
+              <button
+                className={workspace.secondaryAction}
+                type="button"
+                disabled={!form.fallbackConnectionId || isFallbackDiscovering}
+                onClick={discoverFallbackConnection}
+              >
+                <RefreshCw size={14} aria-hidden="true" />
+                {isFallbackDiscovering ? "拉取中" : "拉取可用模型"}
+              </button>
+            </div>
+          </Field>
+        </div>
+      </div>
     );
   }
 
@@ -912,6 +1063,8 @@ export function ModelForm(props: ModelFormProps) {
             />
           </Field>
         </div>
+
+        {renderFallback()}
 
         <div className={workspace.switchList}>
           <div className={workspace.switchRow}>

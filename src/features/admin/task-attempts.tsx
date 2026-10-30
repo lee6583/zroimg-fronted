@@ -118,11 +118,23 @@ function AttemptList(props: AttemptListProps) {
         if (!isError) {
           retryText = item.finishedTime ? "成功" : "进行中";
         }
+        if (item.failoverTriggered) {
+          retryText = "切换备用";
+        }
+        const connection =
+          item.connectionName || (item.connectionId ? `#${item.connectionId}` : "-");
+        const connectionTitle = [connection, item.providerModelCode].filter(Boolean).join(" · ");
 
         return (
           <li key={item.attemptNo} className={styles.attempts__item}>
             <span className={styles.attempts__no}>第 {item.attemptNo} 次</span>
             <span className={styles.attempts__muted}>{formatTime(item.startedTime)}</span>
+            <span
+              className={clsx(styles.attempts__muted, item.fallback && styles.attempts__fallback)}
+              title={connectionTitle}
+            >
+              {item.fallback ? `备用 · ${connection}` : connection}
+            </span>
             <span className={styles.attempts__muted}>{readCategory(item.errorCategory)}</span>
             <span className={styles.attempts__muted}>
               {item.httpStatus ? `HTTP ${item.httpStatus}` : "-"}
@@ -133,8 +145,9 @@ function AttemptList(props: AttemptListProps) {
             <span
               className={clsx(
                 styles.attempts__tag,
-                isError && item.retryable && styles.attempts__tagRetry,
-                isError && !item.retryable && styles.attempts__tagFinal,
+                isError && item.retryable && !item.failoverTriggered && styles.attempts__tagRetry,
+                isError && !item.retryable && !item.failoverTriggered && styles.attempts__tagFinal,
+                item.failoverTriggered && styles.attempts__tagSwitch,
               )}
             >
               {retryText}

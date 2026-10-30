@@ -55,12 +55,23 @@ function readTaskSpec(task: AdminGenerationTask) {
   return parts.join(" · ");
 }
 
+// 切换备用中转站的任务：主 → 备 和触发原因，鼠标悬停查看
+function readFallbackTitle(task: AdminGenerationTask) {
+  const primary = task.primaryConnectionName || "主中转站";
+  const current = task.connectionName || "备用中转站";
+  const parts = [`${primary} → ${current}`];
+  if (task.providerModelCode) parts.push(`模型：${task.providerModelCode}`);
+  if (task.fallbackReason) parts.push(`切换原因：${task.fallbackReason}`);
+  return parts.join("\n");
+}
+
 function readTaskOutputCount(task: AdminGenerationTask) {
   return task.results?.length ?? 0;
 }
 
 export {
   hasTaskRetries,
+  readFallbackTitle,
   isTaskRunning,
   readTaskAttempts,
   readTaskError,
