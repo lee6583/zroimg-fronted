@@ -715,7 +715,8 @@
       "confirm": "删除",
       "deleting": "删除中...",
       "cancel": "取消",
-      "done": "已删除"
+      "done": "已删除",
+      "browserCleanupFailed": "作品已删除，但浏览器本地文件未能清理。"
     },
     "empty": {
       "default": {

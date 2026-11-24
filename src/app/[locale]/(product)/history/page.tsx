@@ -405,6 +405,11 @@ export default async function HistoryPage(props: HistoryPageProps) {
                             )}
                             <HistoryDeleteButton
                               taskNo={task.taskNo}
+                              browserResultIds={
+                                task.resultStorage === "browser"
+                                  ? (task.results ?? []).map((taskResult) => taskResult.id)
+                                  : []
+                              }
                               media={kind}
                               isRunning={isTaskPending(task)}
                               size="touch"

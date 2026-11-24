@@ -40,6 +40,27 @@ export async function readBrowserResult(id: string) {
   }
 }
 
+export async function deleteBrowserResults(ids: string[]) {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (uniqueIds.length === 0 || typeof indexedDB === "undefined") return;
+
+  const database = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction(storeName, "readwrite");
+      const store = transaction.objectStore(storeName);
+      for (const id of uniqueIds) {
+        store.delete(id);
+      }
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+    });
+  } finally {
+    database.close();
+  }
+}
+
 export async function saveBrowserResult(metadata: BrowserResultMetadata) {
   const database = await openDatabase();
   try {

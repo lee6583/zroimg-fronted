@@ -10,7 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 type HistoryTableContextValue = {
   notice: MessageInstance;
   removedTaskNos: string[];
-  remove: (taskNo: string) => void;
+  remove: (taskNo: string, browserCleanupFailed?: boolean) => void;
 };
 
 type HistoryTableProps = {
@@ -43,9 +43,13 @@ export function HistoryTable(props: HistoryTableProps) {
   const [removedTaskNos, setRemovedTaskNos] = useState<string[]>([]);
 
   // 删除成功后先隐藏同一任务的所有行，再刷新服务端分页和总数
-  function remove(taskNo: string) {
+  function remove(taskNo: string, browserCleanupFailed = false) {
     setRemovedTaskNos((current) => [...current, taskNo]);
-    notice.success(t("delete.done"));
+    if (browserCleanupFailed) {
+      notice.warning(t("delete.browserCleanupFailed"));
+    } else {
+      notice.success(t("delete.done"));
+    }
     router.refresh();
   }
 

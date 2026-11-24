@@ -46,7 +46,8 @@
     "confirm": "Delete",
     "deleting": "Deleting...",
     "cancel": "Cancel",
-    "done": "Deleted"
+    "done": "Deleted",
+    "browserCleanupFailed": "Work deleted, but its local browser file could not be cleared."
   },
   "empty": {
     "default": {

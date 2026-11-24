@@ -8,11 +8,13 @@ import { generationTasksApi } from "@/api/generation/tasks";
 import { ConfirmSheet } from "@/features/history/confirm-sheet";
 import { useHistoryTable } from "@/features/history/history-table";
 import { translateApiError } from "@/i18n/api-error";
+import { deleteBrowserResults } from "@/utils/browser-results";
 import type { HistoryMedia } from "@/utils/history";
 import styles from "./history-delete-button.module.css";
 
 type HistoryDeleteButtonProps = {
   taskNo: string;
+  browserResultIds: string[];
   media: HistoryMedia;
   isRunning: boolean;
   size?: "compact" | "touch";
@@ -44,9 +46,16 @@ export function HistoryDeleteButton(props: HistoryDeleteButtonProps) {
       return;
     }
 
+    let browserCleanupFailed = false;
+    try {
+      await deleteBrowserResults(props.browserResultIds);
+    } catch {
+      browserCleanupFailed = true;
+    }
+
     setLoading(false);
     setOpen(false);
-    table.remove(taskNo);
+    table.remove(taskNo, browserCleanupFailed);
   }
 
   return (
