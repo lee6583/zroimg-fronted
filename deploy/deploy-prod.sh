@@ -21,7 +21,7 @@ fi
 
 compose() {
   docker compose \
-    --project-name zroimg-frontend-prod \
+    --project-name frontend-prod \
     --env-file "$ENV_FILE" \
     --file "$COMPOSE_FILE" \
     "$@"
