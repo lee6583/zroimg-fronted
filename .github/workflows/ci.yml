@@ -175,7 +175,7 @@ jobs:
       - name: Upload deployment files
         run: |
           set -euo pipefail
-          DEPLOY_PATH="${DEPLOY_PATH:-/opt/zroimg/frontend-prod}"
+          DEPLOY_PATH="${DEPLOY_PATH:-/opt/zrocode/frontend-prod}"
           echo "DEPLOY_PATH=${DEPLOY_PATH}" >> "$GITHUB_ENV"
 
           ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
@@ -184,6 +184,20 @@ jobs:
             deploy/deploy-prod.sh \
             deploy/nginx.prod.conf.example \
             "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+      - name: Ensure production environment
+        run: |
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' sh -s" <<'REMOTE'
+          set -eu
+          env_file="$DEPLOY_PATH/.env"
+          if [ ! -s "$env_file" ]; then
+            printf '%s\n' \
+              'FRONTEND_IMAGE=ghcr.io/lee6583/zroimg-frontend' \
+              'JAVA_API_BASE_URL=http://zroimg-backend-prod:8080' > "$env_file"
+            chmod 600 "$env_file"
+          fi
+          test -s "$env_file"
+          REMOTE
       - name: Deploy image
         run: |
           ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \

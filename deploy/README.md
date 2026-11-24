@@ -40,20 +40,20 @@ DEPLOY_USER=zroimgdeploy
 前端额外配置：
 
 ```text
-FRONTEND_DEPLOY_PATH=/opt/zroimg/frontend-prod
+FRONTEND_DEPLOY_PATH=/opt/zrocode/frontend-prod
 ```
 
 后端额外配置：
 
 ```text
-BACKEND_DEPLOY_PATH=/opt/zroimg/backend-prod
+BACKEND_DEPLOY_PATH=/opt/zrocode/backend-prod
 ```
 
 `DEPLOY_SSH_KEY` 只用于部署，服务器建议使用专用的 `zroimgdeploy` 账号，不要把 root 密码写入 GitHub。`DEPLOY_KNOWN_HOSTS` 应先核对服务器 SSH 指纹，再保存到 GitHub。
 
 ## 服务器配置
 
-前端目录 `/opt/zroimg/frontend-prod/.env`：
+前端目录 `/opt/zrocode/frontend-prod/.env`：
 
 ```dotenv
 FRONTEND_IMAGE=ghcr.io/lee6583/zroimg-frontend
@@ -62,7 +62,7 @@ JAVA_API_BASE_URL=http://zroimg-backend-prod:8080
 
 `JAVA_API_BASE_URL` 只给 Next 服务端渲染使用，走 `zroimg_default` 内网，不要填公网域名。
 
-后端目录 `/opt/zroimg/backend-prod/.env` 使用仓库 `deploy/.env.example` 作为字段参考，至少应配置：
+后端目录 `/opt/zrocode/backend-prod/.env` 使用仓库 `deploy/.env.example` 作为字段参考，至少应配置：
 
 - `SPRING_PROFILE=prod`
 - 生产 MySQL 和 Redis
@@ -75,8 +75,8 @@ JAVA_API_BASE_URL=http://zroimg-backend-prod:8080
 `.env` 只保存在服务器，权限设置为：
 
 ```bash
-chmod 600 /opt/zroimg/frontend-prod/.env
-chmod 600 /opt/zroimg/backend-prod/.env
+chmod 600 /opt/zrocode/frontend-prod/.env
+chmod 600 /opt/zrocode/backend-prod/.env
 ```
 
 ## Nginx
@@ -92,7 +92,7 @@ api.zroimg.com    -> 127.0.0.1:18081（支付回调等外部调用）
 - `zroimg.com` 经过 Cloudflare 代理，`snippets/zroimg-cloudflare-realip.conf` 只信任 Cloudflare 网段传来的 `CF-Connecting-IP`，后端限流和日志拿到的是用户真实 IP。Cloudflare 网段变化时重新生成该文件。
 - `snippets/zroimg-proxy.conf` 统一设置 `Host`、`X-Real-IP`、`X-Forwarded-*`。
 - 证书由 certbot webroot（`/var/www/letsencrypt`）签发，续期后由 `renewal-hooks/deploy/reload-nginx.sh` 重载 nginx。
-- 前端、后端、MySQL（`zroimg-mysql-prod`）、Redis（`zroimg-redis-prod`）都在 `zroimg_default` 网络；只有前后端绑定 `127.0.0.1` 端口，数据库不发布宿主机端口。MySQL/Redis 的 compose 在 `/opt/zroimg/infra`。
+- 前端、后端、MySQL（`zroimg-mysql-prod`）、Redis（`zroimg-redis-prod`）都在 `zroimg_default` 网络；只有前后端绑定 `127.0.0.1` 端口，数据库不发布宿主机端口。MySQL/Redis 的 compose 在 `/opt/zrocode/infra`。
 - 部署账号 `zroimgdeploy` 在 docker 组，sudo 只允许 `nginx -t` 和 `systemctl reload nginx`。
 
 ## 发布方式

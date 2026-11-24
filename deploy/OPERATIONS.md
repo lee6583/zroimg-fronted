@@ -28,7 +28,7 @@ git diff --check
 ghcr.io/lee6583/zroimg-frontend:sha-<commit>
 ```
 
-然后部署到 `/opt/zroimg/frontend-prod` 的 `zroimg-frontend-prod` 容器。后端工作流构建生产 JAR，部署到 `/opt/zroimg/backend-prod` 的 `zroimg-backend-prod` 容器。
+然后部署到 `/opt/zrocode/frontend-prod` 的 `zroimg-frontend-prod` 容器。后端工作流构建生产 JAR，部署到 `/opt/zrocode/backend-prod` 的 `zroimg-backend-prod` 容器。
 
 两套部署都使用健康检查。前端通过 `http://127.0.0.1:3000/` 检查，后端通过 `http://127.0.0.1:8080/health/ready` 检查。
 
