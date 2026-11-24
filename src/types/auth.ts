@@ -13,6 +13,7 @@ type CurrentUser = {
   email: string;
   role: "user" | "admin";
   bio: string | null;
+  resultStorage: "browser" | "oss";
   avatarUrl: string | null;
   status: number;
   totalPoints: number;

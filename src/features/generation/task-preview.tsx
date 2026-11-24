@@ -139,7 +139,13 @@ function TaskMessage(props: TaskMessageProps) {
                 <div key={result.id} className={styles.generateForm__chatImageItem}>
                   <ImageLightbox
                     src={result.resultUrl}
-                    previewSrc={userAssetPreviewUrl(result.mediaAssetId)}
+                    previewSrc={
+                      result.mediaAssetId
+                        ? userAssetPreviewUrl(result.mediaAssetId)
+                        : result.resultUrl
+                    }
+                    browserResultId={result.id}
+                    persistToBrowser={task.resultStorage === "browser" && !result.mediaAssetId}
                     alt={t("resultAlt", { prompt: task.prompt, index: index + 1 })}
                     width={768}
                     height={768}
@@ -152,8 +158,15 @@ function TaskMessage(props: TaskMessageProps) {
                     galleryStatus={result.galleryStatus}
                     galleryReason={result.galleryRejectReason}
                     collections={collections}
-                    downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                    downloadUrl={
+                      result.mediaAssetId
+                        ? userAssetDownloadUrl(result.mediaAssetId)
+                        : result.resultUrl
+                    }
                     downloadFileName={`zroimg-${task.taskNo}-${index + 1}.${extension}`}
+                    browserResultId={result.id}
+                    persistToBrowser={task.resultStorage === "browser" && !result.mediaAssetId}
+                    allowFavorite={Boolean(result.mediaAssetId)}
                     showPublish={false}
                     placement="result"
                   />

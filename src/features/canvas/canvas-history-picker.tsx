@@ -166,7 +166,11 @@ function HistoryPicker(props: Omit<CanvasHistoryPickerProps, "open">) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.picker__image}
-                  src={userAssetThumbnailUrl(image.result.mediaAssetId)}
+                  src={
+                    image.result.mediaAssetId
+                      ? userAssetThumbnailUrl(image.result.mediaAssetId)
+                      : image.result.resultUrl
+                  }
                   alt={image.task.prompt}
                   loading="lazy"
                 />

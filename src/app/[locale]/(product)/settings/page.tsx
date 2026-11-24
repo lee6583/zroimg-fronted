@@ -26,6 +26,7 @@ export default async function SettingsPage() {
         username={user.username}
         email={user.email}
         bio={user.bio || ""}
+        resultStorage={user.resultStorage ?? "browser"}
         avatarUrl={user.avatarUrl}
       />
     </div>

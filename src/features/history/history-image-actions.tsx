@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import type { FavoriteCollection } from "@/types/favorites";
 import type { GalleryStatus } from "@/types/gallery";
 import styles from "./history-image-actions.module.css";
+import { downloadBrowserResult } from "@/utils/browser-results";
 
 type HistoryImageActionsProps = {
   generatedImageId: string;
@@ -25,6 +26,9 @@ type HistoryImageActionsProps = {
   media?: "image" | "video";
   // touch：手机端放大点击区域（≥ 44px），用于创作历史卡片
   size?: "compact" | "touch";
+  browserResultId?: string;
+  persistToBrowser?: boolean;
+  allowFavorite?: boolean;
 };
 
 export function HistoryImageActions(props: HistoryImageActionsProps) {
@@ -108,7 +112,7 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           />
         ) : null}
 
-        {isVideo ? null : (
+        {isVideo || props.allowFavorite === false ? null : (
           <button
             type="button"
             aria-label={favoriteLabel}
@@ -128,6 +132,20 @@ export function HistoryImageActions(props: HistoryImageActionsProps) {
           aria-label={downloadLabel}
           title={downloadLabel}
           href={downloadUrl}
+          onClick={(event) => {
+            if (!props.persistToBrowser || !props.browserResultId) return;
+            event.preventDefault();
+            void downloadBrowserResult({
+              id: props.browserResultId,
+              url: downloadUrl,
+              fileName: downloadFileName,
+            }).catch(() => {
+              const fallback = document.createElement("a");
+              fallback.href = downloadUrl;
+              fallback.download = downloadFileName;
+              fallback.click();
+            });
+          }}
           download={downloadFileName}
           className={iconClassName}
         >

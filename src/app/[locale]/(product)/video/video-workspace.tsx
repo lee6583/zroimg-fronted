@@ -8,6 +8,7 @@ import { videoApi } from "@/api/video";
 import type { VideoModel, VideoTask, VideoTaskPage, VideoTaskStatus } from "@/types/video";
 import { parseJavaDateTime } from "@/utils/java-time";
 import { userAssetDownloadUrl } from "@/utils/media";
+import { downloadBrowserResult } from "@/utils/browser-results";
 import { frameStyle, VideoFrame } from "./video-frame";
 import { VideoInfo } from "./video-info";
 import { useIsMobile } from "@/components/ui/sheet";
@@ -303,6 +304,16 @@ function DownloadLink(props: DownloadLinkProps) {
       className={styles.videoPage__download}
       aria-label={t("downloadLabel")}
       title={t("downloadLabel")}
+      onClick={(event) => {
+        const result = task.results[0];
+        if (task.resultStorage !== "browser" || !result || result.mediaAssetId) return;
+        event.preventDefault();
+        void downloadBrowserResult({
+          id: result.id,
+          url,
+          fileName: `zroimg-${task.taskNo}.${task.format || "mp4"}`,
+        });
+      }}
     >
       <Download size={15} />
       {t("download")}

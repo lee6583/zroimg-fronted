@@ -277,12 +277,27 @@ export default async function HistoryPage(props: HistoryPageProps) {
                         <td className={styles.history__cellPreview}>
                           <div className={styles.history__preview}>
                             {result && isVideo ? (
-                              <VideoLightbox src={result.resultUrl} label={task.prompt} />
+                              <VideoLightbox
+                                src={result.resultUrl}
+                                label={task.prompt}
+                                browserResultId={result.id}
+                                persistToBrowser={
+                                  task.resultStorage === "browser" && !result.mediaAssetId
+                                }
+                              />
                             ) : null}
                             {result && !isVideo ? (
                               <ImageLightbox
                                 src={result.resultUrl}
-                                previewSrc={userAssetThumbnailUrl(result.mediaAssetId)}
+                                previewSrc={
+                                  result.mediaAssetId
+                                    ? userAssetThumbnailUrl(result.mediaAssetId)
+                                    : result.resultUrl
+                                }
+                                browserResultId={result.id}
+                                persistToBrowser={
+                                  task.resultStorage === "browser" && !result.mediaAssetId
+                                }
                                 alt={task.prompt}
                                 width={768}
                                 height={768}
@@ -360,8 +375,18 @@ export default async function HistoryPage(props: HistoryPageProps) {
                                 galleryStatus={result.galleryStatus}
                                 galleryReason={result.galleryRejectReason}
                                 collections={collections}
-                                downloadUrl={userAssetDownloadUrl(result.mediaAssetId)}
+                                downloadUrl={
+                                  result.mediaAssetId
+                                    ? userAssetDownloadUrl(result.mediaAssetId)
+                                    : result.resultUrl
+                                }
                                 downloadFileName={fileName}
+                                browserResultId={result.id}
+                                persistToBrowser={
+                                  task.resultStorage === "browser" && !result.mediaAssetId
+                                }
+                                allowFavorite={Boolean(result.mediaAssetId)}
+                                showPublish={Boolean(result.mediaAssetId)}
                                 media={kind}
                                 size="touch"
                               />

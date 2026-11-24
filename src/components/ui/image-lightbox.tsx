@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useSwipeDismiss } from "./use-swipe-dismiss";
 import styles from "./image-lightbox.module.css";
+import { useBrowserResultUrl } from "./use-browser-result";
 
 type ImageLightboxProps = {
   src: string;
@@ -18,6 +19,8 @@ type ImageLightboxProps = {
   fit?: "container" | "intrinsic";
   triggerClassName?: string;
   imageClassName?: string;
+  browserResultId?: string;
+  persistToBrowser?: boolean;
 };
 
 type ImageViewerProps = {
@@ -104,8 +107,12 @@ export function ImageViewer(props: ImageViewerProps) {
 }
 
 export function ImageLightbox(props: ImageLightboxProps) {
-  const src = props.src;
-  const previewSrc = props.previewSrc ?? src;
+  const src = useBrowserResultUrl(
+    props.persistToBrowser ? (props.browserResultId ?? null) : null,
+    props.src,
+    Boolean(props.persistToBrowser),
+  );
+  const previewSrc = props.previewSrc && !props.persistToBrowser ? props.previewSrc : src;
   const alt = props.alt;
   const width = props.width;
   const height = props.height;

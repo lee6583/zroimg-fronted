@@ -55,7 +55,7 @@ type GenerationPriceEstimate = {
 type GenerationResult = {
   id: string;
   resultType: string;
-  mediaAssetId: string;
+  mediaAssetId: string | null;
   resultUrl: string;
   sortOrder: number;
   galleryStatus: GalleryStatus | null;
@@ -81,6 +81,7 @@ type GenerationTask = {
   resolution: string | null;
   quality: string | null;
   format: string | null;
+  resultStorage?: "browser" | "oss";
   count: number;
   durationSeconds: number | null;
   audio: boolean | null;

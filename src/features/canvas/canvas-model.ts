@@ -34,7 +34,7 @@ type GeneratorOptions = {
 };
 
 type ResultImage = {
-  mediaAssetId: string;
+  mediaAssetId: string | null;
   resultId: string | null;
   url: string | null;
   width: number | null;

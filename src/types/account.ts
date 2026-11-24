@@ -4,6 +4,7 @@ import type { CurrentUser } from "@/types/auth";
 type UpdateAccountProfileRequest = {
   username: string;
   bio: string;
+  resultStorage: "browser" | "oss";
 };
 
 type UpdateAccountProfileResponse = CurrentUser;

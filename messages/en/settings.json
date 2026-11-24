@@ -17,6 +17,10 @@
     "bio": "Bio",
     "bioPlaceholder": "Tell us about yourself or the kinds of work you create...",
     "bioCount": "{count, number} / {max, number}",
+    "resultStorage": "Creation storage",
+    "storageBrowser": "Browser IndexedDB",
+    "storageBrowserHint": "Results stay in this browser and do not sync across devices.",
+    "storageOss": "Server OSS",
     "save": "Save profile",
     "saving": "Saving",
     "saved": "Profile saved"

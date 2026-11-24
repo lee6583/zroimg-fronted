@@ -999,6 +999,10 @@
       "bio": "О себе",
       "bioPlaceholder": "Расскажите о себе или о том, что вы чаще всего создаёте...",
       "bioCount": "{count, number} / {max, number}",
+      "resultStorage": "Хранение результатов",
+      "storageBrowser": "IndexedDB браузера",
+      "storageBrowserHint": "Результаты хранятся в этом браузере и не синхронизируются между устройствами.",
+      "storageOss": "Серверное OSS",
       "save": "Сохранить профиль",
       "saving": "Сохранение",
       "saved": "Профиль сохранён"

@@ -28,6 +28,7 @@ type AccountSettingsFormProps = {
   email: string;
   bio: string;
   avatarUrl: string | null;
+  resultStorage: "browser" | "oss";
 };
 
 type PasswordFieldKey = "current" | "next" | "confirm";
@@ -71,6 +72,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
   const email = props.email;
   const bio = props.bio;
   const initialAvatarUrl = props.avatarUrl;
+  const initialResultStorage = props.resultStorage;
 
   const t = useTranslations("settings.profile");
   const tUpload = useTranslations("errors.upload");
@@ -79,6 +81,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(username);
   const [intro, setIntro] = useState(bio);
+  const [resultStorage, setResultStorage] = useState(initialResultStorage);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [avatarMessage, setAvatarMessage] = useState("");
@@ -135,7 +138,7 @@ function ProfileForm(props: AccountSettingsFormProps) {
     setMessage("");
 
     try {
-      await accountApi.updateProfile({ username: name, bio: intro });
+      await accountApi.updateProfile({ username: name, bio: intro, resultStorage });
       setMessage(t("saved"));
       router.refresh();
     } catch (error) {
@@ -236,6 +239,22 @@ function ProfileForm(props: AccountSettingsFormProps) {
           <span className={styles.accountSettings__characterCount}>
             {t("bioCount", { count: intro.length, max: maxBioLength })}
           </span>
+        </div>
+
+        <div className={styles.accountSettings__field}>
+          <label htmlFor="account-result-storage">{t("resultStorage")}</label>
+          {resultStorage === "browser" ? (
+            <span className={styles.accountSettings__inlineMessage}>{t("storageBrowserHint")}</span>
+          ) : null}
+          <select
+            id="account-result-storage"
+            className={styles.accountSettings__input}
+            value={resultStorage}
+            onChange={(event) => setResultStorage(event.target.value as "browser" | "oss")}
+          >
+            <option value="browser">{t("storageBrowser")}</option>
+            <option value="oss">{t("storageOss")}</option>
+          </select>
         </div>
 
         <div className={styles.accountSettings__formActions}>

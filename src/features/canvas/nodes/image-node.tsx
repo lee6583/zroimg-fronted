@@ -26,6 +26,7 @@ import { useIsPriority, useMediaPreview } from "../canvas-previews";
 import { useCanvasStoreApi } from "../canvas-store";
 import { getFrameRatio, shouldUsePreview, withRetry } from "../image-loading";
 import styles from "../canvas-editor.module.css";
+import { useBrowserResultUrl } from "@/components/ui/use-browser-result";
 
 // 原图地址：只用于查看大图、下载、遮罩编辑和局部重绘，画布上不直接加载
 export function getImageSrc(data: ImageNode["data"]) {
@@ -66,6 +67,7 @@ type ImageFrameProps = {
   isActive: boolean;
   isReady: boolean;
   onView: () => void;
+  localSrc: string;
 };
 
 function ImageFrame(props: ImageFrameProps) {
@@ -74,6 +76,7 @@ function ImageFrame(props: ImageFrameProps) {
   const isActive = props.isActive;
   const isReady = props.isReady;
   const onView = props.onView;
+  const localSrc = props.localSrc;
   const t = useTranslations("canvas.image");
   const preview = useMediaPreview(data.mediaAssetId);
   const isPriority = useIsPriority(nodeId);
@@ -102,7 +105,7 @@ function ImageFrame(props: ImageFrameProps) {
     return userAssetPreviewUrl(mediaAssetId);
   });
 
-  const thumbnail = getThumbnailSrc(data);
+  const thumbnail = data.mediaAssetId ? getThumbnailSrc(data) : localSrc;
   const ratio = getFrameRatio(data.width, data.height, preview?.thumbWidth, preview?.thumbHeight);
   const lqip = preview?.lqip ?? null;
 
@@ -220,9 +223,13 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
   const [isHovered, setHovered] = useState(false);
   const preview = useMediaPreview(data.mediaAssetId);
 
-  const src = getImageSrc(data);
+  const src = useBrowserResultUrl(
+    !data.mediaAssetId ? data.resultId : null,
+    data.url ?? "",
+    Boolean(!data.mediaAssetId && data.resultId),
+  );
   const hasSize = Boolean(data.width && data.height);
-  const isReady = Boolean(data.mediaAssetId) && !data.isUploading;
+  const isReady = Boolean(data.mediaAssetId || data.resultId) && !data.isUploading;
   let sizeLabel = "";
   if (hasSize) {
     sizeLabel = `${data.width} × ${data.height}`;
@@ -275,12 +282,12 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
             <Brush size={14} />
             <span className={styles.nodeToolbar__label}>{t("inpaint")}</span>
           </button>
-          {data.mediaAssetId ? (
+          {data.mediaAssetId || data.resultId ? (
             <a
               aria-label={t("download")}
               title={t("download")}
               className={styles.nodeToolbar__button}
-              href={userAssetDownloadUrl(data.mediaAssetId)}
+              href={data.mediaAssetId ? userAssetDownloadUrl(data.mediaAssetId) : src}
               download={data.name ?? `canvas-${id}.png`}
             >
               <Download size={14} />
@@ -312,6 +319,7 @@ export function CanvasImageNode(props: NodeProps<ImageNode>) {
         isActive={Boolean(selected) || isHovered}
         isReady={isReady}
         onView={() => setViewing(true)}
+        localSrc={src}
       />
       {sizeLabel ? <p className={styles.imageNode__meta}>{sizeLabel}</p> : null}
       {src ? (

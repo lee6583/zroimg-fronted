@@ -999,6 +999,10 @@
       "bio": "个人简介",
       "bioPlaceholder": "介绍一下你自己，或者写下常用的创作方向...",
       "bioCount": "{count, number} / {max, number}",
+      "resultStorage": "创作结果保存位置",
+      "storageBrowser": "浏览器 IndexedDB",
+      "storageBrowserHint": "结果保存在当前浏览器，更换设备不会同步。",
+      "storageOss": "服务器 OSS",
       "save": "保存资料",
       "saving": "保存中",
       "saved": "资料已保存"

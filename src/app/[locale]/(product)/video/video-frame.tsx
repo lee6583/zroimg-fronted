@@ -5,6 +5,7 @@ import { CircleAlert, RotateCcw } from "lucide-react";
 import type { CSSProperties, TransitionEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { useBrowserResultUrl } from "@/components/ui/use-browser-result";
 import { useClock } from "@/features/generation/use-clock";
 import type { VideoTask } from "@/types/video";
 import { getRetryLabel, isTaskRetrying } from "@/utils/task-status";
@@ -64,7 +65,12 @@ export function VideoFrame(props: VideoFrameProps) {
   const tVideo = useTranslations("video");
   const stage = getVideoStage(task.status, isTaskRetrying(task));
   const isRunning = isVideoRunning(stage);
-  const resultUrl = task.results[0]?.resultUrl ?? "";
+  const result = task.results[0];
+  const resultUrl = useBrowserResultUrl(
+    task.resultStorage === "browser" && result && !result.mediaAssetId ? result.id : null,
+    result?.resultUrl ?? "",
+    task.resultStorage === "browser",
+  );
   const hasVideo = stage === "completed" && Boolean(resultUrl);
   const [videoState, setVideoState] = useState<VideoState>("loading");
   const [isCoverGone, setCoverGone] = useState(false);

@@ -8,15 +8,22 @@ import { useTranslations } from "next-intl";
 import { useSwipeDismiss } from "./use-swipe-dismiss";
 import lightbox from "./image-lightbox.module.css";
 import styles from "./video-lightbox.module.css";
+import { useBrowserResultUrl } from "./use-browser-result";
 
 type VideoLightboxProps = {
   src: string;
   label: string;
   triggerClassName?: string;
+  browserResultId?: string;
+  persistToBrowser?: boolean;
 };
 
 export function VideoLightbox(props: VideoLightboxProps) {
-  const src = props.src;
+  const src = useBrowserResultUrl(
+    props.persistToBrowser ? (props.browserResultId ?? null) : null,
+    props.src,
+    Boolean(props.persistToBrowser),
+  );
   const label = props.label;
   const triggerClassName = props.triggerClassName;
 

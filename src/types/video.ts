@@ -76,6 +76,7 @@ type VideoTask = {
   modelName: string | null;
   provider: string | null;
   modelType: string;
+  resultStorage?: "browser" | "oss";
   mode: string;
   prompt: string;
   referenceImageUrl: string | null;
@@ -83,6 +84,7 @@ type VideoTask = {
   referenceImages?: VideoReferenceImage[];
   ratio: string;
   resolution: string;
+  format: string | null;
   durationSeconds: number | null;
   priceVersion: string;
   unitPoints: number;
